@@ -18,7 +18,9 @@ export default function DashboardPage() {
 
     useEffect(() => {
         setSystems(dataStore.getSystems())
-        setTodayCount(dataStore.getTodayEntries().length)
+        dataStore.getTodayEntries().then(entries => {
+            setTodayCount(entries.length)
+        })
     }, [])
 
     return (

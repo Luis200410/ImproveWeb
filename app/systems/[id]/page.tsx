@@ -17,11 +17,24 @@ export default function SystemPage() {
     const params = useParams()
     const router = useRouter()
     const [system, setSystem] = useState<System | null>(null)
+    const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
 
     useEffect(() => {
         const systemId = params.id as string
         const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
         setSystem(foundSystem || null)
+
+        if (foundSystem) {
+            const loadCounts = async () => {
+                const counts: Record<string, number> = {}
+                await Promise.all(foundSystem.microapps.map(async (microapp) => {
+                    const entries = await dataStore.getEntries(microapp.id)
+                    counts[microapp.id] = entries.length
+                }))
+                setEntryCounts(counts)
+            }
+            loadCounts()
+        }
     }, [params.id])
 
     if (!system) {
@@ -153,7 +166,7 @@ export default function SystemPage() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                         >
                             {system.microapps.map((microapp, index) => {
-                                const entryCount = dataStore.getEntries(microapp.id).length
+                                const entryCount = entryCounts[microapp.id] || 0
 
                                 return (
                                     <motion.div
