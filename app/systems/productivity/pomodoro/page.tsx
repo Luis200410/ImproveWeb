@@ -8,7 +8,7 @@ import { createClient } from '@/utils/supabase/client'
 import { PomodoroTimer } from '@/components/pomodoro-timer'
 import { ImprovementGarden, type VisualTheme } from '@/components/improvement-garden'
 import { motion } from 'framer-motion'
-import { Clock } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -79,102 +79,99 @@ export default function PomodoroPage() {
         localStorage.setItem('pomodoroTheme', theme)
     }
 
+    const PRESETS = [
+        { label: '25+5', work: 25, break: 5 },
+        { label: '30+5', work: 30, break: 5 },
+        { label: '45+10', work: 45, break: 10 },
+        { label: '60+15', work: 60, break: 15 },
+    ]
+
     return (
-        <div className="min-h-screen bg-black text-white p-8">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
+        <div className="min-h-screen bg-black text-white">
+            <div className="max-w-7xl mx-auto p-4 md:p-8 pt-24 md:pt-32">
+                {/* Back button */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8"
+                >
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <span className="uppercase tracking-widest text-xs">Back</span>
+                    </button>
+                </motion.div>
+
+                {/* Header - minimal */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-12"
                 >
-                    <div className="flex items-center gap-3 mb-4">
-                        <Clock className="w-8 h-8 text-white" />
-                        <h1 className={`${playfair.className} text-5xl font-bold text-white`}>
-                            Pomodoro Timer
-                        </h1>
-                    </div>
-                    <p className={`${inter.className} text-white/60 text-lg`}>
-                        Deep work sessions with visual progress tracking
-                    </p>
+                    <div className="text-xs uppercase tracking-[0.3em] text-white/40 mb-2">Focus Sessions</div>
+                    <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold text-white mb-4`}>
+                        Pomodoro
+                    </h1>
                 </motion.div>
 
-                {/* Main Timer Section */}
+                {/* Timer Presets - Clean grid */}
                 <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                     className="mb-12"
                 >
-                    <div className="bg-black border border-white/10 p-12">
-                        <div className="text-center mb-8">
-                            <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-4">
-                                Select Your Focus Duration
-                            </p>
-                            <h2 className={`${playfair.className} text-4xl font-bold text-white mb-2`}>
-                                Start Deep Work
-                            </h2>
-                            <p className={`${inter.className} text-white/60`}>
-                                Choose a Pomodoro preset and begin your session
-                            </p>
-                        </div>
-
-                        {/* Quick Start Buttons - Large and Prominent */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-                            {[
-                                { label: '25 + 5', work: 25, break: 5, desc: 'Classic Pomodoro' },
-                                { label: '30 + 5', work: 30, break: 5, desc: 'Extended Focus' },
-                                { label: '45 + 10', work: 45, break: 10, desc: 'Deep Work' },
-                                { label: '60 + 15', work: 60, break: 15, desc: 'Ultra Focus' },
-                            ].map((preset) => (
-                                <motion.button
-                                    key={preset.label}
-                                    onClick={() => setIsTimerOpen(true)}
-                                    whileHover={{ scale: 1.05, borderColor: 'rgba(255,255,255,0.4)' }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="bg-black border-2 border-white/20 hover:border-white/40 p-8 transition-all group"
-                                >
-                                    <div className="mb-4">
-                                        <p className={`${playfair.className} text-5xl font-bold text-white group-hover:scale-110 transition-transform`}>
-                                            {preset.label}
-                                        </p>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {PRESETS.map((preset, index) => (
+                            <motion.button
+                                key={preset.label}
+                                onClick={() => setIsTimerOpen(true)}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 + index * 0.05 }}
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                className="group relative bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all p-8 md:p-12"
+                            >
+                                {/* Time display - monospace */}
+                                <div className="mb-6">
+                                    <div className="text-5xl md:text-6xl font-mono text-white mb-2 group-hover:scale-105 transition-transform">
+                                        {preset.label}
                                     </div>
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-white/60">{preset.desc}</p>
-                                        <p className="text-xs text-white/40">
-                                            {preset.work}m work + {preset.break}m break
-                                        </p>
+                                    <div className="text-xs font-mono text-white/40 uppercase tracking-widest">
+                                        {preset.work}m + {preset.break}m
                                     </div>
-                                </motion.button>
-                            ))}
-                        </div>
+                                </div>
 
-                        {/* Stats Preview */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.3 }}
-                            className="mt-12 grid grid-cols-3 gap-6 max-w-3xl mx-auto"
-                        >
-                            <div className="text-center">
-                                <p className={`${playfair.className} text-4xl font-bold text-white mb-1`}>
-                                    {todayCount}
-                                </p>
-                                <p className="text-xs uppercase tracking-wider text-white/40">Today</p>
-                            </div>
-                            <div className="text-center">
-                                <p className={`${playfair.className} text-4xl font-bold text-white mb-1`}>
-                                    {sessions.length}
-                                </p>
-                                <p className="text-xs uppercase tracking-wider text-white/40">Total Sessions</p>
-                            </div>
-                            <div className="text-center">
-                                <p className={`${playfair.className} text-4xl font-bold text-white mb-1`}>
-                                    {Math.floor(totalFocusTime / 60)}h
-                                </p>
-                                <p className="text-xs uppercase tracking-wider text-white/40">Focus Time</p>
-                            </div>
-                        </motion.div>
+                                {/* Subtle accent line */}
+                                <div className="absolute bottom-0 left-0 right-0 h-px bg-white/10 group-hover:bg-white/30 transition-colors" />
+                            </motion.button>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Stats - Minimal inline */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="mb-12 flex items-center gap-8 bg-white/5 backdrop-blur-md border border-white/10 p-6"
+                >
+                    <div>
+                        <div className="text-xs uppercase tracking-widest text-white/40 mb-1">Today</div>
+                        <div className="text-3xl font-mono text-white">{todayCount}</div>
+                    </div>
+                    <div className="h-12 w-px bg-white/10" />
+                    <div>
+                        <div className="text-xs uppercase tracking-widest text-white/40 mb-1">Total</div>
+                        <div className="text-3xl font-mono text-white">{sessions.length}</div>
+                    </div>
+                    <div className="h-12 w-px bg-white/10" />
+                    <div>
+                        <div className="text-xs uppercase tracking-widest text-white/40 mb-1">Focus Time</div>
+                        <div className="text-3xl font-mono text-white">{Math.floor(totalFocusTime / 60)}h {totalFocusTime % 60}m</div>
                     </div>
                 </motion.div>
 
@@ -182,7 +179,7 @@ export default function PomodoroPage() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
+                    transition={{ delay: 0.4 }}
                 >
                     <ImprovementGarden
                         completedSessions={sessions.length}
