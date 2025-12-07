@@ -171,79 +171,85 @@ export default function SystemPage() {
                                 return (
                                     <motion.div
                                         key={microapp.id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                                        whileHover={{ scale: 1.05, y: -10 }}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        whileHover={{ y: -5 }}
+                                        onClick={() => {
+                                            if (microapp.customPath) {
+                                                router.push(microapp.customPath)
+                                            } else {
+                                                router.push(`/systems/${system.id}/${microapp.id}`)
+                                            }
+                                        }}
+                                        className="group cursor-pointer"
                                     >
-                                        <Link href={`/systems/${system.id}/${microapp.id}`}>
-                                            <div className="relative group cursor-pointer h-full">
-                                                <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
+                                        <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
 
-                                                <Card className="relative border border-white/10 bg-black group-hover:border-white/30 transition-all duration-500 h-full flex flex-col">
-                                                    <CardHeader className="bg-black border-b border-white/10 group-hover:bg-white/5 transition-colors duration-500">
-                                                        <div className="flex items-center gap-3 mb-3">
-                                                            <motion.span
-                                                                whileHover={{ scale: 1.2, rotate: 5 }}
-                                                                className="text-4xl"
-                                                            >
-                                                                {microapp.icon}
-                                                            </motion.span>
-                                                            <CardTitle className={`${playfair.className} text-2xl font-bold text-white`}>
-                                                                {microapp.name}
-                                                            </CardTitle>
+                                        <Card className="relative border border-white/10 bg-black group-hover:border-white/30 transition-all duration-500 h-full flex flex-col">
+                                            <CardHeader className="bg-black border-b border-white/10 group-hover:bg-white/5 transition-colors duration-500">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <motion.span
+                                                        whileHover={{ scale: 1.2, rotate: 5 }}
+                                                        className="text-4xl"
+                                                    >
+                                                        {microapp.icon}
+                                                    </motion.span>
+                                                    <CardTitle className={`${playfair.className} text-2xl font-bold text-white`}>
+                                                        {microapp.name}
+                                                    </CardTitle>
+                                                </div>
+                                                <CardDescription className="text-white/60 font-light leading-relaxed">
+                                                    {microapp.description}
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="pt-6 flex-1 flex flex-col">
+                                                <div className="grid grid-cols-3 gap-3 mb-6 flex-1">
+                                                    <div className="text-center">
+                                                        <Layers className="w-5 h-5 text-white/40 mx-auto mb-2" />
+                                                        <div className={`${playfair.className} text-2xl font-bold text-white`}>
+                                                            {microapp.fields.length}
                                                         </div>
-                                                        <CardDescription className="text-white/60 font-light leading-relaxed">
-                                                            {microapp.description}
-                                                        </CardDescription>
-                                                    </CardHeader>
-                                                    <CardContent className="pt-6 flex-1 flex flex-col">
-                                                        <div className="grid grid-cols-3 gap-3 mb-6 flex-1">
-                                                            <div className="text-center">
-                                                                <Layers className="w-5 h-5 text-white/40 mx-auto mb-2" />
-                                                                <div className={`${playfair.className} text-2xl font-bold text-white`}>
-                                                                    {microapp.fields.length}
-                                                                </div>
-                                                                <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Fields</p>
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <Database className="w-5 h-5 text-white/40 mx-auto mb-2" />
-                                                                <div className={`${playfair.className} text-2xl font-bold text-white`}>
-                                                                    {entryCount}
-                                                                </div>
-                                                                <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Entries</p>
-                                                            </div>
-                                                            <div className="text-center">
-                                                                <Eye className="w-5 h-5 text-white/40 mx-auto mb-2" />
-                                                                <div className={`${playfair.className} text-2xl font-bold text-white`}>
-                                                                    {microapp.availableViews.length}
-                                                                </div>
-                                                                <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Views</p>
-                                                            </div>
+                                                        <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Fields</p>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <Database className="w-5 h-5 text-white/40 mx-auto mb-2" />
+                                                        <div className={`${playfair.className} text-2xl font-bold text-white`}>
+                                                            {entryCount}
                                                         </div>
+                                                        <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Entries</p>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <Eye className="w-5 h-5 text-white/40 mx-auto mb-2" />
+                                                        <div className={`${playfair.className} text-2xl font-bold text-white`}>
+                                                            {microapp.availableViews.length}
+                                                        </div>
+                                                        <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Views</p>
+                                                    </div>
+                                                </div>
 
-                                                        <div className="border-t border-white/10 pt-4">
-                                                            <motion.div
-                                                                className="flex items-center justify-between text-xs uppercase tracking-wider font-medium"
-                                                                whileHover={{ x: 5 }}
-                                                            >
-                                                                <span className="text-white/40">Open</span>
-                                                                <span className="text-white flex items-center gap-1">
-                                                                    View <ArrowRight className="w-3 h-3" />
-                                                                </span>
-                                                            </motion.div>
-                                                        </div>
-                                                    </CardContent>
-                                                </Card>
-                                            </div>
+                                                <div className="border-t border-white/10 pt-4">
+                                                    <motion.div
+                                                        className="flex items-center justify-between text-xs uppercase tracking-wider font-medium"
+                                                        whileHover={{ x: 5 }}
+                                                    >
+                                                        <span className="text-white/40">Open</span>
+                                                        <span className="text-white flex items-center gap-1">
+                                                            View <ArrowRight className="w-3 h-3" />
+                                                        </span>
+                                                    </motion.div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
                                         </Link>
-                                    </motion.div>
-                                )
+                    </motion.div>
+                    )
                             })}
-                        </motion.div>
-                    </div>
-                </div>
+                </motion.div>
             </div>
         </div>
+            </div >
+        </div >
     )
 }
