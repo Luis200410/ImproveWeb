@@ -32,6 +32,8 @@ interface PomodoroTimerProps {
     selectedPreset?: { work: number; break: number } | null
     autoStart?: boolean
     onComplete?: (workMinutes: number, breakMinutes: number) => void
+    onTimerStop?: () => void
+    onProgressUpdate?: (progress: number) => void
 }
 
 export function PomodoroTimer({
@@ -42,6 +44,8 @@ export function PomodoroTimer({
     selectedPreset: propSelectedPreset, // Renamed to avoid conflict with state
     autoStart = false,
     onComplete,
+    onTimerStop,
+    onProgressUpdate,
 }: PomodoroTimerProps) {
     const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
         propSelectedPreset
@@ -98,6 +102,7 @@ export function PomodoroTimer({
         setPhase('idle')
         setTimeLeft(0)
         setIsRunning(false)
+        onTimerStop?.() // Notify parent that timer has stopped/reset
     }
 
     // Timer countdown effect
@@ -106,7 +111,15 @@ export function PomodoroTimer({
 
         const interval = setInterval(() => {
             setTimeLeft((prev) => {
-                if (prev <= 1) {
+                const newTime = prev - 1
+
+                // Update progress for parent
+                if (onProgressUpdate) {
+                    const newProgress = totalTime > 0 ? ((totalTime - newTime) / totalTime) * 100 : 0
+                    onProgressUpdate(newProgress)
+                }
+
+                if (newTime <= 0) {
                     setIsRunning(false)
                     playSound()
 
@@ -282,10 +295,10 @@ export function PomodoroTimer({
                                     onClick={reset}
                                     size="lg"
                                     variant="outline"
-                                    className="border-white/20 text-white hover:bg-white/10"
+                                    className="border-red-500/50 text-red-400 hover:bg-red-500/20"
                                 >
                                     <RotateCcw className="w-5 h-5 mr-2" />
-                                    Reset
+                                    Stop
                                 </Button>
                                 <button
                                     onClick={() => setSoundEnabled(!soundEnabled)}

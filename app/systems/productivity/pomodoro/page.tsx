@@ -15,12 +15,15 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function PomodoroPage() {
     const router = useRouter()
-    const [isTimerOpen, setIsTimerOpen] = useState(false)
+    const [isTimerModalOpen, setIsTimerModalOpen] = useState(false)
+    const [isTimerRunning, setIsTimerRunning] = useState(false)
+    const [isVisualOpen, setIsVisualOpen] = useState(false)
     const [selectedPreset, setSelectedPreset] = useState<{ work: number, break: number } | null>(null)
     const [userId, setUserId] = useState<string | null>(null)
     const [sessions, setSessions] = useState<any[]>([])
     const [todayCount, setTodayCount] = useState(0)
     const [selectedTheme, setSelectedTheme] = useState<VisualTheme>('arrows')
+    const [timerProgress, setTimerProgress] = useState(0)
 
     // Get user and load sessions
     useEffect(() => {
@@ -130,7 +133,9 @@ export default function PomodoroPage() {
                                 key={preset.label}
                                 onClick={() => {
                                     setSelectedPreset({ work: preset.work, break: preset.break })
-                                    setIsTimerOpen(true)
+                                    setIsTimerModalOpen(true)
+                                    setIsVisualOpen(true)
+                                    setIsTimerRunning(true)
                                 }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -195,17 +200,71 @@ export default function PomodoroPage() {
                 </motion.div>
             </div>
 
+            {/* Floating timer indicator when running but minimized */}
+            {isTimerRunning && !isTimerModalOpen && (
+                <motion.button
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    onClick={() => setIsTimerModalOpen(true)}
+                    className="fixed bottom-8 right-8 z-50 bg-white text-black px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center gap-3"
+                >
+                    <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                    <span className="font-mono text-sm font-bold">Timer Running</span>
+                </motion.button>
+            )}
+
             {/* Timer Modal */}
             <PomodoroTimer
-                isOpen={isTimerOpen}
-                onClose={() => {
-                    setIsTimerOpen(false)
-                    setSelectedPreset(null)
-                }}
+                isOpen={isTimerModalOpen}
+                onClose={() => setIsTimerModalOpen(false)}
                 selectedPreset={selectedPreset}
                 autoStart={true}
                 onComplete={handleTimerComplete}
+                onTimerStop={() => {
+                    setIsTimerRunning(false)
+                    setIsTimerModalOpen(false)
+                    setIsVisualOpen(false)
+                }}
+                onProgressUpdate={(progress) => setTimerProgress(progress)}
             />
+
+            {/* Visual Rewards Popup */}
+            {isVisualOpen && (
+                <motion.div
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 100 }}
+                    className="fixed top-8 right-8 z-40 w-80 bg-black/95 backdrop-blur-xl border border-white/20 p-6 rounded-lg shadow-2xl"
+                >
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className={`${playfair.className} text-xl text-white`}>Your Progress</h3>
+                        <button
+                            onClick={() => setIsVisualOpen(false)}
+                            className="text-white/60 hover:text-white"
+                        >
+                            ✕
+                        </button>
+                    </div>
+
+                    {/* Real-time growing visual */}
+                    <div className="flex justify-center items-center h-40">
+                        <motion.div
+                            animate={{
+                                scale: timerProgress / 100,
+                                opacity: 0.3 + (timerProgress / 100) * 0.7
+                            }}
+                            className="text-8xl"
+                        >
+                            ⬆️
+                        </motion.div>
+                    </div>
+
+                    <div className="text-center">
+                        <p className="text-sm text-white/60">Growing with your focus</p>
+                        <p className="text-2xl font-mono text-white mt-2">{Math.round(timerProgress)}%</p>
+                    </div>
+                </motion.div>
+            )}
         </div>
     )
 }
