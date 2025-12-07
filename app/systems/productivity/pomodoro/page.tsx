@@ -16,6 +16,7 @@ const inter = Inter({ subsets: ['latin'] })
 export default function PomodoroPage() {
     const router = useRouter()
     const [isTimerOpen, setIsTimerOpen] = useState(false)
+    const [selectedPreset, setSelectedPreset] = useState<{ work: number, break: number } | null>(null)
     const [userId, setUserId] = useState<string | null>(null)
     const [sessions, setSessions] = useState<any[]>([])
     const [todayCount, setTodayCount] = useState(0)
@@ -127,7 +128,10 @@ export default function PomodoroPage() {
                         {PRESETS.map((preset, index) => (
                             <motion.button
                                 key={preset.label}
-                                onClick={() => setIsTimerOpen(true)}
+                                onClick={() => {
+                                    setSelectedPreset({ work: preset.work, break: preset.break })
+                                    setIsTimerOpen(true)
+                                }}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 + index * 0.05 }}
@@ -194,7 +198,12 @@ export default function PomodoroPage() {
             {/* Timer Modal */}
             <PomodoroTimer
                 isOpen={isTimerOpen}
-                onClose={() => setIsTimerOpen(false)}
+                onClose={() => {
+                    setIsTimerOpen(false)
+                    setSelectedPreset(null)
+                }}
+                selectedPreset={selectedPreset}
+                autoStart={true}
                 onComplete={handleTimerComplete}
             />
         </div>

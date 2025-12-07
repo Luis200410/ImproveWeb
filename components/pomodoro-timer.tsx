@@ -29,6 +29,7 @@ interface PomodoroTimerProps {
     onClose: () => void
     habitName?: string
     habitId?: string
+    selectedPreset?: { work: number; break: number } | null
     autoStart?: boolean
     onComplete?: (workMinutes: number, breakMinutes: number) => void
 }
@@ -38,10 +39,15 @@ export function PomodoroTimer({
     onClose,
     habitName,
     habitId,
+    selectedPreset: propSelectedPreset, // Renamed to avoid conflict with state
     autoStart = false,
     onComplete,
 }: PomodoroTimerProps) {
-    const [selectedPreset, setSelectedPreset] = useState<TimerPreset>(PRESETS[0])
+    const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
+        propSelectedPreset
+            ? { label: `${propSelectedPreset.work}+${propSelectedPreset.break}`, work: propSelectedPreset.work, break: propSelectedPreset.break }
+            : PRESETS[0]
+    )
     const [phase, setPhase] = useState<TimerPhase>('idle')
     const [timeLeft, setTimeLeft] = useState(0)
     const [isRunning, setIsRunning] = useState(false)
@@ -50,9 +56,9 @@ export function PomodoroTimer({
     // Calculate progress percentage
     const totalTime =
         phase === 'work'
-            ? selectedPreset.work * 60
+            ? currentPreset.work * 60
             : phase === 'break'
-                ? selectedPreset.break * 60
+                ? currentPreset.break * 60
                 : 0
     const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
 
@@ -76,7 +82,7 @@ export function PomodoroTimer({
 
     // Start timer
     const startTimer = (preset: TimerPreset) => {
-        setSelectedPreset(preset)
+        setCurrentPreset(preset)
         setPhase('work')
         setTimeLeft(preset.work * 60)
         setIsRunning(true)
@@ -108,13 +114,13 @@ export function PomodoroTimer({
                     if (phase === 'work') {
                         setTimeout(() => {
                             setPhase('break')
-                            setTimeLeft(selectedPreset.break * 60)
+                            setTimeLeft(currentPreset.break * 60)
                             setIsRunning(true)
                         }, 1000)
                     } else if (phase === 'break') {
                         setTimeout(() => {
                             setPhase('complete')
-                            onComplete?.(selectedPreset.work, selectedPreset.break)
+                            onComplete?.(currentPreset.work, currentPreset.break)
                         }, 1000)
                     }
                     return 0
@@ -124,14 +130,16 @@ export function PomodoroTimer({
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [isRunning, timeLeft, phase, selectedPreset, playSound, onComplete])
+    }, [isRunning, timeLeft, phase, currentPreset, playSound, onComplete])
 
-    // Auto-start effect
+    // Auto-start effect with selected preset
     useEffect(() => {
-        if (autoStart && isOpen && phase === 'idle') {
+        if (autoStart && isOpen && phase === 'idle' && propSelectedPreset) {
+            startTimer({ label: `${propSelectedPreset.work}+${propSelectedPreset.break}`, work: propSelectedPreset.work, break: propSelectedPreset.break })
+        } else if (autoStart && isOpen && phase === 'idle') {
             startTimer(PRESETS[0])
         }
-    }, [autoStart, isOpen, phase])
+    }, [autoStart, isOpen, phase, propSelectedPreset])
 
     if (!isOpen) return null
 
@@ -303,7 +311,7 @@ export function PomodoroTimer({
                                     Session Complete! 🎉
                                 </p>
                                 <p className="text-white/60 mb-8">
-                                    You focused for {selectedPreset.work} minutes
+                                    You focused for {currentPreset.work} minutes
                                 </p>
                                 <Button onClick={onClose} size="lg" className="bg-white text-black hover:bg-white/90">
                                     Close
