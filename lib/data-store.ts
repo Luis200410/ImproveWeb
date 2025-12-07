@@ -225,71 +225,80 @@ class DataStore {
 
     // Pomodoro Sessions
     async savePomodoroSession(session: Omit<PomodoroSession, 'id' | 'completedAt'>): Promise<void> {
-        const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)
-        const completedAt = new Date().toISOString()
+        try {
+            const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)
+            const completedAt = new Date().toISOString()
 
-        const payload = {
-            id,
-            user_id: session.userId,
-            habit_id: session.habitId || null,
-            habit_name: session.habitName || null,
-            work_duration: session.workDuration,
-            break_duration: session.breakDuration,
-            completed_at: completedAt,
-            was_auto_triggered: session.wasAutoTriggered,
-        }
+            const payload = {
+                id,
+                user_id: session.userId,
+                habit_id: session.habitId || null,
+                habit_name: session.habitName || null,
+                work_duration: session.workDuration,
+                break_duration: session.breakDuration,
+                completed_at: completedAt,
+                was_auto_triggered: session.wasAutoTriggered,
+            }
 
-        const { error } = await supabase
-            .from('pomodoro_sessions')
-            .insert(payload)
+            const { error } = await supabase
+                .from('pomodoro_sessions')
+                .insert(payload)
 
-        if (error) {
-            console.error('Error saving pomodoro session:', error)
-            throw error
+            if (error) {
+                console.warn('Pomodoro sessions table not set up yet. Run the SQL schema to enable session tracking.')
+            }
+        } catch (e) {
+            console.warn('Unable to save pomodoro session. Database table may not exist yet.')
         }
     }
 
     async getPomodoroSessions(userId: string, limit = 100): Promise<PomodoroSession[]> {
-        const { data, error } = await supabase
-            .from('pomodoro_sessions')
-            .select('*')
-            .eq('user_id', userId)
-            .order('completed_at', { ascending: false })
-            .limit(limit)
+        try {
+            const { data, error } = await supabase
+                .from('pomodoro_sessions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('completed_at', { ascending: false })
+                .limit(limit)
 
-        if (error) {
-            console.error('Error fetching pomodoro sessions:', error)
+            if (error) {
+                return []
+            }
+
+            return data.map((item: any) => ({
+                id: item.id,
+                userId: item.user_id,
+                habitId: item.habit_id,
+                habitName: item.habit_name,
+                workDuration: item.work_duration,
+                breakDuration: item.break_duration,
+                completedAt: item.completed_at,
+                wasAutoTriggered: item.was_auto_triggered,
+            }))
+        } catch (e) {
             return []
         }
-
-        return data.map((item: any) => ({
-            id: item.id,
-            userId: item.user_id,
-            habitId: item.habit_id,
-            habitName: item.habit_name,
-            workDuration: item.work_duration,
-            breakDuration: item.break_duration,
-            completedAt: item.completed_at,
-            wasAutoTriggered: item.was_auto_triggered,
-        }))
     }
 
     async getTodayPomodoroCount(userId: string): Promise<number> {
-        const today = new Date().toISOString().split('T')[0]
+        try {
+            const today = new Date().toISOString().split('T')[0]
 
-        const { data, error } = await supabase
-            .from('pomodoro_sessions')
-            .select('id')
-            .eq('user_id', userId)
-            .gte('completed_at', `${today}T00:00:00`)
-            .lte('completed_at', `${today}T23:59:59`)
+            const { data, error } = await supabase
+                .from('pomodoro_sessions')
+                .select('id')
+                .eq('user_id', userId)
+                .gte('completed_at', `${today}T00:00:00`)
+                .lte('completed_at', `${today}T23:59:59`)
 
-        if (error) {
-            console.error('Error fetching today pomodoro count:', error)
+            if (error) {
+                return 0
+            }
+
+            return data.length
+        } catch (e) {
             return 0
         }
-
-        return data.length
     }
 
     // Get all entries for today across all systems
