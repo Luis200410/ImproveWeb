@@ -222,46 +222,7 @@ export default function PomodoroPage() {
                     setIsTimerRunning(false)
                     setIsTimerModalOpen(false)
                 }}
-                onProgressUpdate={(progress) => setTimerProgress(progress)}
             />
-
-            {/* Visual Rewards Popup */}
-            {isVisualOpen && (
-                <motion.div
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 100 }}
-                    className="fixed top-8 right-8 z-40 w-80 bg-black/95 backdrop-blur-xl border border-white/20 p-6 rounded-lg shadow-2xl"
-                >
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className={`${playfair.className} text-xl text-white`}>Your Progress</h3>
-                        <button
-                            onClick={() => setIsVisualOpen(false)}
-                            className="text-white/60 hover:text-white"
-                        >
-                            ✕
-                        </button>
-                    </div>
-
-                    {/* Real-time growing visual */}
-                    <div className="flex justify-center items-center h-40">
-                        <motion.div
-                            animate={{
-                                scale: timerProgress / 100,
-                                opacity: 0.3 + (timerProgress / 100) * 0.7
-                            }}
-                            className="text-8xl"
-                        >
-                            ⬆️
-                        </motion.div>
-                    </div>
-
-                    <div className="text-center">
-                        <p className="text-sm text-white/60">Growing with your focus</p>
-                        <p className="text-2xl font-mono text-white mt-2">{Math.round(timerProgress)}%</p>
-                    </div>
-                </motion.div>
-            )}
         </div>
     )
 }
