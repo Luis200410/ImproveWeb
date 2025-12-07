@@ -173,24 +173,18 @@ export default function SystemPage() {
                                         key={microapp.id}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        href={microapp.customPath || `/systems/${system.id}/${microapp.id}`}
                                     >
-                                                </div>
-
-                    <div className="border-t border-white/10 pt-4">
-                        <motion.div
-                            className="flex items-center justify-between text-xs uppercase tracking-wider font-medium"
-                            whileHover={{ x: 5 }}
+                                        whileHover={{ x: 5 }}
                         >
-                            <span className="text-white/40">Open</span>
-                            <span className="text-white flex items-center gap-1">
-                                View <ArrowRight className="w-3 h-3" />
-                            </span>
-                        </motion.div>
+                                        <span className="text-white/40">Open</span>
+                                        <span className="text-white flex items-center gap-1">
+                                            View <ArrowRight className="w-3 h-3" />
+                                        </span>
+                                    </motion.div>
                     </div>
                 </CardContent>
-                    </Card>
-                </div>
+            </Card>
+        </div>
             </Link >
         </motion.div >
     )
