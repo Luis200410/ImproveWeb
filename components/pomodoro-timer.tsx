@@ -229,16 +229,16 @@ export function PomodoroTimer({
                                 initial={{ opacity: 0, scale: 0 }}
                                 animate={{
                                     opacity: phase === 'work' ? 0.3 + (progress / 100) * 0.7 : 1,
-                                    scale: phase === 'work' ? Math.max(0.3, progress / 100) : 1
+                                    scale: phase === 'work' ? Math.max(0.4, progress / 100) : 1
                                 }}
-                                className="flex flex-col items-center gap-3"
+                                transition={{ duration: 0.3 }}
+                                className="flex flex-col items-center gap-4 mb-6"
                             >
-                                <div className="text-7xl">⬆️</div>
-                                <p className="text-sm text-white/60">Growing with your focus</p>
-                                <p className="text-2xl font-mono text-white">{Math.round(progress)}%</p>
+                                <div className="text-9xl">⬆️</div>
+                                <p className="text-base text-white/60">Growing with your focus</p>
+                                <p className="text-3xl font-mono text-white font-bold">{Math.round(progress)}%</p>
                             </motion.div>
                         )}
-
                         {/* Preset buttons - Only show in idle state */}
                         {phase === 'idle' && (
                             <motion.div
