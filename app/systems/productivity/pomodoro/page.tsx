@@ -17,7 +17,6 @@ export default function PomodoroPage() {
     const router = useRouter()
     const [isTimerModalOpen, setIsTimerModalOpen] = useState(false)
     const [isTimerRunning, setIsTimerRunning] = useState(false)
-    const [isVisualOpen, setIsVisualOpen] = useState(false)
     const [selectedPreset, setSelectedPreset] = useState<{ work: number, break: number } | null>(null)
     const [userId, setUserId] = useState<string | null>(null)
     const [sessions, setSessions] = useState<any[]>([])
@@ -134,7 +133,6 @@ export default function PomodoroPage() {
                                 onClick={() => {
                                     setSelectedPreset({ work: preset.work, break: preset.break })
                                     setIsTimerModalOpen(true)
-                                    setIsVisualOpen(true)
                                     setIsTimerRunning(true)
                                 }}
                                 initial={{ opacity: 0, y: 20 }}
@@ -223,7 +221,6 @@ export default function PomodoroPage() {
                 onTimerStop={() => {
                     setIsTimerRunning(false)
                     setIsTimerModalOpen(false)
-                    setIsVisualOpen(false)
                 }}
                 onProgressUpdate={(progress) => setTimerProgress(progress)}
             />

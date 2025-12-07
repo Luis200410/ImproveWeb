@@ -33,7 +33,6 @@ interface PomodoroTimerProps {
     autoStart?: boolean
     onComplete?: (workMinutes: number, breakMinutes: number) => void
     onTimerStop?: () => void
-    onProgressUpdate?: (progress: number) => void
 }
 
 export function PomodoroTimer({
@@ -45,7 +44,6 @@ export function PomodoroTimer({
     autoStart = false,
     onComplete,
     onTimerStop,
-    onProgressUpdate,
 }: PomodoroTimerProps) {
     const [currentPreset, setCurrentPreset] = useState<TimerPreset>(
         propSelectedPreset
@@ -112,12 +110,6 @@ export function PomodoroTimer({
         const interval = setInterval(() => {
             setTimeLeft((prev) => {
                 const newTime = prev - 1
-
-                // Update progress for parent
-                if (onProgressUpdate) {
-                    const newProgress = totalTime > 0 ? ((totalTime - newTime) / totalTime) * 100 : 0
-                    onProgressUpdate(newProgress)
-                }
 
                 if (newTime <= 0) {
                     setIsRunning(false)
