@@ -57,6 +57,46 @@ export interface PomodoroSession {
     wasAutoTriggered: boolean
 }
 
+export interface ReviewSession {
+    id: string
+    userId: string
+    reviewType: 'weekly' | 'monthly' | 'yearly'
+    periodStart: string
+    periodEnd: string
+    completedAt: string
+    notes?: string
+    insightsJson?: any
+    actionItems?: string[]
+}
+
+export interface HabitStats {
+    totalHabits: number
+    completedCount: number
+    completionRate: number
+    bestStreak: number
+    currentStreak: number
+    habitBreakdown: Array<{
+        habitId: string
+        habitName: string
+        completed: number
+        total: number
+        rate: number
+    }>
+}
+
+export interface PomodoroStats {
+    totalSessions: number
+    totalFocusMinutes: number
+    totalBreakMinutes: number
+    averageSessionLength: number
+    mostProductiveDay: string
+    dailyBreakdown: Array<{
+        date: string
+        sessions: number
+        focusMinutes: number
+    }>
+}
+
 
 class DataStore {
     // Helper retained for legacy fallback (not used for entries)
@@ -792,6 +832,189 @@ class DataStore {
             },
 
         ]
+    }
+
+    // REVIEW AGGREGATION METHODS
+
+    // Get habit statistics for a period
+    async getHabitStats(userId: string, startDate: string, endDate: string): Promise<HabitStats> {
+        try {
+            const { data: entries } = await supabase
+                .from('app_entries')
+                .select('*')
+                .eq('user_id', userId)
+                .eq('system_id', 'atomic-habits')
+                .gte('entry_date', startDate)
+                .lte('entry_date', endDate)
+
+            if (!entries) return this.getEmptyHabitStats()
+
+            const habitMap = new Map<string, { name: string; completed: number; total: number }>()
+
+            entries.forEach((entry: any) => {
+                const data = entry.entry_data as any
+                if (!habitMap.has(entry.microapp_id)) {
+                    habitMap.set(entry.microapp_id, {
+                        name: data.habitName || 'Unknown Habit',
+                        completed: 0,
+                        total: 0
+                    })
+                }
+                const habit = habitMap.get(entry.microapp_id)!
+                habit.total++
+                if (data.completed) habit.completed++
+            })
+
+            const habitBreakdown = Array.from(habitMap.entries()).map(([id, data]) => ({
+                habitId: id,
+                habitName: data.name,
+                completed: data.completed,
+                total: data.total,
+                rate: (data.completed / data.total) * 100
+            }))
+
+            const totalCompleted = habitBreakdown.reduce((sum, h) => sum + h.completed, 0)
+            const totalHabits = habitBreakdown.reduce((sum, h) => sum + h.total, 0)
+
+            return {
+                totalHabits: habitMap.size,
+                completedCount: totalCompleted,
+                completionRate: totalHabits > 0 ? (totalCompleted / totalHabits) * 100 : 0,
+                bestStreak: 0,
+                currentStreak: 0,
+                habitBreakdown
+            }
+        } catch (e) {
+            return this.getEmptyHabitStats()
+        }
+    }
+
+    // Get Pomodoro statistics for a period
+    async getPomodoroStats(userId: string, startDate: string, endDate: string): Promise<PomodoroStats> {
+        try {
+            const { data: sessions } = await supabase
+                .from('pomodoro_sessions')
+                .select('*')
+                .eq('user_id', userId)
+                .gte('completed_at', startDate)
+                .lte('completed_at', endDate)
+                .order('completed_at', { ascending: true })
+
+            if (!sessions || sessions.length === 0) return this.getEmptyPomodoroStats()
+
+            const dailyMap = new Map<string, { sessions: number; focusMinutes: number }>()
+            let totalFocus = 0
+            let totalBreak = 0
+
+            sessions.forEach((s: any) => {
+                const date = s.completed_at.split('T')[0]
+                if (!dailyMap.has(date)) {
+                    dailyMap.set(date, { sessions: 0, focusMinutes: 0 })
+                }
+                const day = dailyMap.get(date)!
+                day.sessions++
+                day.focusMinutes += s.work_duration
+                totalFocus += s.work_duration
+                totalBreak += s.break_duration
+            })
+
+            const dailyBreakdown = Array.from(dailyMap.entries()).map(([date, data]) => ({
+                date,
+                ...data
+            }))
+
+            const mostProductive = dailyBreakdown.reduce((max, day) =>
+                day.focusMinutes > max.focusMinutes ? day : max,
+                dailyBreakdown[0]
+            )
+
+            return {
+                totalSessions: sessions.length,
+                totalFocusMinutes: totalFocus,
+                totalBreakMinutes: totalBreak,
+                averageSessionLength: totalFocus / sessions.length,
+                mostProductiveDay: mostProductive.date,
+                dailyBreakdown
+            }
+        } catch (e) {
+            return this.getEmptyPomodoroStats()
+        }
+    }
+
+    // Save review session
+    async saveReviewSession(session: Omit<ReviewSession, 'id' | 'completedAt'>): Promise<void> {
+        try {
+            const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)
+            const completedAt = new Date().toISOString()
+
+            await supabase.from('review_sessions').insert({
+                id,
+                user_id: session.userId,
+                review_type: session.reviewType,
+                period_start: session.periodStart,
+                period_end: session.periodEnd,
+                completed_at: completedAt,
+                notes: session.notes,
+                insights_json: session.insightsJson,
+                action_items: session.actionItems
+            })
+        } catch (e) {
+            console.warn('Unable to save review session.')
+        }
+    }
+
+    // Get review sessions
+    async getReviewSessions(userId: string, reviewType?: 'weekly' | 'monthly' | 'yearly'): Promise<ReviewSession[]> {
+        try {
+            let query = supabase
+                .from('review_sessions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('completed_at', { ascending: false })
+
+            if (reviewType) {
+                query = query.eq('review_type', reviewType)
+            }
+
+            const { data } = await query
+            if (!data) return []
+
+            return data.map((r: any) => ({
+                id: r.id,
+                userId: r.user_id,
+                reviewType: r.review_type,
+                periodStart: r.period_start,
+                periodEnd: r.period_end,
+                completedAt: r.completed_at,
+                notes: r.notes,
+                insightsJson: r.insights_json,
+                actionItems: r.action_items
+            }))
+        } catch (e) {
+            return []
+        }
+    }
+
+    private getEmptyHabitStats(): HabitStats {
+        return {
+            totalHabits: 0,
+            completedCount: 0,
+            completionRate: 0,
+            bestStreak: 0,
+            currentStreak: 0,
+            habitBreakdown: []
+        }
+    }
+
+    private getEmptyPomodoroStats(): PomodoroStats {
+        return {
+            totalSessions: 0,
+            totalFocusMinutes: 0,
+            totalBreakMinutes: 0,
+            averageSessionLength: 0,
+            mostProductiveDay: '',
+            dailyBreakdown: []
+        }
     }
 }
 
