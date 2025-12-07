@@ -173,19 +173,8 @@ export default function SystemPage() {
                                         key={microapp.id}
                                         initial={{ opacity: 0, scale: 0.9 }}
                                         animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                                        whileHover={{ scale: 1.05, y: -10 }}
-                                        onClick={() => {
-                                            if (microapp.customPath) {
-                                                router.push(microapp.customPath)
-                                            } else {
-                                                router.push(`/systems/${system.id}/${microapp.id}`)
-                                            }
-                                        }}
-                                        className="cursor-pointer"
+                                        href={microapp.customPath || `/systems/${system.id}/${microapp.id}`}
                                     >
-                                        <p className="text-xs text-white/40 uppercase tracking-wider mt-1">Views</p>
-                                    </div>
                                                 </div>
 
                     <div className="border-t border-white/10 pt-4">
@@ -200,11 +189,11 @@ export default function SystemPage() {
                         </motion.div>
                     </div>
                 </CardContent>
-            </Card>
-        </div>
-                                        </Link >
-                    </motion.div >
-                    )
+                    </Card>
+                </div>
+            </Link >
+        </motion.div >
+    )
 })}
                 </motion.div >
             </div >
