@@ -24,6 +24,7 @@ export interface Microapp {
     fields: FieldDefinition[]
     availableViews: ViewType[]
     defaultView: ViewType
+    customPath?: string // Optional path for dedicated microapp pages
 }
 
 export interface System {
