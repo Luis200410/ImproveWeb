@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { TimerProvider } from '@/contexts/timer-context'
+import { GlobalTimerIndicator } from '@/components/global-timer-indicator'
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body className={`${playfair.variable} ${inter.variable} font-sans antialiased bg-black text-white selection:bg-white selection:text-black`}>
         <TimerProvider>
           {children}
+          <GlobalTimerIndicator />
         </TimerProvider>
       </body>
     </html>
