@@ -561,18 +561,24 @@ class DataStore {
                     {
                         id: 'pomodoro',
                         systemId: 'productivity',
-                        name: 'Pomodoro Timer',
-                        description: 'Focus timer technique',
-                        icon: '🍅',
-                        availableViews: ['list'],
-                        defaultView: 'list',
-                        fields: [
-                            { name: 'Session Name', type: 'text', required: true },
-                            { name: 'Duration', type: 'number', required: true, min: 1, placeholder: 'Minutes' },
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Completed', type: 'checkbox', required: true },
-                            { name: 'Notes', type: 'textarea', required: false }
-                        ]
+                        name: 'Pomodoro Time',
+                        description: 'Focus sessions with visual rewards',
+                        icon: '⏱️',
+                        availableViews: [],
+                        defaultView: 'custom',
+                        fields: [],
+                        customPath: '/systems/productivity/pomodoro'
+                    },
+                    {
+                        id: 'review',
+                        systemId: 'productivity',
+                        name: 'REVIEW',
+                        description: 'Weekly, monthly & yearly GTD reviews',
+                        icon: '📊',
+                        availableViews: [],
+                        defaultView: 'custom',
+                        fields: [],
+                        customPath: '/systems/productivity/review'
                     }
                 ]
             },
