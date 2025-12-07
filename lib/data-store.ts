@@ -564,8 +564,8 @@ class DataStore {
                         name: 'Pomodoro Time',
                         description: 'Focus sessions with visual rewards',
                         icon: '⏱️',
-                        availableViews: [],
-                        defaultView: 'custom',
+                        availableViews: ['list'],
+                        defaultView: 'list',
                         fields: [],
                         customPath: '/systems/productivity/pomodoro'
                     },
@@ -575,8 +575,8 @@ class DataStore {
                         name: 'REVIEW',
                         description: 'Weekly, monthly & yearly GTD reviews',
                         icon: '📊',
-                        availableViews: [],
-                        defaultView: 'custom',
+                        availableViews: ['list'],
+                        defaultView: 'list',
                         fields: [],
                         customPath: '/systems/productivity/review'
                     }
