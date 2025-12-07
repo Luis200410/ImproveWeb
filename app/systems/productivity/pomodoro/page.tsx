@@ -116,14 +116,14 @@ export default function PomodoroPage() {
                     </h1>
                 </motion.div>
 
-                {/* Timer Presets - Clean grid */}
+                {/* Timer Presets - Compact like Forest */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
                     className="mb-12"
                 >
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-4 gap-3 max-w-2xl mx-auto">
                         {PRESETS.map((preset, index) => (
                             <motion.button
                                 key={preset.label}
@@ -132,16 +132,16 @@ export default function PomodoroPage() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 + index * 0.05 }}
                                 whileHover={{ y: -2 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="group relative bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all p-8 md:p-12"
+                                whileTap={{ scale: 0.95 }}
+                                className="group relative bg-white/5 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-white/10 transition-all p-4"
                             >
-                                {/* Time display - monospace */}
-                                <div className="mb-6">
-                                    <div className="text-5xl md:text-6xl font-mono text-white mb-2 group-hover:scale-105 transition-transform">
+                                {/* Time display - compact */}
+                                <div className="text-center">
+                                    <div className="text-3xl font-mono text-white mb-1">
                                         {preset.label}
                                     </div>
-                                    <div className="text-xs font-mono text-white/40 uppercase tracking-widest">
-                                        {preset.work}m + {preset.break}m
+                                    <div className="text-[10px] font-mono text-white/40 uppercase tracking-wider">
+                                        min
                                     </div>
                                 </div>
 
