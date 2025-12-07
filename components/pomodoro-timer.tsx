@@ -219,23 +219,25 @@ export function PomodoroTimer({
                                     <p className="text-xs uppercase tracking-wider text-white/40">
                                         {phase === 'work' ? 'Work Time' : phase === 'break' ? 'Break Time' : phase === 'complete' ? 'Complete!' : 'Select Duration'}
                                     </p>
-
-                                    {/* Real-time visual reward - growing during timer */}
-                                    {(phase === 'work' || phase === 'break') && (
-                                        <motion.div
-                                            initial={{ scale: 0, opacity: 0 }}
-                                            animate={{
-                                                scale: phase === 'work' ? progress / 100 : 1,
-                                                opacity: phase === 'work' ? 0.3 + (progress / 100) * 0.7 : 1
-                                            }}
-                                            className="absolute -bottom-8"
-                                        >
-                                            <div className="text-4xl">⬆️</div>
-                                        </motion.div>
-                                    )}
                                 </div>
                             </div>
                         </div>
+
+                        {/* Growing Visual - Below Timer */}
+                        {(phase === 'work' || phase === 'break') && (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{
+                                    opacity: phase === 'work' ? 0.3 + (progress / 100) * 0.7 : 1,
+                                    scale: phase === 'work' ? Math.max(0.3, progress / 100) : 1
+                                }}
+                                className="flex flex-col items-center gap-3"
+                            >
+                                <div className="text-7xl">⬆️</div>
+                                <p className="text-sm text-white/60">Growing with your focus</p>
+                                <p className="text-2xl font-mono text-white">{Math.round(progress)}%</p>
+                            </motion.div>
+                        )}
 
                         {/* Preset buttons - Only show in idle state */}
                         {phase === 'idle' && (
