@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { TrendingUp, Mountain, Zap, Target, Flame, Trophy } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })

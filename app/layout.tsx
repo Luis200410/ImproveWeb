@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter } from "@/lib/font-shim";
 import "./globals.css";
 import { TimerProvider } from '@/contexts/timer-context'
 import { GlobalTimerIndicator } from '@/components/global-timer-indicator'

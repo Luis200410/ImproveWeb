@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Playfair_Display } from 'next/font/google'
+import { Playfair_Display } from '@/lib/font-shim'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { dataStore, type HabitStats, type PomodoroStats } from '@/lib/data-store'

@@ -20,7 +20,7 @@ import { Navigation } from '@/components/navigation'
 import { MicroappForm } from '@/components/microapp-form'
 import { HabitBuilder } from '@/components/habit-builder'
 import { HabitTimeline } from '@/components/habit-timeline'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })

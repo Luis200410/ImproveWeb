@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Playfair_Display } from 'next/font/google'
+import { Playfair_Display } from '@/lib/font-shim'
 import { motion } from 'framer-motion'
 import { Calendar, TrendingUp, Award } from 'lucide-react'
 import type { HabitStats, PomodoroStats } from '@/lib/data-store'

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { dataStore, System } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { motion } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
 import { ArrowLeft, Sparkles, ArrowRight, Database, Eye, Layers } from 'lucide-react'
@@ -176,7 +176,7 @@ export default function SystemPage() {
                                         transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
                                         whileHover={{ scale: 1.05, y: -10 }}
                                     >
-                                        <Link href={`/systems/${system.id}/${microapp.id}`}>
+                                        <Link href={microapp.customPath || `/systems/${system.id}/${microapp.id}`}>
                                             <div className="relative group cursor-pointer h-full">
                                                 <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
 
@@ -236,14 +236,14 @@ export default function SystemPage() {
                                                     </CardContent>
                                                 </Card>
                                             </div>
-                                        </Link>
-                                    </motion.div>
+                                        </Link >
+                                    </motion.div >
                                 )
                             })}
-                        </motion.div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        </motion.div >
+                    </div >
+                </div >
+            </div >
+        </div >
     )
 }

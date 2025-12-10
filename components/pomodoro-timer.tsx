@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Play, Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })

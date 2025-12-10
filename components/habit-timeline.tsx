@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Entry } from '@/lib/data-store'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { Check, Edit2, Trash2, ArrowLeft, ArrowRight } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })

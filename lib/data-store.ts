@@ -120,9 +120,10 @@ class DataStore {
         const productivity = stored.find(s => s.id === 'productivity')
         const hasAtomicHabits = productivity?.microapps.some(m => m.id === 'atomic-habits')
         const hasPomodoro = productivity?.microapps.some(m => m.id === 'pomodoro')
+        const hasReview = productivity?.microapps.some(m => m.id === 'review')
 
-        if (stored.length === 0 || stored.length !== 8 || !hasAtomicHabits || !hasPomodoro) {
-            // Reset to defaults if wrong number of systems, outdated schema, or missing Atomic Habits
+        if (stored.length === 0 || stored.length !== 8 || !hasAtomicHabits || !hasPomodoro || !hasReview) {
+            // Reset to defaults if wrong number of systems or any key productivity microapps are missing
             const defaults = this.getDefaultSystems()
             this.setItem('systems', defaults)
             return defaults

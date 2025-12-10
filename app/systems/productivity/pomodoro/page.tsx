@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { dataStore } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { PomodoroTimer } from '@/components/pomodoro-timer'

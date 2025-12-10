@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Playfair_Display } from 'next/font/google'
+import { Playfair_Display } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { useState } from 'react'

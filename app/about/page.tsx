@@ -1,6 +1,6 @@
 'use client'
 
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Inter } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
