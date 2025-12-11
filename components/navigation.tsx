@@ -114,49 +114,51 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                         </Link>
                     ))}
 
-                    {!effectiveAuthenticated && (
-                        <Link href="/login">
-                            <Button variant="outline" className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
-                                Member Login
-                            </Button>
-                        </Link>
-                    )}
-
-                    {effectiveAuthenticated && (
-                        <div
-                            className="relative"
-                            onMouseEnter={() => setIsMemberMenuOpen(true)}
-                            onMouseLeave={() => setIsMemberMenuOpen(false)}
+                    <div
+                        className="relative"
+                        onMouseEnter={() => setIsMemberMenuOpen(true)}
+                        onMouseLeave={() => setIsMemberMenuOpen(false)}
+                    >
+                        <Button
+                            variant="outline"
+                            className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
+                            onClick={() => setIsMemberMenuOpen(prev => !prev)}
                         >
-                            <Button
-                                variant="outline"
-                                className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
-                                onClick={() => setIsMemberMenuOpen(prev => !prev)}
-                            >
-                                Log In
-                            </Button>
-                            {isMemberMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 shadow-xl z-50">
-                                    <div className="flex flex-col divide-y divide-white/10">
+                            {effectiveAuthenticated ? 'Log In' : 'Member Login'}
+                        </Button>
+                        {isMemberMenuOpen && (
+                            <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 shadow-xl z-50">
+                                <div className="flex flex-col divide-y divide-white/10" onMouseEnter={() => setIsMemberMenuOpen(true)} onMouseLeave={() => setIsMemberMenuOpen(false)}>
+                                    {effectiveAuthenticated ? (
+                                        <>
+                                            <Link
+                                                href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                                onClick={() => setIsMemberMenuOpen(false)}
+                                            >
+                                                {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                            </Link>
+                                            <Link
+                                                href="/profile"
+                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                                onClick={() => setIsMemberMenuOpen(false)}
+                                            >
+                                                Profile
+                                            </Link>
+                                        </>
+                                    ) : (
                                         <Link
-                                            href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                            href="/login"
                                             className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
                                             onClick={() => setIsMemberMenuOpen(false)}
                                         >
-                                            {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                            Log In
                                         </Link>
-                                        <Link
-                                            href="/profile"
-                                            className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
-                                            onClick={() => setIsMemberMenuOpen(false)}
-                                        >
-                                            Profile
-                                        </Link>
-                                    </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                    )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Mobile Menu Button */}
