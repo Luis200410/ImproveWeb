@@ -33,6 +33,8 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
     const [sessionUser, setSessionUser] = useState<any>(null)
     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
     const [checkedAuth, setCheckedAuth] = useState(false)
+    const [signingOut, setSigningOut] = useState(false)
+    const [hasAuthCookie, setHasAuthCookie] = useState(false)
 
     useEffect(() => {
         let active = true
@@ -66,6 +68,7 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
             const user = data.session?.user || null
             setSessionUser(user)
             setCheckedAuth(true)
+            setHasAuthCookie(document.cookie.includes('sb-access-token') || document.cookie.includes('supabase-auth-token'))
             loadUserAndStatus(user?.id)
         })
 
@@ -73,6 +76,7 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
             const user = session?.user || null
             setSessionUser(user)
             setCheckedAuth(true)
+            setHasAuthCookie(document.cookie.includes('sb-access-token') || document.cookie.includes('supabase-auth-token'))
             loadUserAndStatus(user?.id)
         })
 
@@ -82,9 +86,18 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
         }
     }, [])
 
-    const effectiveAuthenticated = Boolean(sessionUser) || isAuthenticated
+    const effectiveAuthenticated = Boolean(sessionUser) || isAuthenticated || hasAuthCookie
     const links = effectiveAuthenticated ? authenticatedLinks : publicLinks
     const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || sessionUser?.user_metadata?.subscribed || sessionUser?.user_metadata?.is_subscribed || sessionUser?.user_metadata?.couponUnlocked
+
+    async function handleLogout() {
+        setSigningOut(true)
+        await supabase.auth.signOut()
+        setSessionUser(null)
+        setSubscriptionStatus(null)
+        setSigningOut(false)
+        setIsMemberMenuOpen(false)
+    }
 
     return (
         <motion.nav
@@ -100,7 +113,7 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                 </Link>
 
                 {/* Desktop Navigation */}
-                <div className="hidden md:flex items-center gap-8">
+                <div className="hidden md:flex items-center gap-6">
                     {links.map((link) => (
                         <Link
                             key={link.href}
@@ -127,16 +140,22 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                             {effectiveAuthenticated ? 'Log In' : 'Member Login'}
                         </Button>
                         {isMemberMenuOpen && (
-                            <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 shadow-xl z-50">
+                            <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50">
                                 <div className="flex flex-col divide-y divide-white/10" onMouseEnter={() => setIsMemberMenuOpen(true)} onMouseLeave={() => setIsMemberMenuOpen(false)}>
-                                    {effectiveAuthenticated ? (
+                                    {!checkedAuth && (
+                                        <div className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white/70">Loading...</div>
+                                    )}
+                                    {(checkedAuth || hasAuthCookie) && effectiveAuthenticated && (
                                         <>
                                             <Link
                                                 href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
-                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 flex items-center justify-between"
                                                 onClick={() => setIsMemberMenuOpen(false)}
                                             >
                                                 {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                                <span className="text-[11px] border border-white/40 px-2 py-1 ml-2">
+                                                    {membershipActive ? 'Active' : 'Upgrade'}
+                                                </span>
                                             </Link>
                                             <Link
                                                 href="/profile"
@@ -145,8 +164,17 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                                             >
                                                 Profile
                                             </Link>
+                                            <button
+                                                type="button"
+                                                onClick={handleLogout}
+                                                className="text-left px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 disabled:opacity-60"
+                                                disabled={signingOut}
+                                            >
+                                                {signingOut ? 'Logging out...' : 'Log Out'}
+                                            </button>
                                         </>
-                                    ) : (
+                                    )}
+                                    {(checkedAuth || hasAuthCookie) && !effectiveAuthenticated && (
                                         <Link
                                             href="/login"
                                             className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
