@@ -153,9 +153,13 @@ export default function TaskForgePage() {
             const id = await createNote()
             setForm(prev => ({ ...prev, Notes: id }))
         }
-        setStep((prev) => Math.min(4, (prev + 1) as 1 | 2 | 3 | 4))
+        const nextStep: Record<1 | 2 | 3 | 4, 1 | 2 | 3 | 4> = { 1: 2, 2: 3, 3: 4, 4: 4 }
+        setStep(prev => nextStep[prev])
     }
-    const goPrev = () => setStep((prev) => Math.max(1, (prev - 1) as 1 | 2 | 3 | 4))
+    const goPrev = () => {
+        const prevStep: Record<1 | 2 | 3 | 4, 1 | 2 | 3 | 4> = { 1: 1, 2: 1, 3: 2, 4: 3 }
+        setStep(prev => prevStep[prev])
+    }
 
     return (
         <div className="min-h-screen bg-black text-white">

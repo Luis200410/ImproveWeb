@@ -241,7 +241,7 @@ export default function SecondBrainPage() {
         setTodayTasks(tasks.filter(t => (t.data['Start Date'] || '').startsWith(today)))
     }
 
-    const moveTaskToLane = async (lane: 'due' | 'working' | 'done') => {
+    const moveTaskToLane = async (lane: 'pending' | 'due' | 'working' | 'done') => {
         if (!draggingTaskId) return
         const task = allTasks.find(t => t.id === draggingTaskId)
         if (!task) return

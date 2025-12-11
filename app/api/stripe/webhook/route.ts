@@ -6,7 +6,8 @@ import { stripe } from '@/lib/stripe'
 
 // Minimal webhook handler to verify signatures; extend with your event handling.
 export async function POST(req: Request) {
-    const sig = headers().get('stripe-signature')
+    const headerList = await headers()
+    const sig = headerList.get('stripe-signature')
     if (!stripe) return NextResponse.json({ error: 'Stripe not configured' }, { status: 500 })
     if (!sig) return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
 

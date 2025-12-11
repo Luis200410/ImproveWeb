@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { dataStore, System } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,31 +17,43 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function SystemPage() {
     const params = useParams()
-    const router = useRouter()
+    const systemId = params.id as string
     const [userId, setUserId] = useState<string>('defaultUser')
-    const [system, setSystem] = useState<System | null>(null)
     const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [customizeOrder, setCustomizeOrder] = useState(false)
-    const [microappOrder, setMicroappOrder] = useState<string[]>([])
-
-    useEffect(() => {
-        const systemId = params.id as string
+    const system = useMemo<System | null>(() => {
         const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
-        setSystem(foundSystem || null)
-        if (foundSystem) {
-            setMicroappOrder(foundSystem.microapps.map(m => m.id))
-            const loadCounts = async () => {
-                const counts: Record<string, number> = {}
-                await Promise.all(foundSystem.microapps.map(async (microapp) => {
-                    const entries = await dataStore.getEntries(microapp.id)
-                    counts[microapp.id] = entries.length
-                }))
-                setEntryCounts(counts)
-            }
-            loadCounts()
+        return foundSystem || null
+    }, [systemId])
+    const [microappOrder, setMicroappOrder] = useState<string[]>(() => {
+        const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
+        return foundSystem ? foundSystem.microapps.map(m => m.id) : []
+    })
+
+    /* eslint-disable react-hooks/set-state-in-effect */
+    useEffect(() => {
+        if (!system) {
+            setMicroappOrder([])
+            setEntryCounts({})
+            return
         }
-    }, [params.id])
+        setMicroappOrder(prev => {
+            const defaultOrder = system.microapps.map(m => m.id)
+            const hasSameIds = prev.length === defaultOrder.length && prev.every(id => defaultOrder.includes(id))
+            return hasSameIds ? prev : defaultOrder
+        })
+        const loadCounts = async () => {
+            const counts: Record<string, number> = {}
+            await Promise.all(system.microapps.map(async (microapp) => {
+                const entries = await dataStore.getEntries(microapp.id)
+                counts[microapp.id] = entries.length
+            }))
+            setEntryCounts(counts)
+        }
+        loadCounts()
+    }, [system])
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     useEffect(() => {
         const loadUser = async () => {
@@ -49,14 +61,18 @@ export default function SystemPage() {
             const { data: { user } } = await supabase.auth.getUser()
             const uid = user?.id || 'defaultUser'
             setUserId(uid)
-            const prefs = loadPrefs(uid, { systemView: { [params.id as string]: 'grid' }, systemOrder: {} as Record<string, string[]> })
-            const mode = (prefs.systemView as Record<string, string>)[params.id as string]
+            const prefs = loadPrefs(uid, { systemView: { [systemId]: 'grid' }, systemOrder: {} as Record<string, string[]> })
+            const mode = (prefs.systemView as Record<string, string>)[systemId]
             if (mode === 'list' || mode === 'grid') setViewMode(mode)
-            const order = (prefs.systemOrder as Record<string, string[]>)[params.id as string]
-            if (order && order.length) setMicroappOrder(order)
+            const order = (prefs.systemOrder as Record<string, string[]>)[systemId]
+            if (order && order.length) {
+                setMicroappOrder(order)
+            } else if (system) {
+                setMicroappOrder(system.microapps.map(m => m.id))
+            }
         }
         loadUser()
-    }, [params.id])
+    }, [systemId, system])
 
     useEffect(() => {
         if (userId && system) {
@@ -213,7 +229,7 @@ export default function SystemPage() {
                         </motion.div>
 
                         <Reorder.Group
-                            axis={viewMode === 'grid' ? 'xy' : 'y'}
+                            axis={viewMode === 'grid' ? undefined : 'y'}
                             values={microappOrder}
                             onReorder={(order) => setMicroappOrder(order as string[])}
                             className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}
