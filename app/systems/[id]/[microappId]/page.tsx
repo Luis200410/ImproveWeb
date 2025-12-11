@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { dataStore, Microapp, Entry, FieldDefinition } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
@@ -28,6 +28,7 @@ const inter = Inter({ subsets: ['latin'] })
 export default function MicroappPage() {
     const params = useParams()
     const router = useRouter();
+    const searchParams = useSearchParams()
     const [userId, setUserId] = useState<string>('defaultUser');
     const systemId = params.id as string
     const microappId = params.microappId as string
@@ -105,6 +106,14 @@ export default function MicroappPage() {
         }
         loadEntries()
     }, [systemId, microappId, router])
+
+    useEffect(() => {
+        const newParam = searchParams.get('new')
+        if (newParam === '1') {
+            setShowForm(true)
+            setEditingEntry(null)
+        }
+    }, [searchParams])
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSaveEntry = async (data: Record<string, any>) => {

@@ -1,34 +1,19 @@
-'use client'
+'use server'
 
 import { Playfair_Display, Inter } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { Check, Sparkles } from "lucide-react";
+import { PricingCTA } from "@/components/pricing-cta";
 
 const playfair = Playfair_Display({ subsets: ["latin"] });
 const inter = Inter({ subsets: ["latin"] });
 
 const tiers = [
     {
-        name: "Initiate",
-        price: "Free",
-        description: "Begin your journey toward excellence",
-        features: [
-            "Access to 3 core systems",
-            "Basic tracking & analytics",
-            "Mobile & desktop access",
-            "Community forum access",
-            "Monthly progress reports"
-        ],
-        cta: "Start Free",
-        href: "/register",
-        featured: false
-    },
-    {
-        name: "Member",
-        price: "$29",
+        name: "Origin",
+        price: "$10",
         period: "/month",
         description: "For those committed to systematic growth",
         features: [
@@ -41,61 +26,53 @@ const tiers = [
             "Integration with tools"
         ],
         cta: "Become a Member",
-        href: "/register",
+        priceId: null,
+        url: "https://buy.stripe.com/00w3cw2hD1Q8bah95n4sE00",
         featured: true
     },
     {
-        name: "Inner Circle",
-        price: "$99",
+        name: "Momentum",
+        price: "$20",
         period: "/month",
-        description: "The pinnacle of personal excellence",
+        description: "Scale your systems with deeper support",
         features: [
-            "Everything in Member",
-            "1-on-1 monthly coaching call",
-            "Exclusive mastermind access",
-            "Custom system design",
-            "Lifetime updates",
-            "VIP community events",
-            "Personal accountability partner",
-            "Legacy planning tools"
+            "Everything in Origin",
+            "Priority support",
+            "Extended analytics and exports",
+            "Early access to new systems",
+            "VIP community calls"
         ],
-        cta: "Join Inner Circle",
-        href: "/register",
+        cta: "Join Momentum",
+        priceId: null,
+        url: "https://buy.stripe.com/5kQ7sM7BX0M44LTbdv4sE01",
+        featured: false
+    },
+    {
+        name: "Praxis",
+        price: "$30",
+        period: "/month",
+        description: "Hands-on guidance and practice loops",
+        features: [
+            "Everything in Momentum",
+            "1:1 monthly check-in",
+            "Custom system tuning",
+            "Beta access to new microapps",
+            "Accountability workflows"
+        ],
+        cta: "Join Praxis",
+        priceId: null,
+        url: "https://buy.stripe.com/7sY9AU5tP52kceldlD4sE02",
         featured: false
     }
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
     return (
         <div className="min-h-screen bg-black text-white overflow-hidden">
             {/* Animated Background */}
             <div className="fixed inset-0 z-0">
-                <motion.div
-                    animate={{
-                        scale: [1, 1.3, 1],
-                        opacity: [0.15, 0.3, 0.15],
-                    }}
-                    transition={{
-                        duration: 12,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        scale: [1.2, 1, 1.2],
-                        opacity: [0.1, 0.25, 0.1],
-                    }}
-                    transition={{
-                        duration: 15,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 2
-                    }}
-                    className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-white/10 to-transparent rounded-full blur-3xl"
-                />
-
+                <div className="absolute top-0 left-1/4 w-[700px] h-[700px] bg-gradient-to-br from-white/10 to-transparent rounded-full blur-3xl opacity-30" />
+                <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-white/10 to-transparent rounded-full blur-3xl opacity-20" />
                 <div className="absolute inset-0 opacity-[0.02]">
                     <svg width="100%" height="100%">
                         <defs>
@@ -114,12 +91,7 @@ export default function PricingPage() {
                 <div className="h-20" />
 
                 {/* Header */}
-                <motion.header
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                    className="py-20 px-4 text-center border-b border-white/10"
-                >
+                <header className="py-20 px-4 text-center border-b border-white/10">
                     <div className="inline-flex items-center gap-2 mb-4">
                         <Sparkles className="w-4 h-4 text-white/60" />
                         <p className="text-xs uppercase tracking-[0.4em] text-white/40">Investment in Excellence</p>
@@ -131,21 +103,13 @@ export default function PricingPage() {
                     <p className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto font-light leading-relaxed`}>
                         Choose the level of commitment that matches your ambition
                     </p>
-                </motion.header>
+                </header>
 
                 {/* Pricing Cards */}
                 <main className="max-w-7xl mx-auto px-6 py-20">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {tiers.map((tier, index) => (
-                            <motion.div
-                                key={tier.name}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
-                                whileHover={{ scale: 1.05, y: -10 }}
-                                className="relative group"
-                            >
+                            <div key={tier.name} className="relative group">
                                 <div className={`absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur ${tier.featured ? 'opacity-50' : ''}`} />
 
                                 <div className={`relative ${tier.featured
@@ -153,13 +117,9 @@ export default function PricingPage() {
                                         : 'bg-white/5 border border-white/10'
                                     } p-8 group-hover:border-white/40 transition-all duration-500 h-full flex flex-col`}>
                                     {tier.featured && (
-                                        <motion.div
-                                            initial={{ y: -20, opacity: 0 }}
-                                            animate={{ y: 0, opacity: 1 }}
-                                            className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-1 text-xs uppercase tracking-widest font-bold"
-                                        >
+                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-black px-6 py-1 text-xs uppercase tracking-widest font-bold">
                                             Most Popular
-                                        </motion.div>
+                                        </div>
                                     )}
 
                                     <div className="text-center mb-8">
@@ -180,56 +140,24 @@ export default function PricingPage() {
                                     </div>
 
                                     <ul className="space-y-4 mb-8 flex-1">
-                                        {tier.features.map((feature, i) => (
-                                            <motion.li
-                                                key={feature}
-                                                initial={{ opacity: 0, x: -10 }}
-                                                whileInView={{ opacity: 1, x: 0 }}
-                                                viewport={{ once: true }}
-                                                transition={{ delay: 0.5 + i * 0.05 }}
-                                                className="flex items-start gap-3"
-                                            >
+                                        {tier.features.map((feature) => (
+                                            <li key={feature} className="flex items-start gap-3">
                                                 <Check className="w-5 h-5 text-white/60 flex-shrink-0 mt-0.5" />
                                                 <span className={`${inter.className} text-sm text-white/70`}>
                                                     {feature}
                                                 </span>
-                                            </motion.li>
+                                            </li>
                                         ))}
                                     </ul>
 
-                                    <Link href={tier.href} className="block">
-                                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                            <Button
-                                                className={`w-full font-serif text-sm uppercase tracking-widest transition-all duration-300 relative overflow-hidden ${tier.featured
-                                                        ? 'bg-white text-black hover:bg-white/90'
-                                                        : 'bg-transparent border border-white text-white hover:bg-white hover:text-black'
-                                                    }`}
-                                            >
-                                                {tier.featured && (
-                                                    <motion.div
-                                                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                                                        initial={{ x: "-100%" }}
-                                                        whileHover={{ x: "100%" }}
-                                                        transition={{ duration: 0.6 }}
-                                                    />
-                                                )}
-                                                <span className="relative z-10">{tier.cta}</span>
-                                            </Button>
-                                        </motion.div>
-                                    </Link>
+                                    <PricingCTA label={tier.cta} priceId={tier.priceId} url={tier.url} />
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
 
                     {/* Final CTA */}
-                    <motion.section
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.8, delay: 0.8 }}
-                        className="mt-32 text-center bg-white/5 border border-white/10 p-16"
-                    >
+                    <section className="mt-32 text-center bg-white/5 border border-white/10 p-16">
                         <h2 className={`${playfair.className} text-5xl font-bold mb-6 text-white`}>
                             Ready to Begin?
                         </h2>
@@ -237,19 +165,11 @@ export default function PricingPage() {
                             Join a community of individuals who refuse to settle for mediocrity
                         </p>
                         <Link href="/register">
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-base px-12 py-8 uppercase tracking-widest relative overflow-hidden">
-                                    <motion.div
-                                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                                        initial={{ x: "-100%" }}
-                                        whileHover={{ x: "100%" }}
-                                        transition={{ duration: 0.6 }}
-                                    />
-                                    <span className="relative z-10">Apply for Membership</span>
-                                </Button>
-                            </motion.div>
+                            <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-base px-12 py-8 uppercase tracking-widest relative overflow-hidden">
+                                <span className="relative z-10">Apply for Membership</span>
+                            </Button>
                         </Link>
-                    </motion.section>
+                    </section>
                 </main>
 
                 {/* Footer */}

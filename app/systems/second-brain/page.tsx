@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { dataStore, Entry, System } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -21,7 +22,11 @@ type ParaSection = {
     description: string
     accent: string
     icon: ReactNode
-    microapps: Array<{ id: string; name: string; hint: string; addLabel?: string }>
+    microappId: string
+    openPath: string
+    newPath: string
+    newLabel: string
+    hint: string
 }
 
 const paraSections: ParaSection[] = [
@@ -31,10 +36,11 @@ const paraSections: ParaSection[] = [
         description: 'Active outcomes with deadlines and dependencies.',
         accent: 'from-indigo-500/30 via-cyan-400/20 to-sky-500/10',
         icon: <Rocket className="w-5 h-5 text-indigo-300" />,
-        microapps: [
-            { id: 'projects-sb', name: 'Projects', hint: 'Define outcomes + status', addLabel: 'New project' },
-            { id: 'tasks-sb', name: 'Tasks', hint: 'Break down into daily motion', addLabel: 'New task' }
-        ]
+        microappId: 'projects-sb',
+        openPath: '/systems/second-brain/projects-sb',
+        newPath: '/systems/second-brain/projects-sb?new=1',
+        newLabel: 'New project',
+        hint: 'Define outcomes + status'
     },
     {
         key: 'tasks',
@@ -42,9 +48,11 @@ const paraSections: ParaSection[] = [
         description: 'Daily motion and execution lane.',
         accent: 'from-sky-500/30 via-cyan-400/20 to-indigo-500/10',
         icon: <ListTodo className="w-5 h-5 text-sky-200" />,
-        microapps: [
-            { id: 'tasks-sb', name: 'Tasks', hint: 'Plan and slot your day', addLabel: 'New task' }
-        ]
+        microappId: 'tasks-sb',
+        openPath: '/systems/second-brain/tasks-sb',
+        newPath: '/systems/second-brain/tasks-sb/forge',
+        newLabel: 'New task',
+        hint: 'Plan and slot your day'
     },
     {
         key: 'areas',
@@ -52,10 +60,11 @@ const paraSections: ParaSection[] = [
         description: 'Ongoing responsibilities to keep green.',
         accent: 'from-emerald-500/25 via-lime-400/15 to-green-500/10',
         icon: <Layers className="w-5 h-5 text-emerald-300" />,
-        microapps: [
-            { id: 'areas-sb', name: 'Areas', hint: 'Guardrails & standards', addLabel: 'New area' },
-            { id: 'notes-sb', name: 'Notes', hint: 'Insights per area', addLabel: 'New note' }
-        ]
+        microappId: 'areas-sb',
+        openPath: '/systems/second-brain/areas-sb',
+        newPath: '/systems/second-brain/areas-sb?new=1',
+        newLabel: 'New area',
+        hint: 'Guardrails & standards'
     },
     {
         key: 'resources',
@@ -63,10 +72,11 @@ const paraSections: ParaSection[] = [
         description: 'References, playbooks, and research.',
         accent: 'from-amber-500/25 via-orange-400/15 to-yellow-500/10',
         icon: <BookOpenCheck className="w-5 h-5 text-amber-200" />,
-        microapps: [
-            { id: 'resources-sb', name: 'Resources', hint: 'Links, books, tools', addLabel: 'New resource' },
-            { id: 'notes-sb', name: 'Notes', hint: 'Distill and connect', addLabel: 'New note' }
-        ]
+        microappId: 'resources-sb',
+        openPath: '/systems/second-brain/resources-sb',
+        newPath: '/systems/second-brain/resources-sb?new=1',
+        newLabel: 'New resource',
+        hint: 'Links, books, tools'
     },
     {
         key: 'notes',
@@ -74,9 +84,11 @@ const paraSections: ParaSection[] = [
         description: 'Distilled insights and capture.',
         accent: 'from-purple-500/30 via-fuchsia-400/20 to-pink-500/10',
         icon: <NotebookPen className="w-5 h-5 text-purple-200" />,
-        microapps: [
-            { id: 'notes-sb', name: 'Notes', hint: 'Atomic notes and links', addLabel: 'New note' }
-        ]
+        microappId: 'notes-sb',
+        openPath: '/systems/second-brain/notes-sb',
+        newPath: '/systems/second-brain/notes-sb?new=1',
+        newLabel: 'New note',
+        hint: 'Atomic notes and links'
     },
     {
         key: 'archive',
@@ -84,9 +96,11 @@ const paraSections: ParaSection[] = [
         description: 'Finished work and decision history.',
         accent: 'from-slate-500/30 via-gray-500/20 to-zinc-500/10',
         icon: <Archive className="w-5 h-5 text-slate-200" />,
-        microapps: [
-            { id: 'archive-sb', name: 'Archive', hint: 'Store with context' }
-        ]
+        microappId: 'archive-sb',
+        openPath: '/systems/second-brain/archive-sb',
+        newPath: '/systems/second-brain/archive-sb?new=1',
+        newLabel: 'New archive',
+        hint: 'Store with context'
     }
 ]
 
@@ -98,6 +112,7 @@ const motionStages = [
 ]
 
 export default function SecondBrainPage() {
+    const router = useRouter()
     const [system, setSystem] = useState<System | null>(null)
     const [userId, setUserId] = useState<string>('defaultUser')
     const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
@@ -126,9 +141,9 @@ export default function SecondBrainPage() {
         if (!system) return
         const load = async () => {
             const counts: Record<string, number> = {}
-            await Promise.all(system.microapps.map(async (microapp) => {
-                const entries = await dataStore.getEntries(microapp.id, userId)
-                counts[microapp.id] = entries.length
+            await Promise.all(paraSections.map(async (section) => {
+                const entries = await dataStore.getEntries(section.microappId, userId)
+                counts[section.microappId] = entries.length
             }))
             setEntryCounts(counts)
 
@@ -373,41 +388,30 @@ export default function SecondBrainPage() {
                                             {col.items.length === 0 && (
                                                 <div className="text-white/60 text-xs">Drop here.</div>
                                             )}
-                                            {col.items.map(item => (
-                                                <motion.div
-                                                    layout
-                                                    key={item.id}
-                                                    draggable
-                                                    onDragStart={() => setDraggingTaskId(item.id)}
-                                                    onDragEnd={() => setDraggingTaskId(null)}
-                                                    className="p-3 rounded-xl border border-white/15 bg-black/30 hover:border-white/40 transition cursor-grab active:cursor-grabbing"
-                                                    transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-                                                    whileDrag={{ scale: 1.02, rotate: -1, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
-                                                >
-                                                    <div className="flex items-center justify-between text-sm text-white">
-                                                        <span className="font-semibold line-clamp-1">{item.data['Task'] || 'Untitled'}</span>
-                                                        <span className="text-xs text-white/60">{(item.data['End Date'] || '').slice(5)}</span>
-                                                    </div>
-                                                    <p className="text-xs text-white/50">
-                                                        {projectNames[item.data['Project']] || 'Solo'}
-                                                    </p>
-                                                    <div className="mt-2 flex gap-2">
-                                                        <Button
-                                                            size="xs"
-                                                            className="bg-white text-black hover:bg-white/80"
-                                                            onClick={(e) => { e.stopPropagation(); toggleTaskStatus(item) }}
-                                                        >
-                                                            Toggle
-                                                        </Button>
-                                                        <Button asChild size="xs" variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                                                            <Link href={`/systems/second-brain/tasks-sb?id=${item.id}`}>Open</Link>
-                                                        </Button>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                                {col.items.map(item => (
+                                                    <motion.div
+                                                        layout
+                                                        key={item.id}
+                                                        draggable
+                                                        onDragStart={() => setDraggingTaskId(item.id)}
+                                                        onDragEnd={() => setDraggingTaskId(null)}
+                                                        className="p-3 rounded-xl border border-white/15 bg-black/30 hover:border-white/40 transition cursor-grab active:cursor-grabbing"
+                                                        transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+                                                        whileDrag={{ scale: 1.02, rotate: -1, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+                                                        onClick={() => router.push(`/systems/second-brain/tasks-sb?id=${item.id}`)}
+                                                    >
+                                                        <div className="flex items-center justify-between text-sm text-white">
+                                                            <span className="font-semibold line-clamp-1">{item.data['Task'] || 'Untitled'}</span>
+                                                            <span className="text-xs text-white/60">{(item.data['End Date'] || '').slice(5)}</span>
+                                                        </div>
+                                                        <p className="text-xs text-white/50">
+                                                            {projectNames[item.data['Project']] || 'Solo'}
+                                                        </p>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    ))}
                             </CardContent>
                         </Card>
 
@@ -435,35 +439,23 @@ export default function SecondBrainPage() {
                                                 </div>
                                             </div>
                                             <p className={`${inter.className} text-white/70`}>{section.description}</p>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                {section.microapps.map(app => (
-                                                    <div
-                                                        key={app.id}
-                                                        className="p-4 rounded-xl bg-black/30 border border-white/10 hover:border-white/40 transition"
-                                                    >
-                                                        <div className="flex items-center justify-between text-white mb-3">
-                                                            <span className="font-semibold">{app.name}</span>
-                                                            <span className="text-xs text-white/60">
-                                                                {entryCounts[app.id] ?? 0} items
-                                                            </span>
-                                                        </div>
-                                                        <p className="text-sm text-white/60 mb-3">{app.hint}</p>
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            <Link
-                                                                href={`/systems/second-brain/${app.id}`}
-                                                                className="block rounded-lg border border-white/15 bg-white/10 hover:bg-white/20 text-center text-white py-2 transition"
-                                                            >
-                                                                Open
-                                                            </Link>
-                                                            <Link
-                                                                href={`/systems/second-brain/${app.id}?new=1`}
-                                                                className="block rounded-lg border border-white/15 bg-black/60 hover:bg-black/80 text-center text-white py-2 transition"
-                                                            >
-                                                                {app.addLabel || 'Add'}
-                                                            </Link>
-                                                        </div>
-                                                    </div>
-                                                ))}
+                                            <p className="text-sm text-white/60">{section.hint}</p>
+                                            <div className="grid grid-cols-2 border-t border-white/10 divide-x divide-white/10">
+                                                <Link
+                                                    href={section.openPath}
+                                                    className="block text-center text-white py-3 hover:bg-white/10 transition"
+                                                >
+                                                    Open
+                                                </Link>
+                                                <Link
+                                                    href={section.newPath}
+                                                    className="block text-center text-white py-3 hover:bg-white/10 transition"
+                                                >
+                                                    {section.newLabel}
+                                                </Link>
+                                            </div>
+                                            <div className="text-xs text-white/50">
+                                                {entryCounts[section.microappId] ?? 0} items
                                             </div>
                                         </div>
                                     </motion.div>

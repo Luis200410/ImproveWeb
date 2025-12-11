@@ -121,8 +121,14 @@ class DataStore {
         const hasAtomicHabits = productivity?.microapps.some(m => m.id === 'atomic-habits')
         const hasPomodoro = productivity?.microapps.some(m => m.id === 'pomodoro')
         const hasReview = productivity?.microapps.some(m => m.id === 'review')
+        const money = stored.find(s => s.id === 'money')
+        const hasBudget = money?.microapps.some(m => m.id === 'budget')
+        const hasExpenses = money?.microapps.some(m => m.id === 'expenses')
+        const hasIncome = money?.microapps.some(m => m.id === 'income')
+        const hasSubscriptions = money?.microapps.some(m => m.id === 'subscriptions')
+        const hasSavings = money?.microapps.some(m => m.id === 'savings-goals')
 
-        if (stored.length === 0 || stored.length !== 8 || !hasAtomicHabits || !hasPomodoro || !hasReview) {
+        if (stored.length === 0 || stored.length !== 8 || !hasAtomicHabits || !hasPomodoro || !hasReview || !hasBudget || !hasExpenses || !hasIncome || !hasSubscriptions || !hasSavings) {
             // Reset to defaults if wrong number of systems or any key productivity microapps are missing
             const defaults = this.getDefaultSystems()
             this.setItem('systems', defaults)
@@ -465,6 +471,38 @@ class DataStore {
                             { name: 'Amount', type: 'number', required: true, min: 0 },
                             { name: 'Type', type: 'select', options: ['Salary', 'Freelance', 'Investment', 'Gift', 'Other'], required: true },
                             { name: 'Notes', type: 'textarea', required: false }
+                        ]
+                    },
+                    {
+                        id: 'subscriptions',
+                        systemId: 'money',
+                        name: 'Subscriptions',
+                        description: 'Recurring charges to monitor',
+                        icon: '🔁',
+                        availableViews: ['list', 'table'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Name', type: 'text', required: true },
+                            { name: 'Amount', type: 'number', required: true, min: 0 },
+                            { name: 'Billing Cycle', type: 'select', options: ['Weekly', 'Monthly', 'Quarterly', 'Yearly'], required: true },
+                            { name: 'Next Charge', type: 'date', required: true },
+                            { name: 'Category', type: 'select', options: ['Productivity', 'Entertainment', 'Utilities', 'Finance', 'Other'], required: false }
+                        ]
+                    },
+                    {
+                        id: 'savings-goals',
+                        systemId: 'money',
+                        name: 'Savings Goals',
+                        description: 'Targets and progress',
+                        icon: '🎯',
+                        availableViews: ['list', 'table'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Goal Name', type: 'text', required: true },
+                            { name: 'Target Amount', type: 'number', required: true, min: 0 },
+                            { name: 'Current Amount', type: 'number', required: true, min: 0 },
+                            { name: 'Due Date', type: 'date', required: false },
+                            { name: 'Category', type: 'select', options: ['Emergency', 'Vacation', 'Investment', 'Purchase', 'Other'], required: false }
                         ]
                     }
                 ]

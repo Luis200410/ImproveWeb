@@ -6,9 +6,11 @@ import Link from 'next/link'
 import { dataStore, System } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { motion } from 'framer-motion'
+import { motion, Reorder } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
 import { ArrowLeft, Sparkles, ArrowRight, Database, Eye, Layers } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
+import { loadPrefs, savePrefs } from '@/utils/user-preferences'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -16,15 +18,19 @@ const inter = Inter({ subsets: ['latin'] })
 export default function SystemPage() {
     const params = useParams()
     const router = useRouter()
+    const [userId, setUserId] = useState<string>('defaultUser')
     const [system, setSystem] = useState<System | null>(null)
     const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+    const [customizeOrder, setCustomizeOrder] = useState(false)
+    const [microappOrder, setMicroappOrder] = useState<string[]>([])
 
     useEffect(() => {
         const systemId = params.id as string
         const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
         setSystem(foundSystem || null)
-
         if (foundSystem) {
+            setMicroappOrder(foundSystem.microapps.map(m => m.id))
             const loadCounts = async () => {
                 const counts: Record<string, number> = {}
                 await Promise.all(foundSystem.microapps.map(async (microapp) => {
@@ -36,6 +42,31 @@ export default function SystemPage() {
             loadCounts()
         }
     }, [params.id])
+
+    useEffect(() => {
+        const loadUser = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            const uid = user?.id || 'defaultUser'
+            setUserId(uid)
+            const prefs = loadPrefs(uid, { systemView: { [params.id as string]: 'grid' }, systemOrder: {} as Record<string, string[]> })
+            const mode = (prefs.systemView as Record<string, string>)[params.id as string]
+            if (mode === 'list' || mode === 'grid') setViewMode(mode)
+            const order = (prefs.systemOrder as Record<string, string[]>)[params.id as string]
+            if (order && order.length) setMicroappOrder(order)
+        }
+        loadUser()
+    }, [params.id])
+
+    useEffect(() => {
+        if (userId && system) {
+            const prefs = loadPrefs(userId, { systemView: {} as Record<string, string>, systemOrder: {} as Record<string, string[]> })
+            savePrefs(userId, {
+                systemView: { ...prefs.systemView, [system.id]: viewMode },
+                systemOrder: { ...prefs.systemOrder, [system.id]: microappOrder }
+            })
+        }
+    }, [viewMode, userId, system, microappOrder])
 
     if (!system) {
         return (
@@ -151,37 +182,60 @@ export default function SystemPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.5 }}
-                            className="flex items-center gap-6 mb-8"
+                            className="flex items-center gap-6 mb-8 justify-between"
                         >
-                            <h2 className={`${playfair.className} text-4xl font-bold text-white`}>
-                                Microapps
-                            </h2>
-                            <div className="h-px bg-white/10 flex-1" />
+                            <div className="flex items-center gap-4">
+                                <h2 className={`${playfair.className} text-4xl font-bold text-white`}>
+                                    Microapps
+                                </h2>
+                                <div className="h-px bg-white/10 flex-1" />
+                            </div>
+                            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/60">
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`px-3 py-1 rounded-lg border ${viewMode === 'grid' ? 'border-white/40 text-white' : 'border-white/10 text-white/50'} hover:border-white/40 transition`}
+                                >
+                                    Grid
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`px-3 py-1 rounded-lg border ${viewMode === 'list' ? 'border-white/40 text-white' : 'border-white/10 text-white/50'} hover:border-white/40 transition`}
+                                >
+                                    List
+                                </button>
+                                <button
+                                    onClick={() => setCustomizeOrder(!customizeOrder)}
+                                    className={`px-3 py-1 rounded-lg border ${customizeOrder ? 'border-white/40 text-white bg-white/10' : 'border-white/10 text-white/50'} hover:border-white/40 transition`}
+                                >
+                                    Drag
+                                </button>
+                            </div>
                         </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.6, delay: 0.6 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                        <Reorder.Group
+                            axis={viewMode === 'grid' ? 'xy' : 'y'}
+                            values={microappOrder}
+                            onReorder={(order) => setMicroappOrder(order as string[])}
+                            className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}
                         >
-                            {system.microapps.map((microapp, index) => {
+                            {microappOrder.map((id, index) => {
+                                const microapp = system.microapps.find(m => m.id === id)
+                                if (!microapp) return null
                                 const entryCount = entryCounts[microapp.id] || 0
 
                                 return (
-                                    <motion.div
-                                        key={microapp.id}
-                                        initial={{ opacity: 0, scale: 0.9 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
-                                        whileHover={{ scale: 1.05, y: -10 }}
-                                    >
-                                        <Link href={`/systems/${system.id}/${microapp.id}`}>
-                                            <div className="relative group cursor-pointer h-full">
-                                                <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
-
-                                                <Card className="relative border border-white/10 bg-black group-hover:border-white/30 transition-all duration-500 h-full flex flex-col">
-                                                    <CardHeader className="bg-black border-b border-white/10 group-hover:bg-white/5 transition-colors duration-500">
+                                    <Reorder.Item key={microapp.id} value={microapp.id} drag={customizeOrder}>
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.5, delay: 0.7 + index * 0.1 }}
+                                            whileHover={{ scale: viewMode === 'grid' ? 1.05 : 1.02, y: -6 }}
+                                            className={customizeOrder ? 'cursor-grab active:cursor-grabbing' : ''}
+                                        >
+                                            <Link href={`/systems/${system.id}/${microapp.id}`}>
+                                                <Card className={`relative h-full border border-white/10 bg-black group hover:border-white/30 transition-all duration-500 flex flex-col overflow-hidden ${viewMode === 'list' ? 'flex-row items-center p-4 gap-4' : ''}`}>
+                                                    <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur pointer-events-none" />
+                                                    <CardHeader className={`bg-black border-b border-white/10 group-hover:bg-white/5 transition-colors duration-500 relative ${viewMode === 'list' ? 'border-none p-0 pr-4' : ''}`}>
                                                         <div className="flex items-center gap-3 mb-3">
                                                             <motion.span
                                                                 whileHover={{ scale: 1.2, rotate: 5 }}
@@ -197,8 +251,8 @@ export default function SystemPage() {
                                                             {microapp.description}
                                                         </CardDescription>
                                                     </CardHeader>
-                                                    <CardContent className="pt-6 flex-1 flex flex-col">
-                                                        <div className="grid grid-cols-3 gap-3 mb-6 flex-1">
+                                                    <CardContent className={`pt-6 flex-1 flex flex-col relative ${viewMode === 'list' ? 'pt-0' : ''}`}>
+                                                        <div className={`${viewMode === 'list' ? 'grid grid-cols-3 gap-3' : 'grid grid-cols-3 gap-3 mb-6 flex-1'}`}>
                                                             <div className="text-center">
                                                                 <Layers className="w-5 h-5 text-white/40 mx-auto mb-2" />
                                                                 <div className={`${playfair.className} text-2xl font-bold text-white`}>
@@ -235,12 +289,12 @@ export default function SystemPage() {
                                                         </div>
                                                     </CardContent>
                                                 </Card>
-                                            </div>
-                                        </Link>
-                                    </motion.div>
+                                            </Link>
+                                        </motion.div>
+                                    </Reorder.Item>
                                 )
                             })}
-                        </motion.div>
+                        </Reorder.Group>
                     </div>
                 </div>
             </div>
