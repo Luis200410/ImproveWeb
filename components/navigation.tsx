@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation'
 import { Playfair_Display } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -28,8 +29,35 @@ const authenticatedLinks: NavLink[] = [
 export function Navigation({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
     const pathname = usePathname()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
+    const [sessionUser, setSessionUser] = useState<any>(null)
+    const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
 
-    const links = isAuthenticated ? authenticatedLinks : publicLinks
+    useEffect(() => {
+        supabase.auth.getUser().then(async ({ data }) => {
+            if (data.user) {
+                setSessionUser(data.user)
+                const { data: entry } = await supabase
+                    .from('entries')
+                    .select('data')
+                    .eq('microapp_id', 'subscription-status')
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
+
+                const raw = entry?.data
+                const parsed = typeof raw === 'string' ? (() => {
+                    try { return JSON.parse(raw) } catch { return null }
+                })() : raw
+                const status = (parsed?.status as string | undefined)?.toLowerCase() || null
+                setSubscriptionStatus(status)
+            }
+        })
+    }, [])
+
+    const effectiveAuthenticated = Boolean(sessionUser) || isAuthenticated
+    const links = effectiveAuthenticated ? authenticatedLinks : publicLinks
+    const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
 
     return (
         <motion.nav
@@ -59,12 +87,44 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                         </Link>
                     ))}
 
-                    {!isAuthenticated && (
+                    {!effectiveAuthenticated && (
                         <Link href="/login">
                             <Button variant="outline" className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
                                 Member Login
                             </Button>
                         </Link>
+                    )}
+
+                    {effectiveAuthenticated && (
+                        <div className="relative">
+                            <Button
+                                variant="outline"
+                                className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
+                                onClick={() => setIsMemberMenuOpen(prev => !prev)}
+                            >
+                                Member
+                            </Button>
+                            {isMemberMenuOpen && (
+                                <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 shadow-xl z-50">
+                                    <div className="flex flex-col divide-y divide-white/10">
+                                        <Link
+                                            href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                            className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                            onClick={() => setIsMemberMenuOpen(false)}
+                                        >
+                                            {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                        </Link>
+                                        <Link
+                                            href="/profile"
+                                            className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                            onClick={() => setIsMemberMenuOpen(false)}
+                                        >
+                                            Profile
+                                        </Link>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -112,12 +172,30 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                                 {link.label}
                             </Link>
                         ))}
-                        {!isAuthenticated && (
+                        {!effectiveAuthenticated && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="outline" className="w-full font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
                                     Member Login
                                 </Button>
                             </Link>
+                        )}
+                        {effectiveAuthenticated && (
+                            <div className="space-y-3">
+                                <Link
+                                    href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
+                                >
+                                    {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                </Link>
+                                <Link
+                                    href="/profile"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="block text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
+                                >
+                                    Profile
+                                </Link>
+                            </div>
                         )}
                     </div>
                 </motion.div>

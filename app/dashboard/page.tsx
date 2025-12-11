@@ -32,7 +32,10 @@ export default async function DashboardPage() {
     const status = (parsedData?.status as string | undefined)?.toLowerCase()
     const isActive = status === 'active' || status === 'trialing'
     const legacySubscribed = user.user_metadata?.subscribed || user.user_metadata?.is_subscribed || user.user_metadata?.couponUnlocked
-    // Allow all authenticated users to access dashboard; no paywall redirect.
+
+    if (!isActive && !legacySubscribed) {
+        redirect('/pricing?reason=subscribe')
+    }
 
     return <DashboardClient />
 }
