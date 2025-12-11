@@ -16,17 +16,13 @@ interface NavLink {
 }
 
 const publicLinks: NavLink[] = [
+    { href: '/dashboard', label: 'Dashboard' },
     { href: '/about', label: 'Manifesto' },
     { href: '/pricing', label: 'Membership' },
     { href: '/sales', label: 'The System' },
 ]
 
-const authenticatedLinks: NavLink[] = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/profile', label: 'Profile' },
-]
-
-export function Navigation({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
+export function Navigation() {
     const pathname = usePathname()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
@@ -34,7 +30,6 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
     const [checkedAuth, setCheckedAuth] = useState(false)
     const [signingOut, setSigningOut] = useState(false)
-    const [hasAuthCookie, setHasAuthCookie] = useState(false)
 
     useEffect(() => {
         let active = true
@@ -63,20 +58,41 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
             }
         }
 
-        supabase.auth.getSession().then(({ data }) => {
-            if (!active) return
-            const user = data.session?.user || null
-            setSessionUser(user)
-            setCheckedAuth(true)
-            setHasAuthCookie(document.cookie.includes('sb-access-token') || document.cookie.includes('supabase-auth-token'))
-            loadUserAndStatus(user?.id)
-        })
+        async function hydrateFromServer() {
+            try {
+                const res = await fetch('/api/auth/me', { credentials: 'include' })
+                if (!res.ok) throw new Error('auth fetch failed')
+                const payload = await res.json()
+                if (!active) return
+                const authedUser = payload.user || null
+                console.debug('Navigation /api/auth/me', { hasUser: Boolean(authedUser), status: payload.subscriptionStatus })
+                setSessionUser(authedUser)
+                setSubscriptionStatus(payload.subscriptionStatus || null)
+                setCheckedAuth(true)
+                if (authedUser?.id && !payload.subscriptionStatus) {
+                    loadUserAndStatus(payload.user.id)
+                }
+            } catch (err) {
+                console.warn('Navigation /api/auth/me failed, falling back to client session', err)
+                // Fallback to client-side session check to avoid hiding menu if server fetch fails
+                const { data, error } = await supabase.auth.getSession()
+                if (error) console.warn('Navigation getSession error', error)
+                if (!active) return
+                const user = data.session?.user?.id ? data.session.user : null
+                console.debug('Navigation getSession fallback', { hasUser: Boolean(user) })
+                setSessionUser(user)
+                setCheckedAuth(true)
+                loadUserAndStatus(user?.id)
+            }
+        }
 
-        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-            const user = session?.user || null
+        hydrateFromServer()
+
+        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+            console.debug('Navigation auth state change', { event, hasUser: Boolean(session?.user) })
+            const user = session?.user?.id ? session.user : null
             setSessionUser(user)
             setCheckedAuth(true)
-            setHasAuthCookie(document.cookie.includes('sb-access-token') || document.cookie.includes('supabase-auth-token'))
             loadUserAndStatus(user?.id)
         })
 
@@ -86,17 +102,42 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
         }
     }, [])
 
-    const effectiveAuthenticated = Boolean(sessionUser) || isAuthenticated || hasAuthCookie
-    const links = effectiveAuthenticated ? authenticatedLinks : publicLinks
+    const effectiveAuthenticated = Boolean(sessionUser?.id)
+    // Only show the dropdown once we have a confirmed logged-in user
+    const showMemberMenu = checkedAuth && Boolean(sessionUser?.id)
+    // Always show public links; dropdown handles member actions
+    const links = publicLinks
+
+    useEffect(() => {
+        console.debug('Navigation state', {
+            pathname,
+            checkedAuth,
+            hasUser: Boolean(sessionUser?.id),
+            showMemberMenu,
+            subscriptionStatus,
+        })
+    }, [pathname, checkedAuth, sessionUser?.id, showMemberMenu, subscriptionStatus])
     const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || sessionUser?.user_metadata?.subscribed || sessionUser?.user_metadata?.is_subscribed || sessionUser?.user_metadata?.couponUnlocked
 
     async function handleLogout() {
         setSigningOut(true)
-        await supabase.auth.signOut()
+        const { error } = await supabase.auth.signOut()
+        if (error) {
+            console.warn('Client signOut error', error)
+        }
+        try {
+            await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' })
+        } catch (err) {
+            console.warn('Server signout fetch failed', err)
+        }
         setSessionUser(null)
         setSubscriptionStatus(null)
         setSigningOut(false)
         setIsMemberMenuOpen(false)
+        // Send user back to landing page with the public header
+        if (typeof window !== 'undefined') {
+            window.location.href = '/'
+        }
     }
 
     return (
@@ -108,7 +149,7 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
         >
             <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
                 {/* Logo */}
-                <Link href={isAuthenticated ? '/dashboard' : '/'} className={`${playfair.className} text-2xl font-bold tracking-tight text-white hover:text-white/80 transition-colors`}>
+                <Link href="/" className={`${playfair.className} text-2xl font-bold tracking-tight text-white hover:text-white/80 transition-colors`}>
                     IMPROVE
                 </Link>
 
@@ -127,66 +168,65 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                         </Link>
                     ))}
 
-                    <div
-                        className="relative"
-                        onMouseEnter={() => setIsMemberMenuOpen(true)}
-                        onMouseLeave={() => setIsMemberMenuOpen(false)}
-                    >
-                        <Button
-                            variant="outline"
-                            className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
-                            onClick={() => setIsMemberMenuOpen(prev => !prev)}
+                    {showMemberMenu ? (
+                        <div
+                            className="relative"
+                            onMouseEnter={() => setIsMemberMenuOpen(true)}
+                            onMouseLeave={() => setIsMemberMenuOpen(false)}
                         >
-                            {effectiveAuthenticated ? 'Log In' : 'Member Login'}
-                        </Button>
-                        {isMemberMenuOpen && (
-                            <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50">
-                                <div className="flex flex-col divide-y divide-white/10" onMouseEnter={() => setIsMemberMenuOpen(true)} onMouseLeave={() => setIsMemberMenuOpen(false)}>
-                                    {!checkedAuth && (
-                                        <div className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white/70">Loading...</div>
-                                    )}
-                                    {(checkedAuth || hasAuthCookie) && effectiveAuthenticated && (
-                                        <>
-                                            <Link
-                                                href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
-                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 flex items-center justify-between"
-                                                onClick={() => setIsMemberMenuOpen(false)}
-                                            >
-                                                {membershipActive ? 'Go to Dashboard' : 'View Membership'}
-                                                <span className="text-[11px] border border-white/40 px-2 py-1 ml-2">
-                                                    {membershipActive ? 'Active' : 'Upgrade'}
-                                                </span>
-                                            </Link>
-                                            <Link
-                                                href="/profile"
-                                                className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
-                                                onClick={() => setIsMemberMenuOpen(false)}
-                                            >
-                                                Profile
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                onClick={handleLogout}
-                                                className="text-left px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 disabled:opacity-60"
-                                                disabled={signingOut}
-                                            >
-                                                {signingOut ? 'Logging out...' : 'Log Out'}
-                                            </button>
-                                        </>
-                                    )}
-                                    {(checkedAuth || hasAuthCookie) && !effectiveAuthenticated && (
-                                        <Link
-                                            href="/login"
-                                            className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
-                                            onClick={() => setIsMemberMenuOpen(false)}
-                                        >
-                                            Log In
-                                        </Link>
-                                    )}
+                            <Button
+                                variant="outline"
+                                className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
+                                onClick={() => setIsMemberMenuOpen(prev => !prev)}
+                            >
+                                Log In
+                            </Button>
+                            {isMemberMenuOpen && (
+                                <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50">
+                                    <div className="flex flex-col divide-y divide-white/10" onMouseEnter={() => setIsMemberMenuOpen(true)} onMouseLeave={() => setIsMemberMenuOpen(false)}>
+                                        {!checkedAuth && (
+                                            <div className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white/70">Loading...</div>
+                                        )}
+                                        {showMemberMenu && (
+                                            <>
+                                                <Link
+                                                    href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                                    className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 flex items-center justify-between"
+                                                    onClick={() => setIsMemberMenuOpen(false)}
+                                                >
+                                                    {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                                    <span className="text-[11px] border border-white/40 px-2 py-1 ml-2">
+                                                        {membershipActive ? 'Active' : 'Upgrade'}
+                                                    </span>
+                                                </Link>
+                                                <Link
+                                                    href="/profile"
+                                                    className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
+                                                    onClick={() => setIsMemberMenuOpen(false)}
+                                                >
+                                                    Profile
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleLogout}
+                                                    className="text-left px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 disabled:opacity-60"
+                                                    disabled={signingOut}
+                                                >
+                                                    {signingOut ? 'Logging out...' : 'Log Out'}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+                        </div>
+                    ) : (
+                        <Link href="/login">
+                            <Button variant="outline" className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
+                                Member Login
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -233,14 +273,14 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                                 {link.label}
                             </Link>
                         ))}
-                        {!effectiveAuthenticated && (
+                        {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="outline" className="w-full font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
                                     Member Login
                                 </Button>
                             </Link>
                         )}
-                        {effectiveAuthenticated && (
+                        {showMemberMenu && (
                             <div className="space-y-3">
                                 <Link
                                     href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
@@ -256,6 +296,13 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                                 >
                                     Profile
                                 </Link>
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="block text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
+                                >
+                                    Log Out
+                                </button>
                             </div>
                         )}
                     </div>

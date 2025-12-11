@@ -34,7 +34,10 @@ export default async function DashboardPage() {
     const legacySubscribed = user.user_metadata?.subscribed || user.user_metadata?.is_subscribed || user.user_metadata?.couponUnlocked
 
     if (!isActive && !legacySubscribed) {
-        redirect('/pricing?reason=subscribe')
+        const detail = encodeURIComponent(status || 'none')
+        const legacy = legacySubscribed ? '1' : '0'
+        console.warn('Dashboard redirect: subscription inactive', { status, legacySubscribed })
+        redirect(`/pricing?reason=subscribe&status=${detail}&legacy=${legacy}`)
     }
 
     return <DashboardClient />

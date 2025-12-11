@@ -67,7 +67,7 @@ export default function DashboardClient() {
 
             {/* Content */}
             <div className="relative z-10">
-                <Navigation isAuthenticated={true} />
+                <Navigation />
                 <div className="h-20" />
 
                 <div className="max-w-7xl mx-auto px-8 py-12">

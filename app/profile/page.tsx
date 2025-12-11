@@ -41,7 +41,7 @@ export default async function ProfilePage({ searchParams }: { searchParams?: Sea
             </div>
 
             <div className="relative z-10">
-                <Navigation isAuthenticated={true} />
+                <Navigation />
                 <div className="h-24" />
 
                 <div className="max-w-4xl mx-auto px-6 py-12 space-y-10">

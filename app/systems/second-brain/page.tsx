@@ -306,7 +306,7 @@ export default function SecondBrainPage() {
                 </div>
             </div>
 
-            <Navigation isAuthenticated />
+            <Navigation />
             <div className="h-16" />
 
             <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">

@@ -163,7 +163,7 @@ export default function TaskForgePage() {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            <Navigation isAuthenticated />
+            <Navigation />
             <div className="h-16" />
 
             <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
