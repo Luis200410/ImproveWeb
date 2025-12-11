@@ -32,32 +32,59 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
     const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
     const [sessionUser, setSessionUser] = useState<any>(null)
     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
+    const [checkedAuth, setCheckedAuth] = useState(false)
 
     useEffect(() => {
-        supabase.auth.getUser().then(async ({ data }) => {
-            if (data.user) {
-                setSessionUser(data.user)
-                const { data: entry } = await supabase
-                    .from('entries')
-                    .select('data')
-                    .eq('microapp_id', 'subscription-status')
-                    .order('updated_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle()
+        let active = true
 
-                const raw = entry?.data
-                const parsed = typeof raw === 'string' ? (() => {
-                    try { return JSON.parse(raw) } catch { return null }
-                })() : raw
-                const status = (parsed?.status as string | undefined)?.toLowerCase() || null
+        async function loadUserAndStatus(userId?: string) {
+            if (!userId) {
+                setSubscriptionStatus(null)
+                return
+            }
+            const { data: entry } = await supabase
+                .from('entries')
+                .select('data')
+                .eq('microapp_id', 'subscription-status')
+                .eq('user_id', userId)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle()
+
+            const raw = entry?.data
+            const parsed = typeof raw === 'string' ? (() => {
+                try { return JSON.parse(raw) } catch { return null }
+            })() : raw
+            const status = (parsed?.status as string | undefined)?.toLowerCase() || null
+            if (active) {
                 setSubscriptionStatus(status)
             }
+        }
+
+        supabase.auth.getSession().then(({ data }) => {
+            if (!active) return
+            const user = data.session?.user || null
+            setSessionUser(user)
+            setCheckedAuth(true)
+            loadUserAndStatus(user?.id)
         })
+
+        const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+            const user = session?.user || null
+            setSessionUser(user)
+            setCheckedAuth(true)
+            loadUserAndStatus(user?.id)
+        })
+
+        return () => {
+            active = false
+            listener?.subscription.unsubscribe()
+        }
     }, [])
 
     const effectiveAuthenticated = Boolean(sessionUser) || isAuthenticated
     const links = effectiveAuthenticated ? authenticatedLinks : publicLinks
-    const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing'
+    const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || sessionUser?.user_metadata?.subscribed || sessionUser?.user_metadata?.is_subscribed || sessionUser?.user_metadata?.couponUnlocked
 
     return (
         <motion.nav
