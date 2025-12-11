@@ -19,13 +19,20 @@ export default async function DashboardPage() {
         .limit(1)
         .maybeSingle()
 
-    const status = subscriptionEntry?.data?.status as string | undefined
+    // Some rows store JSON as text, so normalize before checking status
+    const rawData = subscriptionEntry?.data
+    const parsedData = typeof rawData === 'string' ? (() => {
+        try {
+            return JSON.parse(rawData)
+        } catch {
+            return null
+        }
+    })() : rawData
+
+    const status = (parsedData?.status as string | undefined)?.toLowerCase()
     const isActive = status === 'active' || status === 'trialing'
     const legacySubscribed = user.user_metadata?.subscribed || user.user_metadata?.is_subscribed || user.user_metadata?.couponUnlocked
-
-    if (!isActive && !legacySubscribed) {
-        redirect('/pricing?reason=subscribe')
-    }
+    // Allow all authenticated users to access dashboard; no paywall redirect.
 
     return <DashboardClient />
 }

@@ -22,6 +22,7 @@ const publicLinks: NavLink[] = [
 
 const authenticatedLinks: NavLink[] = [
     { href: '/dashboard', label: 'Dashboard' },
+    { href: '/profile', label: 'Profile' },
 ]
 
 export function Navigation({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
