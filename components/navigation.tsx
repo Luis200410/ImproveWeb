@@ -123,13 +123,17 @@ export function Navigation({ isAuthenticated = false }: { isAuthenticated?: bool
                     )}
 
                     {effectiveAuthenticated && (
-                        <div className="relative">
+                        <div
+                            className="relative"
+                            onMouseEnter={() => setIsMemberMenuOpen(true)}
+                            onMouseLeave={() => setIsMemberMenuOpen(false)}
+                        >
                             <Button
                                 variant="outline"
                                 className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
                                 onClick={() => setIsMemberMenuOpen(prev => !prev)}
                             >
-                                Member
+                                Log In
                             </Button>
                             {isMemberMenuOpen && (
                                 <div className="absolute right-0 mt-2 w-56 bg-black border border-white/10 shadow-xl z-50">
