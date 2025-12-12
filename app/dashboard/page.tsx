@@ -1,6 +1,37 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import DashboardClient from '@/components/dashboard-client'
+import { assertSupabaseAdmin } from '@/lib/supabase-admin'
+
+async function reconcileSubscriptionUserId(userId: string, email?: string | null) {
+    try {
+        const admin = assertSupabaseAdmin()
+        if (!email) return
+
+        const { data: legacyEntry } = await admin
+            .from('entries')
+            .select('id')
+            .eq('microapp_id', 'subscription-status')
+            .eq('user_id', email)
+            .limit(1)
+            .maybeSingle()
+
+        if (legacyEntry?.id) {
+            const { error } = await admin
+                .from('entries')
+                .update({ user_id: userId })
+                .eq('id', legacyEntry.id)
+
+            if (error) {
+                console.warn('Dashboard reconcile: failed to update legacy email user_id', error)
+            } else {
+                console.warn('Dashboard reconcile: corrected subscription user_id from email to auth uid', { entryId: legacyEntry.id })
+            }
+        }
+    } catch (err) {
+        console.warn('Dashboard reconcile: admin client unavailable or failed', err)
+    }
+}
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -10,6 +41,10 @@ export default async function DashboardPage() {
         redirect('/login')
     }
 
+    // One-time reconciliation: if any legacy row uses email as user_id, rewrite to auth uid
+    await reconcileSubscriptionUserId(user.id, user.email)
+
+    // Fetch with RLS-limited query using auth uid
     const { data: subscriptionEntry } = await supabase
         .from('entries')
         .select('data, updated_at')
