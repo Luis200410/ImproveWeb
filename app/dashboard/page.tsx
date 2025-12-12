@@ -54,8 +54,45 @@ export default async function DashboardPage() {
         .limit(1)
         .maybeSingle()
 
+    // If still nothing, read via service role (uid or email) and attempt fix
+    let fallbackEntry = subscriptionEntry
+    if (!fallbackEntry) {
+        try {
+            const admin = assertSupabaseAdmin()
+            const { data: adminData } = await admin
+                .from('entries')
+                .select('id, data, updated_at, user_id')
+                .or(`user_id.eq.${user.id},user_id.eq.${user.email || ''}`)
+                .eq('microapp_id', 'subscription-status')
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle()
+
+            if (adminData) {
+                fallbackEntry = adminData
+                console.warn('Dashboard fallback: subscription entry read via admin', { matchedUserId: adminData.user_id })
+
+                // Try to correct the user_id if it was an email
+                if (adminData.user_id !== user.id) {
+                    const { error } = await admin
+                        .from('entries')
+                        .update({ user_id: user.id })
+                        .eq('id', adminData.id)
+                    if (error) {
+                        console.warn('Dashboard fallback: failed to update user_id', error)
+                    } else {
+                        console.warn('Dashboard fallback: updated user_id to auth uid', { entryId: adminData.id })
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn('Dashboard fallback: admin unavailable', err)
+        }
+    }
+
     // Some rows store JSON as text, so normalize before checking status
-    const rawData = subscriptionEntry?.data
+    const effectiveEntry = subscriptionEntry || fallbackEntry
+    const rawData = effectiveEntry?.data
     const parsedData = typeof rawData === 'string' ? (() => {
         try {
             return JSON.parse(rawData)
@@ -74,8 +111,9 @@ export default async function DashboardPage() {
         userId: user.id,
         status,
         legacySubscribed,
-        hasEntry: Boolean(subscriptionEntry),
-        updatedAt: subscriptionEntry?.updated_at
+        hasEntry: Boolean(effectiveEntry),
+        updatedAt: effectiveEntry?.updated_at,
+        userIdMatch: (effectiveEntry as any)?.user_id === user.id
     })
 
     if (!isActive && !legacySubscribed) {
