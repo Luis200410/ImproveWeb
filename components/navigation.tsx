@@ -16,7 +16,6 @@ interface NavLink {
 }
 
 const publicLinks: NavLink[] = [
-    { href: '/dashboard', label: 'Dashboard' },
     { href: '/about', label: 'Manifesto' },
     { href: '/pricing', label: 'Membership' },
     { href: '/sales', label: 'The System' },
@@ -167,6 +166,17 @@ export function Navigation() {
                             {link.label}
                         </Link>
                     ))}
+                    {showMemberMenu && (
+                        <Link
+                            href="/dashboard"
+                            className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard'
+                                    ? 'text-white border-b border-white pb-1'
+                                    : 'text-white/60 hover:text-white'
+                                }`}
+                        >
+                            Dashboard
+                        </Link>
+                    )}
 
                     {showMemberMenu ? (
                         <div
@@ -273,6 +283,15 @@ export function Navigation() {
                                 {link.label}
                             </Link>
                         ))}
+                        {showMemberMenu && (
+                            <Link
+                                href="/dashboard"
+                                onClick={() => setIsMenuOpen(false)}
+                                className={`block text-sm font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+                            >
+                                Dashboard
+                            </Link>
+                        )}
                         {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                                 <Button variant="outline" className="w-full font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">

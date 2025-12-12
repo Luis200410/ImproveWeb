@@ -25,13 +25,23 @@ export default async function DashboardPage() {
         try {
             return JSON.parse(rawData)
         } catch {
-            return null
+            // If the JSONB column stores a bare string (e.g. "active"), use it directly
+            return rawData
         }
     })() : rawData
 
-    const status = (parsedData?.status as string | undefined)?.toLowerCase()
+    const statusValue = typeof parsedData === 'string' ? parsedData : parsedData?.status
+    const status = (statusValue ?? '').toString().trim().toLowerCase() || undefined
     const isActive = status === 'active' || status === 'trialing'
     const legacySubscribed = user.user_metadata?.subscribed || user.user_metadata?.is_subscribed || user.user_metadata?.couponUnlocked
+
+    console.log('Dashboard auth check', {
+        userId: user.id,
+        status,
+        legacySubscribed,
+        hasEntry: Boolean(subscriptionEntry),
+        updatedAt: subscriptionEntry?.updated_at
+    })
 
     if (!isActive && !legacySubscribed) {
         const detail = encodeURIComponent(status || 'none')
