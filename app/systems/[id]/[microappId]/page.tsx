@@ -13,13 +13,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { DatePicker } from '@/components/ui/date-picker'
 import { CustomSelect } from '@/components/ui/custom-select'
 import { NumberSlider } from '@/components/ui/number-slider'
-import { ArrowLeft, Clock, Calendar, CheckSquare, Plus, Edit, Trash2, Link as LinkIcon, ExternalLink, Share2, MoreVertical, Flame } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, CheckSquare, Plus, Edit, Trash2, Link as LinkIcon, ExternalLink, Share2, MoreVertical, Flame, TrendingUp, TrendingDown, DollarSign, Activity, Zap, Utensils, Droplets, Dumbbell, Wallet, Target, Moon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
 
 import { MicroappForm } from '@/components/microapp-form'
 import { HabitBuilder } from '@/components/habit-builder'
 import { HabitTimeline } from '@/components/habit-timeline'
+import { ForgeForm } from '@/components/forge-form'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
@@ -42,6 +43,7 @@ export default function MicroappPage() {
     const [externalFieldUpdate, setExternalFieldUpdate] = useState<{ fieldName: string, value: any, label?: string } | null>(null)
     const [relatedNames, setRelatedNames] = useState<Record<string, string>>({})
     const [projectProgress, setProjectProgress] = useState<Record<string, { total: number, completed: number }>>({})
+    const [relationOptions, setRelationOptions] = useState<Record<string, { value: string, label: string }[]>>({})
 
     // Atomic Habits State
     const [isCreatingHabit, setIsCreatingHabit] = useState(false)
@@ -65,7 +67,28 @@ export default function MicroappPage() {
             const loadedEntries = await dataStore.getEntries(microappId, currentUserId)
             setEntries(loadedEntries)
 
-            // Fetch related names
+            // Load Relation Options for Forms
+            const options: Record<string, { value: string, label: string }[]> = {};
+            for (const field of app.fields) {
+                if (field.type === 'relation' && field.relationMicroappId) {
+                    const targetEntries = await dataStore.getEntries(field.relationMicroappId, currentUserId);
+                    const targetApp = dataStore.getMicroappById(field.relationMicroappId);
+                    if (targetApp) {
+                        // Intelligent label finding
+                        const labelField = targetApp.fields.find(f =>
+                            ['Title', 'Name', 'Project Name', 'Goal Name', 'Habit Name'].includes(f.name)
+                        ) || targetApp.fields[0];
+
+                        options[field.name] = targetEntries.map(e => ({
+                            value: e.id,
+                            label: String(e.data[labelField.name] || 'Untitled')
+                        }));
+                    }
+                }
+            }
+            setRelationOptions(options);
+
+            // Fetch related names for display
             const names: Record<string, string> = {}
             for (const entry of loadedEntries) {
                 for (const field of app.fields) {
@@ -73,9 +96,6 @@ export default function MicroappPage() {
                         const relId = entry.data[field.name];
                         if (!names[relId]) {
                             // Fetch name
-                            const relApps = dataStore.getAllMicroapps(); // Simplified lookup
-                            // Ideal: dataStore.getEntry(relId) needs to know APP ID...
-                            // Currently Relation field stores only ID. We need to know which app it belongs to.
                             // The field definition has `relationMicroappId`.
                             if (field.relationMicroappId) {
                                 const relEntry = await dataStore.getEntry(relId);
@@ -138,6 +158,13 @@ export default function MicroappPage() {
         setShowForm(false)
         setEditingEntry(null)
         setExternalFieldUpdate(null)
+
+        // Clear query param
+        const params = new URLSearchParams(searchParams.toString())
+        if (params.has('new')) {
+            params.delete('new')
+            router.replace(`?${params.toString()}`)
+        }
     }
 
     const handleDelete = async (entryId: string, skipConfirm = false) => {
@@ -157,6 +184,12 @@ export default function MicroappPage() {
         setShowForm(false)
         setEditingEntry(null)
         setExternalFieldUpdate(null)
+        // Clear query param
+        const params = new URLSearchParams(searchParams.toString())
+        if (params.has('new')) {
+            params.delete('new')
+            router.replace(`?${params.toString()}`)
+        }
     }
 
     const handleSaveRelationEntry = async (data: Record<string, any>) => {
@@ -326,76 +359,32 @@ export default function MicroappPage() {
                     ) : (
                         /* Standard View */
                         <>
-                            {/* New Entry Form */}
+                            {/* New Entry Form - Rendered at Top Level for Full Screen Fixed Positioning */}
                             <AnimatePresence>
                                 {showForm && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="mb-12 overflow-hidden"
-                                    >
-                                        <div className="relative">
-                                            <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 to-transparent blur opacity-50" />
-                                            <Card className="relative border border-white/10 bg-black/50 backdrop-blur-xl">
-                                                <CardHeader className="border-b border-white/10">
-                                                    <div className="flex items-center gap-2">
-                                                        <Flame className="w-5 h-5 text-white/60" />
-                                                        <CardTitle className={`${playfair.className} text-2xl text-white`}>
-                                                            {editingEntry ? 'Edit Entry' : 'New Entry'}
-                                                        </CardTitle>
-                                                    </div>
-                                                </CardHeader>
-                                                <CardContent className="pt-6">
-                                                    <MicroappForm
-                                                        microapp={microapp}
-                                                        systemId={systemId}
-                                                        onSave={handleSaveEntry}
-                                                        onCancel={handleCancelForm}
-                                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
-                                                        externalFieldUpdate={externalFieldUpdate}
-                                                        onRequestCreateRelation={(targetId, fieldName, initialValue) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName, initialValue })}
-                                                    />
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </motion.div>
+                                    <ForgeForm
+                                        microapp={microapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                    />
                                 )}
                             </AnimatePresence>
 
-                            {/* Relation Creation Modal */}
+                            {/* Relation Creation Modal - Also Top Level */}
                             <AnimatePresence>
                                 {creatingRelation && targetMicroapp && (
-                                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.95 }}
-                                            className="w-full max-w-2xl"
-                                        >
-                                            <div className="relative">
-                                                <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 to-transparent blur opacity-50" />
-                                                <Card className="relative border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl">
-                                                    <CardHeader className="border-b border-white/10">
-                                                        <div className="flex items-center gap-2">
-                                                            <Plus className="w-5 h-5 text-white/60" />
-                                                            <CardTitle className={`${playfair.className} text-2xl text-white`}>Create New {targetMicroapp.name}</CardTitle>
-                                                        </div>
-                                                    </CardHeader>
-                                                    <CardContent className="pt-6 max-h-[80vh] overflow-y-auto">
-                                                        <MicroappForm
-                                                            microapp={targetMicroapp}
-                                                            systemId={systemId}
-                                                            onSave={handleSaveRelationEntry}
-                                                            onCancel={() => setCreatingRelation(null)}
-                                                            initialData={relationInitialData}
-                                                        />
-                                                    </CardContent>
-                                                </Card>
-                                            </div>
-                                        </motion.div>
-                                    </div>
+                                    <ForgeForm
+                                        microapp={targetMicroapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveRelationEntry}
+                                        onCancel={() => setCreatingRelation(null)}
+                                        initialData={relationInitialData}
+                                        relationOptions={relationOptions}
+                                    />
                                 )}
                             </AnimatePresence>
 
@@ -528,6 +517,190 @@ export default function MicroappPage() {
                                                                             </div>
                                                                         </div>
                                                                     )}
+                                                                </div>
+                                                            ) : microappId === 'routine-builder' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <h3 className={`${playfair.className} text-xl text-white mb-1`}>{String(entry.data['Program Name'] || 'Untitled')}</h3>
+                                                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider rounded border border-white/20 text-white/60 bg-white/5">
+                                                                                    {entry.data['Goal']}
+                                                                                </span>
+                                                                                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider rounded border border-white/20 text-white/60 bg-white/5">
+                                                                                    {entry.data['Split']}
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-2xl font-mono">{entry.data['Sessions / Week']}</div>
+                                                                            <div className="text-[10px] uppercase tracking-wider text-white/40">Sess/Wk</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-2 gap-4 pt-3 border-t border-white/10">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40">Next Session</p>
+                                                                            <p className="text-sm font-light mt-1">{entry.data['Next Session'] ? new Date(entry.data['Next Session']).toLocaleDateString() : 'Not Set'}</p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40">Length</p>
+                                                                            <p className="text-sm font-light mt-1">{entry.data['Session Length (min)']}m</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'recovery' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <h3 className={`${playfair.className} text-xl text-white mb-1`}>{String(entry.data['Modality'] || 'Recovery')}</h3>
+                                                                            <p className="text-xs uppercase tracking-wider text-white/40">{entry.data['Focus Area']}</p>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className={`text-2xl font-mono ${Number(entry.data['Readiness (1-10)']) >= 8 ? 'text-emerald-400' : Number(entry.data['Readiness (1-10)']) >= 5 ? 'text-amber-400' : 'text-rose-400'}`}>
+                                                                                {entry.data['Readiness (1-10)']}
+                                                                            </div>
+                                                                            <div className="text-[10px] uppercase tracking-wider text-white/40">Readiness</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-4 text-sm text-white/60">
+                                                                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {entry.data['Duration (min)']}m</span>
+                                                                        {entry.data['Sleep Hours'] > 0 && <span className="flex items-center gap-1"><Moon className="w-3 h-3" /> {entry.data['Sleep Hours']}h sleep</span>}
+                                                                        <span className="ml-auto px-2 py-0.5 text-[10px] uppercase rounded border border-white/10">{entry.data['Intensity']}</span>
+                                                                    </div>
+                                                                    {entry.data['Notes'] && <p className="text-xs text-white/50 italic line-clamp-2 border-t border-white/10 pt-2">{entry.data['Notes']}</p>}
+                                                                </div>
+                                                            ) : microappId === 'diet' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <div className="flex items-center gap-2 mb-1">
+                                                                                <span className="text-[10px] uppercase tracking-wider text-white/40">{entry.data['Meal']}</span>
+                                                                                <span className="text-[10px] uppercase tracking-wider text-white/40 mx-1">·</span>
+                                                                                <span className="text-[10px] uppercase tracking-wider text-white/40">{entry.data['Date']}</span>
+                                                                            </div>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Plate Build'] || 'Meal Log'}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-2xl font-mono text-emerald-200">{entry.data['Calories']}</div>
+                                                                            <div className="text-[10px] uppercase tracking-wider text-white/40">Kcal</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-3 gap-2 py-2 bg-white/5 rounded-lg border border-white/10 text-center">
+                                                                        <div>
+                                                                            <div className="text-lg font-mono">{entry.data['Protein (g)']}</div>
+                                                                            <div className="text-[10px] text-white/40">PRO</div>
+                                                                        </div>
+                                                                        <div className="border-l border-white/10">
+                                                                            <div className="text-lg font-mono">{entry.data['Carbs (g)']}</div>
+                                                                            <div className="text-[10px] text-white/40">CARB</div>
+                                                                        </div>
+                                                                        <div className="border-l border-white/10">
+                                                                            <div className="text-lg font-mono">{entry.data['Fats (g)']}</div>
+                                                                            <div className="text-[10px] text-white/40">FAT</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center text-xs text-white/50">
+                                                                        <span>💧 {entry.data['Hydration (glasses)']} glasses</span>
+                                                                        <span>{entry.data['Mood After']}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'income' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{entry.data['Type']}</p>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Source']}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-2xl font-mono text-emerald-400">+${Number(entry.data['Amount']).toLocaleString()}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="pt-2 border-t border-white/10 text-xs text-white/50">
+                                                                        {entry.data['Notes'] || 'No notes'}
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'expenses' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{entry.data['Category']}</p>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Description']}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-2xl font-mono text-rose-400">-${Number(entry.data['Amount']).toLocaleString()}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex justify-between pt-2 border-t border-white/10 text-xs text-white/50">
+                                                                        <span>{entry.data['Payment Method']}</span>
+                                                                        <span>{new Date(entry.data['Date']).toLocaleDateString()}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'subscriptions' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{entry.data['Category']}</p>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Name']}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-2xl font-mono">${Number(entry.data['Amount']).toLocaleString()}</div>
+                                                                            <div className="text-[10px] uppercase tracking-wider text-white/40">/{entry.data['Billing Cycle']}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-2 pt-2 border-t border-white/10 text-xs text-white/60">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Next Charge: {new Date(entry.data['Next Charge']).toLocaleDateString()}
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'savings-goals' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{entry.data['Category']}</p>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Goal Name']}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-xl font-mono text-emerald-200">${Number(entry.data['Current Amount']).toLocaleString()}</div>
+                                                                            <div className="text-[10px] text-white/40">of ${Number(entry.data['Target Amount']).toLocaleString()}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        <div className="flex justify-between text-[10px] text-white/40 uppercase tracking-wider">
+                                                                            <span>Progress</span>
+                                                                            <span>{Math.round((Number(entry.data['Current Amount']) / Number(entry.data['Target Amount'])) * 100)}%</span>
+                                                                        </div>
+                                                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                                            <div
+                                                                                className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300"
+                                                                                style={{ width: `${Math.min(100, (Number(entry.data['Current Amount']) / Number(entry.data['Target Amount'])) * 100)}%` }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ) : microappId === 'budget' ? (
+                                                                <div className="space-y-4">
+                                                                    <div className="flex justify-between items-start">
+                                                                        <div>
+                                                                            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">{entry.data['Month']}</p>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Category']}</h3>
+                                                                        </div>
+                                                                        <div className="text-right">
+                                                                            <div className="text-xl font-mono">${Number(entry.data['Budgeted Amount']).toLocaleString()}</div>
+                                                                            <div className="text-[10px] text-white/40">Budget</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="space-y-2 pt-2 border-t border-white/10">
+                                                                        <div className="flex justify-between text-sm">
+                                                                            <span className="text-white/60">Actual Spend</span>
+                                                                            <span className="font-mono">${Number(entry.data['Actual Amount'] || 0).toLocaleString()}</span>
+                                                                        </div>
+                                                                        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                                                            <div
+                                                                                className={`h-full ${Number(entry.data['Actual Amount']) > Number(entry.data['Budgeted Amount']) ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                                                                                style={{ width: `${Math.min(100, (Number(entry.data['Actual Amount'] || 0) / Number(entry.data['Budgeted Amount'])) * 100)}%` }}
+                                                                            />
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="grid md:grid-cols-2 gap-4">

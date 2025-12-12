@@ -13,6 +13,7 @@ export interface FieldDefinition {
     placeholder?: string
     relationMicroappId?: string
     width?: 'full' | '1/2' | '1/3' | '2/3' | '1/4' | '3/4'
+    description?: string
 }
 
 export interface Microapp {
@@ -127,14 +128,29 @@ class DataStore {
         const hasIncome = money?.microapps.some(m => m.id === 'income')
         const hasSubscriptions = money?.microapps.some(m => m.id === 'subscriptions')
         const hasSavings = money?.microapps.some(m => m.id === 'savings-goals')
+        const body = stored.find(s => s.id === 'body')
+        const hasRoutineBuilder = body?.microapps.some(m => m.id === 'routine-builder')
+        const hasRecovery = body?.microapps.some(m => m.id === 'recovery')
+        const hasDiet = body?.microapps.some(m => m.id === 'diet')
 
-        if (stored.length === 0 || stored.length !== 8 || !hasAtomicHabits || !hasPomodoro || !hasReview || !hasBudget || !hasExpenses || !hasIncome || !hasSubscriptions || !hasSavings) {
+        if (stored.length === 0
+            || stored.length !== 8
+            || !hasAtomicHabits
+            || !hasPomodoro
+            || !hasReview
+            || !hasBudget
+            || !hasExpenses
+            || !hasIncome
+            || !hasSubscriptions
+            || !hasSavings
+            || !hasRoutineBuilder
+            || !hasRecovery
+            || !hasDiet) {
             // Reset to defaults if wrong number of systems or any key productivity microapps are missing
             const defaults = this.getDefaultSystems()
             this.setItem('systems', defaults)
             return defaults
         }
-        return stored
         return stored
     }
 
@@ -369,51 +385,64 @@ class DataStore {
                 description: 'Physical health, fitness, nutrition, and rest',
                 microapps: [
                     {
-                        id: 'exercise',
+                        id: 'routine-builder',
                         systemId: 'body',
-                        name: 'Exercise Tracker',
-                        description: 'Track workouts and physical activities',
-                        icon: '🏋️',
-                        availableViews: ['list', 'calendar', 'chart'],
+                        name: 'Routine Builder',
+                        description: 'Design weekly training blocks with minimal typing',
+                        icon: '📐',
+                        availableViews: ['list', 'calendar', 'table'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Exercise Type', type: 'select', options: ['Cardio', 'Strength', 'Flexibility', 'Sports', 'Other'], required: true },
-                            { name: 'Duration (min)', type: 'number', required: true, min: 1 },
-                            { name: 'Intensity', type: 'select', options: ['Low', 'Medium', 'High'], required: true },
-                            { name: 'Notes', type: 'textarea', required: false }
+                            { name: 'Program Name', type: 'text', required: true, width: 'full' },
+                            { name: 'Goal', type: 'select', options: ['Strength', 'Hypertrophy', 'Endurance', 'Fat Loss', 'Athleticism', 'Mobility'], required: true, width: '1/2' },
+                            { name: 'Split', type: 'select', options: ['Full Body', 'Upper / Lower', 'Push / Pull / Legs', 'Hybrid', 'Custom'], required: true, width: '1/2' },
+                            { name: 'Sessions / Week', type: 'number', required: true, min: 1, max: 14, width: '1/3' },
+                            { name: 'Session Length (min)', type: 'number', required: false, min: 20, max: 180, width: '1/3' },
+                            { name: 'Next Session', type: 'date', required: false, width: '1/3' },
+                            { name: 'Equipment Tier', type: 'select', options: ['Minimal', 'Gym', 'Home Gym', 'Outdoor'], required: false, width: '1/2' },
+                            { name: 'Blocks', type: 'json', required: false, width: '1/2', placeholder: '[{\"block\":\"Warm-up\",\"minutes\":8},{\"block\":\"Strength\",\"sets\":4}]' },
+                            { name: 'Notes', type: 'textarea', required: false, width: 'full' }
                         ]
                     },
                     {
-                        id: 'nutrition',
+                        id: 'recovery',
                         systemId: 'body',
-                        name: 'Nutrition Log',
-                        description: 'Track meals and nutritional intake',
+                        name: 'Recovery',
+                        description: 'Regulate readiness with smart resets',
+                        icon: '🧘',
+                        availableViews: ['list', 'calendar', 'chart'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Date', type: 'date', required: true, width: '1/3' },
+                            { name: 'Modality', type: 'select', options: ['Mobility', 'Breathwork', 'Soft Tissue', 'Cold / Heat', 'Walk', 'Contrast', 'Nap'], required: true, width: '1/3' },
+                            { name: 'Focus Area', type: 'select', options: ['Neck / Shoulders', 'T-Spine', 'Hips', 'Knees / Ankles', 'Full Body', 'Mind'], required: false, width: '1/3' },
+                            { name: 'Duration (min)', type: 'number', required: true, min: 5, max: 120, width: '1/4' },
+                            { name: 'Readiness (1-10)', type: 'number', required: false, min: 1, max: 10, width: '1/4' },
+                            { name: 'Intensity', type: 'select', options: ['Low', 'Medium', 'High'], required: false, width: '1/4' },
+                            { name: 'Sleep Hours', type: 'number', required: false, min: 0, max: 14, width: '1/4' },
+                            { name: 'Notes', type: 'textarea', required: false, width: 'full' }
+                        ]
+                    },
+                    {
+                        id: 'diet',
+                        systemId: 'body',
+                        name: 'Diet',
+                        description: 'Fast logging for fueling and hydration',
                         icon: '🥗',
                         availableViews: ['list', 'table', 'chart'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Meal Type', type: 'select', options: ['Breakfast', 'Lunch', 'Dinner', 'Snack'], required: true },
-                            { name: 'Description', type: 'textarea', required: true },
-                            { name: 'Calories', type: 'number', required: false },
-                            { name: 'Water (glasses)', type: 'number', required: false, min: 0, max: 20 }
-                        ]
-                    },
-                    {
-                        id: 'sleep',
-                        systemId: 'body',
-                        name: 'Sleep & Rest',
-                        description: 'Monitor sleep quality and rest',
-                        icon: '😴',
-                        availableViews: ['list', 'calendar', 'chart'],
-                        defaultView: 'list',
-                        fields: [
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Bedtime', type: 'time', required: true },
-                            { name: 'Wake Time', type: 'time', required: true },
-                            { name: 'Sleep Quality', type: 'select', options: ['Poor', 'Fair', 'Good', 'Excellent'], required: true },
-                            { name: 'Notes', type: 'textarea', required: false }
+                            { name: 'Date', type: 'date', required: true, width: '1/3' },
+                            { name: 'Meal', type: 'select', options: ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Shake'], required: true, width: '1/3' },
+                            { name: 'Plate Build', type: 'select', options: ['Low-carb plate', 'Balanced plate', 'High-carb training', 'Protein-only snack', 'Plant-forward'], required: false, width: '1/3' },
+                            { name: 'Calories', type: 'number', required: false, min: 0, width: '1/4' },
+                            { name: 'Protein (g)', type: 'number', required: false, min: 0, width: '1/4' },
+                            { name: 'Carbs (g)', type: 'number', required: false, min: 0, width: '1/4' },
+                            { name: 'Fats (g)', type: 'number', required: false, min: 0, width: '1/4' },
+                            { name: 'Prep Time (min)', type: 'number', required: false, min: 0, width: '1/4' },
+                            { name: 'Mood After', type: 'select', options: ['Light & ready', 'Balanced', 'Sleepy', 'Bloated', 'Still hungry'], required: false, width: '1/3' },
+                            { name: 'Hydration (glasses)', type: 'number', required: false, min: 0, max: 20, width: '1/3' },
+                            { name: 'Notes', type: 'textarea', required: false, width: 'full' }
                         ]
                     }
                 ]
@@ -772,10 +801,12 @@ class DataStore {
                         availableViews: ['list', 'kanban'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Project Name', type: 'text', required: true },
-                            { name: 'Status', type: 'select', options: ['Active', 'On Hold', 'Completed'], required: true },
-                            { name: 'Area', type: 'relation', required: true, relationMicroappId: 'areas-sb' },
-                            { name: 'Description', type: 'textarea', required: false }
+                            { name: 'Project Name', type: 'text', required: true, width: 'full' },
+                            { name: 'Status', type: 'select', options: ['Active', 'On Hold', 'Completed'], required: true, width: '1/3' },
+                            { name: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'], required: true, width: '1/3' },
+                            { name: 'Due Date', type: 'date', required: false, width: '1/3' },
+                            { name: 'Area', type: 'relation', required: true, relationMicroappId: 'areas-sb', width: 'full' },
+                            { name: 'Description', type: 'textarea', required: false, width: 'full', placeholder: 'Scope, objectives, success criteria...' }
                         ]
                     },
                     {
@@ -825,8 +856,8 @@ class DataStore {
                         availableViews: ['list'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Name', type: 'text', required: true },
-                            { name: 'Description', type: 'textarea', required: false }
+                            { name: 'Name', type: 'text', required: true, width: 'full' },
+                            { name: 'Description', type: 'textarea', required: false, width: 'full', placeholder: 'Standard of performance, maintenance requirements...' }
                         ]
                     },
                     {
@@ -838,12 +869,12 @@ class DataStore {
                         availableViews: ['list'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Title', type: 'text', required: true },
-                            { name: 'Type', type: 'select', options: ['Article', 'Book', 'Video', 'Course', 'Tool', 'Other'], required: true },
-                            { name: 'URL', type: 'url', required: false },
-                            { name: 'Notes', type: 'textarea', required: false },
-                            { name: 'Project', type: 'relation', required: false, relationMicroappId: 'projects-sb' },
-                            { name: 'Area', type: 'relation', required: false, relationMicroappId: 'areas-sb' }
+                            { name: 'Title', type: 'text', required: true, width: 'full' },
+                            { name: 'Type', type: 'select', options: ['Article', 'Book', 'Video', 'Course', 'Tool', 'Other'], required: true, width: '1/2' },
+                            { name: 'URL', type: 'url', required: false, width: '1/2' },
+                            { name: 'Project', type: 'relation', required: false, relationMicroappId: 'projects-sb', width: '1/2' },
+                            { name: 'Area', type: 'relation', required: false, relationMicroappId: 'areas-sb', width: '1/2' },
+                            { name: 'Notes', type: 'textarea', required: false, width: 'full' }
                         ]
                     },
                     {

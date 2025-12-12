@@ -50,7 +50,7 @@ const paraSections: ParaSection[] = [
         icon: <ListTodo className="w-5 h-5 text-sky-200" />,
         microappId: 'tasks-sb',
         openPath: '/systems/second-brain/tasks-sb',
-        newPath: '/systems/second-brain/tasks-sb/forge',
+        newPath: '/systems/second-brain/tasks-sb?new=1',
         newLabel: 'New task',
         hint: 'Plan and slot your day'
     },
@@ -388,30 +388,30 @@ export default function SecondBrainPage() {
                                             {col.items.length === 0 && (
                                                 <div className="text-white/60 text-xs">Drop here.</div>
                                             )}
-                                                {col.items.map(item => (
-                                                    <motion.div
-                                                        layout
-                                                        key={item.id}
-                                                        draggable
-                                                        onDragStart={() => setDraggingTaskId(item.id)}
-                                                        onDragEnd={() => setDraggingTaskId(null)}
-                                                        className="p-3 rounded-xl border border-white/15 bg-black/30 hover:border-white/40 transition cursor-grab active:cursor-grabbing"
-                                                        transition={{ type: 'spring', stiffness: 220, damping: 18 }}
-                                                        whileDrag={{ scale: 1.02, rotate: -1, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
-                                                        onClick={() => router.push(`/systems/second-brain/tasks-sb?id=${item.id}`)}
-                                                    >
-                                                        <div className="flex items-center justify-between text-sm text-white">
-                                                            <span className="font-semibold line-clamp-1">{item.data['Task'] || 'Untitled'}</span>
-                                                            <span className="text-xs text-white/60">{(item.data['End Date'] || '').slice(5)}</span>
-                                                        </div>
-                                                        <p className="text-xs text-white/50">
-                                                            {projectNames[item.data['Project']] || 'Solo'}
-                                                        </p>
-                                                    </motion.div>
-                                                ))}
-                                            </div>
-                                        </motion.div>
-                                    ))}
+                                            {col.items.map(item => (
+                                                <motion.div
+                                                    layout
+                                                    key={item.id}
+                                                    draggable
+                                                    onDragStart={() => setDraggingTaskId(item.id)}
+                                                    onDragEnd={() => setDraggingTaskId(null)}
+                                                    className="p-3 rounded-xl border border-white/15 bg-black/30 hover:border-white/40 transition cursor-grab active:cursor-grabbing"
+                                                    transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+                                                    whileDrag={{ scale: 1.02, rotate: -1, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}
+                                                    onClick={() => router.push(`/systems/second-brain/tasks-sb?id=${item.id}`)}
+                                                >
+                                                    <div className="flex items-center justify-between text-sm text-white">
+                                                        <span className="font-semibold line-clamp-1">{item.data['Task'] || 'Untitled'}</span>
+                                                        <span className="text-xs text-white/60">{(item.data['End Date'] || '').slice(5)}</span>
+                                                    </div>
+                                                    <p className="text-xs text-white/50">
+                                                        {projectNames[item.data['Project']] || 'Solo'}
+                                                    </p>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </CardContent>
                         </Card>
 
