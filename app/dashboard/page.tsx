@@ -59,10 +59,12 @@ export default async function DashboardPage() {
     if (!fallbackEntry) {
         try {
             const admin = assertSupabaseAdmin()
+            const ids: string[] = [user.id]
+            if (user.email) ids.push(user.email)
             const { data: adminData } = await admin
                 .from('entries')
                 .select('id, data, updated_at, user_id')
-                .or(`user_id.eq.${user.id},user_id.eq.${user.email || ''}`)
+                .in('user_id', ids)
                 .eq('microapp_id', 'subscription-status')
                 .order('updated_at', { ascending: false })
                 .limit(1)
