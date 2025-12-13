@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { dataStore, Microapp, Entry, FieldDefinition } from '@/lib/data-store'
@@ -23,6 +23,12 @@ import { HabitTimeline } from '@/components/habit-timeline'
 import { ForgeForm } from '@/components/forge-form'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 
+import { MicroappHeader } from '@/components/microapp-header'
+import { ProjectsDashboard } from '@/components/projects-dashboard'
+import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
+
+import { TasksDashboard } from '@/components/tasks-dashboard'
+
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,13 +36,19 @@ export default function MicroappPage() {
     const params = useParams()
     const router = useRouter();
     const searchParams = useSearchParams()
-    const [userId, setUserId] = useState<string>('defaultUser');
+    const [userId, setUserId] = useState<string | null>(null);
     const systemId = params.id as string
     const microappId = params.microappId as string
 
     const [microapp, setMicroapp] = useState<Microapp | null>(null)
     const [entries, setEntries] = useState<Entry[]>([])
-    const [showForm, setShowForm] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+
+    // Additional state for Projects Dashboard
+    const [tasks, setTasks] = useState<Entry[]>([])
+    const [areas, setAreas] = useState<Entry[]>([])
+
+    const [isForgeOpen, setIsForgeOpen] = useState(false)
     const [creatingRelation, setCreatingRelation] = useState<{ targetMicroappId: string, sourceFieldName: string, initialValue?: string } | null>(null)
     const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
     const [defaultFormData, setDefaultFormData] = useState<Record<string, any>>({})
@@ -44,93 +56,145 @@ export default function MicroappPage() {
     const [relatedNames, setRelatedNames] = useState<Record<string, string>>({})
     const [projectProgress, setProjectProgress] = useState<Record<string, { total: number, completed: number }>>({})
     const [relationOptions, setRelationOptions] = useState<Record<string, { value: string, label: string }[]>>({})
+    const [viewMode, setViewMode] = useState<'list' | 'gallery'>('list')
 
     // Atomic Habits State
     const [isCreatingHabit, setIsCreatingHabit] = useState(false)
     const [habitViewMode, setHabitViewMode] = useState<'day' | 'week'>('day')
 
-    useEffect(() => {
-        const loadEntries = async () => {
-            const app = dataStore.getMicroapp(systemId, microappId)
-            if (!app) {
-                router.push(`/systems/${systemId}`)
-                return
+    const fetchEntries = useCallback(async (currentUserId: string) => {
+        if (!microappId) return;
+
+        try {
+            const loadedEntries = await dataStore.getEntries(microappId, currentUserId);
+            setEntries(loadedEntries);
+
+            // If it's the projects dashboard, we need more data
+            if (microappId === 'projects-sb') {
+                const [t, a] = await Promise.all([
+                    dataStore.getEntries('tasks-sb', currentUserId),
+                    dataStore.getEntries('areas-sb', currentUserId)
+                ]);
+                setTasks(t);
+                setAreas(a);
             }
-            setMicroapp(app)
 
-            // Fetch real user
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-            const currentUserId = user ? user.id : 'defaultUser';
-            setUserId(currentUserId);
+            // Load Relation Options for Forms (if microapp loaded)
+            if (microapp) {
+                const options: Record<string, { value: string, label: string }[]> = {};
+                for (const field of microapp.fields) {
+                    if (field.type === 'relation' && field.relationMicroappId) {
+                        const targetEntries = await dataStore.getEntries(field.relationMicroappId, currentUserId);
+                        const targetApp = dataStore.getMicroappById(field.relationMicroappId);
+                        if (targetApp) {
+                            const labelField = targetApp.fields.find(f =>
+                                ['Title', 'Name', 'Project Name', 'Goal Name', 'Habit Name', 'Area Name'].includes(f.name)
+                            ) || targetApp.fields[0];
 
-            const loadedEntries = await dataStore.getEntries(microappId, currentUserId)
-            setEntries(loadedEntries)
-
-            // Load Relation Options for Forms
-            const options: Record<string, { value: string, label: string }[]> = {};
-            for (const field of app.fields) {
-                if (field.type === 'relation' && field.relationMicroappId) {
-                    const targetEntries = await dataStore.getEntries(field.relationMicroappId, currentUserId);
-                    const targetApp = dataStore.getMicroappById(field.relationMicroappId);
-                    if (targetApp) {
-                        // Intelligent label finding
-                        const labelField = targetApp.fields.find(f =>
-                            ['Title', 'Name', 'Project Name', 'Goal Name', 'Habit Name'].includes(f.name)
-                        ) || targetApp.fields[0];
-
-                        options[field.name] = targetEntries.map(e => ({
-                            value: e.id,
-                            label: String(e.data[labelField.name] || 'Untitled')
-                        }));
+                            options[field.name] = targetEntries.map(e => ({
+                                value: e.id,
+                                label: String(e.data[labelField.name] || 'Untitled')
+                            }));
+                        }
                     }
                 }
-            }
-            setRelationOptions(options);
+                setRelationOptions(options);
 
-            // Fetch related names for display
-            const names: Record<string, string> = {}
-            for (const entry of loadedEntries) {
-                for (const field of app.fields) {
-                    if (field.type === 'relation' && entry.data[field.name]) {
-                        const relId = entry.data[field.name];
-                        if (!names[relId]) {
-                            // Fetch name
-                            // The field definition has `relationMicroappId`.
-                            if (field.relationMicroappId) {
-                                const relEntry = await dataStore.getEntry(relId);
-                                if (relEntry) {
-                                    // Determine label
-                                    const relApp = dataStore.getMicroappById(field.relationMicroappId);
-                                    if (relApp) {
-                                        const labelField = relApp.fields.find(f => f.name === 'Title' || f.name === 'Name') || relApp.fields[0];
-                                        names[relId] = relEntry.data[labelField.name] || relId;
+                // Fetch related names
+                const names: Record<string, string> = {}
+                for (const entry of loadedEntries) {
+                    for (const field of microapp.fields) {
+                        if (field.type === 'relation' && entry.data[field.name]) {
+                            const relId = entry.data[field.name];
+                            if (!names[relId]) {
+                                if (field.relationMicroappId) {
+                                    const relEntry = await dataStore.getEntry(relId);
+                                    if (relEntry) {
+                                        const relApp = dataStore.getMicroappById(field.relationMicroappId);
+                                        if (relApp) {
+                                            const labelField = relApp.fields.find(f => ['Title', 'Name', 'Area Name'].includes(f.name)) || relApp.fields[0];
+                                            names[relId] = relEntry.data[labelField.name] || relId;
+                                        }
                                     }
                                 }
                             }
                         }
+
+                        // Project Progress Calculation
+                        if (microappId === 'projects-sb') {
+                            const tasksAppId = 'tasks-sb';
+                            const allTasks = await dataStore.getEntries(tasksAppId, currentUserId);
+                            const projectTasks = allTasks.filter(t => t.data['Project'] === entry.id || (typeof t.data['Project'] === 'object' && t.data['Project'].id === entry.id));
+                            const completed = projectTasks.filter(t => t.data['Status'] === 'Done').length; // Ensure matching 'Done' string
+                            setProjectProgress(prev => ({ ...prev, [entry.id]: { total: projectTasks.length, completed } }));
+                        }
                     }
                 }
-
-                // Project Progress Calculation
-                if (microappId === 'projects-sb') {
-                    // Find all tasks linked to this project
-                    const tasksAppId = 'tasks-sb';
-                    const allTasks = await dataStore.getEntries(tasksAppId, currentUserId);
-                    const projectTasks = allTasks.filter(t => t.data['Project'] === entry.id);
-                    const completed = projectTasks.filter(t => t.data['Status'] === true).length;
-                    setProjectProgress(prev => ({ ...prev, [entry.id]: { total: projectTasks.length, completed } }));
-                }
+                setRelatedNames(names);
             }
-            setRelatedNames(names)
+        } catch (error) {
+            console.error("Failed to fetch entries:", error)
+        } finally {
+            setIsLoading(false)
         }
-        loadEntries()
-    }, [systemId, microappId, router])
+    }, [microappId, microapp]);
+
+    // Realtime Sync
+    useRealtimeSubscription('entries', () => {
+        if (userId) {
+            fetchEntries(userId);
+        }
+    });
+
+    // Initial Load
+    useEffect(() => {
+        const init = async () => {
+            // 1. Get Microapp
+            const app = dataStore.getMicroapp(systemId, microappId);
+            if (!app) {
+                // If not found, maybe wait or redirect. 
+                // For now, assume it might be a hydration timing issue, but getMicroapp is sync from LS.
+                // If it fails, redirecting is safe.
+                router.push(`/systems/${systemId}`);
+                return;
+            }
+            setMicroapp(app);
+
+            // 2. Get User
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (user) {
+                setUserId(user.id);
+                // 3. Fetch Entries Immediately
+                await fetchEntries(user.id);
+            } else {
+                // Handle not logged in?
+                setIsLoading(false);
+            }
+        };
+        init();
+    }, [systemId, microappId, router]); // Only run on mount changes
+
+    // We don't need the separate useEffect [microapp, userId] anymore because we call fetchEntries directly in init 
+    // AND we have it in realtime subscription for updates.
+    // However, if `microapp` state updates LATER (e.g. if we had async microapp loading), we might need it. 
+    // But here `getMicroapp` is sync.
+    // To be safe, let's keep a simple effect that runs if userId changes later (e.g. login/logout without unmount)
+    useEffect(() => {
+        if (userId && microapp) {
+            // Avoid double fetching if init already did it.
+            // This effect primarily handles cases where userId might change *after* initial load
+            // (e.g., user logs in/out without a full page reload, or if init() didn't fetch for some reason).
+            // The `isLoading` state should prevent premature rendering.
+            fetchEntries(userId);
+        }
+    }, [userId, microapp]);
 
     useEffect(() => {
         const newParam = searchParams.get('new')
         if (newParam === '1') {
-            setShowForm(true)
+            setIsForgeOpen(true)
             setEditingEntry(null)
         }
     }, [searchParams])
@@ -153,9 +217,8 @@ export default function MicroappPage() {
         }
 
         // Refresh
-        const updatedEntries = await dataStore.getEntries(microappId, userId)
-        setEntries(updatedEntries)
-        setShowForm(false)
+        fetchEntries(userId);
+        setIsForgeOpen(false)
         setEditingEntry(null)
         setExternalFieldUpdate(null)
 
@@ -170,18 +233,17 @@ export default function MicroappPage() {
     const handleDelete = async (entryId: string, skipConfirm = false) => {
         if (skipConfirm || confirm('Are you sure you want to delete this entry?')) {
             await dataStore.deleteEntry(entryId)
-            const updatedEntries = await dataStore.getEntries(microappId, userId)
-            setEntries(updatedEntries)
+            fetchEntries(userId);
         }
     }
 
     const handleEdit = (entry: Entry) => {
         setEditingEntry(entry)
-        setShowForm(true)
+        setIsForgeOpen(true)
     }
 
     const handleCancelForm = () => {
-        setShowForm(false)
+        setIsForgeOpen(false)
         setEditingEntry(null)
         setExternalFieldUpdate(null)
         // Clear query param
@@ -199,25 +261,15 @@ export default function MicroappPage() {
         // We know targetMicroappId
         await dataStore.addEntry(userId, creatingRelation.targetMicroappId, data);
 
-        // Get the ID of the new entry... dataStore.addEntry returns Entry?
-        // Wait, current implementation of addEntry is void in some versions or returns entry in others.
-        // Assuming we need to fetch the last entry or update dataStore to return it.
-        // For now, let's just close modal and refresh
-
-        // Actually, we need to pass the ID back to the main form.
-        // Current dataStore mock might not return it.
-        // Let's assume we can find it.
+        // Find newly created entry to pass back
         const entries = await dataStore.getEntries(creatingRelation.targetMicroappId, userId);
         const newEntry = entries[entries.length - 1]; // Risky but works for local
 
         // Update main form field
-        // We use a special state to bubble this up to MicroappForm
-
-        // Find label
         const targetApp = dataStore.getMicroappById(creatingRelation.targetMicroappId);
         let label = newEntry.id;
         if (targetApp) {
-            const labelField = targetApp.fields.find(f => f.name === 'Title' || f.name === 'Name') || targetApp.fields[0];
+            const labelField = targetApp.fields.find(f => ['Title', 'Name', 'Area Name'].includes(f.name)) || targetApp.fields[0];
             label = newEntry.data[labelField.name] || newEntry.id;
         }
 
@@ -233,17 +285,49 @@ export default function MicroappPage() {
         setRelatedNames(prev => ({ ...prev, [newEntry.id]: label }))
     }
 
+    const handleScheduleTask = async (entry: Entry, date: Date) => {
+        const updatedData = { ...entry.data, id: entry.id, 'Start Date': date.toISOString(), 'Status': 'Due' }
+        await handleSaveEntry(updatedData)
+        handleEdit({ ...entry, data: updatedData })
+    }
+
+    const handleUpdateEntry = async (entry: Entry, updates: Record<string, any>) => {
+        await dataStore.updateEntry(entry.id, updates)
+        fetchEntries(userId)
+    }
+
+    // For Projects Dashboard specifically
+    const handleUpdateProject = async (projectId: string, updates: Record<string, any>) => {
+        await dataStore.updateEntry(projectId, updates)
+        fetchEntries(userId)
+    }
+
+    const handleCreateProject = () => {
+        setEditingEntry(null)
+        setIsForgeOpen(true)
+    }
+
+    const handleEditEntry = (entry: Entry) => {
+        setEditingEntry(entry)
+        setIsForgeOpen(true)
+    }
+
     // Helper to get target microapp for modal
     const targetMicroapp = creatingRelation ? dataStore.getMicroappById(creatingRelation.targetMicroappId) : null;
-    const relationInitialData = creatingRelation?.initialValue ? { [creatingRelation.sourceFieldName === 'Project' ? 'Name' : 'Title']: creatingRelation.initialValue } : {}; // Simplified guess
+    const relationInitialData = creatingRelation?.initialValue ? {
+        [creatingRelation.targetMicroappId === 'areas-sb' ? 'Area Name' :
+            creatingRelation.sourceFieldName === 'Project' ? 'Name' : 'Title']: creatingRelation.initialValue
+    } : {};
 
     if (!microapp) return null
 
     return (
         <div className="min-h-screen bg-black text-white selection:bg-white/20">
+            {/* ... Navigation ... */}
             <Navigation />
 
             <div className="max-w-7xl mx-auto p-4 md:p-8 pt-24 md:pt-32">
+                {/* ... Header ... */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -284,7 +368,7 @@ export default function MicroappPage() {
                         <button
                             onClick={() => {
                                 setEditingEntry(null)
-                                setShowForm(true)
+                                setIsForgeOpen(true)
                             }}
                             className="bg-white text-black px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold hover:bg-white/90 transition-colors flex items-center gap-2"
                         >
@@ -297,6 +381,7 @@ export default function MicroappPage() {
                 <div className="relative">
                     {/* Atomic Habits Custom View */}
                     {microappId === 'atomic-habits' ? (
+                        // ... (atomic habits code) ...
                         <>
                             {isCreatingHabit ? (
                                 <HabitBuilder
@@ -321,7 +406,6 @@ export default function MicroappPage() {
                                 <HabitTimeline
                                     entries={entries}
                                     onToggleStatus={(entry) => {
-                                        // CRITICAL FIX: explicit ID passing to prevent duplication
                                         handleSaveEntry({ ...entry.data, id: entry.id });
                                     }}
                                     onEdit={(entry) => {
@@ -329,6 +413,7 @@ export default function MicroappPage() {
                                         setIsCreatingHabit(true)
                                     }}
                                     onDelete={async (entryId, skipConfirm) => {
+                                        // ...
                                         if (skipConfirm) {
                                             const entry = entries.find(e => e.id === entryId);
                                             if (entry) {
@@ -339,6 +424,7 @@ export default function MicroappPage() {
                                         }
                                     }}
                                     onFocusComplete={async (duration, entry) => {
+                                        // ...
                                         try {
                                             await dataStore.addEntry(userId, 'pomodoro', {
                                                 'Session Name': entry.data['Habit Name'],
@@ -356,12 +442,11 @@ export default function MicroappPage() {
                                 />
                             )}
                         </>
-                    ) : (
-                        /* Standard View */
+                    ) : microappId === 'tasks-sb' ? (
+                        /* Tasks Dashboard View - Adding below this image per request */
                         <>
-                            {/* New Entry Form - Rendered at Top Level for Full Screen Fixed Positioning */}
                             <AnimatePresence>
-                                {showForm && (
+                                {isForgeOpen && (
                                     <ForgeForm
                                         microapp={microapp}
                                         systemId={systemId}
@@ -370,11 +455,77 @@ export default function MicroappPage() {
                                         initialData={editingEntry ? editingEntry.data : defaultFormData}
                                         onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
                                         relationOptions={relationOptions}
+                                        variant={'panel'}
+                                    />
+                                )}
+                            </AnimatePresence>
+                            <AnimatePresence>
+                                {creatingRelation && targetMicroapp && (
+                                    <ForgeForm
+                                        microapp={targetMicroapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveRelationEntry}
+                                        onCancel={() => setCreatingRelation(null)}
+                                        initialData={relationInitialData}
+                                        relationOptions={relationOptions}
                                     />
                                 )}
                             </AnimatePresence>
 
-                            {/* Relation Creation Modal - Also Top Level */}
+                            <TasksDashboard
+                                entries={entries}
+                                onUpdateEntry={(entry, updates) => handleSaveEntry({ ...entry.data, id: entry.id, ...updates })}
+                                onEditEntry={handleEdit}
+                                onScheduleEntry={handleScheduleTask}
+                            />
+                        </>
+                    ) : microappId === 'projects-sb' ? (
+                        <>
+                            <AnimatePresence>
+                                {isForgeOpen && (
+                                    <ForgeForm
+                                        microapp={microapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                        variant="panel"
+                                    />
+                                )}
+                            </AnimatePresence>
+                            <div className="max-w-7xl mx-auto px-8 py-12">
+                                <ProjectsDashboard
+                                    projects={entries}
+                                    tasks={tasks}
+                                    areas={areas}
+                                    onUpdateProject={handleUpdateProject}
+                                    onEditProject={handleEditEntry}
+                                    onCreateProject={handleCreateProject}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        /* Standard View */
+                        <>
+                            {/* New Entry Form - Rendered at Top Level for Full Screen Fixed Positioning */}
+                            <AnimatePresence>
+                                {isForgeOpen && (
+                                    <ForgeForm
+                                        microapp={microapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                        variant={microappId === 'tasks-sb' ? 'panel' : 'fullscreen'}
+                                    />
+                                )}
+                            </AnimatePresence>
+
+                            {/* ... (Relation Creation Modal) ... */}
                             <AnimatePresence>
                                 {creatingRelation && targetMicroapp && (
                                     <ForgeForm
@@ -402,6 +553,7 @@ export default function MicroappPage() {
                                     <div className="h-px bg-white/10 flex-1" />
                                 </motion.div>
 
+                                {/* ... (Standard Grid) ... */}
                                 {entries.length === 0 ? (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
@@ -424,6 +576,8 @@ export default function MicroappPage() {
                                                     whileHover={{ scale: 1.02, y: -5 }}
                                                     className="relative group h-full"
                                                 >
+                                                    {/* ... (Standard Card Content) ... */}
+                                                    {/* ... Copied relevant parts for standard card rendering ... */}
                                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
                                                     <Card className="relative border border-white/10 bg-white/5 group-hover:border-white/30 transition-all duration-500 h-full flex flex-col">
                                                         <CardHeader className="border-b border-white/10">
@@ -727,8 +881,9 @@ export default function MicroappPage() {
                         </>
                     )
                     }
-                </div >
-            </div >
-        </div >
+                </div>
+            </div>
+        </div>
     )
+
 }

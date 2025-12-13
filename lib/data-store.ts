@@ -547,16 +547,44 @@ class DataStore {
                     {
                         id: 'projects',
                         systemId: 'work',
-                        name: 'Project Manager',
-                        description: 'Manage work projects',
-                        icon: '📁',
+                        name: 'Projects',
+                        description: 'Active initiatives with deadlines',
+                        icon: '🎯',
                         availableViews: ['list', 'kanban', 'timeline'],
                         defaultView: 'kanban',
                         fields: [
                             { name: 'Project Name', type: 'text', required: true },
-                            { name: 'Status', type: 'select', options: ['Not Started', 'In Progress', 'Blocked', 'Completed'], required: true },
-                            { name: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'], required: true },
-                            { name: 'Due Date', type: 'date', required: false },
+                            { name: 'Status', type: 'select', options: ['Backlog', 'In Progress', 'In Review', 'Done'], required: true },
+                            { name: 'Area', type: 'relation', relationMicroappId: 'areas-sb', required: false, width: '1/2' },
+                            { name: 'Deadline', type: 'date', required: false, width: '1/2' },
+                            { name: 'Description', type: 'textarea', required: false, width: 'full' }
+                        ]
+                    },
+                    {
+                        id: 'notebooks-sb',
+                        systemId: 'second-brain',
+                        name: 'Notebooks',
+                        description: 'Collections of notes and tasks',
+                        icon: '📓',
+                        availableViews: ['list', 'gallery'],
+                        defaultView: 'gallery',
+                        fields: [
+                            { name: 'Title', type: 'text', required: true, width: 'full' },
+                            { name: 'Description', type: 'textarea', required: false, width: 'full' },
+                            { name: 'Cover Image', type: 'url', required: false, width: 'full' },
+                            { name: 'Area', type: 'relation', relationMicroappId: 'areas-sb', required: false, width: '1/2' }
+                        ]
+                    },
+                    {
+                        id: 'areas-sb',
+                        systemId: 'second-brain',
+                        name: 'Areas',
+                        description: 'Long-term responsibilities',
+                        icon: 'mnt',
+                        availableViews: ['list', 'gallery'],
+                        defaultView: 'gallery',
+                        fields: [
+                            { name: 'Area Name', type: 'text', required: true },
                             { name: 'Description', type: 'textarea', required: false }
                         ]
                     },
@@ -599,7 +627,8 @@ class DataStore {
                             { name: 'Status', type: 'select', options: ['Next', 'Waiting', 'Someday', 'Done'], required: true },
                             { name: 'Priority', type: 'select', options: ['Low', 'Medium', 'High'], required: true },
                             { name: 'Due Date', type: 'date', required: false },
-                            { name: 'Context', type: 'select', options: ['@home', '@work', '@errands', '@calls', '@computer'], required: false }
+                            { name: 'Context', type: 'select', options: ['@home', '@work', '@errands', '@calls', '@computer'], required: false },
+                            { name: 'Notebook', type: 'relation', relationMicroappId: 'notebooks-sb', required: false, width: '1/2' }
                         ]
                     },
                     {
@@ -818,15 +847,15 @@ class DataStore {
                         availableViews: ['list', 'kanban'],
                         defaultView: 'list',
                         fields: [
-                            { name: 'Task', type: 'text', required: true },
-                            { name: 'Status', type: 'checkbox', required: true },
-                            { name: 'Start Date', type: 'date', required: true },
-                            { name: 'End Date', type: 'date', required: false },
-                            { name: 'Completion Date', type: 'date', required: false },
-                            { name: 'Project', type: 'relation', required: false, relationMicroappId: 'projects-sb' },
-                            { name: 'Notes', type: 'relation', required: false, relationMicroappId: 'notes-sb' },
-                            { name: 'Resources', type: 'relation', required: false, relationMicroappId: 'resources-sb' },
-                            { name: 'Assignee', type: 'text', required: false }
+                            { name: 'Task', type: 'text', required: true, width: 'full' },
+                            { name: 'Status', type: 'select', options: ['Pending', 'Due', 'Working on', 'Done'], required: true, width: '1/4' },
+                            { name: 'Start Date', type: 'date', required: true, width: '1/4' },
+                            { name: 'End Date', type: 'date', required: false, width: '1/4' },
+                            { name: 'Completion Date', type: 'date', required: false, width: '1/4' },
+                            { name: 'Project', type: 'relation', required: false, relationMicroappId: 'projects-sb', width: '1/2' },
+                            { name: 'Notes', type: 'relation', required: false, relationMicroappId: 'notes-sb', width: '1/2' },
+                            { name: 'Resources', type: 'relation', required: false, relationMicroappId: 'resources-sb', width: 'full' },
+                            { name: 'Assignee', type: 'text', required: false, width: 'full' }
                         ]
                     },
                     {

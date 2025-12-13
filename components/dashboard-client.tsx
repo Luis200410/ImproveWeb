@@ -1,27 +1,98 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { dataStore, System } from '@/lib/data-store'
+import { dataStore, System, Entry } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
 import { TrendingUp, Target, Calendar, Sparkles, ArrowRight } from 'lucide-react'
+import { TodaysTasksRoad } from '@/components/todays-tasks-road'
+import { ForgeForm } from '@/components/forge-form'
+import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
 export default function DashboardClient() {
     const [systems, setSystems] = useState<System[]>([])
-    const [todayCount, setTodayCount] = useState(0)
+    const [todayCount, setTodayCount] = useState(0) // Still useful for stats if we keep them
+
+    // Today's Tasks
+    const [todaysTasks, setTodaysTasks] = useState<Entry[]>([])
+    const [isForgeOpen, setIsForgeOpen] = useState(false)
+    const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
+    const [userId, setUserId] = useState<string>('defaultUser')
+
+    useEffect(() => {
+        // Fetch User ID (Assuming Supabase or similar auth is available client-side, 
+        // similar to how we did in page.tsx. If not, we might default to 'defaultUser' 
+        // but ideally we get the real one).
+        // For now, let's try to get it if we can, or rely on a default if dataStore handles it.
+        // Actually earlier codebase used:
+        // const { data: { user } } = await supabase.auth.getUser()
+        // Let's replicate safe user fetching.
+        import('@/utils/supabase/client').then(({ createClient }) => {
+            const supabase = createClient()
+            supabase.auth.getUser().then(({ data: { user } }) => {
+                if (user) setUserId(user.id)
+            })
+        })
+    }, [])
+
+    const fetchTodaysTasks = useCallback(async () => {
+        const allTasks = await dataStore.getEntries('tasks-sb')
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const filtered = allTasks.filter(task => {
+            if (!task.data['Start Date']) return false
+            const taskDate = new Date(task.data['Start Date'])
+            taskDate.setHours(0, 0, 0, 0)
+            return taskDate.getTime() === today.getTime()
+        })
+
+        setTodaysTasks(filtered)
+        setTodayCount(filtered.length)
+    }, [])
+
+    // Realtime Sync: Listen for ANY change to 'tasks-sb' entries
+    useRealtimeSubscription('entries', fetchTodaysTasks, 'microapp_id=eq.tasks-sb')
 
     useEffect(() => {
         setSystems(dataStore.getSystems())
-        dataStore.getTodayEntries().then(entries => {
-            setTodayCount(entries.length)
-        })
-    }, [])
+        fetchTodaysTasks()
+    }, [fetchTodaysTasks])
+
+    // Handlers
+    const handleToggleStatus = async (entry: Entry) => {
+        const newStatus = entry.data['Status'] === 'Done' ? 'Pending' : 'Done'
+        await dataStore.updateEntry(entry.id, { 'Status': newStatus })
+        fetchTodaysTasks()
+    }
+
+    const handleEditEntry = (entry: Entry) => {
+        setEditingEntry(entry)
+        setIsForgeOpen(true)
+    }
+
+    const handleCreateEntry = () => {
+        setEditingEntry(null)
+        setIsForgeOpen(true)
+    }
+
+    const handleSaveEntry = async (formData: Record<string, any>) => {
+        if (editingEntry) {
+            await dataStore.updateEntry(editingEntry.id, formData)
+        } else {
+            // New Entry
+            await dataStore.addEntry('tasks-sb', formData, userId)
+        }
+        setIsForgeOpen(false)
+        setEditingEntry(null)
+        fetchTodaysTasks()
+    }
 
     return (
         <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -91,6 +162,36 @@ export default function DashboardClient() {
                         </p>
                     </motion.div>
 
+                    {/* Today's Tasks Road */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.8 }}
+                        className="mb-20"
+                    >
+                        <TodaysTasksRoad
+                            entries={todaysTasks}
+                            onToggleStatus={handleToggleStatus}
+                            onEditEntry={handleEditEntry}
+                            onCreateEntry={handleCreateEntry}
+                        />
+                    </motion.div>
+
+                    <AnimatePresence>
+                        {isForgeOpen && (
+                            <ForgeForm
+                                microapp={dataStore.getMicroappById('tasks-sb')!}
+                                systemId="second-brain"
+                                initialData={editingEntry?.data || { 'Start Date': new Date().toISOString() }}
+                                onSave={handleSaveEntry}
+                                onCancel={() => setIsForgeOpen(false)}
+                                variant="panel"
+                                relationOptions={{}}
+                            />
+                        )}
+                    </AnimatePresence>
+
+                    {/* Stats Overview */}
                     {/* Stats Overview */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

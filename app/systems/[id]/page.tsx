@@ -1,16 +1,20 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { dataStore, System } from '@/lib/data-store'
+import { dataStore, System, Entry } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { motion, Reorder } from 'framer-motion'
+import { motion, Reorder, AnimatePresence } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
 import { ArrowLeft, Sparkles, ArrowRight, Database, Eye, Layers } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { loadPrefs, savePrefs } from '@/utils/user-preferences'
+import { TasksDashboard } from '@/components/tasks-dashboard'
+import { ProjectsDashboard } from '@/components/projects-dashboard'
+import { ForgeForm } from '@/components/forge-form'
+import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -22,14 +26,107 @@ export default function SystemPage() {
     const [entryCounts, setEntryCounts] = useState<Record<string, number>>({})
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
     const [customizeOrder, setCustomizeOrder] = useState(false)
-    const system = useMemo<System | null>(() => {
-        const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
-        return foundSystem || null
-    }, [systemId])
+
+    const system = dataStore.getSystem(systemId)
+    const allMicroapps = system?.microapps || []
+
     const [microappOrder, setMicroappOrder] = useState<string[]>(() => {
-        const foundSystem = dataStore.getSystems().find(s => s.id === systemId)
-        return foundSystem ? foundSystem.microapps.map(m => m.id) : []
+        return system ? system.microapps.map(m => m.id) : []
     })
+
+    // TASK & PROJECT MANAGEMENT (SECOND BRAIN SPECIFIC)
+    const [taskEntries, setTaskEntries] = useState<Entry[]>([])
+    const [projectEntries, setProjectEntries] = useState<Entry[]>([])
+    const [areaEntries, setAreaEntries] = useState<Entry[]>([])
+    const [isForgeOpen, setIsForgeOpen] = useState(false)
+    const [editingTask, setEditingTask] = useState<Entry | null>(null)
+    const [editingProject, setEditingProject] = useState<Entry | null>(null)
+    const [targetMicroapp, setTargetMicroapp] = useState<string>('tasks-sb')
+
+    const fetchTasks = useCallback(async () => {
+        if (systemId === 'second-brain') {
+            const tasks = await dataStore.getEntries('tasks-sb')
+            setTaskEntries(tasks)
+
+            const projects = await dataStore.getEntries('projects-sb')
+            setProjectEntries(projects)
+
+            const areas = await dataStore.getEntries('areas-sb')
+            setAreaEntries(areas)
+        }
+    }, [systemId])
+
+    // Fetch user and initial data
+    useEffect(() => {
+        const init = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) setUserId(user.id)
+            fetchTasks()
+        }
+        init()
+    }, [fetchTasks])
+
+    // Realtime Sync
+    useRealtimeSubscription('entries', fetchTasks)
+
+    const handleUpdateTask = async (entry: Entry, updates: Partial<any>) => {
+        setTaskEntries(prev => prev.map(e => e.id === entry.id ? { ...e, data: { ...e.data, ...updates } } : e))
+        await dataStore.updateEntry(entry.id, updates)
+        fetchTasks()
+    }
+
+    const handleUpdateProject = async (projectId: string, updates: Partial<any>) => {
+        setProjectEntries(prev => prev.map(p => p.id === projectId ? { ...p, data: { ...p.data, ...updates } } : p))
+        await dataStore.updateEntry(projectId, updates)
+        fetchTasks()
+    }
+
+    const handleEditTask = (entry: Entry) => {
+        setEditingTask(entry)
+        setTargetMicroapp('tasks-sb')
+        setIsForgeOpen(true)
+    }
+
+    const handleEditProject = (entry: Entry) => {
+        setEditingProject(entry)
+        setTargetMicroapp('projects-sb')
+        setIsForgeOpen(true)
+    }
+
+    const handleCreateProject = (status?: string) => {
+        setEditingProject(null)
+        setTargetMicroapp('projects-sb')
+        // We could pass initial status if ForgeForm supported dynamic initial data better, 
+        // for now just open fresh
+        setIsForgeOpen(true)
+    }
+
+    const handleScheduleTask = async (entry: Entry, date: Date) => {
+        const updates = { 'Start Date': date.toISOString(), 'Status': 'Due' }
+        await handleUpdateTask(entry, updates)
+        handleEditTask({ ...entry, data: { ...entry.data, ...updates } })
+    }
+
+    const handleSaveEntry = async (formData: Record<string, any>) => {
+        if (targetMicroapp === 'tasks-sb') {
+            if (editingTask) {
+                await dataStore.updateEntry(editingTask.id, formData)
+            } else {
+                await dataStore.addEntry('tasks-sb', formData, userId)
+            }
+        } else if (targetMicroapp === 'projects-sb') {
+            if (editingProject) {
+                await dataStore.updateEntry(editingProject.id, formData)
+            } else {
+                await dataStore.addEntry('projects-sb', formData, userId)
+            }
+        }
+        setIsForgeOpen(false)
+        setEditingTask(null)
+        setEditingProject(null)
+        fetchTasks()
+    }
 
     /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
@@ -191,6 +288,86 @@ export default function SystemPage() {
                             {system.description}
                         </p>
                     </motion.div>
+
+                    {/* Second Brain: Tasks Dashboard Integration */}
+                    {system.id === 'second-brain' && (
+                        <div className="mb-16">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.4 }}
+                            >
+                                <div className="flex items-center gap-4 mb-6">
+                                    <h2 className={`${playfair.className} text-3xl font-bold text-white`}>Active Tasks</h2>
+                                    <div className="h-px bg-white/10 flex-1" />
+                                </div>
+                                <Card className="bg-black border border-white/10 overflow-hidden">
+                                    <CardContent className="p-0">
+                                        <TasksDashboard
+                                            entries={taskEntries}
+                                            onUpdateEntry={handleUpdateTask}
+                                            onEditEntry={handleEditTask}
+                                            onScheduleEntry={handleScheduleTask}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    <AnimatePresence>
+                        {isForgeOpen && (
+                            <ForgeForm
+                                microapp={dataStore.getMicroappById('tasks-sb')!}
+                                systemId="second-brain"
+                                initialData={editingTask?.data || {}}
+                                onSave={handleSaveTask}
+                                onCancel={() => setIsForgeOpen(false)}
+                                variant="panel"
+                                relationOptions={{}}
+                            />
+                        )}
+                    </AnimatePresence>
+
+                    {/* Second Brain: Tasks Dashboard Integration */}
+                    {system.id === 'second-brain' && (
+                        <div className="mb-16">
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6, delay: 0.4 }}
+                            >
+                                <div className="flex items-center gap-4 mb-6">
+                                    <h2 className={`${playfair.className} text-3xl font-bold text-white`}>Active Tasks</h2>
+                                    <div className="h-px bg-white/10 flex-1" />
+                                </div>
+                                <Card className="bg-black border border-white/10 overflow-hidden">
+                                    <CardContent className="p-0">
+                                        <TasksDashboard
+                                            entries={taskEntries}
+                                            onUpdateEntry={handleUpdateTask}
+                                            onEditEntry={handleEditTask}
+                                            onScheduleEntry={handleScheduleTask}
+                                        />
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    <AnimatePresence>
+                        {isForgeOpen && (
+                            <ForgeForm
+                                microapp={dataStore.getMicroappById('tasks-sb')!}
+                                systemId="second-brain"
+                                initialData={editingTask?.data || {}}
+                                onSave={handleSaveTask}
+                                onCancel={() => setIsForgeOpen(false)}
+                                variant="panel"
+                                relationOptions={{}}
+                            />
+                        )}
+                    </AnimatePresence>
 
                     {/* Microapps Grid */}
                     <div>

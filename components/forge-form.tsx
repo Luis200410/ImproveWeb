@@ -27,9 +27,10 @@ interface ForgeFormProps {
     entriesPromise?: Promise<any[]>
     onRequestCreateRelation?: (targetMicroappId: string, fieldName: string) => void
     relationOptions?: Record<string, { value: string, label: string }[]>
+    variant?: 'fullscreen' | 'panel'
 }
 
-export function ForgeForm({ microapp, systemId, initialData = {}, onSave, onCancel, relationOptions = {}, onRequestCreateRelation }: ForgeFormProps) {
+export function ForgeForm({ microapp, systemId, initialData = {}, onSave, onCancel, relationOptions = {}, onRequestCreateRelation, variant = 'fullscreen' }: ForgeFormProps) {
     const [step, setStep] = useState(1)
     const [formData, setFormData] = useState<Record<string, any>>(initialData)
     const [direction, setDirection] = useState(0)
@@ -226,114 +227,138 @@ export function ForgeForm({ microapp, systemId, initialData = {}, onSave, onCanc
         exit: (d: number) => ({ x: d < 0 ? 50 : -50, opacity: 0 })
     }
 
+    // Styles for Panel vs Fullscreen
+    const containerClasses = variant === 'panel'
+        ? "fixed inset-y-0 right-0 z-[100] w-full md:w-[600px] bg-[#0A0A0A] border-l border-white/10 flex flex-col shadow-2xl"
+        : "fixed inset-0 z-[100] bg-black text-white flex flex-col"
+
+    const backdropClasses = variant === 'panel'
+        ? "fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm"
+        : "hidden"
+
     return (
-        <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col">
-            {/* Header / Nav */}
-            <div className="flex items-center justify-between px-6 py-4">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" className="text-white/60 hover:text-white pl-0 hover:bg-transparent" onClick={onCancel}>
-                        <ArrowLeft className="w-5 h-5 mr-2" /> Back
-                    </Button>
-                    <span className="text-white/20">/</span>
-                    <span className="text-xs uppercase tracking-[0.2em] text-white/50">Forge {microapp.name}</span>
+        <>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className={backdropClasses}
+                onClick={onCancel}
+            />
+            <motion.div
+                initial={variant === 'panel' ? { x: '100%' } : { opacity: 0 }}
+                animate={variant === 'panel' ? { x: 0 } : { opacity: 1 }}
+                exit={variant === 'panel' ? { x: '100%' } : { opacity: 0 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className={containerClasses}
+            >
+                {/* Header / Nav */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                    <div className="flex items-center gap-4">
+                        <Button variant="ghost" className="text-white/60 hover:text-white pl-0 hover:bg-transparent" onClick={onCancel}>
+                            <ArrowLeft className="w-5 h-5 mr-2" /> {variant === 'panel' ? 'Close' : 'Back'}
+                        </Button>
+                        <span className="text-white/20">/</span>
+                        <span className="text-xs uppercase tracking-[0.2em] text-white/50">Forge {microapp.name}</span>
+                    </div>
                 </div>
-            </div>
 
-            {/* Segmented Progress Bar */}
-            <div className="px-6 flex gap-2">
-                {Array.from({ length: totalSteps }).map((_, idx) => {
-                    const stepNum = idx + 1
-                    const isActive = step === stepNum
-                    const isPast = step > stepNum
+                {/* Segmented Progress Bar */}
+                <div className="px-6 flex gap-2 pt-6">
+                    {Array.from({ length: totalSteps }).map((_, idx) => {
+                        const stepNum = idx + 1
+                        const isActive = step === stepNum
+                        const isPast = step > stepNum
 
-                    return (
-                        <div key={idx} className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
-                            <motion.div
-                                className="h-full bg-white"
-                                initial={{ width: isPast ? "100%" : "0%" }}
-                                animate={{ width: isActive ? "100%" : isPast ? "100%" : "0%" }} // Simple active fill, could be animated over time if needed
-                                transition={{ duration: 0.3 }}
-                            />
-                        </div>
-                    )
-                })}
-            </div>
+                        return (
+                            <div key={idx} className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
+                                <motion.div
+                                    className="h-full bg-white"
+                                    initial={{ width: isPast ? "100%" : "0%" }}
+                                    animate={{ width: isActive ? "100%" : isPast ? "100%" : "0%" }} // Simple active fill, could be animated over time if needed
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </div>
+                        )
+                    })}
+                </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col justify-start max-w-4xl mx-auto w-full px-6 pt-20 pb-12 overflow-y-auto custom-scrollbar">
-                <AnimatePresence mode="wait" custom={direction}>
-                    <motion.div
-                        key={step}
-                        custom={direction}
-                        variants={variants}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        transition={{ duration: 0.4, ease: "circOut" }}
-                        className="w-full space-y-12"
-                    >
-                        {/* Step Title / Question */}
-                        <div className="space-y-4">
-                            {/* Infer title from first field if simple */}
-                            <h2 className={`${playfair.className} text-5xl md:text-7xl text-white leading-[1.1]`}>
-                                {currentFields[0].name === 'Task' ? 'What needs to be done?' :
-                                    currentFields[0].name === 'Project Name' ? 'What is the project?' :
-                                        currentFields[0].name === 'Goal Name' ? 'What is the goal?' :
-                                            currentFields[0].name}
-                            </h2>
-                            {currentFields[0].description ? (
-                                <p className={`${inter.className} text-xl md:text-2xl text-white/60 max-w-2xl`}>{currentFields[0].description}</p>
-                            ) : null}
-                        </div>
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col justify-start w-full px-6 pt-12 pb-12 overflow-y-auto custom-scrollbar">
+                    <AnimatePresence mode="wait" custom={direction}>
+                        <motion.div
+                            key={step}
+                            custom={direction}
+                            variants={variants}
+                            initial="enter"
+                            animate="center"
+                            exit="exit"
+                            transition={{ duration: 0.4, ease: "circOut" }}
+                            className="w-full space-y-8"
+                        >
+                            {/* Step Title / Question */}
+                            <div className="space-y-4">
+                                {/* Infer title from first field if simple */}
+                                <h2 className={`${playfair.className} ${variant === 'panel' ? 'text-4xl' : 'text-5xl md:text-7xl'} text-white leading-[1.1]`}>
+                                    {currentFields[0].name === 'Task' ? 'What needs to be done?' :
+                                        currentFields[0].name === 'Project Name' ? 'What is the project?' :
+                                            currentFields[0].name === 'Goal Name' ? 'What is the goal?' :
+                                                currentFields[0].name}
+                                </h2>
+                                {currentFields[0].description ? (
+                                    <p className={`${inter.className} ${variant === 'panel' ? 'text-lg' : 'text-xl md:text-2xl'} text-white/60 max-w-2xl`}>{currentFields[0].description}</p>
+                                ) : null}
+                            </div>
 
-                        {/* Fields Container */}
-                        <div className="flex flex-wrap gap-x-8 gap-y-12">
-                            {currentFields.map(field => {
-                                let widthClass = 'w-full'
-                                if (field.width === '1/2') widthClass = 'w-full md:w-[calc(50%-1rem)]'
-                                if (field.width === '1/3') widthClass = 'w-full md:w-[calc(33.333%-1.33rem)]'
+                            {/* Fields Container */}
+                            <div className="flex flex-wrap gap-x-8 gap-y-8">
+                                {currentFields.map(field => {
+                                    let widthClass = 'w-full'
+                                    if (field.width === '1/2') widthClass = 'w-full md:w-[calc(50%-1rem)]'
+                                    if (field.width === '1/3') widthClass = 'w-full md:w-[calc(33.333%-1.33rem)]'
 
-                                return (
-                                    <div key={field.name} className={`${widthClass}`}>
-                                        <div className="space-y-6">
-                                            {/* Label only helps if multiple fields, otherwise title covers it */}
-                                            {currentFields.length > 1 && (
-                                                <Label className="text-white/50 text-xs uppercase tracking-[0.2em] mb-2 block font-semibold">
-                                                    {field.name}
-                                                </Label>
-                                            )}
-                                            {renderField(field)}
+                                    return (
+                                        <div key={field.name} className={`${widthClass}`}>
+                                            <div className="space-y-4">
+                                                {/* Label only helps if multiple fields, otherwise title covers it */}
+                                                {currentFields.length > 1 && (
+                                                    <Label className="text-white/50 text-xs uppercase tracking-[0.2em] mb-2 block font-semibold">
+                                                        {field.name}
+                                                    </Label>
+                                                )}
+                                                {renderField(field)}
+                                            </div>
                                         </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-            </div>
+                                    )
+                                })}
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
 
-            {/* Footer */}
-            <div className="p-6 md:p-12 flex justify-between items-center bg-gradient-to-t from-black via-black to-transparent">
-                <Button
-                    variant="ghost"
-                    onClick={onCancel}
-                    className="text-white/40 hover:text-white uppercase tracking-widest text-xs"
-                >
-                    Cancel
-                </Button>
+                {/* Footer */}
+                <div className="p-6 flex justify-between items-center bg-white/5 border-t border-white/10">
+                    <Button
+                        variant="ghost"
+                        onClick={onCancel}
+                        className="text-white/40 hover:text-white uppercase tracking-widest text-xs"
+                    >
+                        Cancel
+                    </Button>
 
-                <Button
-                    onClick={nextStep}
-                    disabled={!isStepValid}
-                    className="bg-white text-black hover:bg-emerald-200 transition-colors rounded-full px-8 py-6 text-sm uppercase tracking-widest font-semibold"
-                >
-                    {step === totalSteps ? (
-                        <span className="flex items-center gap-2">Complete <Check className="w-4 h-4 ml-1" /></span>
-                    ) : (
-                        <span className="flex items-center gap-2">Next <ChevronRight className="w-4 h-4 ml-1" /></span>
-                    )}
-                </Button>
-            </div>
-        </div>
+                    <Button
+                        onClick={nextStep}
+                        disabled={!isStepValid}
+                        className="bg-white text-black hover:bg-emerald-200 transition-colors rounded-full px-8 py-4 text-sm uppercase tracking-widest font-semibold"
+                    >
+                        {step === totalSteps ? (
+                            <span className="flex items-center gap-2">Complete <Check className="w-4 h-4 ml-1" /></span>
+                        ) : (
+                            <span className="flex items-center gap-2">Next <ChevronRight className="w-4 h-4 ml-1" /></span>
+                        )}
+                    </Button>
+                </div>
+            </motion.div>
+        </>
     )
 }
