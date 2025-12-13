@@ -97,7 +97,7 @@ export default function SystemPage() {
         handleEditTask({ ...entry, data: { ...entry.data, ...updates } })
     }
 
-    const handleSaveEntry = async (formData: any) => {
+    const handleSaveTask = async (formData: any) => {
         if (!userId) return
 
         if (targetMicroapp === 'tasks-sb') {
@@ -106,7 +106,6 @@ export default function SystemPage() {
             } else {
                 await dataStore.addEntry(userId, 'tasks-sb', formData)
             }
-            fetchTasks(userId)
             fetchTasks()
         } else if (targetMicroapp === 'projects-sb') {
             if (editingProject) {
