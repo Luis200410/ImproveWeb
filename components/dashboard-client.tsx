@@ -87,7 +87,7 @@ export default function DashboardClient() {
             await dataStore.updateEntry(editingEntry.id, formData)
         } else {
             // New Entry
-            await dataStore.addEntry('tasks-sb', formData, userId)
+            await dataStore.addEntry(userId, 'tasks-sb', formData)
         }
         setIsForgeOpen(false)
         setEditingEntry(null)
