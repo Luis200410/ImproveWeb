@@ -108,26 +108,41 @@ export default function SystemPage() {
         handleEditTask({ ...entry, data: { ...entry.data, ...updates } })
     }
 
-    const handleSaveEntry = async (formData: Record<string, any>) => {
+    const handleSaveEntry = async (formData: any) => {
+        if (!userId) return
+
         if (targetMicroapp === 'tasks-sb') {
             if (editingTask) {
                 await dataStore.updateEntry(editingTask.id, formData)
             } else {
-                await dataStore.addEntry('tasks-sb', formData, userId)
+                await dataStore.addEntry(userId, 'tasks-sb', formData)
             }
+            fetchTasks(userId)
         } else if (targetMicroapp === 'projects-sb') {
             if (editingProject) {
                 await dataStore.updateEntry(editingProject.id, formData)
             } else {
-                await dataStore.addEntry('projects-sb', formData, userId)
+                await dataStore.addEntry(userId, 'projects-sb', formData)
             }
+            fetchProjects(userId)
         }
+
         setIsForgeOpen(false)
         setEditingTask(null)
         setEditingProject(null)
-        fetchTasks()
     }
 
+    const handleUpdateTask = async (entry: Entry, updates: any) => {
+        if (!userId) return
+        await dataStore.updateEntry(entry.id, updates)
+        fetchTasks(userId)
+    }
+
+    const handleUpdateProject = async (projectId: string, updates: any) => {
+        if (!userId) return
+        await dataStore.updateEntry(projectId, updates)
+        fetchProjects(userId)
+    }
     /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
         if (!system) {
