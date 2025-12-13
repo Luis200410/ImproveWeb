@@ -70,17 +70,6 @@ export default function SystemPage() {
     // Realtime Sync
     useRealtimeSubscription('entries', fetchTasks)
 
-    const handleUpdateTask = async (entry: Entry, updates: Partial<any>) => {
-        setTaskEntries(prev => prev.map(e => e.id === entry.id ? { ...e, data: { ...e.data, ...updates } } : e))
-        await dataStore.updateEntry(entry.id, updates)
-        fetchTasks()
-    }
-
-    const handleUpdateProject = async (projectId: string, updates: Partial<any>) => {
-        setProjectEntries(prev => prev.map(p => p.id === projectId ? { ...p, data: { ...p.data, ...updates } } : p))
-        await dataStore.updateEntry(projectId, updates)
-        fetchTasks()
-    }
 
     const handleEditTask = (entry: Entry) => {
         setEditingTask(entry)
@@ -118,30 +107,36 @@ export default function SystemPage() {
                 await dataStore.addEntry(userId, 'tasks-sb', formData)
             }
             fetchTasks(userId)
+            fetchTasks()
         } else if (targetMicroapp === 'projects-sb') {
             if (editingProject) {
                 await dataStore.updateEntry(editingProject.id, formData)
             } else {
                 await dataStore.addEntry(userId, 'projects-sb', formData)
             }
-            fetchProjects(userId)
+            fetchTasks()
         }
 
         setIsForgeOpen(false)
         setEditingTask(null)
         setEditingProject(null)
+        fetchTasks()
     }
 
     const handleUpdateTask = async (entry: Entry, updates: any) => {
         if (!userId) return
         await dataStore.updateEntry(entry.id, updates)
-        fetchTasks(userId)
+        // Optimistic update
+        setTaskEntries(prev => prev.map(e => e.id === entry.id ? { ...e, data: { ...e.data, ...updates } } : e))
+        fetchTasks()
     }
 
     const handleUpdateProject = async (projectId: string, updates: any) => {
         if (!userId) return
         await dataStore.updateEntry(projectId, updates)
-        fetchProjects(userId)
+        // Optimistic update
+        setProjectEntries(prev => prev.map(p => p.id === projectId ? { ...p, data: { ...p.data, ...updates } } : p))
+        fetchTasks()
     }
     /* eslint-disable react-hooks/set-state-in-effect */
     useEffect(() => {
