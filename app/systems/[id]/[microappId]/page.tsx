@@ -201,7 +201,7 @@ export default function MicroappPage() {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleSaveEntry = async (data: Record<string, any>) => {
-        if (!microapp) return
+        if (!microapp || !userId) return
 
         // Check if we are updating (prioritize explicit data.id, then fallback to editingEntry)
         const updateId = data.id || editingEntry?.id;
@@ -231,6 +231,7 @@ export default function MicroappPage() {
     }
 
     const handleDelete = async (entryId: string, skipConfirm = false) => {
+        if (!userId) return
         if (skipConfirm || confirm('Are you sure you want to delete this entry?')) {
             await dataStore.deleteEntry(entryId)
             fetchEntries(userId);
@@ -255,7 +256,7 @@ export default function MicroappPage() {
     }
 
     const handleSaveRelationEntry = async (data: Record<string, any>) => {
-        if (!creatingRelation) return
+        if (!creatingRelation || !userId) return;
 
         // Save new entry to target microapp
         // We know targetMicroappId
@@ -286,23 +287,27 @@ export default function MicroappPage() {
     }
 
     const handleScheduleTask = async (entry: Entry, date: Date) => {
+        if (!userId) return
         const updatedData = { ...entry.data, id: entry.id, 'Start Date': date.toISOString(), 'Status': 'Due' }
         await handleSaveEntry(updatedData)
         handleEdit({ ...entry, data: updatedData })
     }
 
     const handleUpdateEntry = async (entry: Entry, updates: Record<string, any>) => {
+        if (!userId) return
         await dataStore.updateEntry(entry.id, updates)
         fetchEntries(userId)
     }
 
     // For Projects Dashboard specifically
     const handleUpdateProject = async (projectId: string, updates: Record<string, any>) => {
+        if (!userId) return
         await dataStore.updateEntry(projectId, updates)
         fetchEntries(userId)
     }
 
     const handleCreateProject = () => {
+        if (!userId) return
         setEditingEntry(null)
         setIsForgeOpen(true)
     }
