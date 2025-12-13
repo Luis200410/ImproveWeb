@@ -429,6 +429,10 @@ export default function MicroappPage() {
                                         }
                                     }}
                                     onFocusComplete={async (duration, entry) => {
+                                        if (!userId) {
+                                            console.error("User not authenticated for focus logging")
+                                            return
+                                        }
                                         // ...
                                         try {
                                             await dataStore.addEntry(userId, 'pomodoro', {
