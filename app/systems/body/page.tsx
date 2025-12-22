@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
-import { dataStore, Entry, System } from '@/lib/data-store'
+import { dataStore, Entry, System, type FitnessGoal } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,10 @@ export default function BodyPage() {
     const [entries, setEntries] = useState<Record<string, Entry[]>>({})
     const [userId, setUserId] = useState<string>('defaultUser')
     const [isSaving, setIsSaving] = useState(false)
+    const [goals, setGoals] = useState<FitnessGoal[]>([])
+    const [goalText, setGoalText] = useState('')
+    const [goalTimeframe, setGoalTimeframe] = useState('8 weeks')
+    const [goalPriority, setGoalPriority] = useState<'Low' | 'Medium' | 'High'>('High')
 
     useEffect(() => {
         const bodySystem = dataStore.getSystem('body')
@@ -49,6 +53,16 @@ export default function BodyPage() {
     useEffect(() => {
         refreshEntries()
     }, [refreshEntries])
+
+    const refreshGoals = useCallback(async () => {
+        if (!userId) return
+        const list = await dataStore.getFitnessGoals(userId)
+        setGoals(list)
+    }, [userId])
+
+    useEffect(() => {
+        refreshGoals()
+    }, [refreshGoals])
 
     const numeric = (value: any) => {
         const num = Number(value)
@@ -136,6 +150,23 @@ export default function BodyPage() {
                 Notes: 'Auto-built template. Swap blocks or drag inside the microapp.'
             })
             await refreshEntries()
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleAddGoal = async () => {
+        if (!goalText.trim() || !userId) return
+        setIsSaving(true)
+        try {
+            await dataStore.saveFitnessGoal({
+                userId,
+                goal: goalText.trim(),
+                timeframe: goalTimeframe,
+                priority: goalPriority
+            })
+            setGoalText('')
+            await refreshGoals()
         } finally {
             setIsSaving(false)
         }
@@ -241,18 +272,13 @@ export default function BodyPage() {
     if (!system) return null
 
     return (
-        <div className="min-h-screen bg-[#030303] text-white relative overflow-hidden">
+        <div className="min-h-screen bg-black text-white relative overflow-hidden">
             <div className="fixed inset-0 -z-10">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(239,68,68,0.15),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(74,222,128,0.12),transparent_25%),radial-gradient(circle_at_40%_80%,rgba(59,130,246,0.12),transparent_30%)]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] via-black to-black" />
+                <div className="absolute -left-16 top-24 w-[520px] h-[520px] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.12),transparent_50%)] blur-3xl" />
+                <div className="absolute right-[-120px] top-32 w-[480px] h-[480px] bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.06),transparent_50%)] blur-3xl" />
                 <div className="absolute inset-0 opacity-[0.03]">
-                    <svg width="100%" height="100%">
-                        <defs>
-                            <pattern id="body-grid" width="90" height="90" patternUnits="userSpaceOnUse">
-                                <path d="M 90 0 L 0 0 0 90" fill="none" stroke="white" strokeWidth="0.6" />
-                            </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#body-grid)" />
-                    </svg>
+                    <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.3)_1px,transparent_1px)] bg-[size:40px_40px]" />
                 </div>
             </div>
 
@@ -275,34 +301,38 @@ export default function BodyPage() {
                     className="grid lg:grid-cols-[1.2fr,0.8fr] gap-8 items-start"
                 >
                     <div className="space-y-6">
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/0 pointer-events-none" />
-                            <div className="flex flex-wrap items-center gap-3 text-emerald-200">
+                        <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.04] p-8 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
+                            <div className="flex flex-wrap items-center gap-3 text-emerald-200 relative z-10">
                                 <Sparkles className="w-5 h-5" />
-                                <span className="text-xs uppercase tracking-[0.3em] text-white/60">Athletic OS · Body</span>
+                                <span className="text-xs uppercase tracking-[0.32em] text-white/70">Athletic OS · Body</span>
                             </div>
-                            <h1 className={`${playfair.className} text-5xl font-bold mt-4 mb-3`}>
+                            <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold mt-4 mb-3 text-white relative z-10`}>
                                 Build + Recover + Fuel without friction
                             </h1>
-                            <p className={`${inter.className} text-lg text-white/70 max-w-3xl`}>
+                            <p className={`${inter.className} text-lg text-white/75 max-w-3xl relative z-10`}>
                                 Three linked microapps: design a weekly block, auto-log a reset, and drop in fuel presets. Zero boring forms, lots of tactile moves.
                             </p>
-                            <div className="mt-6 flex flex-wrap gap-3">
+                            <div className="mt-6 flex flex-wrap gap-3 relative z-10">
                                 <Button asChild className="bg-white text-black hover:bg-white/90">
                                     <Link href="/systems/body/routine-builder">Open Routine Builder</Link>
                                 </Button>
-                                <Button variant="outline" disabled={isSaving} onClick={() => handleRecoveryPreset('mobility')}>
+                                <Button variant="outline" className="border-white/40 text-white hover:bg-white/10" disabled={isSaving} onClick={() => handleRecoveryPreset('mobility')}>
                                     <Wind className="w-4 h-4" />
                                     Quick recovery
                                 </Button>
-                                <Button variant="ghost" className="border border-white/10 bg-white/5" disabled={isSaving} onClick={handleRoutineTemplate}>
+                                <Button variant="ghost" className="border border-white/12 bg-white/5 text-white hover:border-white/40" disabled={isSaving} onClick={handleRoutineTemplate}>
                                     <Zap className="w-4 h-4" />
                                     Drop a template
+                                </Button>
+                                <Button asChild variant="ghost" className="border border-white/12 bg-white/5 text-white hover:border-white/40">
+                                    <Link href="/systems/body/library">
+                                        Browse Library
+                                    </Link>
                                 </Button>
                             </div>
                         </div>
 
-                        <Card className="bg-white/5 border-white/10">
+                        <Card className="bg-white/[0.05] border-white/10 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     Tactical snapshot
@@ -310,26 +340,26 @@ export default function BodyPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-red-200">Next session</p>
-                                    <p className="text-2xl font-bold mt-2">{nextSession ? new Date(nextSession).toLocaleDateString() : 'Set it'}</p>
+                                <div className="p-5 rounded-2xl border border-white/12 bg-white/[0.04]">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Next session</p>
+                                    <p className="text-3xl font-bold mt-2">{nextSession ? new Date(nextSession).toLocaleDateString() : 'Set it'}</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-amber-200">Plan / wk</p>
-                                    <p className="text-2xl font-bold mt-2">{avgWeeklySessions || '—'}</p>
+                                <div className="p-5 rounded-2xl border border-white/12 bg-white/[0.04]">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Plan / wk</p>
+                                    <p className="text-3xl font-bold mt-2">{avgWeeklySessions || '—'}</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Readiness</p>
-                                    <p className="text-2xl font-bold mt-2">{readinessAvg ? readinessAvg : 'Calibrate'}</p>
+                                <div className="p-5 rounded-2xl border border-white/12 bg-white/[0.04]">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Readiness</p>
+                                    <p className="text-3xl font-bold mt-2">{readinessAvg ? readinessAvg : 'Calibrate'}</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-sky-200">Fuel today</p>
-                                    <p className="text-2xl font-bold mt-2">{caloriesToday ? `${caloriesToday.toFixed(0)} kcal` : 'Tap a preset'}</p>
+                                <div className="p-5 rounded-2xl border border-white/12 bg-white/[0.04]">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Fuel today</p>
+                                    <p className="text-3xl font-bold mt-2">{caloriesToday ? `${caloriesToday.toFixed(0)} kcal` : 'Tap a preset'}</p>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white/5 border-white/10 overflow-hidden">
+                        <Card className="bg-white/[0.05] border-white/12 overflow-hidden backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center gap-2">
                                 <Dumbbell className="w-5 h-5 text-white/60" />
                                 <CardTitle className="text-white">Routine Builder</CardTitle>
@@ -339,7 +369,7 @@ export default function BodyPage() {
                                     <button
                                         onClick={handleRoutineTemplate}
                                         disabled={isSaving}
-                                        className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-left hover:border-white/40 transition"
+                                        className="rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-left hover:border-white/40 transition"
                                     >
                                         <div className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-white/60 mb-1">
                                             <Zap className="w-4 h-4" /> Template
@@ -349,7 +379,7 @@ export default function BodyPage() {
                                     </button>
                                     <Link
                                         href="/systems/body/routine-builder?new=1"
-                                        className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-left hover:border-white/40 transition"
+                                        className="rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-left hover:border-white/40 transition"
                                     >
                                         <div className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-white/60 mb-1">
                                             <Flame className="w-4 h-4" /> Sprint
@@ -359,7 +389,7 @@ export default function BodyPage() {
                                     </Link>
                                     <Link
                                         href="/systems/body/routine-builder"
-                                        className="rounded-xl border border-white/15 bg-black/40 px-4 py-3 text-left hover:border-white/40 transition"
+                                        className="rounded-xl border border-white/15 bg-white/[0.04] px-4 py-3 text-left hover:border-white/40 transition"
                                     >
                                         <div className="flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-white/60 mb-1">
                                             <Clock3 className="w-4 h-4" /> Timeline
@@ -372,7 +402,7 @@ export default function BodyPage() {
                                     {(routineEntries || []).slice(0, 2).map((plan) => {
                                         const blocks = parseBlocks(plan.data['Blocks'])
                                         return (
-                                            <div key={plan.id} className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                                            <div key={plan.id} className="rounded-2xl border border-white/12 bg-white/[0.03] p-4">
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <p className="text-xs uppercase tracking-[0.2em] text-white/50">{plan.data['Split'] || 'Custom split'}</p>
@@ -407,7 +437,7 @@ export default function BodyPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white/5 border-white/10 overflow-hidden">
+                        <Card className="bg-white/[0.05] border-white/12 overflow-hidden backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center gap-2">
                                 <HeartPulse className="w-5 h-5 text-white/60" />
                                 <CardTitle className="text-white">Recovery</CardTitle>
@@ -453,7 +483,7 @@ export default function BodyPage() {
                                         <Link
                                             key={rec.id}
                                             href={`/systems/body/recovery?id=${rec.id}`}
-                                            className="rounded-xl border border-white/10 bg-black/30 px-4 py-3 hover:border-white/40 transition"
+                                            className="rounded-xl border border-white/12 bg-white/[0.03] px-4 py-3 hover:border-white/40 transition"
                                         >
                                             <div className="flex items-center justify-between text-white">
                                                 <span className="font-semibold">{rec.data['Modality'] || 'Recovery'}</span>
@@ -469,7 +499,7 @@ export default function BodyPage() {
                             </CardContent>
                         </Card>
 
-                        <Card className="bg-white/5 border-white/10 overflow-hidden">
+                        <Card className="bg-white/[0.05] border-white/12 overflow-hidden backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center gap-2">
                                 <ChefHat className="w-5 h-5 text-white/60" />
                                 <CardTitle className="text-white">Diet</CardTitle>
@@ -511,7 +541,7 @@ export default function BodyPage() {
                                     </button>
                                 </div>
                                 <div className="grid md:grid-cols-2 gap-4">
-                                    <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                                    <div className="rounded-2xl border border-white/12 bg-white/[0.03] p-4">
                                         <p className="text-xs uppercase tracking-[0.2em] text-white/50">Today</p>
                                         <p className="text-3xl font-bold text-white mt-2">{caloriesToday ? `${caloriesToday.toFixed(0)} kcal` : 'Log one'}</p>
                                         <div className="mt-3 flex flex-wrap gap-2 text-sm text-white/70">
@@ -519,7 +549,7 @@ export default function BodyPage() {
                                             <span className="px-3 py-1 rounded-full border border-white/15 bg-white/5">Hydration: {hydrationToday ? `${hydrationToday} glasses` : '—'}</span>
                                         </div>
                                     </div>
-                                    <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+                                    <div className="rounded-2xl border border-white/12 bg-white/[0.03] p-4">
                                         <p className="text-xs uppercase tracking-[0.2em] text-white/50">Latest</p>
                                         {dietEntries[0] ? (
                                             <div className="mt-2">
@@ -544,64 +574,68 @@ export default function BodyPage() {
                     </div>
 
                     <div className="space-y-6">
-                        <Card className="bg-white/5 border-white/10">
+                        <Card className="bg-white/[0.05] border-white/12 backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
                             <CardHeader className="flex items-center gap-2">
                                 <Brain className="w-5 h-5 text-white/60" />
-                                <CardTitle className="text-white">Live deck</CardTitle>
+                                <CardTitle className="text-white">Goals (for AI plans)</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 to-transparent p-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-xs uppercase tracking-[0.2em] text-white/50">Up next</p>
-                                            <p className="text-2xl font-bold text-white">{nextSession ? new Date(nextSession).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Set a date'}</p>
-                                            <p className="text-white/60 text-sm">{routineEntries[0]?.data['Program Name'] || 'Routine builder'}</p>
+                                <div className="space-y-3">
+                                    <label className="text-xs uppercase tracking-[0.25em] text-white/50 block">Goal</label>
+                                    <input
+                                        value={goalText}
+                                        onChange={(e) => setGoalText(e.target.value)}
+                                        placeholder="e.g. Run a sub-22 5k while gaining strength"
+                                        className="w-full rounded-xl bg-white/5 border border-white/15 px-4 py-3 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
+                                    />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-2">
+                                            <label className="text-xs uppercase tracking-[0.2em] text-white/50 block">Timeframe</label>
+                                            <input
+                                                value={goalTimeframe}
+                                                onChange={(e) => setGoalTimeframe(e.target.value)}
+                                                className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
+                                            />
                                         </div>
-                                        <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center text-white/70">
-                                            <Clock3 className="w-7 h-7" />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-white/50">Readiness trend</p>
-                                    <p className="text-2xl font-bold text-white mt-2">{readinessAvg ? `${readinessAvg}/10` : 'Add a reset'}</p>
-                                    <p className="text-white/60 text-sm">Use quick recovery hits to keep this high.</p>
-                                </div>
-                                <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-white/50">Fuel & hydration</p>
-                                    <div className="mt-3 flex flex-wrap gap-2 text-sm text-white/70">
-                                        <span className="px-3 py-1 rounded-full border border-white/15 bg-white/5">Protein today: {proteinToday ? `${proteinToday.toFixed(0)}g` : '—'}</span>
-                                        <span className="px-3 py-1 rounded-full border border-white/15 bg-white/5">Hydration: {hydrationToday ? `${hydrationToday} glasses` : '—'}</span>
-                                        <span className="px-3 py-1 rounded-full border border-white/15 bg-white/5">Entries: {dietEntries.length}</span>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="bg-white/5 border-white/10">
-                            <CardHeader className="flex items-center gap-2">
-                                <Sparkles className="w-5 h-5 text-white/60" />
-                                <CardTitle className="text-white">Microapps</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                                {system.microapps.map((microapp) => (
-                                    <div key={microapp.id} className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/40">
-                                        <div className="text-2xl">{microapp.icon}</div>
-                                        <div className="flex-1">
-                                            <p className="text-white font-semibold">{microapp.name}</p>
-                                            <p className="text-white/60 text-sm">{microapp.description}</p>
-                                        </div>
-                                        <span className="text-xs text-white/60 uppercase tracking-[0.2em]">{entries[microapp.id]?.length || 0} items</span>
-                                        <div className="flex gap-2">
-                                            <Button asChild size="sm" variant="outline">
-                                                <Link href={`/systems/body/${microapp.id}`}>Open</Link>
-                                            </Button>
-                                            <Button asChild size="sm" variant="ghost" className="border border-white/10 bg-white/5">
-                                                <Link href={`/systems/body/${microapp.id}?new=1`}>Create</Link>
-                                            </Button>
+                                        <div className="space-y-2">
+                                            <label className="text-xs uppercase tracking-[0.2em] text-white/50 block">Priority</label>
+                                            <select
+                                                value={goalPriority}
+                                                onChange={(e) => setGoalPriority(e.target.value as 'Low' | 'Medium' | 'High')}
+                                                className="w-full rounded-xl bg-white/5 border border-white/15 px-3 py-2 text-white focus:border-white/40 outline-none"
+                                            >
+                                                <option value="High">High</option>
+                                                <option value="Medium">Medium</option>
+                                                <option value="Low">Low</option>
+                                            </select>
                                         </div>
                                     </div>
-                                ))}
+                                    <Button
+                                        onClick={handleAddGoal}
+                                        disabled={!goalText.trim() || isSaving}
+                                        className="bg-white text-black hover:bg-white/90"
+                                    >
+                                        Save goal
+                                    </Button>
+                                    <p className="text-xs text-white/45">
+                                        Capture intent now; the AI builder will turn these into custom routines soon.
+                                    </p>
+                                </div>
+                                <div className="space-y-3">
+                                    <p className="text-xs uppercase tracking-[0.25em] text-white/50">Saved goals</p>
+                                    {goals.slice(0, 4).map(goal => (
+                                        <div key={goal.id} className="rounded-xl border border-white/12 bg-white/[0.03] px-4 py-3">
+                                            <p className="text-white">{goal.goal}</p>
+                                            <div className="mt-2 flex items-center gap-2 text-xs text-white/50">
+                                                {goal.timeframe && <span className="px-2 py-1 rounded-full border border-white/15">{goal.timeframe}</span>}
+                                                {goal.priority && <span className="px-2 py-1 rounded-full border border-white/15">Priority: {goal.priority}</span>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {goals.length === 0 && (
+                                        <p className="text-white/50 text-sm">No goals yet—add one to prep the AI builder.</p>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

@@ -86,18 +86,13 @@ export default function ProductivityPage() {
     if (!system) return null
 
     return (
-        <div className="min-h-screen bg-[#030303] text-white relative overflow-hidden">
+        <div className="min-h-screen bg-black text-white relative overflow-hidden">
             <div className="fixed inset-0 -z-10">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.15),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(217,119,6,0.12),transparent_25%),radial-gradient(circle_at_40%_80%,rgba(245,158,11,0.12),transparent_30%)]" />
-                <div className="absolute inset-0 opacity-[0.03]">
-                    <svg width="100%" height="100%">
-                        <defs>
-                            <pattern id="prod-grid" width="90" height="90" patternUnits="userSpaceOnUse">
-                                <path d="M 90 0 L 0 0 0 90" fill="none" stroke="white" strokeWidth="0.6" />
-                            </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#prod-grid)" />
-                    </svg>
+                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.05] via-black to-black" />
+                <div className="absolute -left-24 top-10 w-[700px] h-[700px] bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.15),transparent_45%)] blur-3xl" />
+                <div className="absolute right-[-180px] top-28 w-[620px] h-[620px] bg-[radial-gradient(circle_at_70%_25%,rgba(255,255,255,0.08),transparent_40%)] blur-3xl" />
+                <div className="absolute inset-0 opacity-[0.04]">
+                    <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.35)_1px,transparent_1px)] bg-[size:34px_34px]" />
                 </div>
             </div>
 
@@ -123,23 +118,26 @@ export default function ProductivityPage() {
                     {/* Left Column: Intro & Main Cards */}
                     <div className="space-y-6">
                         {/* Hero Card */}
-                        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-white/0 pointer-events-none" />
-                            <div className="flex flex-wrap items-center gap-3 text-amber-200">
-                                <Sparkles className="w-5 h-5" />
-                                <span className="text-xs uppercase tracking-[0.3em] text-white/60">Execution OS · Productivity</span>
+                        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-white/[0.07] via-black to-black shadow-[0_25px_80px_rgba(0,0,0,0.55)] p-8">
+                            <div className="absolute inset-0 opacity-[0.07]">
+                                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.4)_1px,transparent_1px)] bg-[size:36px_36px]" />
+                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_45%)]" />
                             </div>
-                            <h1 className={`${playfair.className} text-5xl font-bold mt-4 mb-3 text-white`}>
+                            <div className="flex flex-wrap items-center gap-3 text-amber-100 relative z-10">
+                                <Sparkles className="w-5 h-5" />
+                                <span className="text-xs uppercase tracking-[0.32em] text-white/70">Execution OS · Productivity</span>
+                            </div>
+                            <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold mt-4 mb-3 text-white relative z-10`}>
                                 Focus. Execute. Review.
                             </h1>
-                            <p className={`${inter.className} text-lg text-white/70 max-w-3xl`}>
+                            <p className={`${inter.className} text-lg text-white/75 max-w-3xl relative z-10`}>
                                 Your command center for getting things done. Manage tasks, build habits, track focus, and review progress.
                             </p>
-                            <div className="mt-6 flex flex-wrap gap-3">
+                            <div className="mt-6 flex flex-wrap gap-3 relative z-10">
                                 <Button asChild className="bg-white text-black hover:bg-white/90">
                                     <Link href="/systems/productivity/tasks?new=1">Capture Task</Link>
                                 </Button>
-                                <Button variant="outline" asChild>
+                                <Button variant="outline" asChild className="border-white/40 text-white hover:bg-white/10">
                                     <Link href="/systems/productivity/pomodoro">
                                         <Timer className="w-4 h-4 mr-2" />
                                         Focus Mode
@@ -149,7 +147,7 @@ export default function ProductivityPage() {
                         </div>
 
                         {/* Tactical Snapshot */}
-                        <Card className="bg-white/5 border-white/10">
+                        <Card className="bg-white/[0.05] border-white/10 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
                                     Tactical snapshot
@@ -157,26 +155,26 @@ export default function ProductivityPage() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-amber-200">Next Tasks</p>
-                                    <p className="text-2xl font-bold mt-2 text-white">{nextTasks.length}</p>
-                                    <p className="text-xs text-white/40 mt-1">Ready to execute</p>
+                                <div className="p-5 rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.08] to-black">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Next Tasks</p>
+                                    <p className="text-3xl font-bold mt-2 text-white">{nextTasks.length}</p>
+                                    <p className="text-xs text-white/50 mt-1">Ready to execute</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-emerald-200">Habits Today</p>
-                                    <p className="text-2xl font-bold mt-2 text-white">{habitsProgress.completed}/{habitsProgress.total}</p>
-                                    <p className="text-xs text-white/40 mt-1">Daily completion</p>
+                                <div className="p-5 rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.06] to-black">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Habits Today</p>
+                                    <p className="text-3xl font-bold mt-2 text-white">{habitsProgress.completed}/{habitsProgress.total}</p>
+                                    <p className="text-xs text-white/50 mt-1">Daily completion</p>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-blue-500/10 border border-blue-500/30">
-                                    <p className="text-xs uppercase tracking-[0.2em] text-blue-200">Focus Time</p>
-                                    <p className="text-2xl font-bold mt-2 text-white">{pomodoroStats.todayMinutes}m</p>
-                                    <p className="text-xs text-white/40 mt-1">{pomodoroStats.todaySessions} sessions</p>
+                                <div className="p-5 rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.05] to-black">
+                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Focus Time</p>
+                                    <p className="text-3xl font-bold mt-2 text-white">{pomodoroStats.todayMinutes}m</p>
+                                    <p className="text-xs text-white/50 mt-1">{pomodoroStats.todaySessions} sessions</p>
                                 </div>
                             </CardContent>
                         </Card>
 
                         {/* Tasks Card */}
-                        <Card className="bg-white/5 border-white/10 overflow-hidden">
+                        <Card className="bg-white/[0.05] border-white/12 overflow-hidden backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <CheckSquare className="w-5 h-5 text-white/60" />
@@ -221,7 +219,7 @@ export default function ProductivityPage() {
                     {/* Right Column: Habits & Quick Links */}
                     <div className="space-y-6">
                         {/* Atomic Habits */}
-                        <Card className="bg-white/5 border-white/10">
+                        <Card className="bg-white/[0.05] border-white/12 backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Zap className="w-5 h-5 text-white/60" />
@@ -272,7 +270,7 @@ export default function ProductivityPage() {
                         </Card>
 
                         {/* Microapps List */}
-                        <Card className="bg-white/5 border-white/10">
+                        <Card className="bg-white/[0.05] border-white/12 backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader className="flex items-center gap-2">
                                 <List className="w-5 h-5 text-white/60" />
                                 <CardTitle className="text-white">Microapps</CardTitle>
@@ -294,15 +292,15 @@ export default function ProductivityPage() {
                         </Card>
 
                         {/* Weekly Review Promo */}
-                        <div className="rounded-2xl bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border border-indigo-500/20 p-6 relative overflow-hidden group">
+                        <div className="rounded-2xl bg-gradient-to-br from-white/[0.08] to-black border border-white/15 p-6 relative overflow-hidden group shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
                             <div className="relative z-10">
                                 <h3 className={`${playfair.className} text-xl text-white font-bold mb-2`}>Weekly Review</h3>
-                                <p className="text-indigo-200/70 text-sm mb-4">Clear your mind. Review the past. Plan the future.</p>
-                                <Button asChild size="sm" className="bg-indigo-500 hover:bg-indigo-400 text-white border-none">
+                                <p className="text-white/65 text-sm mb-4">Clear your mind. Review the past. Plan the future.</p>
+                                <Button asChild size="sm" className="bg-white text-black hover:bg-white/90 border-none">
                                     <Link href="/systems/productivity/review">Start Review</Link>
                                 </Button>
                             </div>
-                            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl -mr-10 -mt-10" />
+                            <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
                         </div>
                     </div>
                 </motion.div>

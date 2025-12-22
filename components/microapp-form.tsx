@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Microapp, FieldDefinition, Entry, dataStore } from '@/lib/data-store'
+import { Microapp, FieldDefinition, Entry, dataStore, type Exercise } from '@/lib/data-store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -26,6 +26,9 @@ interface MicroappFormProps {
 export function MicroappForm({ microapp, systemId, onSave, onCancel, initialData = {}, externalFieldUpdate, onRequestCreateRelation }: MicroappFormProps) {
     const [formData, setFormData] = useState<Record<string, any>>(initialData)
     const [relationOptions, setRelationOptions] = useState<Record<string, { value: string, label: string }[]>>({})
+    const [blockDraft, setBlockDraft] = useState<{ block: string; minutes?: number; sets?: number; note?: string; exerciseId?: string; exerciseName?: string }>({ block: '' })
+    const [exerciseSearch, setExerciseSearch] = useState('')
+    const [exerciseResults, setExerciseResults] = useState<Exercise[]>([])
 
     useEffect(() => {
         setFormData(initialData)
@@ -74,6 +77,46 @@ export function MicroappForm({ microapp, systemId, onSave, onCancel, initialData
         }
         loadOptions()
     }, [microapp, externalFieldUpdate]) // Reload options if external update happens (likely a new relation created)
+
+    const parseBlocks = (value: any) => {
+        if (Array.isArray(value)) return value
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value)
+                return Array.isArray(parsed) ? parsed : []
+            } catch {
+                return []
+            }
+        }
+        return []
+    }
+
+    const addBlock = () => {
+        if (!blockDraft.block.trim()) return
+        const blocks = parseBlocks(formData['Blocks'])
+        const newBlock = {
+            block: blockDraft.block.trim(),
+            minutes: blockDraft.minutes,
+            sets: blockDraft.sets,
+            note: blockDraft.note,
+            exerciseId: blockDraft.exerciseId,
+            exerciseName: blockDraft.exerciseName
+        }
+        const updated = [...blocks, newBlock]
+        setFormData(prev => ({ ...prev, Blocks: updated }))
+        setBlockDraft({ block: '' })
+    }
+
+    const removeBlock = (index: number) => {
+        const blocks = parseBlocks(formData['Blocks'])
+        const updated = blocks.filter((_, i) => i !== index)
+        setFormData(prev => ({ ...prev, Blocks: updated }))
+    }
+
+    const searchExercises = async () => {
+        const results = await dataStore.listExercises({ search: exerciseSearch })
+        setExerciseResults(results)
+    }
 
     const handleFieldChange = (fieldName: string, value: any) => {
         const newFormData = { ...formData, [fieldName]: value }
@@ -186,6 +229,116 @@ export function MicroappForm({ microapp, systemId, onSave, onCancel, initialData
                                 onRequestCreateRelation(field.relationMicroappId, field.name, name)
                             }
                         }}
+                    />
+                )
+            case 'json':
+                if (field.name === 'Blocks') {
+                    const blocks = parseBlocks(value)
+                    return (
+                        <div className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-3">
+                                <Input
+                                    value={blockDraft.block}
+                                    onChange={(e) => setBlockDraft(prev => ({ ...prev, block: e.target.value }))}
+                                    placeholder="Block name (e.g. Warm-up, Strength)"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                                <Input
+                                    value={blockDraft.note || ''}
+                                    onChange={(e) => setBlockDraft(prev => ({ ...prev, note: e.target.value }))}
+                                    placeholder="Note or focus"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                            </div>
+                            <div className="grid md:grid-cols-3 gap-3">
+                                <Input
+                                    type="number"
+                                    value={blockDraft.minutes || ''}
+                                    onChange={(e) => setBlockDraft(prev => ({ ...prev, minutes: Number(e.target.value) || undefined }))}
+                                    placeholder="Minutes"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                                <Input
+                                    type="number"
+                                    value={blockDraft.sets || ''}
+                                    onChange={(e) => setBlockDraft(prev => ({ ...prev, sets: Number(e.target.value) || undefined }))}
+                                    placeholder="Sets"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                                <Input
+                                    value={blockDraft.exerciseName || ''}
+                                    onChange={(e) => setBlockDraft(prev => ({ ...prev, exerciseName: e.target.value }))}
+                                    placeholder="Exercise name (optional)"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                            </div>
+                            <div className="grid md:grid-cols-[1fr,auto] gap-3">
+                                <Input
+                                    value={exerciseSearch}
+                                    onChange={(e) => setExerciseSearch(e.target.value)}
+                                    placeholder="Search exercise library to attach"
+                                    className="bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
+                                />
+                                <Button type="button" onClick={searchExercises} className="bg-white text-black hover:bg-white/90">
+                                    Search
+                                </Button>
+                            </div>
+                            {exerciseResults.length > 0 && (
+                                <div className="grid md:grid-cols-2 gap-2">
+                                    {exerciseResults.slice(0, 6).map((ex) => (
+                                        <button
+                                            type="button"
+                                            key={ex.id}
+                                            onClick={() => setBlockDraft(prev => ({ ...prev, exerciseId: ex.id, exerciseName: ex.name }))}
+                                            className={`text-left rounded-lg border px-3 py-2 text-sm ${
+                                                blockDraft.exerciseId === ex.id ? 'border-white/50 bg-white/10' : 'border-white/10 bg-black/20 hover:border-white/30'
+                                            }`}
+                                        >
+                                            <p className="text-white font-semibold">{ex.name}</p>
+                                            <p className="text-white/50 text-xs">{ex.primaryMuscles?.slice(0, 3).join(', ')}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="flex gap-3">
+                                <Button type="button" onClick={addBlock} className="bg-white text-black hover:bg-white/90">
+                                    Add Block
+                                </Button>
+                                <Button type="button" variant="ghost" onClick={() => setBlockDraft({ block: '' })} className="border border-white/10 bg-white/5 text-white hover:border-white/30">
+                                    Clear
+                                </Button>
+                            </div>
+                            {blocks.length > 0 && (
+                                <div className="space-y-2">
+                                    {blocks.map((b: any, idx: number) => (
+                                        <div key={idx} className="flex items-center justify-between rounded-lg border border-white/10 bg-black/30 px-3 py-2">
+                                            <div>
+                                                <p className="text-white font-semibold">{b.block}</p>
+                                                <p className="text-white/50 text-xs">
+                                                    {b.minutes ? `${b.minutes}m ` : ''}{b.sets ? `${b.sets} sets ` : ''}{b.exerciseName ? `• ${b.exerciseName}` : ''}
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeBlock(idx)}
+                                                className="text-xs uppercase tracking-[0.2em] text-white/50 hover:text-white"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )
+                }
+                return (
+                    <Textarea
+                        value={typeof value === 'string' ? value : JSON.stringify(value || {})}
+                        onChange={(e) => handleFieldChange(field.name, e.target.value)}
+                        required={field.required}
+                        placeholder={field.placeholder}
+                        className="min-h-[100px] bg-black/20 border-white/10 text-white placeholder-white/30 focus:border-white/30 focus:ring-white/10"
                     />
                 )
             default:

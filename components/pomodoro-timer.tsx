@@ -63,6 +63,9 @@ export function PomodoroTimer({
                 ? currentPreset.break * 60
                 : 0
     const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0
+    const SEGMENT_COUNT = 12
+    const activeSegments = Math.round((progress / 100) * SEGMENT_COUNT)
+    const phaseLabel = phase === 'work' ? 'Work' : phase === 'break' ? 'Break' : phase === 'complete' ? 'Complete' : 'Idle'
 
     // Format time as MM:SS
     const formatTime = (seconds: number) => {
@@ -154,177 +157,243 @@ export function PomodoroTimer({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
+                className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
             >
                 <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
-                    className="relative w-full max-w-2xl"
+                    className="relative w-full max-w-3xl"
                 >
-                    {/* Close button */}
-                    <button
-                        onClick={onClose}
-                        className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
+                    <div className="absolute inset-6 rounded-[32px] bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.14),transparent_35%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.08),transparent_32%)] blur-3xl" />
+                    <div className="absolute inset-0 rounded-[32px] border border-white/10 opacity-60" />
 
                     {/* Main timer card */}
-                    <div className="bg-black border border-white/10 p-8 md:p-12">
-                        {/* Header */}
-                        <div className="text-center mb-8">
-                            <p className="text-xs uppercase tracking-[0.3em] text-white/40 mb-2">
-                                {habitName ? 'Focus Session' : 'Pomodoro Timer'}
-                            </p>
-                            <h2 className={`${playfair.className} text-3xl md:text-4xl font-bold text-white`}>
-                                {habitName || 'Deep Work Mode'}
-                            </h2>
+                    <div className="relative overflow-hidden rounded-[32px] border border-white/12 bg-gradient-to-b from-white/[0.06] via-black to-black shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+                        <div className="absolute inset-0 opacity-[0.05]">
+                            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.35)_1px,transparent_1px)] bg-[size:32px_32px]" />
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(255,255,255,0.08),transparent_55%)]" />
                         </div>
 
-                        {/* Timer display */}
-                        <div className="flex justify-center mb-12">
-                            <div className="relative w-64 h-64">
-                                {/* Progress ring */}
-                                <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
-                                    <circle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        fill="none"
-                                        stroke="rgba(255,255,255,0.1)"
-                                        strokeWidth="2"
-                                    />
-                                    <motion.circle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        fill="none"
-                                        stroke="white"
-                                        strokeWidth="2"
-                                        strokeDasharray={`${2 * Math.PI * 45}`}
-                                        strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
-                                        strokeLinecap="round"
-                                        initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
-                                        animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - progress / 100) }}
-                                        transition={{ duration: 0.5 }}
-                                    />
-                                </svg>
+                        <div className="relative p-6 md:p-10 space-y-10 text-white">
+                            {/* Close button */}
+                            <button
+                                onClick={onClose}
+                                className="absolute -top-10 right-0 text-white/60 hover:text-white transition-colors"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
 
-                                {/* Time display */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <p className={`${playfair.className} text-6xl font-bold text-white mb-2`}>
-                                        {formatTime(timeLeft)}
+                            {/* Header */}
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                                <div className="space-y-3">
+                                    <p className="text-[10px] uppercase tracking-[0.35em] text-white/50">
+                                        {habitName ? 'Focus Session' : 'Pomodoro Timer'}
                                     </p>
-                                    <p className="text-xs uppercase tracking-wider text-white/40">
-                                        {phase === 'work' ? 'Work Time' : phase === 'break' ? 'Break Time' : phase === 'complete' ? 'Complete!' : 'Select Duration'}
+                                    <h2 className={`${playfair.className} text-4xl md:text-5xl font-bold leading-tight`}>
+                                        {habitName || 'Deep Work Mode'}
+                                    </h2>
+                                    <p className={`${inter.className} text-sm text-white/55 max-w-xl`}>
+                                        A heritage-inspired sprint: focus, recover, repeat. Stay in rhythm and let the system carry you.
                                     </p>
+                                </div>
+                                <div className="flex items-center gap-3 self-start">
+                                    <span className="px-4 py-2 rounded-full border border-white/20 bg-white/5 text-[10px] uppercase tracking-[0.3em] text-white/80">
+                                        {phaseLabel}
+                                    </span>
+                                    <button
+                                        onClick={() => setSoundEnabled(!soundEnabled)}
+                                        className="p-3 rounded-full border border-white/15 bg-white/5 hover:border-white/40 transition-colors"
+                                        aria-label={soundEnabled ? 'Mute timer alert' : 'Unmute timer alert'}
+                                    >
+                                        {soundEnabled ? (
+                                            <Volume2 className="w-5 h-5 text-white" />
+                                        ) : (
+                                            <VolumeX className="w-5 h-5 text-white/50" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid lg:grid-cols-[1.05fr,0.95fr] gap-8 items-center">
+                                {/* Timer display */}
+                                <div className="flex justify-center">
+                                    <div className="relative w-72 h-72 md:w-80 md:h-80">
+                                        <div className="absolute inset-6 rounded-full border border-white/10 bg-white/[0.03] blur" />
+                                        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 100 100">
+                                            <defs>
+                                                <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                    <stop offset="0%" stopColor="white" stopOpacity="0.9" />
+                                                    <stop offset="100%" stopColor="rgba(255,255,255,0.4)" />
+                                                </linearGradient>
+                                            </defs>
+                                            <circle
+                                                cx="50"
+                                                cy="50"
+                                                r="45"
+                                                fill="none"
+                                                stroke="rgba(255,255,255,0.08)"
+                                                strokeWidth="3"
+                                                strokeDasharray="4 6"
+                                            />
+                                            <motion.circle
+                                                cx="50"
+                                                cy="50"
+                                                r="45"
+                                                fill="none"
+                                                stroke="url(#timerGradient)"
+                                                strokeWidth="3"
+                                                strokeDasharray={`${2 * Math.PI * 45}`}
+                                                strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress / 100)}`}
+                                                strokeLinecap="round"
+                                                initial={{ strokeDashoffset: 2 * Math.PI * 45 }}
+                                                animate={{ strokeDashoffset: 2 * Math.PI * 45 * (1 - progress / 100) }}
+                                                transition={{ duration: 0.5 }}
+                                                className="drop-shadow-[0_0_25px_rgba(255,255,255,0.35)]"
+                                            />
+                                        </svg>
+
+                                        {/* Time display */}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                                            <p className={`${playfair.className} text-6xl md:text-7xl font-bold text-white mb-2`}>
+                                                {formatTime(timeLeft)}
+                                            </p>
+                                            <p className="text-xs uppercase tracking-[0.28em] text-white/45">
+                                                {phase === 'work' ? 'Work Interval' : phase === 'break' ? 'Recovery' : phase === 'complete' ? 'Complete' : 'Select Duration'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                                            <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 mb-1">Work</p>
+                                            <p className={`${playfair.className} text-2xl font-semibold`}>{currentPreset.work}m</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                                            <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 mb-1">Break</p>
+                                            <p className={`${playfair.className} text-2xl font-semibold`}>{currentPreset.break}m</p>
+                                        </div>
+                                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                                            <p className="text-[10px] uppercase tracking-[0.25em] text-white/45 mb-1">Progress</p>
+                                            <p className={`${playfair.className} text-2xl font-semibold`}>{Math.round(progress)}%</p>
+                                        </div>
+                                    </div>
+
+                                    {(phase === 'work' || phase === 'break') && (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.25em] text-white/45">
+                                                <span>Momentum</span>
+                                                <span>{phase === 'work' ? 'In the pocket' : 'Intentional recovery'}</span>
+                                            </div>
+                                            <div className="flex items-end gap-1">
+                                                {Array.from({ length: SEGMENT_COUNT }).map((_, idx) => {
+                                                    const active = idx < activeSegments
+                                                    return (
+                                                        <motion.span
+                                                            key={idx}
+                                                            animate={{
+                                                                opacity: active ? 0.95 : 0.25,
+                                                                height: active ? 24 + idx * 4 : 16 + idx * 3
+                                                            }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="w-[7px] rounded-full bg-white"
+                                                        />
+                                                    )
+                                                })}
+                                            </div>
+                                            <p className={`${inter.className} text-[12px] text-white/60`}>
+                                                {phase === 'work'
+                                                    ? 'Stay in flow—each minute compounds toward mastery.'
+                                                    : 'Let the mind breathe so the next sprint hits sharper.'}
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {/* Preset buttons - Only show in idle state */}
+                                    {phase === 'idle' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                                        >
+                                            {PRESETS.map((preset) => (
+                                                <motion.button
+                                                    key={preset.label}
+                                                    onClick={() => startTimer(preset)}
+                                                    whileHover={{ y: -2 }}
+                                                    whileTap={{ scale: 0.97 }}
+                                                    className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] px-4 py-4 text-left"
+                                                >
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <p className={`${playfair.className} text-2xl font-semibold text-white mb-1`}>
+                                                        {preset.label}
+                                                    </p>
+                                                    <p className="text-[11px] uppercase tracking-[0.28em] text-white/45">
+                                                        {preset.work}m focus · {preset.break}m break
+                                                    </p>
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+
+                                    {/* Controls - Show when timer is active */}
+                                    {phase !== 'idle' && phase !== 'complete' && (
+                                        <div className="grid sm:grid-cols-[1fr,1fr,auto] gap-3">
+                                            <Button
+                                                onClick={togglePause}
+                                                size="lg"
+                                                className="bg-white text-black hover:bg-white/90 justify-center"
+                                            >
+                                                {isRunning ? (
+                                                    <>
+                                                        <Pause className="w-5 h-5 mr-2" />
+                                                        Pause
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Play className="w-5 h-5 mr-2" />
+                                                        Resume
+                                                    </>
+                                                )}
+                                            </Button>
+                                            <Button
+                                                onClick={reset}
+                                                size="lg"
+                                                variant="outline"
+                                                className="border-white/30 text-white hover:bg-white/10 justify-center"
+                                            >
+                                                <RotateCcw className="w-5 h-5 mr-2" />
+                                                Stop
+                                            </Button>
+                                            <div className="hidden sm:block text-[11px] uppercase tracking-[0.25em] text-white/45 self-center text-right">
+                                                {phase === 'work' ? 'Breathe through the burn' : 'Let your mind go slack'}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Completion state */}
+                                    {phase === 'complete' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className="rounded-2xl border border-white/10 bg-white/[0.05] p-6 text-center space-y-3"
+                                        >
+                                            <p className={`${playfair.className} text-4xl font-bold text-white`}>
+                                                Session Complete
+                                            </p>
+                                            <p className={`${inter.className} text-white/70`}>
+                                                {currentPreset.work} minutes of focused craft—log the win and roll forward.
+                                            </p>
+                                            <Button onClick={onClose} size="lg" className="bg-white text-black hover:bg-white/90">
+                                                Close
+                                            </Button>
+                                        </motion.div>
+                                    )}
                                 </div>
                             </div>
                         </div>
-
-                        {/* Growing Visual - Below Timer */}
-                        {(phase === 'work' || phase === 'break') && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{
-                                    opacity: phase === 'work' ? 0.3 + (progress / 100) * 0.7 : 1,
-                                    scale: phase === 'work' ? Math.max(0.4, progress / 100) : 1
-                                }}
-                                transition={{ duration: 0.3 }}
-                                className="flex flex-col items-center gap-4 mb-6"
-                            >
-                                <div className="text-9xl">⬆️</div>
-                                <p className="text-base text-white/60">Growing with your focus</p>
-                                <p className="text-3xl font-mono text-white font-bold">{Math.round(progress)}%</p>
-                            </motion.div>
-                        )}
-                        {/* Preset buttons - Only show in idle state */}
-                        {phase === 'idle' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-                            >
-                                {PRESETS.map((preset) => (
-                                    <motion.button
-                                        key={preset.label}
-                                        onClick={() => startTimer(preset)}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-white/5 border border-white/10 hover:border-white/30 p-4 transition-all"
-                                    >
-                                        <p className={`${playfair.className} text-2xl font-bold text-white mb-1`}>
-                                            {preset.label}
-                                        </p>
-                                        <p className="text-xs text-white/40">
-                                            {preset.work}m + {preset.break}m
-                                        </p>
-                                    </motion.button>
-                                ))}
-                            </motion.div>
-                        )}
-
-                        {/* Controls - Show when timer is active */}
-                        {phase !== 'idle' && phase !== 'complete' && (
-                            <div className="flex items-center justify-center gap-4">
-                                <Button
-                                    onClick={togglePause}
-                                    size="lg"
-                                    className="bg-white text-black hover:bg-white/90"
-                                >
-                                    {isRunning ? (
-                                        <>
-                                            <Pause className="w-5 h-5 mr-2" />
-                                            Pause
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Play className="w-5 h-5 mr-2" />
-                                            Resume
-                                        </>
-                                    )}
-                                </Button>
-                                <Button
-                                    onClick={reset}
-                                    size="lg"
-                                    variant="outline"
-                                    className="border-red-500/50 text-red-400 hover:bg-red-500/20"
-                                >
-                                    <RotateCcw className="w-5 h-5 mr-2" />
-                                    Stop
-                                </Button>
-                                <button
-                                    onClick={() => setSoundEnabled(!soundEnabled)}
-                                    className="p-3 border border-white/20 hover:border-white/40 transition-colors"
-                                >
-                                    {soundEnabled ? (
-                                        <Volume2 className="w-5 h-5 text-white" />
-                                    ) : (
-                                        <VolumeX className="w-5 h-5 text-white/40" />
-                                    )}
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Completion state */}
-                        {phase === 'complete' && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="text-center"
-                            >
-                                <p className={`${playfair.className} text-4xl font-bold text-white mb-4`}>
-                                    Session Complete! 🎉
-                                </p>
-                                <p className="text-white/60 mb-8">
-                                    You focused for {currentPreset.work} minutes
-                                </p>
-                                <Button onClick={onClose} size="lg" className="bg-white text-black hover:bg-white/90">
-                                    Close
-                                </Button>
-                            </motion.div>
-                        )}
                     </div>
                 </motion.div>
             </motion.div>

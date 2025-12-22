@@ -99,6 +99,75 @@ export interface PomodoroStats {
     }>
 }
 
+export interface FitnessGoal {
+    id: string
+    userId: string
+    goal: string
+    timeframe?: string
+    priority?: 'Low' | 'Medium' | 'High'
+    createdAt: string
+}
+
+export interface Exercise {
+    id: string
+    name: string
+    primaryMuscles: string[]
+    secondaryMuscles: string[]
+    equipment: string
+    pattern?: string
+    modality: 'time' | 'reps'
+    defaultDurationSec?: number
+    defaultReps?: number
+    weightRecommendation?: string
+    difficulty?: 'easy' | 'medium' | 'hard'
+    energyBand?: 'low' | 'medium' | 'high'
+    tags?: string[]
+    cues?: string
+    instructions?: string
+    videoUrl?: string
+    restDefaultSec?: number
+}
+
+export interface FoodItem {
+    id: string
+    name: string
+    defaultServingGrams?: number
+    calories?: number
+    protein?: number
+    carbs?: number
+    fats?: number
+    micros?: Record<string, any>
+    tags?: string[]
+    sourceUrl?: string
+    brand?: string
+}
+
+export interface LiveSession {
+    id: string
+    userId: string
+    routineName?: string
+    energyLevel?: 'low' | 'medium' | 'high'
+    startedAt: string
+    completedAt?: string
+}
+
+export interface ExerciseSet {
+    id: string
+    sessionId: string
+    exerciseId: string
+    userId: string
+    mode: 'time' | 'reps'
+    targetTimeSec?: number
+    targetReps?: number
+    actualTimeSec?: number
+    actualReps?: number
+    weight?: number
+    rpe?: number
+    intensity?: 'easy' | 'medium' | 'hard'
+    energyAtStart?: 'low' | 'medium' | 'high'
+    completedAt: string
+}
+
 
 class DataStore {
     // Helper retained for legacy fallback (not used for entries)
@@ -1098,6 +1167,227 @@ class DataStore {
             }))
         } catch (e) {
             return []
+        }
+    }
+
+    // Fitness goals (for AI routine generation)
+    async saveFitnessGoal(goal: Omit<FitnessGoal, 'id' | 'createdAt'>): Promise<void> {
+        try {
+            const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
+            const createdAt = new Date().toISOString()
+            const payload = {
+                id,
+                user_id: goal.userId,
+                goal: goal.goal,
+                timeframe: goal.timeframe || null,
+                priority: goal.priority || null,
+                created_at: createdAt
+            }
+            const { error } = await supabase.from('fitness_goals').insert(payload)
+            if (error) {
+                console.warn('fitness_goals table not set up yet.')
+            }
+        } catch (e) {
+            console.warn('Unable to save goal (table may not exist yet).')
+        }
+    }
+
+    async getFitnessGoals(userId: string): Promise<FitnessGoal[]> {
+        try {
+            const { data, error } = await supabase
+                .from('fitness_goals')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+
+            if (error || !data) return []
+            return data.map((row: any) => ({
+                id: row.id,
+                userId: row.user_id,
+                goal: row.goal,
+                timeframe: row.timeframe || undefined,
+                priority: row.priority || undefined,
+                createdAt: row.created_at
+            }))
+        } catch (e) {
+            return []
+        }
+    }
+
+    // Libraries: Exercises
+    async listExercises(options?: { search?: string; difficulty?: 'easy' | 'medium' | 'hard'; energy?: 'low' | 'medium' | 'high' }): Promise<Exercise[]> {
+        try {
+            let query = supabase.from('exercise_library').select('*')
+            if (options?.difficulty) query = query.eq('difficulty', options.difficulty)
+            if (options?.energy) query = query.eq('energy_band', options.energy)
+            if (options?.search) query = query.ilike('name', `%${options.search}%`)
+
+            const { data, error } = await query.limit(100)
+            if (error || !data) return []
+            return data.map((row: any) => ({
+                id: row.id,
+                name: row.name,
+                primaryMuscles: row.primary_muscles || [],
+                secondaryMuscles: row.secondary_muscles || [],
+                equipment: row.equipment || '',
+                pattern: row.pattern || undefined,
+                modality: row.modality,
+                defaultDurationSec: row.default_duration_sec || undefined,
+                defaultReps: row.default_reps || undefined,
+                weightRecommendation: row.weight_recommendation || undefined,
+                difficulty: row.difficulty || undefined,
+                energyBand: row.energy_band || undefined,
+                tags: row.tags || [],
+                cues: row.cues || undefined,
+                instructions: row.instructions || undefined,
+                videoUrl: row.video_url || undefined,
+                restDefaultSec: row.rest_default_sec || undefined,
+            }))
+        } catch (e) {
+            return []
+        }
+    }
+
+    async saveExercise(item: Partial<Exercise> & { name: string }): Promise<void> {
+        try {
+            const payload = {
+                id: item.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
+                name: item.name,
+                primary_muscles: item.primaryMuscles || [],
+                secondary_muscles: item.secondaryMuscles || [],
+                equipment: item.equipment || '',
+                pattern: item.pattern || null,
+                modality: item.modality || 'reps',
+                default_duration_sec: item.defaultDurationSec || null,
+                default_reps: item.defaultReps || null,
+                weight_recommendation: item.weightRecommendation || null,
+                difficulty: item.difficulty || null,
+                energy_band: item.energyBand || null,
+                tags: item.tags || [],
+                cues: item.cues || null,
+                instructions: item.instructions || null,
+                video_url: item.videoUrl || null,
+                rest_default_sec: item.restDefaultSec || null,
+            }
+
+            if (item.id) {
+                const { error } = await supabase.from('exercise_library').update(payload).eq('id', item.id)
+                if (error) console.warn('Unable to update exercise', error)
+            } else {
+                const { error } = await supabase.from('exercise_library').insert(payload)
+                if (error) console.warn('Unable to insert exercise', error)
+            }
+        } catch (e) {
+            console.warn('Unable to save exercise.')
+        }
+    }
+
+    // Libraries: Food
+    async listFoods(options?: { search?: string; tag?: string }): Promise<FoodItem[]> {
+        try {
+            let query = supabase.from('food_library').select('*')
+            if (options?.search) query = query.ilike('name', `%${options.search}%`)
+            if (options?.tag) query = query.contains('tags', [options.tag])
+
+            const { data, error } = await query.limit(100)
+            if (error || !data) return []
+            return data.map((row: any) => ({
+                id: row.id,
+                name: row.name,
+                defaultServingGrams: row.default_serving_grams || undefined,
+                calories: row.calories || undefined,
+                protein: row.protein || undefined,
+                carbs: row.carbs || undefined,
+                fats: row.fats || undefined,
+                micros: row.micros || undefined,
+                tags: row.tags || [],
+                sourceUrl: row.source_url || undefined,
+                brand: row.brand || undefined
+            }))
+        } catch (e) {
+            return []
+        }
+    }
+
+    async saveFood(item: Partial<FoodItem> & { name: string }): Promise<void> {
+        try {
+            const payload = {
+                id: item.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
+                name: item.name,
+                default_serving_grams: item.defaultServingGrams || null,
+                calories: item.calories || null,
+                protein: item.protein || null,
+                carbs: item.carbs || null,
+                fats: item.fats || null,
+                micros: item.micros || null,
+                tags: item.tags || [],
+                source_url: item.sourceUrl || null,
+                brand: item.brand || null
+            }
+
+            if (item.id) {
+                const { error } = await supabase.from('food_library').update(payload).eq('id', item.id)
+                if (error) console.warn('Unable to update food', error)
+            } else {
+                const { error } = await supabase.from('food_library').insert(payload)
+                if (error) console.warn('Unable to insert food', error)
+            }
+        } catch (e) {
+            console.warn('Unable to save food.')
+        }
+    }
+
+    // Live sessions + sets
+    async saveLiveSession(session: Omit<LiveSession, 'id' | 'startedAt'>): Promise<string | null> {
+        try {
+            const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
+            const startedAt = new Date().toISOString()
+            const payload = {
+                id,
+                user_id: session.userId,
+                routine_name: session.routineName || null,
+                energy_level: session.energyLevel || null,
+                started_at: startedAt,
+                completed_at: session.completedAt || null
+            }
+            const { error } = await supabase.from('live_sessions').insert(payload)
+            if (error) {
+                console.warn('live_sessions table not set up yet.')
+                return null
+            }
+            return id
+        } catch (e) {
+            console.warn('Unable to save live session.')
+            return null
+        }
+    }
+
+    async saveExerciseSets(sets: Array<Omit<ExerciseSet, 'id' | 'completedAt'>>): Promise<void> {
+        if (sets.length === 0) return
+        try {
+            const now = new Date().toISOString()
+            const payload = sets.map(set => ({
+                id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),
+                session_id: set.sessionId,
+                exercise_id: set.exerciseId,
+                user_id: set.userId,
+                mode: set.mode,
+                target_time_sec: set.targetTimeSec || null,
+                target_reps: set.targetReps || null,
+                actual_time_sec: set.actualTimeSec || null,
+                actual_reps: set.actualReps || null,
+                weight: set.weight ?? null,
+                rpe: set.rpe ?? null,
+                intensity: set.intensity || null,
+                energy_at_start: set.energyAtStart || null,
+                completed_at: now
+            }))
+            const { error } = await supabase.from('exercise_sets').insert(payload)
+            if (error) {
+                console.warn('exercise_sets table not set up yet.')
+            }
+        } catch (e) {
+            console.warn('Unable to save exercise sets.')
         }
     }
 
