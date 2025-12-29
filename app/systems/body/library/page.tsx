@@ -12,6 +12,20 @@ import { motion } from 'framer-motion'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
+
+const DEFAULT_EXERCISE: Exercise = {
+    id: '',
+    name: '',
+    primaryMuscles: [],
+    secondaryMuscles: [],
+    equipment: '',
+    modality: 'reps'
+}
+
+const DEFAULT_FOOD: FoodItem = {
+    id: '',
+    name: ''
+}
 export default function LibraryPage() {
     const [exerciseQuery, setExerciseQuery] = useState('')
     const [foodQuery, setFoodQuery] = useState('')
@@ -21,8 +35,8 @@ export default function LibraryPage() {
     const [editingExercise, setEditingExercise] = useState<Exercise | null>(null)
     const [editingFood, setEditingFood] = useState<FoodItem | null>(null)
 
-    const resetExerciseForm = () => setEditingExercise({ id: '', name: '', primaryMuscles: [], secondaryMuscles: [], equipment: '', modality: 'reps' })
-    const resetFoodForm = () => setEditingFood({ id: '', name: '' })
+    const resetExerciseForm = () => setEditingExercise({ ...DEFAULT_EXERCISE })
+    const resetFoodForm = () => setEditingFood({ ...DEFAULT_FOOD })
 
     const load = async () => {
         setLoading(true)
@@ -97,39 +111,39 @@ export default function LibraryPage() {
                                 <div className="space-y-2">
                                     <input
                                         value={editingExercise?.name || ''}
-                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), name: e.target.value }))}
+                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), name: e.target.value }))}
                                         placeholder="Name"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
                                     <input
                                         value={editingExercise?.primaryMuscles?.join(', ') || ''}
-                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), primaryMuscles: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), primaryMuscles: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
                                         placeholder="Primary muscles (comma separated)"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
                                     <input
                                         value={editingExercise?.equipment || ''}
-                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), equipment: e.target.value }))}
+                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), equipment: e.target.value }))}
                                         placeholder="Equipment"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
                                     <div className="grid grid-cols-3 gap-2">
                                         <input
                                             value={editingExercise?.modality || 'reps'}
-                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), modality: e.target.value as 'reps' | 'time' }))}
+                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), modality: e.target.value as 'reps' | 'time' }))}
                                             placeholder="Modality (reps/time)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                         />
                                         <input
                                             value={editingExercise?.defaultReps || ''}
-                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), defaultReps: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), defaultReps: Number(e.target.value) || undefined }))}
                                             placeholder="Default reps"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
                                         />
                                         <input
                                             value={editingExercise?.defaultDurationSec || ''}
-                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), defaultDurationSec: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), defaultDurationSec: Number(e.target.value) || undefined }))}
                                             placeholder="Default sec"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
@@ -138,20 +152,20 @@ export default function LibraryPage() {
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
                                             value={editingExercise?.difficulty || ''}
-                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), difficulty: e.target.value as Exercise['difficulty'] }))}
+                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), difficulty: e.target.value as Exercise['difficulty'] }))}
                                             placeholder="Difficulty (easy/medium/hard)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                         />
                                         <input
                                             value={editingExercise?.energyBand || ''}
-                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), energyBand: e.target.value as Exercise['energyBand'] }))}
+                                            onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), energyBand: e.target.value as Exercise['energyBand'] }))}
                                             placeholder="Energy (low/medium/high)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                         />
                                     </div>
                                     <input
                                         value={editingExercise?.videoUrl || ''}
-                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || { id: '' }), videoUrl: e.target.value }))}
+                                        onChange={(e) => setEditingExercise(prev => ({ ...(prev || DEFAULT_EXERCISE), videoUrl: e.target.value }))}
                                         placeholder="Video URL"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
@@ -231,21 +245,21 @@ export default function LibraryPage() {
                                 <div className="space-y-2">
                                     <input
                                         value={editingFood?.name || ''}
-                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), name: e.target.value }))}
+                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), name: e.target.value }))}
                                         placeholder="Name"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
                                     <div className="grid grid-cols-2 gap-2">
                                         <input
                                             value={editingFood?.calories || ''}
-                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), calories: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), calories: Number(e.target.value) || undefined }))}
                                             placeholder="Calories"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
                                         />
                                         <input
                                             value={editingFood?.defaultServingGrams || ''}
-                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), defaultServingGrams: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), defaultServingGrams: Number(e.target.value) || undefined }))}
                                             placeholder="Serving (g)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
@@ -254,21 +268,21 @@ export default function LibraryPage() {
                                     <div className="grid grid-cols-3 gap-2">
                                         <input
                                             value={editingFood?.protein || ''}
-                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), protein: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), protein: Number(e.target.value) || undefined }))}
                                             placeholder="Protein (g)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
                                         />
                                         <input
                                             value={editingFood?.carbs || ''}
-                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), carbs: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), carbs: Number(e.target.value) || undefined }))}
                                             placeholder="Carbs (g)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
                                         />
                                         <input
                                             value={editingFood?.fats || ''}
-                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), fats: Number(e.target.value) || undefined }))}
+                                            onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), fats: Number(e.target.value) || undefined }))}
                                             placeholder="Fats (g)"
                                             className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                             type="number"
@@ -276,13 +290,13 @@ export default function LibraryPage() {
                                     </div>
                                     <input
                                         value={editingFood?.tags?.join(', ') || ''}
-                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
+                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
                                         placeholder="Tags (comma separated)"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
                                     <input
                                         value={editingFood?.sourceUrl || ''}
-                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || { id: '' }), sourceUrl: e.target.value }))}
+                                        onChange={(e) => setEditingFood(prev => ({ ...(prev || DEFAULT_FOOD), sourceUrl: e.target.value }))}
                                         placeholder="Source URL"
                                         className="w-full rounded-lg bg-white/5 border border-white/15 px-3 py-2 text-white placeholder:text-white/30 focus:border-white/40 outline-none"
                                     />
