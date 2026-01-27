@@ -42,7 +42,7 @@ export function TodaysTasksRoad({ entries, onToggleStatus, onEditEntry, onCreate
                 <div className="absolute top-1/2 left-0 right-0 h-px bg-white/10 z-0" />
 
                 <motion.div
-                    className="flex items-center gap-12 px-12 z-10 cursor-grab active:cursor-grabbing w-full overflow-x-auto no-scrollbar"
+                    className="flex items-stretch gap-12 px-12 z-10 cursor-grab active:cursor-grabbing w-full overflow-x-auto no-scrollbar"
                     drag="x"
                     dragConstraints={{ left: -((sortedEntries.length + 1) * 350), right: 0 }}
                 >
@@ -54,7 +54,7 @@ export function TodaysTasksRoad({ entries, onToggleStatus, onEditEntry, onCreate
                             <motion.div
                                 key={entry.id}
                                 className={cn(
-                                    "relative flex-shrink-0 w-[400px] bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 transition-all duration-300 group",
+                                    "relative flex-shrink-0 w-[400px] flex flex-col bg-[#0A0A0A] border border-white/10 rounded-3xl p-6 transition-all duration-300 group",
                                     isDone ? "opacity-60" : "hover:border-white/30 hover:bg-white/5"
                                 )}
                                 whileHover={{ y: -5 }}
@@ -85,13 +85,19 @@ export function TodaysTasksRoad({ entries, onToggleStatus, onEditEntry, onCreate
                                 </div>
 
                                 {/* Metadata */}
-                                <div className="mb-6">
+                                <div className="mb-6 flex-1">
                                     <p className="text-sm text-white/50 mb-3">
                                         Project: {entry.data['Project']?.title || 'No Project'}
                                     </p>
                                     <div className="flex flex-wrap gap-2">
                                         <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white/60">
-                                            {new Date(entry.data['Start Date']).toLocaleDateString()}
+                                            {entry.data['Start Date']
+                                                ? new Date(entry.data['Start Date']).toLocaleDateString('en-US', {
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    year: 'numeric'
+                                                })
+                                                : 'No Date'}
                                         </div>
                                         {entry.data['Resources'] && (
                                             <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white/60">
@@ -102,7 +108,7 @@ export function TodaysTasksRoad({ entries, onToggleStatus, onEditEntry, onCreate
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-3 border-t border-white/10 pt-4">
+                                <div className="flex items-center gap-3 border-t border-white/10 pt-4 mt-auto">
                                     <button
                                         onClick={() => onToggleStatus(entry)}
                                         className="bg-white text-black text-sm font-semibold px-4 py-2 rounded-md hover:bg-white/90 transition-colors"
@@ -128,7 +134,7 @@ export function TodaysTasksRoad({ entries, onToggleStatus, onEditEntry, onCreate
                     {/* Add New Card */}
                     <motion.div
                         onClick={onCreateEntry}
-                        className="relative flex-shrink-0 w-[200px] h-[250px] flex flex-col items-center justify-center gap-4 bg-[#0A0A0A] border border-dashed border-white/10 rounded-3xl p-6 cursor-pointer hover:bg-white/5 hover:border-white/30 transition-all group"
+                        className="relative flex-shrink-0 w-[200px] min-h-[250px] flex flex-col items-center justify-center gap-4 bg-[#0A0A0A] border border-dashed border-white/10 rounded-3xl p-6 cursor-pointer hover:bg-white/5 hover:border-white/30 transition-all group"
                         whileHover={{ scale: 1.05 }}
                     >
                         {/* Connector Dot */}

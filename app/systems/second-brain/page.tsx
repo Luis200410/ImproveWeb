@@ -475,23 +475,30 @@ export default function SecondBrainPage() {
                                 <CardContent className="relative pt-10">
                                     <div className="absolute inset-x-6 top-[52%] h-[2px] bg-gradient-to-r from-white/0 via-white/30 to-white/0 blur-sm" />
                                     <div className="absolute inset-x-10 top-[52%] h-[1px] bg-white/20" />
-                                    <Reorder.Group axis="x" values={roadTasks} onReorder={setRoadTasks} className="flex gap-4 overflow-x-auto pb-4">
+                                    <Reorder.Group axis="x" values={roadTasks} onReorder={setRoadTasks} className="flex gap-4 overflow-x-auto pb-4 items-stretch">
                                         {roadTasks.length === 0 && (
                                             <div className="text-white/60 text-sm">
                                                 No tasks yet. Capture in Inbox or Tasks, then drag them here.
                                             </div>
                                         )}
                                         {roadTasks.map((task, idx) => {
-                                            const start = task.data['Start Date'] || 'Schedule'
+                                            const rawDate = task.data['Start Date']
+                                            const start = rawDate
+                                                ? new Date(rawDate).toLocaleDateString('en-US', {
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    year: 'numeric'
+                                                })
+                                                : 'Schedule'
                                             const project = projectNames[task.data['Project']] || 'Solo'
                                             const status = task.data['Status'] ? 'Done' : 'Active'
                                             return (
                                                 <Reorder.Item
                                                     key={task.id}
                                                     value={task}
-                                                    className="min-w-[260px]"
+                                                    className="min-w-[260px] h-auto"
                                                 >
-                                                    <div className="relative p-5 rounded-2xl border border-white/10 bg-white/5 hover:border-white/40 transition backdrop-blur">
+                                                    <div className="relative p-5 rounded-2xl border border-white/10 bg-white/5 hover:border-white/40 transition backdrop-blur h-full flex flex-col">
                                                         <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/70 shadow-lg" />
                                                         <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/50" />
                                                         <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-white/50 mb-2">
@@ -503,25 +510,27 @@ export default function SecondBrainPage() {
                                                         <h4 className="text-xl font-semibold text-white mb-2">
                                                             {task.data['Task'] || 'Untitled task'}
                                                         </h4>
-                                                        <p className="text-sm text-white/60 mb-3">
-                                                            Project: {project}
-                                                        </p>
-                                                        <div className="flex flex-wrap gap-2">
-                                                            <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 border border-white/15">
-                                                                {start}
-                                                            </span>
-                                                            {task.data['Resources'] && (
+                                                        <div className="flex-1">
+                                                            <p className="text-sm text-white/60 mb-3">
+                                                                Project: {project}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-2">
                                                                 <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 border border-white/15">
-                                                                    Resources linked
+                                                                    {start}
                                                                 </span>
-                                                            )}
-                                                            {task.data['Notes'] && (
-                                                                <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 border border-white/15">
-                                                                    Note attached
-                                                                </span>
-                                                            )}
+                                                                {task.data['Resources'] && (
+                                                                    <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 border border-white/15">
+                                                                        Resources linked
+                                                                    </span>
+                                                                )}
+                                                                {task.data['Notes'] && (
+                                                                    <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/70 border border-white/15">
+                                                                        Note attached
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="mt-4 flex items-center gap-2">
+                                                        <div className="mt-4 flex items-center gap-2 pt-4 mt-auto">
                                                             <Button
                                                                 size="sm"
                                                                 className="bg-white text-black hover:bg-white/80"
