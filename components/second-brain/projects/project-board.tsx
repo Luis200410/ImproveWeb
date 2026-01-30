@@ -4,14 +4,15 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion' // Using framer-motion for basic animations, dnd-kit for drag/drop
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { MoreVertical, Plus } from 'lucide-react'
-import { ProjectEntry } from './project-utils'
+import { ProjectEntry, ProjectData } from './project-utils'
 import { ProjectCard } from './project-card'
 import { Entry } from '@/lib/data-store'
 
 interface ProjectBoardProps {
     projects: ProjectEntry[]
-    onUpdateProject: (project: ProjectEntry, updates: Partial<ProjectEntry['data']>) => void
+    onUpdateProject: (project: ProjectEntry, updates: Partial<ProjectData>) => void
     onProjectClick: (id: string) => void
+    tasks?: Entry[]
 }
 
 export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks = [] }: ProjectBoardProps) {

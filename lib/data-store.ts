@@ -684,23 +684,6 @@ class DataStore {
                 description: 'Personal productivity and habit building',
                 microapps: [
                     {
-                        id: 'tasks',
-                        systemId: 'productivity',
-                        name: 'Task Manager',
-                        description: 'GTD-style task management',
-                        icon: '✅',
-                        availableViews: ['list', 'kanban'],
-                        defaultView: 'list',
-                        fields: [
-                            { name: 'Task', type: 'text', required: true },
-                            { name: 'Status', type: 'select', options: ['Next', 'Waiting', 'Someday', 'Done'], required: true },
-                            { name: 'Priority', type: 'select', options: ['Low', 'Medium', 'High'], required: true },
-                            { name: 'Due Date', type: 'date', required: false },
-                            { name: 'Context', type: 'select', options: ['@home', '@work', '@errands', '@calls', '@computer'], required: false },
-                            { name: 'Notebook', type: 'relation', relationMicroappId: 'notebooks-sb', required: false, width: '1/2' }
-                        ]
-                    },
-                    {
                         id: 'atomic-habits',
                         systemId: 'productivity',
                         name: 'Atomic Habits',
