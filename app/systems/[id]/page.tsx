@@ -7,7 +7,7 @@ import { dataStore, System, Entry } from '@/lib/data-store'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { motion, Reorder, AnimatePresence } from 'framer-motion'
-import { Navigation } from '@/components/navigation'
+
 import { ArrowLeft, Sparkles, ArrowRight, Database, Eye, Layers } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { loadPrefs, savePrefs } from '@/utils/user-preferences'
@@ -249,24 +249,8 @@ export default function SystemPage() {
 
             {/* Content */}
             <div className="relative z-10">
-                <Navigation />
-                <div className="h-20" />
-
                 <div className="max-w-7xl mx-auto px-8 py-12">
-                    {/* Back Button */}
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="mb-8"
-                    >
-                        <Link href="/dashboard">
-                            <button className="text-white/60 hover:text-white hover:bg-white/5 gap-2 flex items-center px-4 py-2 transition-colors">
-                                <ArrowLeft className="w-4 h-4" />
-                                Back to Dashboard
-                            </button>
-                        </Link>
-                    </motion.div>
+
 
                     {/* System Header */}
                     <motion.div

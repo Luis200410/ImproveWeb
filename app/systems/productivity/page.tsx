@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Navigation } from '@/components/navigation'
+
 import { dataStore, Entry, System } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -96,18 +96,8 @@ export default function ProductivityPage() {
                 </div>
             </div>
 
-            <Navigation />
-            <div className="h-16" />
-
             <div className="max-w-7xl mx-auto px-6 pb-14 relative z-10 space-y-10">
-                {/* Header */}
-                <div className="flex items-center gap-3 text-white/60">
-                    <Link href="/dashboard" className="flex items-center gap-2 hover:text-white transition">
-                        <ArrowLeft className="w-4 h-4" /> Back
-                    </Link>
-                    <span className="text-white/30">/</span>
-                    <span className="uppercase tracking-[0.3em] text-xs">Productivity System</span>
-                </div>
+
 
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
