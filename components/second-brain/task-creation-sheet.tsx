@@ -166,9 +166,10 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                         ))}
                     </div>
 
-                    <AnimatePresence mode="wait">
-                        {step === 1 && (
-                            <motion.div key="1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                    <div className="space-y-8">
+                        {/* Step 1: Parameters */}
+                        <div className={`transition-opacity duration-500 ${step >= 1 ? 'opacity-100' : 'opacity-30'}`}>
+                            <div className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-xs text-white/50 uppercase tracking-wider">Parameters</label>
                                     <Input
@@ -177,9 +178,20 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                                         value={form.Task}
                                         onChange={e => setField('Task', e.target.value)}
                                         autoFocus
+                                        disabled={step > 1}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-xs text-white/50 uppercase tracking-wider">Duration (min)</label>
+                                        <Input
+                                            type="number"
+                                            placeholder="25"
+                                            className="bg-white/5 border-white/10"
+                                            value={form.Duration || ''}
+                                            onChange={e => setField('Duration', e.target.value)}
+                                        />
+                                    </div>
                                     <div className="space-y-2">
                                         <label className="text-xs text-white/50 uppercase tracking-wider">Timeline</label>
                                         <DatePicker value={form['Start Date']} onChange={d => setField('Start Date', d)} />
@@ -194,128 +206,136 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                                         />
                                     </div>
                                 </div>
-                            </motion.div>
-                        )}
+                            </div>
+                        </div>
 
-                        {step === 2 && (
-                            <motion.div key="2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="flex items-center gap-2 text-xs text-white/50 uppercase tracking-wider">
-                                        <Rocket className="w-3 h-3 text-emerald-500" /> Project Context
-                                    </label>
+                        {/* Step 2: Project Context */}
+                        <div className={`transition-all duration-500 ${step >= 2 ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-xs text-white/50 uppercase tracking-wider">
+                                    <Rocket className="w-3 h-3 text-emerald-500" /> Project Context
+                                </label>
+                                {step >= 2 && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6 pt-2">
+                                        <div className="flex gap-2 mb-4">
+                                            <button
+                                                onClick={() => setProjectMode('select')}
+                                                className={`flex-1 py-2 text-xs rounded border transition-colors ${projectMode === 'select' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
+                                            >
+                                                Select
+                                            </button>
+                                            <button
+                                                onClick={() => setProjectMode('create')}
+                                                className={`flex-1 py-2 text-xs rounded border transition-colors ${projectMode === 'create' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
+                                            >
+                                                Create New
+                                            </button>
+                                        </div>
 
-                                    <div className="flex gap-2 mb-4">
-                                        <button
-                                            onClick={() => setProjectMode('select')}
-                                            className={`flex-1 py-2 text-xs rounded border transition-colors ${projectMode === 'select' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
-                                        >
-                                            Select
-                                        </button>
-                                        <button
-                                            onClick={() => setProjectMode('create')}
-                                            className={`flex-1 py-2 text-xs rounded border transition-colors ${projectMode === 'create' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
-                                        >
-                                            Create New
-                                        </button>
-                                    </div>
+                                        {projectMode === 'select' ? (
+                                            <CustomSelect
+                                                options={projects}
+                                                value={form.Project}
+                                                onChange={v => setField('Project', v)}
+                                                placeholder="Select active project..."
+                                            />
+                                        ) : (
+                                            <div className="space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                                                <Input
+                                                    placeholder="Project Name"
+                                                    className="bg-transparent border-white/10"
+                                                    value={projectDraft.name}
+                                                    onChange={e => setProjectDraft(p => ({ ...p, name: e.target.value }))}
+                                                />
+                                                <Textarea
+                                                    placeholder="Brief scope..."
+                                                    className="bg-transparent border-white/10 min-h-[80px]"
+                                                    value={projectDraft.description}
+                                                    onChange={e => setProjectDraft(p => ({ ...p, description: e.target.value }))}
+                                                />
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </div>
+                        </div>
 
-                                    {projectMode === 'select' ? (
-                                        <CustomSelect
-                                            options={projects}
-                                            value={form.Project}
-                                            onChange={v => setField('Project', v)}
-                                            placeholder="Select active project..."
+                        {/* Step 3: Neural Link */}
+                        <div className={`transition-all duration-500 ${step >= 3 ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-xs text-white/50 uppercase tracking-wider">
+                                    <NotebookPen className="w-3 h-3 text-purple-500" /> Neural Link
+                                </label>
+
+                                {step >= 3 && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-6 pt-2">
+                                        <div className="flex gap-2 mb-4">
+                                            <button
+                                                onClick={() => setNoteMode('select')}
+                                                className={`flex-1 py-2 text-xs rounded border transition-colors ${noteMode === 'select' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
+                                            >
+                                                Link Existing
+                                            </button>
+                                            <button
+                                                onClick={() => setNoteMode('create')}
+                                                className={`flex-1 py-2 text-xs rounded border transition-colors ${noteMode === 'create' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
+                                            >
+                                                New Note
+                                            </button>
+                                        </div>
+
+                                        {noteMode === 'select' ? (
+                                            <CustomSelect
+                                                options={notes}
+                                                value={form.Notes}
+                                                onChange={v => setField('Notes', v)}
+                                                placeholder="Search knowledge base..."
+                                            />
+                                        ) : (
+                                            <div className="space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                                                <Input
+                                                    placeholder="Note Title"
+                                                    className="bg-transparent border-white/10"
+                                                    value={noteDraft.title}
+                                                    onChange={e => setNoteDraft(n => ({ ...n, title: e.target.value }))}
+                                                />
+                                                <Textarea
+                                                    placeholder="Key insights..."
+                                                    className="bg-transparent border-white/10 min-h-[80px]"
+                                                    value={noteDraft.main}
+                                                    onChange={e => setNoteDraft(n => ({ ...n, main: e.target.value }))}
+                                                />
+                                            </div>
+                                        )}
+                                    </motion.div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Step 4: Final Analysis */}
+                        <div className={`transition-all duration-500 ${step >= 4 ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/50 uppercase tracking-wider">Final Analysis</label>
+                                {step >= 4 && (
+                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="space-y-4 pt-2">
+                                        <div className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2">
+                                            <h3 className="text-lg font-medium text-white">{form.Task}</h3>
+                                            <div className="flex gap-4 text-xs text-white/50">
+                                                <span>Starts: {form['Start Date'] ? new Date(form['Start Date']).toLocaleDateString() : 'TBD'}</span>
+                                                <span>Project: {projects.find(p => p.value === form.Project)?.label || projectDraft.name || 'None'}</span>
+                                            </div>
+                                        </div>
+                                        <Textarea
+                                            placeholder="Additional context/success criteria..."
+                                            className="bg-white/5 border-white/10 min-h-[100px]"
+                                            value={form['Context'] || ''}
+                                            onChange={e => setField('Context', e.target.value)}
                                         />
-                                    ) : (
-                                        <div className="space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
-                                            <Input
-                                                placeholder="Project Name"
-                                                className="bg-transparent border-white/10"
-                                                value={projectDraft.name}
-                                                onChange={e => setProjectDraft(p => ({ ...p, name: e.target.value }))}
-                                            />
-                                            <Textarea
-                                                placeholder="Brief scope..."
-                                                className="bg-transparent border-white/10 min-h-[80px]"
-                                                value={projectDraft.description}
-                                                onChange={e => setProjectDraft(p => ({ ...p, description: e.target.value }))}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {step === 3 && (
-                            <motion.div key="3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="flex items-center gap-2 text-xs text-white/50 uppercase tracking-wider">
-                                        <NotebookPen className="w-3 h-3 text-purple-500" /> Neural Link
-                                    </label>
-
-                                    <div className="flex gap-2 mb-4">
-                                        <button
-                                            onClick={() => setNoteMode('select')}
-                                            className={`flex-1 py-2 text-xs rounded border transition-colors ${noteMode === 'select' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
-                                        >
-                                            Link Existing
-                                        </button>
-                                        <button
-                                            onClick={() => setNoteMode('create')}
-                                            className={`flex-1 py-2 text-xs rounded border transition-colors ${noteMode === 'create' ? 'bg-white/10 border-white/40 text-white' : 'border-transparent text-white/30'}`}
-                                        >
-                                            New Note
-                                        </button>
-                                    </div>
-
-                                    {noteMode === 'select' ? (
-                                        <CustomSelect
-                                            options={notes}
-                                            value={form.Notes}
-                                            onChange={v => setField('Notes', v)}
-                                            placeholder="Search knowledge base..."
-                                        />
-                                    ) : (
-                                        <div className="space-y-3 p-4 bg-white/5 rounded-xl border border-white/10">
-                                            <Input
-                                                placeholder="Note Title"
-                                                className="bg-transparent border-white/10"
-                                                value={noteDraft.title}
-                                                onChange={e => setNoteDraft(n => ({ ...n, title: e.target.value }))}
-                                            />
-                                            <Textarea
-                                                placeholder="Key insights..."
-                                                className="bg-transparent border-white/10 min-h-[80px]"
-                                                value={noteDraft.main}
-                                                onChange={e => setNoteDraft(n => ({ ...n, main: e.target.value }))}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {step === 4 && (
-                            <motion.div key="4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-xs text-white/50 uppercase tracking-wider">Final Analysis</label>
-                                    <div className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-2">
-                                        <h3 className="text-lg font-medium text-white">{form.Task}</h3>
-                                        <div className="flex gap-4 text-xs text-white/50">
-                                            <span>Starts: {form['Start Date'] ? new Date(form['Start Date']).toLocaleDateString() : 'TBD'}</span>
-                                            <span>Project: {projects.find(p => p.value === form.Project)?.label || projectDraft.name || 'None'}</span>
-                                        </div>
-                                    </div>
-                                    <Textarea
-                                        placeholder="Additional context/success criteria..."
-                                        className="bg-white/5 border-white/10 min-h-[100px]"
-                                        value={form['Context'] || ''}
-                                        onChange={e => setField('Context', e.target.value)}
-                                    />
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                                    </motion.div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="p-6 border-t border-white/10 bg-[#0A0A0A] flex justify-between items-center">

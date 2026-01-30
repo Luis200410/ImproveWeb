@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,9 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Entry } from '@/lib/data-store'
 import {
     Maximize2, Link as LinkIcon, Calendar, Activity,
-    Hash, Terminal, CheckCircle2, Trash2, Save
+    Hash, Terminal, CheckCircle2, Trash2, Save, Timer, Play
 } from 'lucide-react'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { usePomodoro } from '@/components/productivity/pomodoro/pomodoro-context'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -20,6 +22,7 @@ interface TaskDetailsSheetProps {
 }
 
 export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetProps) {
+    const { startSession } = usePomodoro()
     const [open, setOpen] = useState(false)
     const [status, setStatus] = useState(task.data.Status || false)
 
@@ -125,6 +128,25 @@ export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetPr
                         </Button>
                     </div>
 
+                    {/* Timer Action - Injected */}
+                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
+                        <div className="text-[9px] uppercase tracking-widest text-amber-500 font-bold flex items-center gap-2">
+                            <Timer className="w-3 h-3" /> Focus Protocol
+                        </div>
+                        <Button
+                            onClick={() => {
+                                const duration = parseInt(task.data.Duration) || 25
+                                startSession(duration, 'WORK')
+                                setOpen(false)
+                            }}
+                            variant="ghost"
+                            className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 text-[10px] uppercase tracking-widest h-7 px-3 border border-amber-500/20"
+                        >
+                            <Play className="w-3 h-3 mr-2" />
+                            Start Session ({task.data.Duration || 25}m)
+                        </Button>
+                    </div>
+
                     {/* Metadata Grid */}
                     <div className="grid grid-cols-3 gap-8 pt-2">
                         <div className="space-y-1">
@@ -147,7 +169,7 @@ export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetPr
                     </div>
                 </div>
 
-                {/* Scrollable Body - Manual implementation since ScrollArea missing */}
+                {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
                     {/* Overview / Note Content */}
                     <div className="space-y-4">
@@ -192,7 +214,7 @@ export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetPr
                             <h3 className="text-sm font-bold uppercase tracking-wider text-white/90">Sub-tasks</h3>
                         </div>
                         <div className="space-y-3">
-                            {/* Pseudocode for subtasks - simply rendered as unchecked for now */}
+                            {/* Pseudocode for subtasks */}
                             {['Initial synapse handshake', 'Verify data integrity', 'Commit protocol to mainnet'].map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 group">
                                     <input
