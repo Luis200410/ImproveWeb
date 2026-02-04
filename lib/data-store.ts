@@ -925,7 +925,8 @@ class DataStore {
                             { name: 'Area', type: 'relation', required: false, relationMicroappId: 'areas-sb', width: '1/3' },
                             { name: 'Cues', type: 'textarea', required: false, width: '1/3', placeholder: 'Keywords, Questions, Main Ideas...' },
                             { name: 'Main Notes', type: 'textarea', required: true, width: '2/3', placeholder: 'Detailed notes, definitions, examples...' },
-                            { name: 'Summary', type: 'textarea', required: false, width: 'full', placeholder: 'Summary of the main points...' }
+                            { name: 'Summary', type: 'textarea', required: false, width: 'full', placeholder: 'Summary of the main points...' },
+                            { name: 'Task', type: 'relation', required: false, relationMicroappId: 'tasks-sb', width: '1/3' }
                         ]
                     },
                     {
