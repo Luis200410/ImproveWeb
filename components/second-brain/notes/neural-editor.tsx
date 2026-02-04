@@ -36,8 +36,10 @@ export function NeuralEditor({ initialContent, onChange, editable = true }: Neur
         ],
         content: initialContent,
         editable,
-        attributes: {
-            class: 'prose prose-invert prose-lg max-w-none focus:outline-none min-h-[500px] prose-headings:font-serif prose-headings:font-normal prose-headings:text-white prose-h1:text-4xl prose-h1:mb-4 prose-h1:mt-8 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-6 prose-h2:text-amber-500/80 prose-p:text-white/80 prose-p:leading-relaxed prose-p:font-light prose-strong:text-amber-500 prose-strong:font-bold prose-code:text-emerald-400 prose-code:bg-white/5 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-amber-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white/60 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-img:rounded-lg prose-img:border prose-img:border-white/10',
+        editorProps: {
+            attributes: {
+                class: 'prose prose-invert prose-lg max-w-none focus:outline-none min-h-[500px] prose-headings:font-serif prose-headings:font-normal prose-headings:text-white prose-h1:text-4xl prose-h1:mb-4 prose-h1:mt-8 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-6 prose-h2:text-amber-500/80 prose-p:text-white/80 prose-p:leading-relaxed prose-p:font-light prose-strong:text-amber-500 prose-strong:font-bold prose-code:text-emerald-400 prose-code:bg-white/5 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-amber-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white/60 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-img:rounded-lg prose-img:border prose-img:border-white/10',
+            },
         },
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML())
