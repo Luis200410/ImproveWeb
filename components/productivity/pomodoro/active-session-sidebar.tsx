@@ -39,7 +39,7 @@ export function ActiveSessionSidebar() {
                 animate={{ x: 0 }}
                 exit={{ x: '100%' }}
                 transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-                className="fixed top-0 right-0 h-full w-[400px] bg-black border-l border-white/10 z-[200] flex flex-col shadow-2xl"
+                className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-black border-l border-white/10 z-[200] flex flex-col shadow-2xl"
             >
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-white/5">

@@ -84,7 +84,7 @@ export default function SecondBrainPage() {
             <div className="max-w-[1600px] mx-auto p-6 pt-24 min-h-screen flex flex-col gap-8">
 
                 {/* Top Row: [Stats (Toggle)] [Hub] [Architecture Nodes] */}
-                <div className="flex flex-col lg:flex-row gap-8 items-stretch h-[600px]">
+                <div className="flex flex-col lg:flex-row gap-8 items-stretch min-h-[600px] lg:h-[600px] h-auto">
 
                     {/* Toggle Button for Stats */}
                     <button

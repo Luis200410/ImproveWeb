@@ -53,7 +53,7 @@ export default function DashboardClient() {
             </div>
 
             <main className="flex-1 relative z-10 flex flex-col overflow-y-auto pt-24">
-                <div className="w-full flex-1 flex flex-col items-center justify-center min-h-[900px]">
+                <div className="w-full flex-1 flex flex-col items-center justify-center min-h-[600px] md:min-h-[900px]">
                     <CentralHub systems={systems} systemStatuses={systemStatuses} />
                 </div>
             </main>

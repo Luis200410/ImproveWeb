@@ -159,8 +159,8 @@ export function Navigation() {
                             key={link.href}
                             href={link.href}
                             className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${pathname === link.href
-                                    ? 'text-white border-b border-white pb-1'
-                                    : 'text-white/60 hover:text-white'
+                                ? 'text-white border-b border-white pb-1'
+                                : 'text-white/60 hover:text-white'
                                 }`}
                         >
                             {link.label}
@@ -170,8 +170,8 @@ export function Navigation() {
                         <Link
                             href="/dashboard"
                             className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard'
-                                    ? 'text-white border-b border-white pb-1'
-                                    : 'text-white/60 hover:text-white'
+                                ? 'text-white border-b border-white pb-1'
+                                : 'text-white/60 hover:text-white'
                                 }`}
                         >
                             Dashboard
@@ -269,15 +269,16 @@ export function Navigation() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="md:hidden border-t border-white/10 bg-black"
+                    transition={{ duration: 0.3 }}
+                    className="md:hidden absolute top-full left-0 right-0 border-t border-white/10 bg-black/95 backdrop-blur-xl z-40 overflow-hidden"
                 >
-                    <div className="px-8 py-6 space-y-4">
+                    <div className="px-6 py-8 space-y-6">
                         {links.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setIsMenuOpen(false)}
-                                className={`block text-sm font-medium uppercase tracking-[0.2em] transition-colors ${pathname === link.href ? 'text-white' : 'text-white/60 hover:text-white'
+                                className={`block text-lg font-medium uppercase tracking-[0.2em] transition-colors ${pathname === link.href ? 'text-white' : 'text-white/60 hover:text-white'
                                     }`}
                             >
                                 {link.label}
@@ -287,20 +288,20 @@ export function Navigation() {
                             <Link
                                 href="/dashboard"
                                 onClick={() => setIsMenuOpen(false)}
-                                className={`block text-sm font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+                                className={`block text-lg font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-white/60 hover:text-white'}`}
                             >
                                 Dashboard
                             </Link>
                         )}
                         {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                                <Button variant="outline" className="w-full font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
+                                <Button className="w-full bg-white text-black hover:bg-white/90 font-serif text-base uppercase tracking-widest py-6">
                                     Member Login
                                 </Button>
                             </Link>
                         )}
                         {showMemberMenu && (
-                            <div className="space-y-3">
+                            <div className="pt-6 border-t border-white/10 space-y-4">
                                 <Link
                                     href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
                                     onClick={() => setIsMenuOpen(false)}
@@ -318,7 +319,7 @@ export function Navigation() {
                                 <button
                                     type="button"
                                     onClick={handleLogout}
-                                    className="block text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
+                                    className="block w-full text-left text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
                                 >
                                     Log Out
                                 </button>

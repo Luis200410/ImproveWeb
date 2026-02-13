@@ -65,15 +65,15 @@ export default function PomodoroDashboard() {
     return (
         <div className="min-h-screen bg-[#050505] text-white p-8">
             {/* Header */}
-            <header className="flex justify-between items-end mb-12 border-b border-white/10 pb-6">
-                <div>
+            <header className="flex flex-col md:flex-row justify-between items-end md:items-end gap-6 mb-12 border-b border-white/10 pb-6">
+                <div className="w-full md:w-auto text-center md:text-left">
                     <div className="text-[10px] uppercase tracking-[0.3em] text-amber-500 mb-2 font-bold">Focus Mastery</div>
                     <h1 className={`${playfair.className} text-4xl mb-1`}>
                         Level <span className="text-amber-500">14</span>
                     </h1>
                 </div>
 
-                <div className="flex-1 max-w-md mx-auto text-center">
+                <div className="w-full md:flex-1 max-w-md mx-auto text-center">
                     <div className="text-[10px] uppercase tracking-widest text-white/30 mb-2">Daily Momentum</div>
                     <div className="font-mono text-xl mb-1">{String(totalSessions).padStart(2, '0')}/10</div>
                     <div className="text-[9px] uppercase tracking-wider text-white/20">Sessions</div>
@@ -86,7 +86,7 @@ export default function PomodoroDashboard() {
                     </div>
                 </div>
 
-                <div className="text-right">
+                <div className="w-full md:w-auto text-center md:text-right">
                     <div className="text-[10px] uppercase tracking-widest text-white/30 mb-1">Config Mode</div>
                     <div className="font-mono text-xl tracking-wider">PROTOCOL EDIT</div>
                 </div>

@@ -179,13 +179,17 @@ export default function LoginPage() {
                                             </span>
                                         </Button>
                                         <div className="mt-4">
-                                            <Button
-                                                formAction={signup}
-                                                variant="outline"
-                                                className="w-full border-white/10 text-white hover:bg-white/10 font-serif text-sm uppercase tracking-widest py-6"
-                                            >
-                                                Sign Up
-                                            </Button>
+                                            <div className="mt-4">
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    className="w-full border-white/10 text-white hover:bg-white/10 font-serif text-sm uppercase tracking-widest py-6"
+                                                >
+                                                    <Link href="/register">
+                                                        Sign Up
+                                                    </Link>
+                                                </Button>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 </motion.div>

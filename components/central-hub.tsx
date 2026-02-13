@@ -52,8 +52,8 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
                 <div className="absolute w-[600px] h-[600px] border border-white/5 rounded-full opacity-30" />
             </div>
 
-            {/* Scalable Container for Radial Layout */}
-            <div className="relative w-[1000px] h-[1000px] scale-[0.55] md:scale-[0.7] lg:scale-[0.85] xl:scale-100 transition-transform duration-500 flex items-center justify-center">
+            {/* Scalable Container for Radial Layout - Desktop Only */}
+            <div className="hidden lg:flex relative w-[1000px] h-[1000px] scale-[0.55] md:scale-[0.7] lg:scale-[0.85] xl:scale-100 transition-transform duration-500 items-center justify-center">
 
                 {/* Central Node */}
                 <motion.div
@@ -90,17 +90,12 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
                             <stop offset="100%" stopColor="rgba(255,255,255,0)" />
                         </linearGradient>
                     </defs>
-                    <g className="hidden lg:block" style={{ transform: 'translate(500px, 500px)' }}>
+                    <g style={{ transform: 'translate(500px, 500px)' }}>
                         {nodes.map((node, idx) => (
                             <motion.line
                                 key={idx}
                                 x1={0}
                                 y1={0}
-                                // We initially render at fixed positions, but creating real dynamic lines requires 
-                                // referencing motion values. 
-                                // Simplified approach: Since framer-motion drag uses transform, getting the line to follow 
-                                // requires the line itself to use the same transform or we use useMotionValue.
-                                // Below is the 'Drag' version wrapper usage
                                 x2={node.initialX}
                                 y2={node.initialY}
                                 stroke="url(#connector-grad)"
@@ -108,24 +103,12 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
                                 strokeDasharray="4 4"
                             />
                         ))}
-                        {/* 
-                           Note: True dynamic lines that "follow" the drag require MotionValues. 
-                           Because we are iterating, we need a DraggableNode component that handles its own line update logic
-                           or we lift state up.
-                           
-                           To fulfill the user request "drag make lines move too", we need to coordinate the position.
-                           The easiest way is to use a custom component that renders BOTH the node and the line, positioned absolutely.
-                           Dragging the parent container moves both? No, the line must update its length/angle.
-                           
-                           Better: CentralHub manages useMotionValue(x), useMotionValue(y) for each node.
-                           Since hooks in loops are tricky, we'll make a sub-component <SystemCluster> for each item.
-                         */}
                     </g>
                 </svg>
 
                 {/* Orbiting Nodes */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
-                    <div className="hidden lg:block w-full h-full relative">
+                    <div className="w-full h-full relative">
                         {nodes.map((node, idx) => (
                             <NodeCluster
                                 key={node.id}
@@ -142,7 +125,28 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
             </div>
 
             {/* Mobile Stack */}
-            <div className="lg:hidden absolute inset-0 overflow-y-auto px-6 py-20 pointer-events-auto flex flex-col gap-6 items-center pt-[400px]">
+            <div className="lg:hidden absolute inset-0 overflow-y-auto px-6 py-20 pointer-events-auto flex flex-col gap-6 items-center">
+                {/* Mobile Header Card */}
+                <div className="w-full max-w-sm bg-[#f8f8f2] rounded-3xl p-8 border-4 border-[#fffffa]/10 mb-4">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="w-12 h-12 bg-[#D4AF37]/20 rounded-xl flex items-center justify-center text-[#D4AF37]">
+                            <LayoutGrid className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <div className="text-[10px] uppercase tracking-[0.2em] text-black/50 font-bold mb-1">
+                                Main Hub
+                            </div>
+                            <h1 className={cn(playfair.className, "text-xl font-bold text-black leading-tight")}>
+                                Central Intelligence
+                            </h1>
+                        </div>
+                    </div>
+                    <div className="w-full flex items-center justify-between border-t border-black/10 pt-4">
+                        <span className="text-[10px] text-black/40 font-medium">System Status</span>
+                        <span className="text-[10px] text-emerald-600 font-bold tracking-wider">OPTIMAL</span>
+                    </div>
+                </div>
+
                 {coreSystems.map((sys, idx) => (
                     <HubNode
                         key={sys.id}
