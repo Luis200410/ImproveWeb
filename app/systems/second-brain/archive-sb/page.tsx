@@ -37,18 +37,17 @@ export default function ArchiveSystem() {
         const { data: { user } } = await supabase.auth.getUser()
         const uid = user?.id || 'defaultUser'
 
-        const [p, a, t1, t2, n, r] = await Promise.all([
+        const [p, a, t1, n, r] = await Promise.all([
             dataStore.getEntries('projects-sb', uid),
             dataStore.getEntries('areas-sb', uid),
             dataStore.getEntries('tasks-sb', uid),
-            dataStore.getEntries('tasks', uid),
             dataStore.getEntries('notes-sb', uid),
             dataStore.getEntries('resources-sb', uid)
         ])
 
         const allProjects = p as unknown as ProjectEntry[]
         const allAreas = a as unknown as AreaEntry[]
-        const allTasks = [...t1, ...t2]
+        const allTasks = [...t1]
 
         // IDENTIFY ARCHIVED ITEMS
         // Projects: status === 'completed' OR explicitly 'archived' if we support it. 

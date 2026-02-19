@@ -24,13 +24,12 @@ export default function TasksMatrixPage() {
     }, [])
 
     const loadData = async (uid: string) => {
-        const [t1, t2, p] = await Promise.all([
+        const [t1, p] = await Promise.all([
             dataStore.getEntries('tasks-sb', uid),
-            dataStore.getEntries('tasks', uid), // Fetch legacy tasks too
             dataStore.getEntries('projects-sb', uid)
         ])
 
-        const headers = [...t1, ...t2]
+        const headers = [...t1]
 
         // Normalize task data structure
         const allTasks = headers.map(task => {

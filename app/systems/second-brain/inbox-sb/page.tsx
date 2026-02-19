@@ -31,16 +31,15 @@ export default function InboxSystem() {
         const { data: { user } } = await supabase.auth.getUser()
         const uid = user?.id || 'defaultUser'
 
-        const [p, a, t1, t2, n, r] = await Promise.all([
+        const [p, a, t1, n, r] = await Promise.all([
             dataStore.getEntries('projects-sb', uid),
             dataStore.getEntries('areas-sb', uid),
             dataStore.getEntries('tasks-sb', uid),
-            dataStore.getEntries('tasks', uid),
             dataStore.getEntries('notes-sb', uid),
             dataStore.getEntries('resources-sb', uid)
         ])
 
-        const allTasks = [...t1, ...t2]
+        const allTasks = [...t1]
 
         // FILTER LOGIC FOR INBOX implies "Unprocessed"
         // 1. Projects: Status 'backlog' (and maybe no Area?)

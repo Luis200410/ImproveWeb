@@ -29,15 +29,30 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
     useEffect(() => {
         // Hydrate columns from props with robust status mapping
         const backlog = tasks.filter(t => {
+            if (selectedProjectId) {
+                const p = t.data.Project
+                const pId = typeof p === 'object' ? p?.id : p
+                if (pId !== selectedProjectId) return false
+            }
             const s = t.data.Status
             // Exclude empty/false status (Inbox)
             return s === 'backlog' || s === 'Someday' || s === 'Next' || s === 'Todo'
         })
         const processing = tasks.filter(t => {
+            if (selectedProjectId) {
+                const p = t.data.Project
+                const pId = typeof p === 'object' ? p?.id : p
+                if (pId !== selectedProjectId) return false
+            }
             const s = t.data.Status
             return s === 'active' || s === 'wait' || s === 'Waiting' || s === 'In Progress'
         })
         const deployment = tasks.filter(t => {
+            if (selectedProjectId) {
+                const p = t.data.Project
+                const pId = typeof p === 'object' ? p?.id : p
+                if (pId !== selectedProjectId) return false
+            }
             const s = t.data.Status
             return s === true || s === 'Done' || s === 'Completed'
         })
@@ -47,7 +62,7 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
             processing,
             deployment
         })
-    }, [tasks])
+    }, [tasks, selectedProjectId])
 
     const handleDragEnd = (result: DropResult) => {
         const { source, destination, draggableId } = result

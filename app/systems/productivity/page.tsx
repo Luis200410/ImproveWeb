@@ -9,7 +9,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { ArrowLeft, CheckSquare, Clock, Calendar, Zap, Sparkles, Target, List, ArrowRight, Timer, Play, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft, Clock, Calendar, Zap, Target, List, ArrowRight, Timer, Play, CheckCircle2 } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -30,6 +30,64 @@ export default function ProductivityPage() {
             const supabase = createClient()
             const { data: { user } } = await supabase.auth.getUser()
             setUserId(user?.id || 'defaultUser')
+
+            if (user?.id) {
+                // AUTO-MIGRATION & CLEANUP LOGIC
+                // Check if 'tasks' exists in Productivity
+                const prod = dataStore.getSystem('productivity')
+                const hasLegacyTasksApp = prod?.microapps.some(m => m.id === 'tasks')
+                const legacyTasks = await dataStore.getEntries('tasks', user.id)
+
+                if (hasLegacyTasksApp || legacyTasks.length > 0) {
+                    console.log('Legacy tasks configuration detected. Starting auto-cleanup...')
+
+                    // 1. Migrate Data if needed
+                    if (legacyTasks.length > 0) {
+                        const sbTasks = await dataStore.getEntries('tasks-sb', user.id)
+                        const sbProjects = await dataStore.getEntries('projects-sb', user.id)
+
+                        for (const task of legacyTasks) {
+                            const title = task.data['Title'] || task.data['Task Name'] || task.data['Task'] || 'Untitled Task';
+                            const legacyProjectName = task.data['Project'] || task.data['Project Name'] || task.data['Goal'];
+
+                            // Find matching SB Project ID
+                            let targetProjectId = null;
+                            if (legacyProjectName) {
+                                const match = sbProjects.find(p => p.data['Title'] === legacyProjectName || p.id === legacyProjectName);
+                                if (match) targetProjectId = match.id;
+                            }
+
+                            const existingTask = sbTasks.find(sb => sb.data['Task'] === title);
+
+                            if (!existingTask) {
+                                await dataStore.addEntry(user.id, 'tasks-sb', {
+                                    'Task': title,
+                                    'Status': (task.data['Status']?.toLowerCase().includes('done') || task.data['Status']?.toLowerCase().includes('complete')) ? 'Done' : 'Pending',
+                                    'Start Date': task.data['Due Date'] || new Date().toISOString(),
+                                    'Priority': task.data['Priority'] || 'Medium',
+                                    'Notes': task.data['Notes'] || '',
+                                    'Assignee': 'Me',
+                                    'Project': targetProjectId // Link to project
+                                })
+                            } else if (targetProjectId && !existingTask.data['Project']) {
+                                // Repair: Link existing task to project if missing
+                                await dataStore.updateEntry(existingTask.id, { 'Project': targetProjectId })
+                            }
+                            // Delete legacy entry to prevent re-migration
+                            // await dataStore.deleteEntry(task.id) // Optional: Keep data but hide app
+                        }
+                    }
+
+                    // 2. Remove 'tasks' microapp from System Config
+                    // We can just hit resetSystems() to enforce code defaults which we know are correct (no 'tasks' in productivity)
+                    dataStore.resetSystems()
+
+                    // Reload local state
+                    const updatedSystem = dataStore.getSystem('productivity')
+                    setSystem(updatedSystem || null)
+                    console.log('Auto-cleanup complete. Systems reset.')
+                }
+            }
         }
         loadUser()
     }, [])
@@ -57,12 +115,7 @@ export default function ProductivityPage() {
         refreshEntries()
     }, [refreshEntries])
 
-    const tasks = entries['tasks'] || []
     const habits = entries['atomic-habits'] || []
-
-    const nextTasks = useMemo(() => {
-        return tasks.filter(t => t.data['Status'] === 'Next').slice(0, 5)
-    }, [tasks])
 
     const habitsProgress = useMemo(() => {
         const today = new Date().toISOString().split('T')[0]
@@ -114,7 +167,7 @@ export default function ProductivityPage() {
                                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.12),transparent_45%)]" />
                             </div>
                             <div className="flex flex-wrap items-center gap-3 text-amber-100 relative z-10">
-                                <Sparkles className="w-5 h-5" />
+                                <Zap className="w-5 h-5" />
                                 <span className="text-xs uppercase tracking-[0.32em] text-white/70">Execution OS · Productivity</span>
                             </div>
                             <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold mt-4 mb-3 text-white relative z-10`}>
@@ -136,20 +189,15 @@ export default function ProductivityPage() {
                             </div>
                         </div>
 
-                        {/* Tactical Snapshot */}
+                        {/* Habits Snapshot */}
                         <Card className="bg-white/[0.05] border-white/10 backdrop-blur-md shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
                             <CardHeader>
                                 <CardTitle className="text-white flex items-center gap-2">
-                                    Tactical snapshot
-                                    <Target className="w-5 h-5 text-white/60" />
+                                    <Zap className="w-5 h-5 text-amber-500" />
+                                    Daily Snapshot
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="p-5 rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.08] to-black">
-                                    <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Next Tasks</p>
-                                    <p className="text-3xl font-bold mt-2 text-white">{nextTasks.length}</p>
-                                    <p className="text-xs text-white/50 mt-1">Ready to execute</p>
-                                </div>
+                            <CardContent className="grid sm:grid-cols-2 gap-4">
                                 <div className="p-5 rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.06] to-black">
                                     <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Habits Today</p>
                                     <p className="text-3xl font-bold mt-2 text-white">{habitsProgress.completed}/{habitsProgress.total}</p>
@@ -163,47 +211,6 @@ export default function ProductivityPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Tasks Card */}
-                        <Card className="bg-white/[0.05] border-white/12 overflow-hidden backdrop-blur-md shadow-[0_16px_50px_rgba(0,0,0,0.45)]">
-                            <CardHeader className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <CheckSquare className="w-5 h-5 text-white/60" />
-                                    <CardTitle className="text-white">Active Tasks</CardTitle>
-                                </div>
-                                <Button asChild variant="ghost" size="sm" className="text-xs uppercase tracking-wider text-white/40 hover:text-white">
-                                    <Link href="/systems/productivity/tasks">View All</Link>
-                                </Button>
-                            </CardHeader>
-                            <CardContent>
-                                {nextTasks.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {nextTasks.map((task, i) => (
-                                            <div key={task.id} className="group flex items-center justify-between p-3 rounded-xl border border-white/10 bg-black/30 hover:bg-black/50 transition">
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`w-2 h-2 rounded-full ${task.data['Priority'] === 'High' ? 'bg-red-500' : 'bg-amber-500'}`} />
-                                                    <span className="text-white font-medium">{task.data['Task']}</span>
-                                                </div>
-                                                <div className="flex items-center gap-3">
-                                                    {task.data['Due Date'] && (
-                                                        <span className="text-xs text-white/40">{new Date(task.data['Due Date']).toLocaleDateString()}</span>
-                                                    )}
-                                                    <Button asChild size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity p-0 h-8 w-8">
-                                                        <Link href={`/systems/productivity/tasks?id=${task.id}`}><ArrowRight className="w-4 h-4" /></Link>
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 text-white/40">
-                                        <p>No immediate tasks. Clear skies.</p>
-                                        <Button asChild variant="link" className="text-amber-400 mt-2">
-                                            <Link href="/systems/productivity/tasks?new=1">Create Task</Link>
-                                        </Button>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
                     </div>
 
                     {/* Right Column: Habits & Quick Links */}

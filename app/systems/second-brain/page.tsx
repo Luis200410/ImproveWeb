@@ -47,8 +47,8 @@ export default function SecondBrainPage() {
 
         // Tasks
         const tasksRaw = await dataStore.getEntries('tasks-sb', userId)
-        const legacyTasks = await dataStore.getEntries('tasks', userId)
-        const combinedTasks = [...tasksRaw, ...legacyTasks]
+        // Legacy 'tasks' removed
+        const combinedTasks = [...tasksRaw]
         setAllTasks(combinedTasks)
 
         const today = new Date().toISOString().split('T')[0]

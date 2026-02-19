@@ -38,15 +38,14 @@ export default function ProjectsDashboard() {
             const uid = user?.id || 'defaultUser'
             setUserId(uid)
 
-            const [projectsData, tasksSbData, tasksLegacyData, areasData] = await Promise.all([
+            const [projectsData, tasksSbData, areasData] = await Promise.all([
                 dataStore.getEntries('projects-sb', uid),
                 dataStore.getEntries('tasks-sb', uid), // Fetch tasks-sb
-                dataStore.getEntries('tasks', uid),    // Fetch legacy tasks
                 dataStore.getEntries('areas-sb', uid) // Fetch Areas
             ])
 
-            // Filter tasks that belong to the 'tasks-sb' microapp or legacy 'tasks'
-            const allTasks = [...tasksSbData, ...tasksLegacyData]
+            // Filter tasks that belong to the 'tasks-sb' microapp
+            const allTasks = [...tasksSbData]
 
             const projects = projectsData.map(p => ({
                 ...p,

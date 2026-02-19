@@ -40,15 +40,14 @@ export default function NotesSystem() {
         const uid = user?.id || 'defaultUser'
         setUserId(uid)
 
-        const [notesData, projectsData, areasData, tasksSbData, tasksLegacyData] = await Promise.all([
+        const [notesData, projectsData, areasData, tasksSbData] = await Promise.all([
             dataStore.getEntries('notes-sb'),
             dataStore.getEntries('projects-sb'),
             dataStore.getEntries('areas-sb'),
-            dataStore.getEntries('tasks-sb'),
-            dataStore.getEntries('tasks')
+            dataStore.getEntries('tasks-sb')
         ])
 
-        const rawTasks = [...(tasksSbData as Entry[]), ...(tasksLegacyData as Entry[])]
+        const rawTasks = [...(tasksSbData as Entry[])]
 
         // Normalize task data structure
         const tasksData = rawTasks.map(task => {
