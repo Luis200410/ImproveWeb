@@ -8,6 +8,7 @@ import { Archive, LayoutGrid, Target, ChevronRight, CornerUpLeft } from 'lucide-
 import { Playfair_Display } from '@/lib/font-shim'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 import { AreaEntry } from '@/components/second-brain/areas/area-utils'
+import { ProjectCard } from '@/components/second-brain/projects/project-card'
 import { NoteCard } from '@/components/second-brain/notes/note-card'
 import { ResourceCard } from '@/components/second-brain/resources/resource-card'
 import { MatrixCard } from '@/components/second-brain/matrix/matrix-card'
