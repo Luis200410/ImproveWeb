@@ -51,12 +51,12 @@ export default function ProjectsDashboard() {
             const projects = projectsData.map(p => ({
                 ...p,
                 data: {
-                    ...p.data,
+                    ...(p.data as any),
                     // Sanitize Area: if it's the string "unassigned", treat it as undefined
                     Area: p.data.Area === 'unassigned' ? undefined : p.data.Area,
                     subtasks: allTasks.filter(t => t.data.Project === p.id || t.data.projectId === p.id)
                 }
-            })) as ProjectEntry[]
+            })) as unknown as ProjectEntry[]
 
             const sorted = sortProjects(projects)
 
