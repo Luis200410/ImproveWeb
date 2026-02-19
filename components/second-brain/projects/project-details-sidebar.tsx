@@ -14,15 +14,19 @@ import { ProjectForge } from './project-forge'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
+import { TaskDetailsSheet } from '../task-details-sheet'
+
 interface ProjectDetailsSidebarProps {
     project: ProjectEntry | null
     onClose: () => void
     onUpdate: (project: ProjectEntry, updates: Partial<ProjectEntry['data']>) => void
     linkedTasks?: Entry[]
     onCreateTask?: (taskData: any) => void
+    onUpdateTask?: (task: Entry, updates: Partial<Entry['data']>) => void
+    areas?: Entry[]
 }
 
-export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask }: ProjectDetailsSidebarProps) {
+export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask, onUpdateTask, areas = [] }: ProjectDetailsSidebarProps) {
     // Helper to calculate time remaining
     const getDeadlineText = () => {
         if (!project?.data.deadline) return 'No Deadline'
@@ -40,9 +44,23 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                     <>
                         {/* Header */}
                         <div className="p-6 border-b border-white/10">
-                            <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] mb-2 font-bold flex items-center gap-2">
-                                <Activity className="w-3 h-3 text-emerald-500" />
-                                Project Context
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold flex items-center gap-2">
+                                    <Activity className="w-3 h-3 text-emerald-500" />
+                                    Project Context
+                                </div>
+
+                                {/* Area Selector */}
+                                <select
+                                    className="bg-white/5 border border-white/10 rounded text-[10px] text-white/50 px-2 py-1 uppercase tracking-widest hover:text-white transition-colors cursor-pointer outline-none focus:border-amber-500"
+                                    value={project.data.Area || ''}
+                                    onChange={(e) => onUpdate(project, { Area: e.target.value || undefined })}
+                                >
+                                    <option value="">Unassigned</option>
+                                    {areas.map(area => (
+                                        <option key={area.id} value={area.id}>{area.data.title}</option>
+                                    ))}
+                                </select>
                             </div>
                             <SheetTitle className={`${playfair.className} text-xl text-white mb-2 leading-tight`}>{project.data.title || 'Untitled Project'}</SheetTitle>
                             <div className="flex gap-2 mb-4">
@@ -103,26 +121,41 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                 <div className="space-y-2">
                                     {/* Display Actual Linked Tasks */}
                                     {linkedTasks.map((task) => (
-                                        <div key={task.id} className="flex items-start gap-3 p-3 bg-white/5 rounded border border-white/5 hover:border-white/20 transition-all group">
-                                            <div className="mt-0.5">
-                                                {task.data.Status === true || task.data.Status === 'Done' ? (
-                                                    <div className="w-4 h-4 bg-emerald-500 rounded flex items-center justify-center text-black">
-                                                        <Check className="w-3 h-3" />
+                                        <TaskDetailsSheet
+                                            key={task.id}
+                                            task={task}
+                                            trigger={
+                                                <div className="flex items-start gap-3 p-3 bg-white/5 rounded border border-white/5 hover:border-white/20 transition-all group cursor-pointer text-left">
+                                                    <div
+                                                        className="mt-0.5"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation() // Prevent sheet opening
+                                                            if (onUpdateTask) {
+                                                                const isDone = task.data.Status === true || task.data.Status === 'Done'
+                                                                onUpdateTask(task, { Status: isDone ? 'backlog' : true })
+                                                            }
+                                                        }}
+                                                    >
+                                                        {task.data.Status === true || task.data.Status === 'Done' ? (
+                                                            <div className="w-4 h-4 bg-emerald-500 rounded flex items-center justify-center text-black hover:bg-emerald-400 transition-colors">
+                                                                <Check className="w-3 h-3" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-4 h-4 border border-white/20 rounded group-hover:border-white/50 hover:bg-white/10 transition-colors" />
+                                                        )}
                                                     </div>
-                                                ) : (
-                                                    <div className="w-4 h-4 border border-white/20 rounded group-hover:border-white/50" />
-                                                )}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className={`text-sm font-medium truncate ${task.data.Status === true || task.data.Status === 'Done' ? 'text-white/30 line-through' : 'text-white/90'}`}>
-                                                    {task.data.Title || 'Untitled Task'}
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className={`text-sm font-medium truncate ${task.data.Status === true || task.data.Status === 'Done' ? 'text-white/30 line-through' : 'text-white/90'}`}>
+                                                            {task.data.Title || 'Untitled Task'}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/40 bg-white/5 px-1.5 rounded">{task.data.Status || 'Backlog'}</span>
+                                                            {task.data.Priority && <span className="text-[10px] uppercase tracking-wider text-amber-500/60 bg-amber-500/10 px-1.5 rounded">{task.data.Priority}</span>}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[10px] uppercase tracking-wider text-white/40 bg-white/5 px-1.5 rounded">{task.data.Status || 'Backlog'}</span>
-                                                    {task.data.Priority && <span className="text-[10px] uppercase tracking-wider text-amber-500/60 bg-amber-500/10 px-1.5 rounded">{task.data.Priority}</span>}
-                                                </div>
-                                            </div>
-                                        </div>
+                                            }
+                                        />
                                     ))}
 
                                     <button
@@ -135,7 +168,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                                     data: {
                                                         Title: 'New Project Task',
                                                         Status: 'backlog',
-                                                        projectId: project.id, // AUTO-LINK
+                                                        Project: project.id, // AUTO-LINK
                                                         createdAt: new Date().toISOString()
                                                     }
                                                 })
@@ -203,11 +236,12 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                     </button>
                                 </div>
                             </CollapsibleSection>
-                        </div>
+                        </div >
                     </>
-                )}
-            </SheetContent>
-        </Sheet>
+                )
+                }
+            </SheetContent >
+        </Sheet >
     )
 }
 

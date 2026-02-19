@@ -13,14 +13,16 @@ interface NoteForgeProps {
     projects: ProjectEntry[]
     areas: Entry[]
     tasks: Entry[]
+    defaultProjectId?: string
+    defaultTaskId?: string
 }
 
-export function NoteForge({ onClose, onCreate, projects, areas, tasks }: NoteForgeProps) {
+export function NoteForge({ onClose, onCreate, projects, areas, tasks, defaultProjectId, defaultTaskId }: NoteForgeProps) {
     const [title, setTitle] = useState('')
     const [date, setDate] = useState(new Date().toISOString().split('T')[0])
-    const [selectedProject, setSelectedProject] = useState('')
+    const [selectedProject, setSelectedProject] = useState(defaultProjectId || '')
     const [selectedArea, setSelectedArea] = useState('')
-    const [selectedTask, setSelectedTask] = useState('')
+    const [selectedTask, setSelectedTask] = useState(defaultTaskId || '')
 
     const handleSubmit = () => {
         if (!title) return

@@ -11,6 +11,7 @@ import { ActiveTaskStream } from '@/components/second-brain/active-task-stream'
 import { ArchitectureNodes } from '@/components/second-brain/architecture-nodes'
 import { Navigation } from '@/components/navigation'
 import { RefreshCw, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { calculateTaskMetrics, calculateProjectMetrics, calculateProductivityScore, TaskMetrics, ProjectMetrics, ProductivityScore } from '@/components/second-brain/analytics-utils'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -22,6 +23,11 @@ export default function SecondBrainPage() {
     const [todayTasks, setTodayTasks] = useState<Entry[]>([])
     const [statsVisible, setStatsVisible] = useState(true)
     const [counts, setCounts] = useState({ projects: 0, tasks: 0, notes: 0 })
+
+    // Analytics State
+    const [taskMetrics, setTaskMetrics] = useState<TaskMetrics>()
+    const [projectMetrics, setProjectMetrics] = useState<ProjectMetrics>()
+    const [productivityScore, setProductivityScore] = useState<ProductivityScore>()
 
     // Load System & User
     useEffect(() => {
@@ -41,19 +47,33 @@ export default function SecondBrainPage() {
 
         // Tasks
         const tasksRaw = await dataStore.getEntries('tasks-sb', userId)
-        setAllTasks(tasksRaw)
+        const legacyTasks = await dataStore.getEntries('tasks', userId)
+        const combinedTasks = [...tasksRaw, ...legacyTasks]
+        setAllTasks(combinedTasks)
+
         const today = new Date().toISOString().split('T')[0]
-        const relevant = tasksRaw.filter(t => !t.data['Status'] || t.data['Status'] === false || t.data['Start Date']?.startsWith(today))
+        const relevant = combinedTasks.filter(t => !t.data['Status'] || t.data['Status'] === false || t.data['Start Date']?.startsWith(today))
         setTodayTasks(relevant)
 
-        // Counts for Architecture Nodes
+        // Projects & Notes for Counts & Analytics
         const projects = await dataStore.getEntries('projects-sb', userId)
         const notes = await dataStore.getEntries('notes-sb', userId)
+
         setCounts({
             projects: projects.length,
-            tasks: tasksRaw.length,
+            tasks: combinedTasks.length,
             notes: notes.length
         })
+
+        // Calculate Analytics
+        const tMetrics = calculateTaskMetrics(combinedTasks, 'all')
+        setTaskMetrics(tMetrics)
+
+        const pMetrics = calculateProjectMetrics(projects)
+        setProjectMetrics(pMetrics)
+
+        const pScore = calculateProductivityScore(tMetrics, pMetrics)
+        setProductivityScore(pScore)
     }
 
     useEffect(() => {
@@ -105,7 +125,11 @@ export default function SecondBrainPage() {
                                 className="overflow-hidden shrink-0"
                             >
                                 <div className="w-[320px] pt-12"> {/* pt-12 to clear toggle button */}
-                                    <StatsSidebar />
+                                    <StatsSidebar
+                                        taskMetrics={taskMetrics}
+                                        projectMetrics={projectMetrics}
+                                        productivity={productivityScore}
+                                    />
                                 </div>
                             </motion.div>
                         )}
@@ -122,19 +146,16 @@ export default function SecondBrainPage() {
                         </div>
 
                         <div className="scale-75 md:scale-90 lg:scale-100 transition-transform">
-                            <KnowledgeHub />
+                            <KnowledgeHub
+                                counts={counts}
+                                taskMetrics={taskMetrics}
+                                projectMetrics={projectMetrics}
+                                productivity={productivityScore}
+                            />
                         </div>
 
-                        <div className="absolute bottom-6 w-full px-8 flex justify-between items-center text-[10px] uppercase tracking-widest text-white/30 font-mono">
-                            <div>Active Links: <span className="text-white">482</span></div>
-                            <div>Cluster Density: <span className="text-white">0.74</span></div>
-                        </div>
+
                     </motion.div>
-
-                    {/* Architecture Nodes (Right Side) */}
-                    <div className="w-full lg:w-[280px] shrink-0 pt-4">
-                        <ArchitectureNodes counts={counts} />
-                    </div>
                 </div>
 
                 {/* Bottom Row: Active Task Stream */}

@@ -6,6 +6,7 @@ export interface ProjectData {
     // Core Identity
     title: string;
     description?: string;
+    Area?: string; // ID of the Area (e.g., "Work", "Personal")
 
     // RAG Health Status
     ragStatus: 'Red' | 'Amber' | 'Green';

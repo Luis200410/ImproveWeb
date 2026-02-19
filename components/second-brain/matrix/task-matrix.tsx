@@ -6,13 +6,18 @@ import { MoreVertical } from 'lucide-react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Entry } from '@/lib/data-store'
 import { MatrixCard } from './matrix-card'
+import { ProjectFilterDropdown } from './project-filter-dropdown'
+import { StrictModeDroppable } from '@/components/strict-mode-droppable'
 
 interface TaskMatrixProps {
     tasks: Entry[]
     onUpdateTask: (task: Entry, updates: Partial<Entry['data']>) => void
+    projects: Entry[]
+    selectedProjectId: string | null
+    onSelectProject: (id: string | null) => void
 }
 
-export function TaskMatrix({ tasks, onUpdateTask }: TaskMatrixProps) {
+export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, onSelectProject }: TaskMatrixProps) {
     // Local state for immediate UI updates while parent persists
     // We group tasks into columns
     const [columns, setColumns] = useState<{ [key: string]: Entry[] }>({
@@ -90,9 +95,22 @@ export function TaskMatrix({ tasks, onUpdateTask }: TaskMatrixProps) {
     return (
         <div className="flex-1 h-full p-8 overflow-x-auto">
             {/* Header */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-1 h-6 bg-amber-500" />
-                <h1 className="text-sm font-bold tracking-[0.3em] text-white">LOGICAL TASK MATRIX</h1>
+            <div className="flex items-center gap-6 mb-8">
+                <div className="flex items-center gap-4">
+                    <div className="w-1 h-6 bg-amber-500" />
+                    <h1 className="text-sm font-bold tracking-[0.3em] text-white">LOGICAL TASK MATRIX</h1>
+                </div>
+
+
+
+                <div className="h-4 w-[1px] bg-white/10" />
+
+                {/* Project Filter */}
+                <ProjectFilterDropdown
+                    projects={projects}
+                    selectedProjectId={selectedProjectId}
+                    onSelectProject={onSelectProject}
+                />
             </div>
 
             {/* DragDropContext is now provided by the parent page */}
@@ -146,7 +164,7 @@ function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor }: {
                 <MoreVertical className="w-4 h-4 text-white/20 cursor-pointer hover:text-white" />
             </div>
 
-            <Droppable droppableId={id}>
+            <StrictModeDroppable droppableId={id}>
                 {(provided, snapshot) => (
                     <div
                         ref={provided.innerRef}
@@ -177,7 +195,7 @@ function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor }: {
                         )}
                     </div>
                 )}
-            </Droppable>
+            </StrictModeDroppable>
         </div>
     )
 }

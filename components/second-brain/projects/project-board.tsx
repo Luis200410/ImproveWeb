@@ -15,7 +15,12 @@ interface ProjectBoardProps {
     tasks?: Entry[]
 }
 
-export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks = [] }: ProjectBoardProps) {
+export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks = [] }: {
+    projects: ProjectEntry[],
+    onUpdateProject: (project: ProjectEntry, updates: Partial<ProjectData>) => void,
+    onProjectClick: (id: string) => void,
+    tasks?: Entry[]
+}) {
 
     // Internal state for optimistic updates
     const [columns, setColumns] = useState<{ [key: string]: ProjectEntry[] }>({
@@ -137,7 +142,11 @@ function BoardColumn({ id, title, count, projects, onProjectClick, accentColor, 
                                         style={{ ...provided.draggableProps.style }}
                                         className={`${snapshot.isDragging ? 'opacity-90 scale-[1.02] z-50' : ''}`}
                                     >
-                                        <ProjectCard project={project} onClick={() => onProjectClick(project.id)} />
+                                        <ProjectCard
+                                            project={project}
+                                            onClick={() => onProjectClick(project.id)}
+                                            linkedTasks={tasks ? tasks.filter(t => t.data.Project === project.id) : []}
+                                        />
                                     </div>
                                 )}
                             </Draggable>

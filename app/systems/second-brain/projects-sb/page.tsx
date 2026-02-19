@@ -14,11 +14,13 @@ import { ProjectDetailsSidebar } from '@/components/second-brain/projects/projec
 import { GlobalConstraintsSheet } from '@/components/second-brain/projects/global-constraints-sheet'
 import { ProjectEntry, sortProjects, calculateProjectStats, ProjectStats } from '@/components/second-brain/projects/project-utils'
 import { Entry } from '@/lib/data-store'
+import { AreasList } from '@/components/second-brain/projects/areas-list'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
 export default function ProjectsDashboard() {
     const [projects, setProjects] = useState<ProjectEntry[]>([])
+    const [areas, setAreas] = useState<Entry[]>([]) // Areas state
     const [tasks, setTasks] = useState<Entry[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -26,24 +28,53 @@ export default function ProjectsDashboard() {
     const [stats, setStats] = useState<ProjectStats | null>(null)
     const [showGlobalConstraints, setShowGlobalConstraints] = useState(false)
 
+    const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null)
+
     const loadProjects = async () => {
         setLoading(true)
-        const supabase = createClient()
-        const { data: { user } } = await supabase.auth.getUser()
-        const uid = user?.id || 'defaultUser'
-        setUserId(uid)
+        try {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            const uid = user?.id || 'defaultUser'
+            setUserId(uid)
 
-        const [items, taskItems] = await Promise.all([
-            dataStore.getEntries('projects-sb'),
-            dataStore.getEntries('tasks')
-        ])
+            const [projectsData, tasksSbData, tasksLegacyData, areasData] = await Promise.all([
+                dataStore.getEntries('projects-sb', uid),
+                dataStore.getEntries('tasks-sb', uid), // Fetch tasks-sb
+                dataStore.getEntries('tasks', uid),    // Fetch legacy tasks
+                dataStore.getEntries('areas-sb', uid) // Fetch Areas
+            ])
 
-        const sorted = sortProjects(items as unknown as ProjectEntry[])
+            // Filter tasks that belong to the 'tasks-sb' microapp or legacy 'tasks'
+            const allTasks = [...tasksSbData, ...tasksLegacyData]
 
-        setProjects(sorted)
-        setTasks(taskItems)
-        setStats(calculateProjectStats(sorted))
-        setLoading(false)
+            const projects = projectsData.map(p => ({
+                ...p,
+                data: {
+                    ...p.data,
+                    // Sanitize Area: if it's the string "unassigned", treat it as undefined
+                    Area: p.data.Area === 'unassigned' ? undefined : p.data.Area,
+                    subtasks: allTasks.filter(t => t.data.Project === p.id || t.data.projectId === p.id)
+                }
+            })) as ProjectEntry[]
+
+            const sorted = sortProjects(projects)
+
+            setProjects(sorted)
+            setTasks(allTasks) // Set the tasks state
+            setAreas(areasData)
+
+            // Default to first area if configured
+            if (areasData.length > 0 && !selectedAreaId) {
+                setSelectedAreaId(areasData[0].id)
+            }
+
+            setStats(calculateProjectStats(sorted))
+        } catch (error) {
+            console.error('Failed to load project data:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const handleUpdateProject = async (project: ProjectEntry, updates: Partial<ProjectEntry['data']>) => {
@@ -52,14 +83,31 @@ export default function ProjectsDashboard() {
         setProjects(newProjects)
         setStats(calculateProjectStats(newProjects))
 
-        // Persist to Supabase
         await dataStore.updateEntry(project.id, updatedProject.data)
     }
 
-
     const handleCreateTask = async (taskData: any) => {
-        await dataStore.addEntry(userId, 'tasks', taskData.data)
-        loadProjects()
+        // Save to tasks-sb
+        await dataStore.addEntry(userId, 'tasks-sb', taskData.data)
+        loadProjects() // Refresh to linkage
+    }
+
+    const handleUpdateTask = async (task: Entry, updates: Partial<Entry['data']>) => {
+        // Optimistic update
+        const updatedTask = { ...task, data: { ...task.data, ...updates } }
+        setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t))
+
+        // Update projects state to reflect task changes in subtasks if needed
+        // (This might be expensive to re-map all projects, but accurate)
+        setProjects(prev => prev.map(p => ({
+            ...p,
+            data: {
+                ...p.data,
+                subtasks: p.data.subtasks.map(t => t.id === task.id ? updatedTask : t) as any
+            }
+        })))
+
+        await dataStore.updateEntry(task.id, updates)
     }
 
     useEffect(() => {
@@ -69,11 +117,17 @@ export default function ProjectsDashboard() {
     const selectedProject = projects.find(p => p.id === selectedId)
     const constraints = projects.filter(p => p.data.ragStatus === 'Red' || p.data.blockedBy)
 
+    // Filter projects by selected Area
+    // If selectedAreaId is 'unassigned', show projects with no area
+    const filteredProjects = selectedAreaId === 'unassigned'
+        ? projects.filter(p => !p.data.Area || p.data.Area === 'unassigned') // Double safety
+        : projects.filter(p => p.data.Area === selectedAreaId)
+
     return (
         <div className="min-h-screen bg-[#050505] text-white p-6 pb-32">
 
             {/* Top Bar / HUD */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 pb-6 border-b border-white/10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-white/10">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 text-emerald-500 mb-2">
                         <Activity className="w-4 h-4" />
@@ -81,7 +135,7 @@ export default function ProjectsDashboard() {
                     </div>
                     <div className="flex items-baseline gap-4">
                         <h1 className={`${playfair.className} text-3xl text-white`}>Project Neural Net</h1>
-                        <span className="text-xs font-mono text-white/30">v5.0.1</span>
+                        <span className="text-xs font-mono text-white/30">v5.0.2</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -111,17 +165,31 @@ export default function ProjectsDashboard() {
                             <div className="tracking-wider text-amber-500/50">ALERTS</div>
                         </div>
                     </div>
-                    <ProjectCreationSheet onProjectCreated={loadProjects} />
+                    <ProjectCreationSheet
+                        onProjectCreated={loadProjects}
+                        areas={areas}
+                        defaultAreaId={selectedAreaId || undefined}
+                    />
                 </div>
             </div>
 
+            {/* Area Tabs */}
+            <AreasList
+                areas={areas}
+                selectedAreaId={selectedAreaId}
+                onSelectArea={setSelectedAreaId}
+                onReorderAreas={(newAreas) => setAreas(newAreas)}
+            />
+
+
+
             {/* Main Content Area - Full Width */}
-            <div className="flex-1 w-full min-w-0 h-[calc(100vh-200px)]">
+            <div className="flex-1 w-full min-w-0 h-[calc(100vh-250px)]">
                 {loading ? (
                     <div className="h-full flex items-center justify-center text-white/20">Loading Neural Lattice...</div>
                 ) : (
                     <ProjectBoard
-                        projects={projects}
+                        projects={filteredProjects}
                         onUpdateProject={handleUpdateProject}
                         onProjectClick={setSelectedId}
                         tasks={tasks}
@@ -129,13 +197,15 @@ export default function ProjectsDashboard() {
                 )}
             </div>
 
-            {/* Sheets (Overlays) */}
+            {/* Sidebar for Details */}
             <ProjectDetailsSidebar
                 project={selectedProject || null}
                 onClose={() => setSelectedId(null)}
                 onUpdate={handleUpdateProject}
-                linkedTasks={tasks.filter(t => t.data.projectId === selectedProject?.id || t.data.Project === selectedProject?.id)}
+                linkedTasks={tasks.filter(t => t.data.Project === selectedId || t.data.projectId === selectedId)}
                 onCreateTask={handleCreateTask}
+                onUpdateTask={handleUpdateTask}
+                areas={areas}
             />
 
             <GlobalConstraintsSheet

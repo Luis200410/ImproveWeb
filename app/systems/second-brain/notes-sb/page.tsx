@@ -9,6 +9,7 @@ import { Playfair_Display } from '@/lib/font-shim'
 import { NoteCard } from '@/components/second-brain/notes/note-card'
 import { NoteDetailView } from '@/components/second-brain/notes/note-detail-view'
 import { NoteForge } from '@/components/second-brain/notes/note-forge'
+import { NoteBoard } from '@/components/second-brain/notes/note-board'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
@@ -24,6 +25,8 @@ export default function NotesSystem() {
     const [showForge, setShowForge] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [userId, setUserId] = useState('defaultUser')
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+    const [defaultForgeTaskId, setDefaultForgeTaskId] = useState<string | undefined>(undefined)
 
     // Maps for O(1) lookups
     const [projectMap, setProjectMap] = useState<Record<string, string>>({})
@@ -37,12 +40,45 @@ export default function NotesSystem() {
         const uid = user?.id || 'defaultUser'
         setUserId(uid)
 
-        const [notesData, projectsData, areasData, tasksData] = await Promise.all([
+        const [notesData, projectsData, areasData, tasksSbData, tasksLegacyData] = await Promise.all([
             dataStore.getEntries('notes-sb'),
             dataStore.getEntries('projects-sb'),
             dataStore.getEntries('areas-sb'),
-            dataStore.getEntries('tasks-sb')
+            dataStore.getEntries('tasks-sb'),
+            dataStore.getEntries('tasks')
         ])
+
+        const rawTasks = [...(tasksSbData as Entry[]), ...(tasksLegacyData as Entry[])]
+
+        // Normalize task data structure
+        const tasksData = rawTasks.map(task => {
+            // If it has 'title' but not 'Title' (Project Architect format)
+            if (!task.data.Title && (task.data.title || task.data.ProjectName)) {
+                return {
+                    ...task,
+                    data: {
+                        ...task.data,
+                        Title: task.data.Title || task.data.title || task.data.ProjectName,
+                        Task: task.data.Title || task.data.title || task.data.ProjectName, // For NeuralCalendar
+                        Status: task.data.Status || task.data.status || 'backlog',
+                        Priority: task.data.Priority || task.data.priority || 'Medium',
+                        DueDate: task.data.DueDate || task.data.deadline || task.data.date,
+                        'Start Date': task.data['Start Date'] || task.data.startDate || task.data.date
+                    }
+                }
+            }
+            // Ensure 'Task' field exists if 'Title' exists (some components use 'Task')
+            if (task.data.Title && !task.data.Task) {
+                return {
+                    ...task,
+                    data: {
+                        ...task.data,
+                        Task: task.data.Title
+                    }
+                }
+            }
+            return task
+        })
 
         // Sort notes by date desc
         const sortedNotes = (notesData as Entry[]).sort((a, b) =>
@@ -52,7 +88,7 @@ export default function NotesSystem() {
         setNotes(sortedNotes)
         setProjects(projectsData as unknown as ProjectEntry[])
         setAreas(areasData as Entry[])
-        setTasks(tasksData as Entry[])
+        setTasks(tasksData)
 
         // Build maps
         const pMap: Record<string, string> = {}
@@ -74,10 +110,16 @@ export default function NotesSystem() {
         loadData()
     }, [])
 
+    const handleOpenForge = (taskId?: string) => {
+        setDefaultForgeTaskId(taskId)
+        setShowForge(true)
+    }
+
     const handleCreateNote = async (data: any) => {
         await dataStore.addEntry(userId, 'notes-sb', data)
         await loadData()
         setShowForge(false)
+        setDefaultForgeTaskId(undefined) // Reset
     }
 
     const handleUpdateNote = async (id: string, updates: any) => {
@@ -87,62 +129,125 @@ export default function NotesSystem() {
         setNotes(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data, ...updates } } : n))
     }
 
-    const filteredNotes = notes.filter(n =>
-        n.data.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (n.data.Cues || '').toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const handleMoveNote = async (note: Entry, targetTaskId: string) => {
+        // Optimistic
+        setNotes(prev => prev.map(n => n.id === note.id ? { ...n, data: { ...n.data, Task: targetTaskId } } : n))
+
+        // DB
+        await dataStore.updateEntry(note.id, { Task: targetTaskId, taskId: targetTaskId })
+    }
+
+    // Filter Logic
+    const filteredProjects = projects.filter(p => !['completed', 'archived'].includes(p.data.status))
+
+    const activeProject = projects.find(p => p.id === selectedProjectId)
+
+    // Tasks for the board: Only tasks belonging to the selected project
+    const boardTasks = selectedProjectId
+        ? tasks.filter(t => t.data.Project === selectedProjectId || t.data.projectId === selectedProjectId)
+        : []
+
+    // Notes for the board: filtered by searching AND selected project
+    const filteredNotes = notes.filter(n => {
+        const matchesSearch = n.data.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (n.data.Cues || '').toLowerCase().includes(searchQuery.toLowerCase())
+
+        const matchesProject = selectedProjectId
+            ? (n.data.Project === selectedProjectId || n.data.projectId === selectedProjectId)
+            : true
+
+        return matchesSearch && matchesProject
+    })
 
     const activeNote = notes.find(n => n.id === selectedNoteId)
 
     return (
         <div className="h-screen bg-[#050505] text-white flex overflow-hidden">
-            {/* Sidebar / List View */}
-            <div className={`w-full ${selectedNoteId ? 'hidden lg:flex lg:w-[360px]' : 'flex'} flex-col border-r border-white/10 shrink-0`}>
+            {/* Main Board View */}
+            <div className={`flex-1 flex flex-col min-w-0 ${selectedNoteId ? 'hidden lg:flex' : 'flex'}`}>
                 {/* Header */}
-                <div className="p-8 pb-4 border-b border-white/10">
-                    <div className="flex justify-between items-start mb-8">
+                <div className="p-8 pb-0 border-b border-white/10 shrink-0">
+                    <div className="flex justify-between items-end mb-6">
                         <div>
-                            <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40 mb-1">Database_Index</div>
+                            <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40 mb-1">Second Brain OS</div>
                             <h1 className={`${playfair.className} text-4xl leading-none`}>
-                                Recent <br /> <i className="text-amber-500">Entries</i>
+                                Neural <i className="text-amber-500">Matrix</i>
                             </h1>
                         </div>
-                        <button
-                            onClick={() => setShowForge(true)}
-                            className="bg-white/5 hover:bg-white/10 text-white p-2 rounded-full border border-white/10 transition-colors"
-                        >
-                            <Plus className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => handleOpenForge()}
+                                className="bg-[#0A0A0A] border border-white/10 hover:bg-white/5 text-white px-4 py-2 rounded-sm flex items-center gap-2 transition-colors uppercase tracking-wider text-xs font-bold"
+                            >
+                                <Plus className="w-4 h-4 text-amber-500" /> New Entry
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Search */}
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                            <input
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                placeholder="QUERY_GRAPH..."
-                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-sm py-2 pl-9 pr-4 text-xs font-mono text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 uppercase tracking-wider"
-                            />
-                        </div>
-                        <button className="px-3 border border-white/10 rounded-sm hover:bg-white/5 text-white/40">
-                            <SlidersHorizontal className="w-4 h-4" />
+                    {/* Project Tabs */}
+                    <div className="flex items-center gap-1 overflow-x-auto pb-0 custom-scrollbar hide-scrollbar">
+                        <button
+                            onClick={() => setSelectedProjectId(null)}
+                            className={`
+                                px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap
+                                ${!selectedProjectId ? 'border-amber-500 text-white' : 'border-transparent text-white/30 hover:text-white'}
+                            `}
+                        >
+                            All / Unfiltered
                         </button>
+                        {filteredProjects.map(project => (
+                            <button
+                                key={project.id}
+                                onClick={() => setSelectedProjectId(project.id)}
+                                className={`
+                                    px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap
+                                    ${selectedProjectId === project.id ? 'border-amber-500 text-white' : 'border-transparent text-white/30 hover:text-white'}
+                                `}
+                            >
+                                {project.data.title}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* List */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar">
-                    {loading ? (
-                        <div className="p-8 text-center text-xs font-mono text-white/30 animate-pulse">Loading Index...</div>
-                    ) : filteredNotes.length === 0 ? (
-                        <div className="p-8 text-center">
-                            <div className="text-xs font-mono text-white/30 mb-4">NO ENTRIES FOUND</div>
-                            <button onClick={() => setShowForge(true)} className="text-amber-500 text-xs uppercase tracking-widest hover:underline">Initialize First Entry</button>
+                {/* Toolbar */}
+                <div className="px-8 py-4 border-b border-white/10 flex items-center gap-4 shrink-0 bg-[#0A0A0A]">
+                    <div className="relative flex-1 max-w-md">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
+                        <input
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            placeholder="SEARCH MATRIX..."
+                            className="w-full bg-white/5 border border-white/10 rounded-sm py-1.5 pl-8 pr-4 text-[10px] font-mono text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 uppercase tracking-wider"
+                        />
+                    </div>
+                    {/* Display current context */}
+                    {selectedProjectId && (
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-amber-500 uppercase">
+                            <Cpu className="w-3 h-3" />
+                            <span>Context: {activeProject?.data.title}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Board Content */}
+                <div className="flex-1 overflow-hidden p-8">
+                    {selectedProjectId ? (
+                        <div className="h-full">
+                            <NoteBoard
+                                notes={filteredNotes}
+                                tasks={boardTasks}
+                                onNoteMoved={handleMoveNote}
+                                onNoteClick={setSelectedNoteId}
+                                onCreateNote={handleOpenForge}
+                                projectMap={projectMap}
+                                areaMap={areaMap}
+                                taskMap={taskMap}
+                            />
                         </div>
                     ) : (
-                        <div className="divide-y divide-white/5">
+                        // Fallback List View
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 overflow-y-auto h-full custom-scrollbar content-start">
                             {filteredNotes.map(note => (
                                 <NoteCard
                                     key={note.id}
@@ -157,17 +262,14 @@ export default function NotesSystem() {
                         </div>
                     )}
                 </div>
-
-                {/* Footer Status */}
-                <div className="p-2 bg-[#0A0A0A] border-t border-white/10 text-[9px] font-mono text-white/30 flex justify-between uppercase tracking-widest px-4">
-                    <span>System Nominal</span>
-                    <span>Kernel_ID: X-Brain-Core-99</span>
-                </div>
             </div>
 
-            {/* Detail View */}
-            <div className={`flex-1 ${!selectedNoteId ? 'hidden lg:flex' : 'flex'}`}>
-                {selectedNoteId && activeNote ? (
+            {/* Note Detail Overlay (Right Sidebar) */}
+            <div className={`
+                fixed inset-y-0 right-0 w-full lg:w-[600px] bg-[#080808] border-l border-white/10 transform transition-transform duration-300 z-50
+                ${selectedNoteId ? 'translate-x-0' : 'translate-x-full'}
+            `}>
+                {selectedNoteId && activeNote && (
                     <NoteDetailView
                         note={activeNote}
                         onClose={() => setSelectedNoteId(null)}
@@ -176,20 +278,6 @@ export default function NotesSystem() {
                         areaMap={areaMap}
                         taskMap={taskMap}
                     />
-                ) : (
-                    // Empty State
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#030303] text-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-amber-900/10 via-black to-black opacity-50" />
-                        <div className="relative z-10 max-w-md space-y-6">
-                            <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
-                                <Sparkles className="w-8 h-8 text-amber-500/50" />
-                            </div>
-                            <h2 className={`${playfair.className} text-3xl text-white`}>Select a Neural Sequence</h2>
-                            <p className="text-sm text-white/40 leading-relaxed font-light">
-                                Access the distributed database to view, edit, or synthesize new knowledge nodes. Establish connections between disjointed information clusters.
-                            </p>
-                        </div>
-                    </div>
                 )}
             </div>
 
@@ -197,11 +285,16 @@ export default function NotesSystem() {
             <AnimatePresence>
                 {showForge && (
                     <NoteForge
-                        onClose={() => setShowForge(false)}
+                        onClose={() => {
+                            setShowForge(false)
+                            setDefaultForgeTaskId(undefined)
+                        }}
                         onCreate={handleCreateNote}
                         projects={projects}
                         areas={areas}
                         tasks={tasks}
+                        defaultProjectId={selectedProjectId || undefined}
+                        defaultTaskId={defaultForgeTaskId}
                     />
                 )}
             </AnimatePresence>

@@ -11,19 +11,63 @@ import { DragDropContext, DropResult } from '@hello-pangea/dnd'
 
 export default function TasksMatrixPage() {
     const [tasks, setTasks] = useState<Entry[]>([])
+    const [projects, setProjects] = useState<Entry[]>([])
+    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
     const [userId, setUserId] = useState<string>('defaultUser')
 
     useEffect(() => {
         createClient().auth.getUser().then(({ data: { user } }) => {
             const currentUserId = user?.id || 'defaultUser'
             setUserId(currentUserId)
-            loadTasks(currentUserId)
+            loadData(currentUserId)
         })
     }, [])
 
-    const loadTasks = async (uid: string) => {
-        const t = await dataStore.getEntries('tasks-sb', uid)
-        setTasks(t)
+    const loadData = async (uid: string) => {
+        const [t1, t2, p] = await Promise.all([
+            dataStore.getEntries('tasks-sb', uid),
+            dataStore.getEntries('tasks', uid), // Fetch legacy tasks too
+            dataStore.getEntries('projects-sb', uid)
+        ])
+
+        const headers = [...t1, ...t2]
+
+        // Normalize task data structure
+        const allTasks = headers.map(task => {
+            // Normalize task data structure
+            // If it has 'title' but not 'Title' (Project Architect format)
+            if (!task.data.Title && (task.data.title || task.data.ProjectName)) {
+                return {
+                    ...task,
+                    data: {
+                        ...task.data,
+                        Title: task.data.Title || task.data.title || task.data.ProjectName,
+                        Task: task.data.Title || task.data.title || task.data.ProjectName, // For NeuralCalendar
+                        Status: task.data.Status || task.data.status || 'backlog',
+                        Priority: task.data.Priority || task.data.priority || 'Medium',
+                        DueDate: task.data.DueDate || task.data.deadline || task.data.date,
+                        'Start Date': task.data['Start Date'] || task.data.startDate || task.data.date
+                    }
+                }
+            }
+            // Ensure 'Task' field exists for calendar if 'Title' exists
+            if (task.data.Title && !task.data.Task) {
+                return {
+                    ...task,
+                    data: {
+                        ...task.data,
+                        Task: task.data.Title
+                    }
+                }
+            }
+            return task
+        })
+
+        // Sort by creation date descending
+        allTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+        setTasks(allTasks)
+        setProjects(p)
     }
 
     const handleUpdateTask = async (task: Entry, updates: Partial<Entry['data']>) => {
@@ -56,6 +100,12 @@ export default function TasksMatrixPage() {
         }
     }
 
+
+    // Filter tasks based on selected project
+    const filteredTasks = selectedProjectId
+        ? tasks.filter(t => t.data.Project === selectedProjectId || t.data.projectId === selectedProjectId)
+        : tasks
+
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans overflow-hidden flex flex-col">
             <Navigation />
@@ -63,14 +113,20 @@ export default function TasksMatrixPage() {
             <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="flex-1 flex pt-20 h-screen overflow-hidden">
                     {/* Left Sidebar: Neural Calendar (Inbox) */}
-                    <NeuralCalendar tasks={tasks} />
+                    <NeuralCalendar tasks={filteredTasks} />
 
                     {/* Main Content: Logical Task Matrix */}
                     <main className="flex-1 relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-[#050505] to-[#050505]">
                         {/* Background Grid Accent */}
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px] pointer-events-none" />
 
-                        <TaskMatrix tasks={tasks} onUpdateTask={handleUpdateTask} />
+                        <TaskMatrix
+                            tasks={filteredTasks}
+                            onUpdateTask={handleUpdateTask}
+                            projects={projects}
+                            selectedProjectId={selectedProjectId}
+                            onSelectProject={setSelectedProjectId}
+                        />
                     </main>
                 </div>
             </DragDropContext>
