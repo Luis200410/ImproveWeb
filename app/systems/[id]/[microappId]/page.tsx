@@ -16,12 +16,12 @@ import { NumberSlider } from '@/components/ui/number-slider'
 import { ArrowLeft, Clock, Calendar, CheckSquare, Plus, Edit, Trash2, Link as LinkIcon, ExternalLink, Share2, MoreVertical, Flame, TrendingUp, TrendingDown, DollarSign, Activity, Zap, Utensils, Droplets, Dumbbell, Wallet, Target, Moon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Navigation } from '@/components/navigation'
-
 import { MicroappForm } from '@/components/microapp-form'
 import { HabitBuilder } from '@/components/habit-builder'
 import { HabitTimeline } from '@/components/habit-timeline'
 import { ForgeForm } from '@/components/forge-form'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { HabitDetailsSidebar } from '@/components/second-brain/habits/habit-details-sidebar'
 
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
@@ -60,7 +60,8 @@ export default function MicroappPage() {
 
     // Atomic Habits State
     const [isCreatingHabit, setIsCreatingHabit] = useState(false)
-    const [habitViewMode, setHabitViewMode] = useState<'day' | 'week'>('day')
+    const [selectedHabit, setSelectedHabit] = useState<Entry | null>(null)
+    const [habitViewMode, setHabitViewMode] = useState<'day' | 'week' | 'list'>('day')
 
     const fetchEntries = useCallback(async (currentUserId: string) => {
         if (!microappId) return;
@@ -386,70 +387,81 @@ export default function MicroappPage() {
                 <div className="relative">
                     {/* Atomic Habits Custom View */}
                     {microappId === 'atomic-habits' ? (
-                        // ... (atomic habits code) ...
                         <>
-                            {isCreatingHabit ? (
-                                <HabitBuilder
-                                    onSave={async (data) => {
-                                        await handleSaveEntry(data)
+                            <HabitBuilder
+                                open={isCreatingHabit}
+                                onOpenChange={(open) => {
+                                    if (!open) {
                                         setIsCreatingHabit(false)
                                         setEditingEntry(null)
-                                    }}
-                                    onCancel={() => {
-                                        setIsCreatingHabit(false)
-                                        setEditingEntry(null)
-                                    }}
-                                    onDelete={editingEntry ? () => {
-                                        handleDelete(editingEntry.id)
-                                        setIsCreatingHabit(false)
-                                        setEditingEntry(null)
-                                    } : undefined}
-                                    initialData={editingEntry?.data}
-                                    existingEntries={entries.filter(e => e.id !== editingEntry?.id)}
-                                />
-                            ) : (
-                                <HabitTimeline
-                                    entries={entries}
-                                    onToggleStatus={(entry) => {
-                                        handleSaveEntry({ ...entry.data, id: entry.id });
-                                    }}
-                                    onEdit={(entry) => {
-                                        setEditingEntry(entry)
-                                        setIsCreatingHabit(true)
-                                    }}
-                                    onDelete={async (entryId, skipConfirm) => {
-                                        // ...
-                                        if (skipConfirm) {
-                                            const entry = entries.find(e => e.id === entryId);
-                                            if (entry) {
-                                                await handleSaveEntry({ ...entry.data, id: entry.id, archived: true });
-                                            }
-                                        } else {
-                                            handleDelete(entryId, skipConfirm)
-                                        }
-                                    }}
-                                    onFocusComplete={async (duration, entry) => {
-                                        if (!userId) {
-                                            console.error("User not authenticated for focus logging")
-                                            return
-                                        }
-                                        // ...
-                                        try {
-                                            await dataStore.addEntry(userId, 'pomodoro', {
-                                                'Session Name': entry.data['Habit Name'],
-                                                'Duration': duration,
-                                                'Date': new Date().toISOString(),
-                                                'Completed': true,
-                                                'Notes': `Focus Session for ${entry.data['Category'] || 'General'} habit.`
-                                            });
-                                        } catch (e) {
-                                            console.log('Focus logging not fully configured yet', e);
-                                        }
-                                    }}
-                                    viewMode={habitViewMode}
-                                    onChangeViewMode={setHabitViewMode}
-                                />
-                            )}
+                                    }
+                                }}
+                                onSave={async (data) => {
+                                    await handleSaveEntry(data)
+                                    setIsCreatingHabit(false)
+                                    setEditingEntry(null)
+                                }}
+                                onCancel={() => {
+                                    setIsCreatingHabit(false)
+                                    setEditingEntry(null)
+                                }}
+                                onDelete={editingEntry ? () => {
+                                    handleDelete(editingEntry.id)
+                                    setIsCreatingHabit(false)
+                                    setEditingEntry(null)
+                                } : undefined}
+                                initialData={editingEntry?.data}
+                                existingEntries={entries.filter(e => e.id !== editingEntry?.id)}
+                            />
+
+                            <HabitDetailsSidebar
+                                entry={selectedHabit}
+                                open={!!selectedHabit}
+                                onOpenChange={(open) => {
+                                    if (!open) setSelectedHabit(null)
+                                }}
+                                onEdit={() => {
+                                    setEditingEntry(selectedHabit)
+                                    setIsCreatingHabit(true)
+                                    setSelectedHabit(null)
+                                }}
+                            />
+
+                            <HabitTimeline
+                                entries={entries}
+                                onToggleStatus={(entry) => {
+                                    handleSaveEntry({ ...entry.data, id: entry.id });
+                                }}
+                                onEdit={(entry) => {
+                                    setEditingEntry(entry)
+                                    setIsCreatingHabit(true)
+                                }}
+                                onSelect={(entry) => setSelectedHabit(entry)}
+                                onDelete={async (entryId, skipConfirm) => {
+                                    // "skipConfirm" from HabitTimeline implies "Delete Entirely" directly from custom modal
+                                    handleDelete(entryId, skipConfirm)
+                                }}
+                                onFocusComplete={async (duration, entry) => {
+                                    if (!userId) {
+                                        console.error("User not authenticated for focus logging")
+                                        return
+                                    }
+                                    // ...
+                                    try {
+                                        await dataStore.addEntry(userId, 'pomodoro', {
+                                            'Session Name': entry.data['Habit Name'],
+                                            'Duration': duration,
+                                            'Date': new Date().toISOString(),
+                                            'Completed': true,
+                                            'Notes': `Focus Session for ${entry.data['Category'] || 'General'} habit.`
+                                        });
+                                    } catch (e) {
+                                        console.log('Focus logging not fully configured yet', e);
+                                    }
+                                }}
+                                viewMode={habitViewMode}
+                                onChangeViewMode={setHabitViewMode}
+                            />
                         </>
                     ) : microappId === 'tasks-sb' ? (
                         /* Tasks Dashboard View - Adding below this image per request */

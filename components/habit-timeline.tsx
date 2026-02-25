@@ -14,13 +14,14 @@ interface HabitTimelineProps {
     entries: Entry[]
     onToggleStatus: (entry: Entry) => void
     onEdit: (entry: Entry) => void
+    onSelect?: (entry: Entry) => void
     onDelete?: (id: string, skipConfirm?: boolean) => void
     onFocusComplete?: (durationMinutes: number, entry: Entry) => void
-    viewMode: 'day' | 'week'
-    onChangeViewMode: (mode: 'day' | 'week') => void
+    viewMode: 'day' | 'week' | 'list'
+    onChangeViewMode: (mode: 'day' | 'week' | 'list') => void
 }
 
-export function HabitTimeline({ entries, onToggleStatus, onEdit, onDelete, onFocusComplete, viewMode, onChangeViewMode }: HabitTimelineProps) {
+export function HabitTimeline({ entries, onToggleStatus, onEdit, onSelect, onDelete, onFocusComplete, viewMode, onChangeViewMode }: HabitTimelineProps) {
     const [visibleDate, setVisibleDate] = useState(new Date())
 
     // Derived date values
@@ -197,6 +198,12 @@ export function HabitTimeline({ entries, onToggleStatus, onEdit, onDelete, onFoc
                         className={`px-6 py-2 rounded-full text-sm uppercase tracking-widest transition-colors ${viewMode === 'week' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
                     >
                         Weekly Grid
+                    </button>
+                    <button
+                        onClick={() => onChangeViewMode('list')}
+                        className={`px-6 py-2 rounded-full text-sm uppercase tracking-widest transition-colors ${viewMode === 'list' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
+                    >
+                        All Habits
                     </button>
                 </div>
             </div>
@@ -387,7 +394,7 @@ export function HabitTimeline({ entries, onToggleStatus, onEdit, onDelete, onFoc
                             )
                         })}
                     </motion.div>
-                ) : (
+                ) : viewMode === 'week' ? (
                     <motion.div
                         key="week"
                         initial={{ opacity: 0, x: 20 }}
@@ -414,7 +421,7 @@ export function HabitTimeline({ entries, onToggleStatus, onEdit, onDelete, onFoc
                                         transition={{ delay: index * 0.05 }}
                                         className="border-b border-white/5 hover:bg-white/5 transition-colors"
                                     >
-                                        <td className="py-4 px-4 cursor-pointer" onClick={() => onEdit(entry)}>
+                                        <td className="py-4 px-4 cursor-pointer" onClick={() => onSelect ? onSelect(entry) : onEdit(entry)}>
                                             <div className="font-serif text-lg text-white flex items-center gap-2">
                                                 {entry.data['Habit Name']}
                                                 <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-white/40" />
@@ -433,6 +440,67 @@ export function HabitTimeline({ entries, onToggleStatus, onEdit, onDelete, onFoc
                                 ))}
                             </tbody>
                         </table>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="list"
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="py-8"
+                    >
+                        {entries.length === 0 ? (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-20">
+                                <div className="text-center">
+                                    <p className={`${playfair.className} text-2xl text-white/20 mb-2`}>No habits built yet</p>
+                                    <p className={`${inter.className} text-white/10`}>Start forging your new identity.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {entries.map((entry, index) => (
+                                    <motion.div
+                                        key={entry.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: index * 0.05 }}
+                                        onClick={() => onSelect?.(entry)}
+                                        className="bg-white/5 border border-white/10 hover:border-white/30 hover:bg-white/10 p-6 rounded-xl transition-all group flex flex-col cursor-pointer"
+                                    >
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <div className="text-xs uppercase tracking-widest text-white/40 mb-1">{entry.data['Category'] || 'General'}</div>
+                                                <h3 className={`${playfair.className} text-2xl text-white`}>{String(entry.data['Habit Name'] || 'Untitled')}</h3>
+                                            </div>
+                                            <div className="flex bg-black/50 rounded-lg overflow-hidden border border-white/10">
+                                                <button onClick={(e) => { e.stopPropagation(); onEdit(entry); }} className="p-2 text-white/40 hover:text-white hover:bg-white/10 transition-colors">
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={(e) => { e.stopPropagation(); if (onDelete) setDeleteCandidate(entry); }} className="p-2 text-white/40 hover:text-red-400 hover:bg-white/10 transition-colors border-l border-white/10">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3 flex-1">
+                                            <div className="flex justify-between text-sm text-white/60">
+                                                <span>Frequency:</span>
+                                                <span className="text-white capitalize whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px] text-right">
+                                                    {entry.data['frequency'] === 'daily' ? 'Every Day' : (entry.data['repeatDays']?.join(', ') || 'Not Set')}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm text-white/60">
+                                                <span>Schedule:</span>
+                                                <span className="text-white font-mono">{entry.data['Time'] || 'Variable'} ({entry.data['duration'] || 30}m)</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm text-white/60 border-t border-white/10 pt-3">
+                                                <span>Current Streak:</span>
+                                                <span className="font-mono text-emerald-400 font-bold">{entry.data['Streak'] || 0} 🔥</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>

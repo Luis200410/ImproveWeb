@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { ArrowLeft, ArrowRight, Check, Flame, Repeat, Calendar, Clock, Plus, X } from 'lucide-react'
 
@@ -15,6 +16,8 @@ interface HabitBuilderProps {
     onDelete?: () => void
     initialData?: Record<string, any>
     existingEntries?: any[]
+    open: boolean
+    onOpenChange: (open: boolean) => void
 }
 
 const steps = [
@@ -88,7 +91,7 @@ const steps = [
     }
 ]
 
-export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existingEntries = [] }: HabitBuilderProps) {
+export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existingEntries = [], open, onOpenChange }: HabitBuilderProps) {
     const [currentStep, setCurrentStep] = useState(0)
     const [formData, setFormData] = useState<Record<string, any>>(initialData || {
         'frequency': 'daily',
@@ -211,215 +214,217 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
     const step = steps[currentStep]
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-xl">
-            {/* Background Ambience */}
-            <motion.div
-                key={step.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1 }}
-                className={`absolute inset-0 z-0 ${step.bgColor} blur-[100px] opacity-20`}
-            />
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            <SheetContent className="w-full sm:w-[540px] bg-black border-l border-white/10 p-0 flex flex-col h-full align-top !max-w-none overflow-y-auto overflow-x-hidden custom-scrollbar">
+                <SheetTitle className="sr-only">Habit Builder</SheetTitle>
+                {/* Background Ambience */}
+                <motion.div
+                    key={step.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1 }}
+                    className={`absolute inset-0 z-0 ${step.bgColor} blur-[100px] opacity-20`}
+                />
+                <div className="relative z-10 w-full px-8 py-12 flex-1 flex flex-col">
+                    {/* Progress */}
+                    <div className="flex gap-2 mb-12">
+                        {steps.map((s, i) => (
+                            <div
+                                key={s.id}
+                                className={`h-1 flex-1 rounded-full transition-colors duration-500 ${i <= currentStep ? s.color.replace('text-', 'bg-') : 'bg-white/10'}`}
+                            />
+                        ))}
+                    </div>
 
-            <div className="relative z-10 w-full max-w-2xl px-8">
-                {/* Progress */}
-                <div className="flex gap-2 mb-12">
-                    {steps.map((s, i) => (
-                        <div
-                            key={s.id}
-                            className={`h-1 flex-1 rounded-full transition-colors duration-500 ${i <= currentStep ? s.color.replace('text-', 'bg-') : 'bg-white/10'}`}
-                        />
-                    ))}
-                </div>
-
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={step.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        transition={{ duration: 0.4 }}
-                        className="space-y-8"
-                    >
-                        <div className="space-y-2">
-                            <h2 className={`${playfair.className} text-5xl md:text-6xl font-bold text-white`}>
-                                {step.title}
-                            </h2>
-                            <p className={`${inter.className} text-xl md:text-2xl font-light ${step.color}`}>
-                                {step.subtitle}
-                            </p>
-                            {step.description && (
-                                <p className="text-white/40 text-lg pt-2">{step.description}</p>
-                            )}
-                        </div>
-
-                        <div className="pt-8 min-h-[300px]">
-                            {step.type === 'schedule' ? (
-                                <div className="space-y-8">
-                                    {/* Frequency Toggles */}
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={() => handleChange('frequency', 'daily')}
-                                            className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'daily' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
-                                        >
-                                            <Repeat className="w-8 h-8 mb-4 mx-auto" />
-                                            <div className="text-xl font-serif font-bold mb-1">Repetitive</div>
-                                            <div className="text-xs opacity-60">Every Day</div>
-                                        </button>
-                                        <button
-                                            onClick={() => handleChange('frequency', 'specific_days')}
-                                            className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'specific_days' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
-                                        >
-                                            <Calendar className="w-8 h-8 mb-4 mx-auto" />
-                                            <div className="text-xl font-serif font-bold mb-1">Specific Days</div>
-                                            <div className="text-xs opacity-60">Select Days</div>
-                                        </button>
-                                    </div>
-
-                                    {/* Specific Days Selector & Time Config */}
-                                    {formData['frequency'] === 'specific_days' && (
-                                        <div className="space-y-6">
-                                            <div className="flex flex-wrap gap-2 justify-center">
-                                                {days.map(day => (
-                                                    <button
-                                                        key={day}
-                                                        onClick={() => toggleDay(day)}
-                                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${formData['repeatDays']?.includes(day) ? 'bg-white text-black border-white' : 'bg-transparent text-white/40 border-white/10 hover:border-white/60 hover:text-white'}`}
-                                                    >
-                                                        {day[0]}
-                                                    </button>
-                                                ))}
-                                            </div>
-
-                                            {/* Logic to show inputs for selected days */}
-                                            <div className="max-h-[200px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                                                {(formData['repeatDays'] || []).length > 0 ? (
-                                                    <div className="grid grid-cols-1 gap-3">
-                                                        {days.filter(d => (formData['repeatDays'] || []).includes(d)).map(day => (
-                                                            <div key={day} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                                                                <span className="font-bold text-white w-12">{day}</span>
-                                                                <div className="relative group/time">
-                                                                    <input
-                                                                        type="time"
-                                                                        value={formData['schedule']?.[day] || formData['Time'] || ''}
-                                                                        onChange={(e) => {
-                                                                            updateSchedule(day, e.target.value);
-                                                                            // Also update main time if it's the first one, for sorting fallback
-                                                                            if (!formData['Time']) handleChange('Time', e.target.value);
-                                                                        }}
-                                                                        className="bg-transparent text-xl font-mono text-white outline-none border-b border-white/20 focus:border-white w-32 text-center transition-colors"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <div className="text-center text-white/30 text-sm italic">Select days above to set times</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Link Everyday Time */}
-                                    {formData['frequency'] === 'daily' && (
-                                        <div className="flex flex-col items-center pt-8 space-y-4">
-                                            <div className="relative group w-full max-w-xs">
-                                                <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/0 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                                                <input
-                                                    type="time"
-                                                    value={formData['Time'] || ''}
-                                                    onChange={(e) => handleChange('Time', e.target.value)}
-                                                    className="relative w-full bg-black/50 text-5xl md:text-7xl font-mono text-white outline-none border border-white/20 rounded-xl p-6 focus:border-white transition-all text-center placeholder-white/20 appearance-none time-picker-icon-hidden"
-                                                    style={{ colorScheme: 'dark' }}
-                                                />
-                                            </div>
-
-                                            {/* Duration Input */}
-                                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                                                <span className="text-white/40 text-sm uppercase tracking-wider">Duration</span>
-                                                <input
-                                                    type="number"
-                                                    min="1"
-                                                    value={formData['duration'] || 30}
-                                                    onChange={(e) => handleChange('duration', parseInt(e.target.value))}
-                                                    className="bg-transparent text-white font-mono font-bold text-center w-12 outline-none border-b border-white/20 focus:border-white transition-colors"
-                                                />
-                                                <span className="text-white/40 text-sm">min</span>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                </div>
-                            ) : step.type === 'select' ? (
-                                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {(step as any).options.map((option: string) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => handleChange(step.field, option)}
-                                            className={`p-6 rounded-xl border transition-all text-left group ${formData[step.field] === option ? 'bg-white text-black border-white' : 'bg-white/5 text-white border-white/10 hover:border-white/40'}`}
-                                        >
-                                            <div className="text-xl font-serif font-bold mb-1">{option}</div>
-                                            <div className={`text-xs uppercase tracking-widest opacity-60 ${formData[step.field] === option ? 'text-black' : 'text-white'}`}>Select Category</div>
-                                        </button>
-                                    ))}
-                                </div>
-                            ) : (
-                                <input
-                                    type="text"
-                                    autoFocus
-                                    placeholder={step.placeholder}
-                                    value={formData[step.field] || ''}
-                                    onChange={(e) => handleChange(step.field, e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-                                    className="w-full bg-transparent text-3xl md:text-4xl font-light text-white outline-none border-b-2 border-white/20 focus:border-white pb-4 transition-colors placeholder-white/20"
-                                />
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between pt-8">
-                            {currentStep === 0 ? (
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={onCancel}
-                                        className="text-white/40 hover:text-white uppercase tracking-widest text-sm transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    {initialData && onDelete && (
-                                        <button
-                                            onClick={() => {
-                                                if (confirm('Delete this habit?')) onDelete()
-                                            }}
-                                            className="text-red-400/60 hover:text-red-400 uppercase tracking-widest text-sm transition-colors"
-                                        >
-                                            Delete
-                                        </button>
-                                    )}
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={() => setCurrentStep(prev => prev - 1)}
-                                    className="text-white/40 hover:text-white uppercase tracking-widest text-sm transition-colors flex items-center gap-2"
-                                >
-                                    <ArrowLeft className="w-4 h-4" /> Back
-                                </button>
-                            )}
-
-                            <Button
-                                onClick={handleNext}
-                                size="lg"
-                                className="rounded-full px-8 py-6 text-lg bg-white text-black hover:bg-white/90 group"
-                            >
-                                {currentStep === steps.length - 1 ? (
-                                    <span className="flex items-center gap-2">Forge Habit <Flame className="w-5 h-5" /></span>
-                                ) : (
-                                    <span className="flex items-center gap-2">Next <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={step.id}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.4 }}
+                            className="space-y-8"
+                        >
+                            <div className="space-y-2">
+                                <h2 className={`${playfair.className} text-5xl md:text-6xl font-bold text-white`}>
+                                    {step.title}
+                                </h2>
+                                <p className={`${inter.className} text-xl md:text-2xl font-light ${step.color}`}>
+                                    {step.subtitle}
+                                </p>
+                                {step.description && (
+                                    <p className="text-white/40 text-lg pt-2">{step.description}</p>
                                 )}
-                            </Button>
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-            </div>
-        </div>
+                            </div>
+
+                            <div className="pt-8 min-h-[300px]">
+                                {step.type === 'schedule' ? (
+                                    <div className="space-y-8">
+                                        {/* Frequency Toggles */}
+                                        <div className="flex gap-4">
+                                            <button
+                                                onClick={() => handleChange('frequency', 'daily')}
+                                                className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'daily' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
+                                            >
+                                                <Repeat className="w-8 h-8 mb-4 mx-auto" />
+                                                <div className="text-xl font-serif font-bold mb-1">Repetitive</div>
+                                                <div className="text-xs opacity-60">Every Day</div>
+                                            </button>
+                                            <button
+                                                onClick={() => handleChange('frequency', 'specific_days')}
+                                                className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'specific_days' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
+                                            >
+                                                <Calendar className="w-8 h-8 mb-4 mx-auto" />
+                                                <div className="text-xl font-serif font-bold mb-1">Specific Days</div>
+                                                <div className="text-xs opacity-60">Select Days</div>
+                                            </button>
+                                        </div>
+
+                                        {/* Specific Days Selector & Time Config */}
+                                        {formData['frequency'] === 'specific_days' && (
+                                            <div className="space-y-6">
+                                                <div className="flex flex-wrap gap-2 justify-center">
+                                                    {days.map(day => (
+                                                        <button
+                                                            key={day}
+                                                            onClick={() => toggleDay(day)}
+                                                            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${formData['repeatDays']?.includes(day) ? 'bg-white text-black border-white' : 'bg-transparent text-white/40 border-white/10 hover:border-white/60 hover:text-white'}`}
+                                                        >
+                                                            {day[0]}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {/* Logic to show inputs for selected days */}
+                                                <div className="max-h-[200px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                                                    {(formData['repeatDays'] || []).length > 0 ? (
+                                                        <div className="grid grid-cols-1 gap-3">
+                                                            {days.filter(d => (formData['repeatDays'] || []).includes(d)).map(day => (
+                                                                <div key={day} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                                                                    <span className="font-bold text-white w-12">{day}</span>
+                                                                    <div className="relative group/time">
+                                                                        <input
+                                                                            type="time"
+                                                                            value={formData['schedule']?.[day] || formData['Time'] || ''}
+                                                                            onChange={(e) => {
+                                                                                updateSchedule(day, e.target.value);
+                                                                                // Also update main time if it's the first one, for sorting fallback
+                                                                                if (!formData['Time']) handleChange('Time', e.target.value);
+                                                                            }}
+                                                                            className="bg-transparent text-xl font-mono text-white outline-none border-b border-white/20 focus:border-white w-32 text-center transition-colors"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center text-white/30 text-sm italic">Select days above to set times</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Link Everyday Time */}
+                                        {formData['frequency'] === 'daily' && (
+                                            <div className="flex flex-col items-center pt-8 space-y-4">
+                                                <div className="relative group w-full max-w-xs">
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/0 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                                                    <input
+                                                        type="time"
+                                                        value={formData['Time'] || ''}
+                                                        onChange={(e) => handleChange('Time', e.target.value)}
+                                                        className="relative w-full bg-black/50 text-5xl md:text-7xl font-mono text-white outline-none border border-white/20 rounded-xl p-6 focus:border-white transition-all text-center placeholder-white/20 appearance-none time-picker-icon-hidden"
+                                                        style={{ colorScheme: 'dark' }}
+                                                    />
+                                                </div>
+
+                                                {/* Duration Input */}
+                                                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                                                    <span className="text-white/40 text-sm uppercase tracking-wider">Duration</span>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={formData['duration'] || 30}
+                                                        onChange={(e) => handleChange('duration', parseInt(e.target.value))}
+                                                        className="bg-transparent text-white font-mono font-bold text-center w-12 outline-none border-b border-white/20 focus:border-white transition-colors"
+                                                    />
+                                                    <span className="text-white/40 text-sm">min</span>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                    </div>
+                                ) : step.type === 'select' ? (
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {(step as any).options.map((option: string) => (
+                                            <button
+                                                key={option}
+                                                onClick={() => handleChange(step.field, option)}
+                                                className={`p-6 rounded-xl border transition-all text-left group ${formData[step.field] === option ? 'bg-white text-black border-white' : 'bg-white/5 text-white border-white/10 hover:border-white/40'}`}
+                                            >
+                                                <div className="text-xl font-serif font-bold mb-1">{option}</div>
+                                                <div className={`text-xs uppercase tracking-widest opacity-60 ${formData[step.field] === option ? 'text-black' : 'text-white'}`}>Select Category</div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        autoFocus
+                                        placeholder={step.placeholder}
+                                        value={formData[step.field] || ''}
+                                        onChange={(e) => handleChange(step.field, e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                                        className="w-full bg-transparent text-3xl md:text-4xl font-light text-white outline-none border-b-2 border-white/20 focus:border-white pb-4 transition-colors placeholder-white/20"
+                                    />
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-between pt-8">
+                                {currentStep === 0 ? (
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={onCancel}
+                                            className="text-white/40 hover:text-white uppercase tracking-widest text-sm transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        {initialData && onDelete && (
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('Delete this habit?')) onDelete()
+                                                }}
+                                                className="text-red-400/60 hover:text-red-400 uppercase tracking-widest text-sm transition-colors"
+                                            >
+                                                Delete
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => setCurrentStep(prev => prev - 1)}
+                                        className="text-white/40 hover:text-white uppercase tracking-widest text-sm transition-colors flex items-center gap-2"
+                                    >
+                                        <ArrowLeft className="w-4 h-4" /> Back
+                                    </button>
+                                )}
+
+                                <Button
+                                    onClick={handleNext}
+                                    size="lg"
+                                    className="rounded-full px-8 py-6 text-lg bg-white text-black hover:bg-white/90 group"
+                                >
+                                    {currentStep === steps.length - 1 ? (
+                                        <span className="flex items-center gap-2">Forge Habit <Flame className="w-5 h-5" /></span>
+                                    ) : (
+                                        <span className="flex items-center gap-2">Next <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></span>
+                                    )}
+                                </Button>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </SheetContent>
+        </Sheet>
     )
 }
