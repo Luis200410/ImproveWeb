@@ -22,7 +22,7 @@ export interface ProjectData {
     complexity: 'XS' | 'S' | 'M' | 'L' | 'XL';
 
     // ROI Priority
-    priority: 'P0' | 'P1' | 'P2' | 'P3';
+    priority: 'High' | 'Medium' | 'Low';
 
     // Blockers
     blockedBy?: string; // Optional text description of blocker
@@ -74,10 +74,9 @@ export interface ProjectStats {
     backlogCount: number;
     overallProgress: number; // Avg progress of active projects
     roiDistribution: {
-        P0: number;
-        P1: number;
-        P2: number;
-        P3: number;
+        High: number;
+        Medium: number;
+        Low: number;
     };
     ragDistribution: {
         Red: number;
@@ -96,12 +95,10 @@ export const calculateProjectStats = (projects: ProjectEntry[]): ProjectStats =>
     const totalActiveProgress = activeProjects.reduce((sum, p) => sum + calculateProgress(p.data.subtasks), 0);
     const overallProgress = activeProjects.length > 0 ? Math.round(totalActiveProgress / activeProjects.length) : 0;
 
-    // ROI Distribution
     const roiDistribution = {
-        P0: projects.filter(p => p.data.priority === 'P0').length,
-        P1: projects.filter(p => p.data.priority === 'P1').length,
-        P2: projects.filter(p => p.data.priority === 'P2').length,
-        P3: projects.filter(p => p.data.priority === 'P3').length,
+        High: projects.filter(p => p.data.priority === 'High').length,
+        Medium: projects.filter(p => p.data.priority === 'Medium').length,
+        Low: projects.filter(p => p.data.priority === 'Low').length,
     };
 
     // RAG Distribution (Active only usually matters, but let's do all for now)
@@ -126,10 +123,10 @@ export const calculateProjectStats = (projects: ProjectEntry[]): ProjectStats =>
 // P0 first, then closest deadline, then Health (Red on top)
 export const sortProjects = (projects: ProjectEntry[]): ProjectEntry[] => {
     return [...projects].sort((a, b) => {
-        // 1. Priority (P0 < P1 < P2 < P3)
-        const pPriority = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
-        const pA = pPriority[a.data.priority || 'P3'];
-        const pB = pPriority[b.data.priority || 'P3'];
+        // 1. Priority (High < Medium < Low)
+        const pPriority: Record<string, number> = { 'High': 0, 'Medium': 1, 'Low': 2 };
+        const pA = pPriority[a.data.priority || 'Low'] ?? 3;
+        const pB = pPriority[b.data.priority || 'Low'] ?? 3;
         if (pA !== pB) return pA - pB;
 
         // 2. Deadline (Closest first) - Handling missing deadlines as "far away"

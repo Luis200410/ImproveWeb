@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { Plus, Database } from 'lucide-react'
 import { Entry } from '@/lib/data-store'
+import { NoteDetailView } from './note-detail-view'
 import { NoteCard } from './note-card'
+import { getTaskTitle } from '../utils'
 import { StrictModeDroppable } from '@/components/strict-mode-droppable'
 
 interface NoteBoardProps {
@@ -112,7 +114,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
                     <BoardColumn
                         key={task.id}
                         id={task.id}
-                        title={`/TASK: ${task.data.Task}`}
+                        title={`/TASK: ${getTaskTitle(task)}`}
                         count={columns[task.id]?.length || 0}
                         notes={columns[task.id] || []}
                         onNoteClick={onNoteClick}

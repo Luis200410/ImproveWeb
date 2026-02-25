@@ -74,7 +74,7 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
             <div className="flex h-full gap-6 overflow-x-auto pb-4">
                 <BoardColumn
                     id="backlog"
-                    title="/BACKLOG"
+                    title="/INBOX"
                     count={columns.backlog.length}
                     projects={columns.backlog}
                     onProjectClick={onProjectClick}
@@ -83,7 +83,7 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
                 />
                 <BoardColumn
                     id="active"
-                    title="/ACTIVE"
+                    title="/REVIEW"
                     count={columns.active.length}
                     projects={columns.active}
                     onProjectClick={onProjectClick}
@@ -92,7 +92,7 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
                 />
                 <BoardColumn
                     id="completed"
-                    title="/COMPLETED"
+                    title="/DONE"
                     count={columns.completed.length}
                     projects={columns.completed}
                     onProjectClick={onProjectClick}

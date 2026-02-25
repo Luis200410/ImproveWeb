@@ -7,6 +7,9 @@ import { ChevronDown, Activity, LayoutGrid } from 'lucide-react'
 import { AreaEntry } from './area-utils'
 import { Playfair_Display } from '@/lib/font-shim'
 import { Input } from '@/components/ui/input'
+import { Entry } from '@/lib/data-store'
+import { getTaskTitle, getProjectTitle, getTaskDeadline, getProjectDeadline } from '../utils'
+import { Clock, CheckCircle2, Circle } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -14,10 +17,15 @@ interface AreaDetailsSidebarProps {
     area: AreaEntry | null
     onClose: () => void
     onUpdate: (area: AreaEntry, updates: Partial<AreaEntry['data']>) => void
+    projects?: Entry[]
+    tasks?: Entry[]
 }
 
-export function AreaDetailsSidebar({ area, onClose, onUpdate }: AreaDetailsSidebarProps) {
+export function AreaDetailsSidebar({ area, onClose, onUpdate, projects = [], tasks = [] }: AreaDetailsSidebarProps) {
     if (!area) return null
+
+    const linkedProjects = projects.filter(p => p.data.Area === area.id)
+    const linkedTasks = tasks.filter(t => t.data.Area === area.id)
 
     return (
         <Sheet open={!!area} onOpenChange={(open) => !open && onClose()}>
@@ -37,8 +45,8 @@ export function AreaDetailsSidebar({ area, onClose, onUpdate }: AreaDetailsSideb
 
                     <div className="flex gap-2 mb-2">
                         <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded border ${area.data.ragStatus === 'Red' ? 'border-rose-500 text-rose-500 bg-rose-500/10' :
-                                area.data.ragStatus === 'Amber' ? 'border-amber-500 text-amber-500 bg-amber-500/10' :
-                                    'border-emerald-500 text-emerald-500 bg-emerald-500/10'
+                            area.data.ragStatus === 'Amber' ? 'border-amber-500 text-amber-500 bg-amber-500/10' :
+                                'border-emerald-500 text-emerald-500 bg-emerald-500/10'
                             }`}>
                             Health: {area.data.ragStatus || 'Green'}
                         </span>
@@ -79,6 +87,90 @@ export function AreaDetailsSidebar({ area, onClose, onUpdate }: AreaDetailsSideb
                             <p className="text-white/20 text-xs text-center py-4">
                                 No activity recorded for this domain yet.
                             </p>
+                        </div>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection title="Linked Projects" count={linkedProjects.length} defaultOpen={linkedProjects.length > 0}>
+                        <div className="space-y-2">
+                            {linkedProjects.length === 0 ? (
+                                <p className="text-white/20 text-xs text-center py-4 border border-white/5 rounded bg-white/[0.02]">
+                                    No projects associated with this area.
+                                </p>
+                            ) : (
+                                linkedProjects.map(project => {
+                                    const deadline = getProjectDeadline(project)
+                                    const isDone = project.data.Status === 'Done' || project.data.Status === 'completed'
+                                    return (
+                                        <div key={project.id} className="p-3 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-colors group">
+                                            <div className="flex items-start gap-3">
+                                                <div className="mt-0.5">
+                                                    {isDone ? (
+                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                                    ) : (
+                                                        <Circle className="w-4 h-4 text-blue-500" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-sm text-white font-medium truncate mb-1">
+                                                        {getProjectTitle(project)}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-[10px] text-white/40">
+                                                        <span className="uppercase tracking-wider">{project.data.Status || 'Inbox'}</span>
+                                                        {deadline && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" />
+                                                                <span>{new Date(deadline).toLocaleDateString()}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
+                        </div>
+                    </CollapsibleSection>
+
+                    <CollapsibleSection title="Linked Tasks" count={linkedTasks.length} defaultOpen={linkedTasks.length > 0}>
+                        <div className="space-y-2">
+                            {linkedTasks.length === 0 ? (
+                                <p className="text-white/20 text-xs text-center py-4 border border-white/5 rounded bg-white/[0.02]">
+                                    No tasks associated with this area.
+                                </p>
+                            ) : (
+                                linkedTasks.map(task => {
+                                    const deadline = getTaskDeadline(task)
+                                    const isDone = task.data.Status === 'Done' || task.data.Status === 'completed' || task.data.done
+                                    return (
+                                        <div key={task.id} className="p-3 rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/10 transition-colors group">
+                                            <div className="flex items-start gap-3">
+                                                <div className="mt-0.5">
+                                                    {isDone ? (
+                                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/50" />
+                                                    ) : (
+                                                        <Circle className="w-3.5 h-3.5 text-amber-500/50" />
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-xs text-white/90 truncate mb-1">
+                                                        {getTaskTitle(task)}
+                                                    </div>
+                                                    <div className="flex items-center gap-3 text-[9px] text-white/30">
+                                                        <span className="uppercase tracking-wider">{task.data.Status || 'Inbox'}</span>
+                                                        {deadline && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Clock className="w-2.5 h-2.5" />
+                                                                <span>{new Date(deadline).toLocaleDateString()}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            )}
                         </div>
                     </CollapsibleSection>
                 </div>

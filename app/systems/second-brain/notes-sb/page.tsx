@@ -22,6 +22,7 @@ export default function NotesSystem() {
 
     const [loading, setLoading] = useState(true)
     const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null)
+    const [isPopupMode, setIsPopupMode] = useState(false)
     const [showForge, setShowForge] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
     const [userId, setUserId] = useState('defaultUser')
@@ -95,7 +96,7 @@ export default function NotesSystem() {
         setProjectMap(pMap)
 
         const aMap: Record<string, string> = {}
-        areasData.forEach((a: any) => aMap[a.id] = a.data.Name)
+        areasData.forEach((a: any) => aMap[a.id] = a.data['Area Name'] || a.data.title || a.data.name || 'Untitled Area')
         setAreaMap(aMap)
 
         const tMap: Record<string, string> = {}
@@ -263,22 +264,50 @@ export default function NotesSystem() {
                 </div>
             </div>
 
-            {/* Note Detail Overlay (Right Sidebar) */}
-            <div className={`
-                fixed inset-y-0 right-0 w-full lg:w-[600px] bg-[#080808] border-l border-white/10 transform transition-transform duration-300 z-50
-                ${selectedNoteId ? 'translate-x-0' : 'translate-x-full'}
-            `}>
-                {selectedNoteId && activeNote && (
-                    <NoteDetailView
-                        note={activeNote}
-                        onClose={() => setSelectedNoteId(null)}
-                        onUpdate={handleUpdateNote}
-                        projectMap={projectMap}
-                        areaMap={areaMap}
-                        taskMap={taskMap}
-                    />
-                )}
-            </div>
+            {/* Note Detail Overlay (Right Sidebar or Full Modal) */}
+            {isPopupMode ? (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedNoteId(null)} />
+                    <div className="relative z-10 w-full max-w-5xl h-[90vh] rounded-lg overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10">
+                        {selectedNoteId && activeNote && (
+                            <NoteDetailView
+                                note={activeNote}
+                                onClose={() => setSelectedNoteId(null)}
+                                onUpdate={handleUpdateNote}
+                                projectMap={projectMap}
+                                areaMap={areaMap}
+                                taskMap={taskMap}
+                                projects={projects}
+                                areas={areas}
+                                tasks={tasks}
+                                isPopupMode={isPopupMode}
+                                onTogglePopup={() => setIsPopupMode(false)}
+                            />
+                        )}
+                    </div>
+                </div>
+            ) : (
+                <div className={`
+                    fixed inset-y-0 right-0 w-full lg:w-[600px] bg-[#080808] border-l border-white/10 transform transition-transform duration-300 z-50
+                    ${selectedNoteId ? 'translate-x-0' : 'translate-x-full'}
+                `}>
+                    {selectedNoteId && activeNote && (
+                        <NoteDetailView
+                            note={activeNote}
+                            onClose={() => setSelectedNoteId(null)}
+                            onUpdate={handleUpdateNote}
+                            projectMap={projectMap}
+                            areaMap={areaMap}
+                            taskMap={taskMap}
+                            projects={projects}
+                            areas={areas}
+                            tasks={tasks}
+                            isPopupMode={isPopupMode}
+                            onTogglePopup={() => setIsPopupMode(true)}
+                        />
+                    )}
+                </div>
+            )}
 
             {/* Forge Panel Overlay */}
             <AnimatePresence>

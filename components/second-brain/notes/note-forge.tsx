@@ -2,8 +2,15 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Calendar, Folder, Boxes, Zap, ArrowRight } from 'lucide-react'
+import { X, Calendar, Folder, Boxes, Zap, ArrowRight, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 import { Entry } from '@/lib/data-store'
 
@@ -99,29 +106,57 @@ export function NoteForge({ onClose, onCreate, projects, areas, tasks, defaultPr
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
                                 <label className="text-[9px] uppercase tracking-widest text-white/30">Select Project</label>
-                                <select
-                                    className="w-full bg-[#0A0A0A] border border-white/10 text-white/60 p-4 rounded text-xs font-mono focus:outline-none focus:border-amber-500/50 transition-colors appearance-none"
-                                    value={selectedProject}
-                                    onChange={e => setSelectedProject(e.target.value)}
-                                >
-                                    <option value="">NO_PROJECT</option>
-                                    {projects.map(p => (
-                                        <option key={p.id} value={p.id}>{p.data['Project Name']}</option>
-                                    ))}
-                                </select>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="w-full flex items-center justify-between bg-[#0A0A0A] border border-white/10 text-white/60 p-4 rounded text-xs font-mono focus:outline-none focus:border-amber-500/50 hover:bg-white/5 transition-colors group">
+                                            <span className="truncate">{selectedProject ? (projects.find(p => p.id === selectedProject)?.data['Project Name'] || projects.find(p => p.id === selectedProject)?.data.title || 'Untitled Project') : 'NO_PROJECT'}</span>
+                                            <ChevronDown className="w-4 h-4 text-white/30 group-hover:text-amber-500 transition-colors shrink-0 ml-2" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-[200px] bg-[#0A0A0A] border-white/10 text-white/70 max-h-[300px] overflow-y-auto custom-scrollbar" align="start">
+                                        <DropdownMenuRadioGroup value={selectedProject} onValueChange={setSelectedProject}>
+                                            <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-white cursor-pointer">
+                                                NO_PROJECT
+                                            </DropdownMenuRadioItem>
+                                            {projects.map(p => (
+                                                <DropdownMenuRadioItem
+                                                    key={p.id}
+                                                    value={p.id}
+                                                    className="text-xs focus:bg-white/10 focus:text-white cursor-pointer"
+                                                >
+                                                    {p.data['Project Name'] || p.data.title || 'Untitled Project'}
+                                                </DropdownMenuRadioItem>
+                                            ))}
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[9px] uppercase tracking-widest text-white/30">Assign Area</label>
-                                <select
-                                    className="w-full bg-[#0A0A0A] border border-white/10 text-white/60 p-4 rounded text-xs font-mono focus:outline-none focus:border-amber-500/50 transition-colors appearance-none"
-                                    value={selectedArea}
-                                    onChange={e => setSelectedArea(e.target.value)}
-                                >
-                                    <option value="">NO_AREA</option>
-                                    {areas.map(a => (
-                                        <option key={a.id} value={a.id}>{a.data.Name}</option>
-                                    ))}
-                                </select>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="w-full flex items-center justify-between bg-[#0A0A0A] border border-white/10 text-white/60 p-4 rounded text-xs font-mono focus:outline-none focus:border-amber-500/50 hover:bg-white/5 transition-colors group">
+                                            <span className="truncate">{selectedArea ? (areas.find(a => a.id === selectedArea)?.data['Area Name'] || areas.find(a => a.id === selectedArea)?.data.title || areas.find(a => a.id === selectedArea)?.data.name || 'Untitled Area') : 'NO_AREA'}</span>
+                                            <ChevronDown className="w-4 h-4 text-white/30 group-hover:text-amber-500 transition-colors shrink-0 ml-2" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="w-[200px] bg-[#0A0A0A] border-white/10 text-white/70 max-h-[300px] overflow-y-auto custom-scrollbar" align="start">
+                                        <DropdownMenuRadioGroup value={selectedArea} onValueChange={setSelectedArea}>
+                                            <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-white cursor-pointer">
+                                                NO_AREA
+                                            </DropdownMenuRadioItem>
+                                            {areas.map(a => (
+                                                <DropdownMenuRadioItem
+                                                    key={a.id}
+                                                    value={a.id}
+                                                    className="text-xs focus:bg-white/10 focus:text-white cursor-pointer"
+                                                >
+                                                    {a.data['Area Name'] || a.data.title || a.data.name || 'Untitled Area'}
+                                                </DropdownMenuRadioItem>
+                                            ))}
+                                        </DropdownMenuRadioGroup>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </div>
                     </div>
@@ -130,19 +165,30 @@ export function NoteForge({ onClose, onCreate, projects, areas, tasks, defaultPr
                     <div className="space-y-4">
                         <div className="text-[10px] uppercase tracking-widest text-amber-500 font-bold mb-2">03 Task Synapse</div>
                         <div className="relative group">
-                            <select
-                                className="w-full bg-[#0A0A0A] border border-amber-500/20 text-emerald-500 p-6 rounded text-xs font-mono focus:outline-none focus:border-emerald-500 transition-colors appearance-none cursor-pointer"
-                                value={selectedTask}
-                                onChange={e => setSelectedTask(e.target.value)}
-                            >
-                                <option value="">RELATE TO ACTIVE TASK...</option>
-                                {tasks.map(t => (
-                                    <option key={t.id} value={t.id}>{t.data.Task}</option>
-                                ))}
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                <Zap className="w-4 h-4 text-amber-500" />
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="w-full flex items-center justify-between bg-[#0A0A0A] border border-amber-500/20 text-emerald-500 p-6 rounded text-xs font-mono focus:outline-none focus:border-emerald-500 hover:bg-white/5 transition-colors group">
+                                        <span className="truncate">{selectedTask ? (tasks.find(t => t.id === selectedTask)?.data.Task || tasks.find(t => t.id === selectedTask)?.data.Title || tasks.find(t => t.id === selectedTask)?.data.title || 'Untitled Task') : 'RELATE TO ACTIVE TASK...'}</span>
+                                        <Zap className="w-4 h-4 text-amber-500 shrink-0 ml-2 group-hover:animate-pulse" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[430px] bg-[#0A0A0A] border-amber-500/20 text-emerald-500/70 max-h-[300px] overflow-y-auto custom-scrollbar" align="start">
+                                    <DropdownMenuRadioGroup value={selectedTask} onValueChange={setSelectedTask}>
+                                        <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-emerald-400 cursor-pointer">
+                                            NO_OPS
+                                        </DropdownMenuRadioItem>
+                                        {tasks.map(t => (
+                                            <DropdownMenuRadioItem
+                                                key={t.id}
+                                                value={t.id}
+                                                className="text-xs focus:bg-white/10 focus:text-emerald-400 cursor-pointer"
+                                            >
+                                                {t.data.Task || t.data.Title || t.data.title || 'Untitled Task'}
+                                            </DropdownMenuRadioItem>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
 

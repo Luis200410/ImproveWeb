@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "highlight.js/styles/github-dark.css";
 
 @theme {
   --color-background: hsl(var(--background));
@@ -150,4 +151,67 @@
   filter: invert(1);
   opacity: 0.6;
   cursor: pointer;
+}
+
+/* Neural Editor Typography Overrides */
+.tiptap h1 {
+  font-size: 2.25rem !important;
+  font-weight: 700 !important;
+  margin-top: 2.5rem !important;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+  color: #ffffff !important;
+}
+
+.tiptap h2 {
+  font-size: 1.875rem !important;
+  font-weight: 600 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1.25rem !important;
+  color: #f59e0b !important;
+  /* amber-500 */
+}
+
+.tiptap h3 {
+  font-size: 1.5rem !important;
+  font-weight: 500 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  color: #34d399 !important;
+  /* emerald-400 */
+}
+
+.tiptap h4 {
+  font-size: 1.25rem !important;
+  font-weight: 500 !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.tiptap h5 {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.tiptap h6 {
+  font-size: 0.6875rem !important;
+  /* 11px */
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.2em !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem !important;
+  color: rgba(192, 132, 252, 0.8) !important;
+  /* purple-400/80 */
+}
+
+.tiptap p {
+  color: rgba(255, 255, 255, 0.8) !important;
 }

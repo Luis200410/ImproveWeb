@@ -5,6 +5,7 @@ import { Gem, Database, Rocket, Play, Pause, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Entry } from '@/lib/data-store'
 import { TaskDetailsSheet } from '../task-details-sheet'
+import { getTaskTitle } from '../utils'
 
 interface MatrixCardProps {
     task: Entry
@@ -67,7 +68,7 @@ export function MatrixCard({ task, onAction }: MatrixCardProps) {
 
                     {/* Content */}
                     <h3 className="text-sm font-bold text-white mb-2 line-clamp-2 leading-snug">
-                        {task.data?.Task || 'Untitled Neural process'}
+                        {getTaskTitle(task)}
                     </h3>
                     <p className="text-xs text-white/50 mb-6 leading-relaxed line-clamp-3">
                         {task.data?.Description || 'Manual execution of recursive cross-indexing between local vault nodes and master matrix index.'}

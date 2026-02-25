@@ -14,6 +14,10 @@ interface NoteCardProps {
 }
 
 export function NoteCard({ note, isSelected, onClick, projectMap, areaMap, taskMap }: NoteCardProps) {
+    const stripHtml = (html: string) => {
+        if (!html) return ''
+        return html.replace(/<[^>]*>?/gm, ' ')
+    }
     const date = new Date(note.data.Date || note.createdAt).toLocaleDateString().replace(/\//g, '.')
     const time = new Date(note.data.Date || note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
@@ -69,7 +73,7 @@ export function NoteCard({ note, isSelected, onClick, projectMap, areaMap, taskM
 
             {/* Snippet */}
             <p className="text-sm text-white/40 font-light line-clamp-2 mb-4 leading-relaxed">
-                {note.data.Summary || note.data['Main Notes'] || 'No content preview available... content encrypted/missing.'}
+                {note.data.Summary || stripHtml(note.data['Main Notes']) || 'No content preview available... content encrypted/missing.'}
             </p>
 
             {/* Footer / Tags */}

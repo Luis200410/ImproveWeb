@@ -5,12 +5,10 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
+import { ReactNodeViewRenderer } from '@tiptap/react'
+import { CodeBlockComponent } from './code-block-component'
 import { useEffect } from 'react'
 import { SlashCommand } from './slash-command'
-import {
-    Bold, Italic, Code, List, ListOrdered, Quote,
-    Image as ImageIcon, Undo, Redo, Terminal
-} from 'lucide-react'
 
 // Setup lowlight for syntax highlighting
 const lowlight = createLowlight(common)
@@ -26,11 +24,18 @@ export function NeuralEditor({ initialContent, onChange, editable = true }: Neur
         immediatelyRender: false,
         extensions: [
             StarterKit.configure({
-                codeBlock: false, // Disable default code block to use lowlight
+                codeBlock: false, // Disable default code block to use lowlight instead
+                heading: {
+                    levels: [1, 2, 3, 4, 5, 6],
+                },
             }),
             Image,
             CodeBlockLowlight.configure({
                 lowlight,
+            }).extend({
+                addNodeView() {
+                    return ReactNodeViewRenderer(CodeBlockComponent)
+                },
             }),
             SlashCommand,
         ],
@@ -38,7 +43,7 @@ export function NeuralEditor({ initialContent, onChange, editable = true }: Neur
         editable,
         editorProps: {
             attributes: {
-                class: 'prose prose-invert prose-lg max-w-none focus:outline-none min-h-[500px] prose-headings:font-serif prose-headings:font-normal prose-headings:text-white prose-h1:text-4xl prose-h1:mb-4 prose-h1:mt-8 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-6 prose-h2:text-amber-500/80 prose-p:text-white/80 prose-p:leading-relaxed prose-p:font-light prose-strong:text-amber-500 prose-strong:font-bold prose-code:text-emerald-400 prose-code:bg-white/5 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:before:content-none prose-code:after:content-none prose-pre:bg-[#111] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-lg prose-blockquote:border-l-2 prose-blockquote:border-amber-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white/60 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-img:rounded-lg prose-img:border prose-img:border-white/10',
+                class: 'prose prose-invert prose-lg max-w-none focus:outline-none min-h-[500px] prose-headings:font-serif prose-headings:font-normal prose-headings:text-white prose-h1:text-4xl prose-h1:font-bold prose-h1:mb-6 prose-h1:mt-10 prose-h1:tracking-tight prose-h2:text-3xl prose-h2:font-semibold prose-h2:mb-5 prose-h2:mt-8 prose-h2:text-amber-500 prose-h3:text-2xl prose-h3:font-medium prose-h3:mb-4 prose-h3:mt-6 prose-h3:text-emerald-400 prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-5 prose-h4:text-white/90 prose-h5:text-sm prose-h5:font-bold prose-h5:mb-2 prose-h5:mt-4 prose-h5:text-white/60 prose-h5:uppercase prose-h5:tracking-wider prose-h6:text-[11px] prose-h6:font-bold prose-h6:mb-2 prose-h6:mt-4 prose-h6:text-purple-400/80 prose-h6:uppercase prose-h6:tracking-[0.2em] prose-p:text-base prose-p:text-white/80 prose-p:leading-relaxed prose-p:font-light prose-strong:text-amber-500 prose-strong:font-bold prose-code:text-emerald-400 prose-code:bg-white/5 prose-code:rounded prose-code:px-1 prose-code:py-0.5 prose-code:font-mono prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-2 prose-blockquote:border-amber-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-white/60 prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6 prose-img:rounded-lg prose-img:border prose-img:border-white/10',
             },
         },
         onUpdate: ({ editor }) => {
@@ -82,62 +87,8 @@ export function NeuralEditor({ initialContent, onChange, editable = true }: Neur
                 </div>
             )}
 
-            {/* Toolbar (Visible when editable) */}
-            {editable && (
-                <div className="sticky top-0 z-50 mb-4 flex flex-wrap gap-2 p-2 bg-[#1A1A1A] border border-white/10 rounded-lg shadow-lg">
-                    <button
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-                        className={`p-2 rounded hover:bg-white/5 text-xs font-bold ${editor.isActive('heading', { level: 1 }) ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        H1
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-                        className={`p-2 rounded hover:bg-white/5 text-xs font-bold ${editor.isActive('heading', { level: 2 }) ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        H2
-                    </button>
-                    <div className="w-px h-6 bg-white/10 mx-1 self-center" />
-                    <button
-                        onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        className={`p-2 rounded hover:bg-white/5 ${editor.isActive('bulletList') ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        <List className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        className={`p-2 rounded hover:bg-white/5 ${editor.isActive('orderedList') ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        <ListOrdered className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                        className={`p-2 rounded hover:bg-white/5 ${editor.isActive('blockquote') ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        <Quote className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-                        className={`p-2 rounded hover:bg-white/5 ${editor.isActive('codeBlock') ? 'text-amber-500' : 'text-white/40'}`}
-                    >
-                        <Terminal className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={addImage}
-                        className="p-2 rounded hover:bg-white/5 text-white/40 hover:text-white"
-                    >
-                        <ImageIcon className="w-4 h-4" />
-                    </button>
-                    <div className="ml-auto flex gap-1">
-                        <button onClick={() => editor.chain().focus().undo().run()} className="p-2 rounded hover:bg-white/5 text-white/40">
-                            <Undo className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => editor.chain().focus().redo().run()} className="p-2 rounded hover:bg-white/5 text-white/40">
-                            <Redo className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Custom CSS to hide the placeholder if it has focus but is empty, though tiptap handles this.
+                The visual hint below is just an absolute positioned hint that goes away when typing starts. */}
 
             <EditorContent editor={editor} />
         </div>

@@ -309,7 +309,7 @@ class DataStore {
         await this.saveEntry(updatedEntry)
     }
 
-    async addEntry(userId: string, microappId: string, data: Record<string, any>): Promise<void> {
+    async addEntry(userId: string, microappId: string, data: Record<string, any>): Promise<Entry> {
         // Generate robust ID
         const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36);
         const now = new Date().toISOString()
@@ -322,6 +322,7 @@ class DataStore {
             updatedAt: now
         }
         await this.saveEntry(entry)
+        return entry
     }
 
     async saveEntry(entry: Entry): Promise<void> {

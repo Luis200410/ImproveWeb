@@ -7,6 +7,7 @@ import { TaskCreationSheet } from '../task-creation-sheet'
 import { TaskDetailsSheet } from '../task-details-sheet'
 import { cn } from '@/lib/utils'
 import { Entry } from '@/lib/data-store'
+import { getTaskTitle } from '../utils'
 import { Droppable, Draggable } from '@hello-pangea/dnd'
 
 interface NeuralCalendarProps {
@@ -171,7 +172,7 @@ export function NeuralCalendar({ tasks = [] }: NeuralCalendarProps) {
                                                 task={task}
                                                 trigger={
                                                     <div className="p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 cursor-move group/item text-left">
-                                                        <h4 className="text-xs text-white/90 font-medium mb-1 line-clamp-2">{task.data.Task || 'Untitled Neural Fragment'}</h4>
+                                                        <h4 className="text-xs text-white/90 font-medium mb-1 line-clamp-2">{getTaskTitle(task, 'Untitled Neural Fragment')}</h4>
                                                         <div className="flex justify-between items-center">
                                                             <span className="text-[9px] icon-mono text-amber-500">{task.data.Priority || 'LOW'}</span>
                                                             <div className="opacity-0 group-hover/item:opacity-100 text-[10px] text-white/50">:: DRAG</div>

@@ -8,6 +8,7 @@ import { Plus, Search, Link as LinkIcon, Cpu } from 'lucide-react'
 import { Playfair_Display } from '@/lib/font-shim'
 import { ResourceBoard } from '@/components/second-brain/resources/resource-board'
 import { ResourceCreationSheet } from '@/components/second-brain/resources/resource-creation-sheet'
+import { ResourceDetailsSidebar } from '@/components/second-brain/resources/resource-details-sidebar'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -20,6 +21,7 @@ export default function ResourcesSystem() {
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
     const [currentNoteId, setCurrentNoteId] = useState<string | undefined>(undefined)
+    const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null)
 
     // For Sheet control
     const [creationOpen, setCreationOpen] = useState(false) // Not used directly, sheet manages open state but we trigger re-load
@@ -171,7 +173,7 @@ export default function ResourcesSystem() {
                         notes={projectNotes}
                         resources={filteredResources}
                         onResourceMoved={handleResourceMoved}
-                        onResourceClick={(id) => { }} // Open detail view?
+                        onResourceClick={(id) => setSelectedResourceId(id)}
                         onCreateResource={(noteId) => {
                             // Trigger sheet?
                             // We need to pass logic to open the sheet with default noteId
@@ -185,6 +187,12 @@ export default function ResourcesSystem() {
                     />
                 )}
             </div>
+
+            <ResourceDetailsSidebar
+                resource={resources.find(r => r.id === selectedResourceId) || null}
+                onClose={() => setSelectedResourceId(null)}
+                onUpdate={handleUpdateResource}
+            />
         </div>
     )
 }

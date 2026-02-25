@@ -13,7 +13,7 @@ import { CustomSelect } from '@/components/ui/custom-select'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Plus, Sparkles, Rocket, NotebookPen, ArrowRight, Loader2 } from 'lucide-react'
-
+import { sileo } from 'sileo'
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
@@ -125,6 +125,7 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
         setSaving(true)
         try {
             await dataStore.addEntry(userId, 'tasks-sb', { ...form, 'Status': false, 'Lane': 'pending' })
+            sileo.success({ description: 'Neural Fragment Initialized' })
             setOpen(false)
             setStep(1)
             setForm({
@@ -132,9 +133,10 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                 'Assignee': '', 'Status': false, 'Lane': 'pending'
             })
             // Force refresh if needed, or let optimistic UI handle it (but this is global add, so usually needs manual refresh or SWR)
-            window.location.reload() // Simple brute force for now to ensure all views update
+            setTimeout(() => window.location.reload(), 1500) // Simple brute force for now to ensure all views update, wait briefly for toast
         } catch (e) {
             console.error(e)
+            sileo.error({ description: 'Failed to initialize Neural Fragment' })
         } finally {
             setSaving(false)
         }

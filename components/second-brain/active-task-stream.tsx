@@ -8,6 +8,7 @@ import { Entry } from '@/lib/data-store'
 import { useRouter } from 'next/navigation'
 import { TaskCreationSheet } from './task-creation-sheet'
 import { TaskDetailsSheet } from './task-details-sheet'
+import { getTaskTitle } from './utils'
 
 interface ActiveTaskStreamProps {
     tasks: Entry[]
@@ -69,7 +70,7 @@ function StreamCard({ task, onToggleStatus }: { task: Entry, onToggleStatus: (ta
 
                     <div className="pl-2">
                         <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-sm font-medium text-white line-clamp-1">{task.data?.Task || 'Untitled'}</h4>
+                            <h4 className="text-sm font-medium text-white line-clamp-1">{getTaskTitle(task)}</h4>
                             <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border border-white/10 bg-white/5", isDone ? "text-emerald-500" : "text-blue-400")}>
                                 {isDone ? 'DONE' : 'ACTIVE'}
                             </span>

@@ -9,6 +9,9 @@ import {
     Heading1,
     Heading2,
     Heading3,
+    Heading4,
+    Heading5,
+    Heading6,
     List,
     ListOrdered,
     Code,
@@ -148,6 +151,30 @@ const getSuggestionItems = ({ query }: { query: string }) => {
             icon: Heading3,
             command: ({ editor, range }: { editor: Editor; range: Range }) => {
                 editor.chain().focus().deleteRange(range).setNode('heading', { level: 3 }).run()
+            },
+        },
+        {
+            title: 'Heading 4',
+            description: 'Subsection heading.',
+            icon: Heading4,
+            command: ({ editor, range }: { editor: Editor; range: Range }) => {
+                editor.chain().focus().deleteRange(range).setNode('heading', { level: 4 }).run()
+            },
+        },
+        {
+            title: 'Heading 5',
+            description: 'Small subsection heading.',
+            icon: Heading5,
+            command: ({ editor, range }: { editor: Editor; range: Range }) => {
+                editor.chain().focus().deleteRange(range).setNode('heading', { level: 5 }).run()
+            },
+        },
+        {
+            title: 'Heading 6',
+            description: 'Smallest heading.',
+            icon: Heading6,
+            command: ({ editor, range }: { editor: Editor; range: Range }) => {
+                editor.chain().focus().deleteRange(range).setNode('heading', { level: 6 }).run()
             },
         },
         {

@@ -4,12 +4,12 @@ import { useState } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { LayoutGrid, ArrowRight, Loader2, Sparkles, CheckCircle2 } from 'lucide-react'
+import { Plus, Sparkles, Loader2, ArrowRight, LayoutGrid } from 'lucide-react'
 import { Playfair_Display } from '@/lib/font-shim'
 import { createClient } from '@/utils/supabase/client'
 import { dataStore, Entry } from '@/lib/data-store'
 import { AreaData } from './area-utils'
-import { toast } from 'sonner'
+import { sileo } from 'sileo'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -88,17 +88,37 @@ export function AreaCreationSheet({ trigger, onAreaCreated }: { trigger?: React.
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
 
-                    {/* Step 0: Intro (Skipping Mode Selection as it's just manual for now) */}
+                    {/* Step 0: Mode Selection */}
                     {step === 0 && (
                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="p-4 border border-white/10 rounded-lg bg-white/5 mb-6">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-purple-500/10 rounded text-purple-500"><Sparkles className="w-5 h-5" /></div>
-                                    <div className="font-bold text-white">Domain Forge</div>
-                                </div>
-                                <p className="text-xs text-white/40">Define a new Area of Responsibility. This will serve as a container for your projects and tasks.</p>
-                            </div>
+                            <label className="text-xs text-purple-500 uppercase tracking-wider font-bold">Select Construction Method</label>
+                            <div className="grid grid-cols-1 gap-4">
+                                <button
+                                    onClick={() => { setStep(1) }}
+                                    className="p-4 border border-white/10 rounded-lg bg-white/5 hover:bg-white/10 text-left transition-all group"
+                                >
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 bg-purple-500/10 rounded text-purple-500"><LayoutGrid className="w-5 h-5" /></div>
+                                        <div className="font-bold text-white">Manual Forge</div>
+                                    </div>
+                                    <p className="text-xs text-white/40">Build the domain structure yourself. Standard input flow.</p>
+                                </button>
 
+                                {/* Placeholder for future AI Domain Generation */}
+                                <div className="p-4 border border-white/5 rounded-lg bg-white/[0.02] text-left opacity-50 cursor-not-allowed">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <div className="p-2 bg-white/5 rounded text-white/30"><Sparkles className="w-5 h-5" /></div>
+                                        <div className="font-bold text-white/50">AI Architect (Future)</div>
+                                    </div>
+                                    <p className="text-xs text-white/30">Auto-generate domain structure and initial tracking metrics.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Step 1: Core Identity */}
+                    {step === 1 && (
+                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                             <label className="text-xs text-purple-500 uppercase tracking-wider font-bold">Stage 01: Core Identity</label>
 
                             <div className="space-y-2">
@@ -124,7 +144,7 @@ export function AreaCreationSheet({ trigger, onAreaCreated }: { trigger?: React.
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[10px] text-white/40 uppercase tracking-widest">High-Level Goal</label>
+                                <label className="text-[10px] text-white/40 uppercase tracking-widest">High-Level Goal / Context</label>
                                 <Input
                                     className="bg-white/5 border-white/10"
                                     placeholder="What is the ultimate purpose of this Area?"
@@ -137,15 +157,29 @@ export function AreaCreationSheet({ trigger, onAreaCreated }: { trigger?: React.
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 bg-[#0A0A0A] flex justify-end items-center">
-                    <Button
-                        onClick={handleSave}
-                        disabled={saving || !form.title}
-                        className="bg-purple-500 text-black hover:bg-purple-400 font-bold tracking-wider"
-                    >
-                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Establish Domain'}
-                        {!saving && <ArrowRight className="w-4 h-4 ml-2" />}
-                    </Button>
+                <div className="p-6 border-t border-white/10 bg-[#0A0A0A] flex justify-between items-center">
+                    {step > 0 && (
+                        <button
+                            className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                            onClick={() => setStep(s => s - 1)}
+                            disabled={saving}
+                        >
+                            Back
+                        </button>
+                    )}
+
+                    {step > 0 && (
+                        <Button
+                            onClick={() => {
+                                if (step === 1) handleSave()
+                            }}
+                            disabled={saving || (step === 1 && !form.title)}
+                            className="bg-purple-500 text-black hover:bg-purple-400 font-bold tracking-wider ml-auto"
+                        >
+                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Establish Domain'}
+                            {!saving && <ArrowRight className="w-4 h-4 ml-2" />}
+                        </Button>
+                    )}
                 </div>
 
             </SheetContent>

@@ -8,6 +8,7 @@ import { Entry } from '@/lib/data-store'
 import { Check, Clock, Zap, ArrowRight, LayoutGrid, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { TaskCreationSheet } from './task-creation-sheet'
+import { getTaskTitle } from './utils'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -83,7 +84,7 @@ function TaskCard({ task }: { task: Entry }) {
                             {isDone ? <Check className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                         </div>
                         <div>
-                            <h4 className="text-sm font-medium text-white leading-tight">{task.data?.Task || 'Untitled'}</h4>
+                            <h4 className="text-sm font-medium text-white leading-tight">{getTaskTitle(task)}</h4>
                             <p className="text-[10px] uppercase tracking-wider text-white/40 mt-0.5">
                                 {task.data?.Project ? 'Linked Project' : 'Solo Agent'} // Cognitive
                             </p>

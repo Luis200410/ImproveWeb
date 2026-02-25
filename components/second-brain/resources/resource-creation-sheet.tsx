@@ -5,9 +5,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Link, Loader2, ArrowRight, ChevronDown } from 'lucide-react'
-import { Playfair_Display } from '@/lib/font-shim'
 import { createClient } from '@/utils/supabase/client'
 import { dataStore, Entry } from '@/lib/data-store'
+import { Playfair_Display } from '@/lib/font-shim'
+import { sileo } from 'sileo'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -58,17 +59,23 @@ export function ResourceCreationSheet({ notes, defaultNoteId, onResourceCreated,
             noteId: noteId || null
         }
 
-        await dataStore.addEntry(uid, 'resources-sb', resourceData)
+        try {
+            await dataStore.addEntry(uid, 'resources-sb', resourceData)
+            sileo.success({ description: 'Resource Uplink Complete' })
+            setSaving(false)
+            setOpen(false)
+            onResourceCreated()
 
-        setSaving(false)
-        setOpen(false)
-        onResourceCreated()
-
-        // Reset
-        setTitle('')
-        setUrl('')
-        setType('link')
-        setNoteId('')
+            // Reset
+            setTitle('')
+            setUrl('')
+            setType('link')
+            setNoteId('')
+        } catch (error) {
+            console.error(error)
+            sileo.error({ description: 'Failed to Uplink Resource' })
+            setSaving(false)
+        }
     }
 
     return (

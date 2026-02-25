@@ -5,6 +5,7 @@ import { AlertOctagon } from 'lucide-react'
 import { ProjectEntry, calculateProgress, getDaysRemaining } from './project-utils'
 import { Playfair_Display } from '@/lib/font-shim'
 import { Entry } from '@/lib/data-store'
+import { getProjectTitle, getProjectDeadline } from '../utils'
 
 interface ProjectCardProps {
     project: ProjectEntry
@@ -30,16 +31,16 @@ export function ProjectCard({ project, onClick, linkedTasks = [] }: ProjectCardP
         completedTasks = data.subtasks?.filter(t => t.completed)?.length || 0;
     }
 
-    const title = (data.title || data['Project Name'] || 'Untitled Project').toString()
-    const priority = data.priority || 'P3'
+    const title = getProjectTitle(project)
+    const priority = data.priority || 'Low'
     const ragStatus = data.ragStatus || 'Green'
     const blockedBy = data.blockedBy
     const complexity = data.complexity || 'M'
-    const deadline = data.deadline
+    const deadline = getProjectDeadline(project)
     const subtasks = data.subtasks || []
 
-    const daysRemaining = getDaysRemaining(deadline)
-    const isOverdue = daysRemaining < 0
+    const daysRemaining = deadline ? getDaysRemaining(deadline) : 0
+    const isOverdue = deadline ? daysRemaining < 0 : false
 
     // Visual Mappings
     const ragConfig = {

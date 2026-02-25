@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { X, ChevronDown, Check, FileText, Link as LinkIcon, Download, Plus, Trash2, Lock, AlertTriangle, AlertOctagon, Activity, Square } from 'lucide-react'
+import { X, ChevronDown, Check, FileText, Link as LinkIcon, Download, Plus, Trash2, Lock, AlertTriangle, AlertOctagon, Activity, Square, Calendar } from 'lucide-react'
 import { ProjectEntry, calculateProgress } from './project-utils'
 import { Playfair_Display } from '@/lib/font-shim'
 import { Entry } from '@/lib/data-store'
@@ -11,6 +11,8 @@ import { ProjectAnalyticsModule } from './project-analytics-module'
 import { generateAnalytics } from './project-analytics'
 import { ProjectCalendar } from './project-calendar'
 import { ProjectForge } from './project-forge'
+import { getTaskTitle, getTaskDeadline, getProjectTitle, getProjectDeadline } from '../utils'
+import { sileo } from 'sileo'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -27,10 +29,11 @@ interface ProjectDetailsSidebarProps {
 }
 
 export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask, onUpdateTask, areas = [] }: ProjectDetailsSidebarProps) {
+    const deadline = getProjectDeadline(project)
     // Helper to calculate time remaining
     const getDeadlineText = () => {
-        if (!project?.data.deadline) return 'No Deadline'
-        const days = Math.ceil((new Date(project.data.deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        if (!deadline) return 'No Deadline'
+        const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
         return days < 0 ? `${Math.abs(days)}d Overdue` : `${days}d Remaining`
     }
 
@@ -62,7 +65,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                     ))}
                                 </select>
                             </div>
-                            <SheetTitle className={`${playfair.className} text-xl text-white mb-2 leading-tight`}>{project.data.title || 'Untitled Project'}</SheetTitle>
+                            <SheetTitle className={`${playfair.className} text-xl text-white mb-2 leading-tight`}>{getProjectTitle(project)}</SheetTitle>
                             <div className="flex gap-2 mb-4">
                                 <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded border ${project.data.ragStatus === 'Red' ? 'border-rose-500 text-rose-500 bg-rose-500/10' :
                                     project.data.ragStatus === 'Amber' ? 'border-amber-500 text-amber-500 bg-amber-500/10' :
@@ -71,7 +74,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                     Health: {project.data.ragStatus || 'Green'}
                                 </span>
                                 <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border border-white/10 text-white/50 bg-white/5">
-                                    ROI: {project.data.priority || 'P3'}
+                                    ROI: {project.data.priority || 'Low'}
                                 </span>
                                 <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded border border-white/10 text-white/50 bg-white/5">
                                     {getDeadlineText()}
@@ -102,7 +105,18 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
 
                             {/* Sections */}
                             <CollapsibleSection title="Command Override" defaultOpen>
-                                <ProjectForge project={project} onUpdate={onUpdate} />
+                                <ProjectForge
+                                    project={project}
+                                    onUpdate={onUpdate}
+                                    onDelete={async () => {
+                                        if (!confirm('Are you sure you want to permanently delete this project?')) return
+                                        const { dataStore } = await import('@/lib/data-store')
+                                        await dataStore.deleteEntry(project.id)
+                                        sileo.success({ description: 'Project Erased from Neural Net' })
+                                        onClose()
+                                        setTimeout(() => window.location.reload(), 1500)
+                                    }}
+                                />
                             </CollapsibleSection>
 
                             <CollapsibleSection title="Neural Analytics" defaultOpen>
@@ -146,11 +160,17 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className={`text-sm font-medium truncate ${task.data.Status === true || task.data.Status === 'Done' ? 'text-white/30 line-through' : 'text-white/90'}`}>
-                                                            {task.data.Title || 'Untitled Task'}
+                                                            {getTaskTitle(task)}
                                                         </div>
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <span className="text-[10px] uppercase tracking-wider text-white/40 bg-white/5 px-1.5 rounded">{task.data.Status || 'Backlog'}</span>
                                                             {task.data.Priority && <span className="text-[10px] uppercase tracking-wider text-amber-500/60 bg-amber-500/10 px-1.5 rounded">{task.data.Priority}</span>}
+                                                            {getTaskDeadline(task) && (
+                                                                <span className="text-[10px] uppercase tracking-wider text-blue-400/60 bg-blue-400/10 px-1.5 rounded flex items-center gap-1">
+                                                                    <Calendar className="w-2.5 h-2.5" />
+                                                                    {new Date(getTaskDeadline(task)!).toLocaleDateString()}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

@@ -5,6 +5,8 @@ import { TimerProvider } from '@/contexts/timer-context'
 import { GlobalTimerIndicator } from '@/components/global-timer-indicator'
 import { PomodoroProvider } from '@/components/productivity/pomodoro/pomodoro-context'
 import { ActiveSessionSidebar, MinimizedSessionWidget } from '@/components/productivity/pomodoro/active-session-sidebar'
+import { Toaster } from 'sileo'
+import 'sileo/styles.css'
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -37,6 +39,7 @@ export default function RootLayout({
             <GlobalTimerIndicator />
             <ActiveSessionSidebar />
             <MinimizedSessionWidget />
+            <Toaster />
           </TimerProvider>
         </PomodoroProvider>
       </body>

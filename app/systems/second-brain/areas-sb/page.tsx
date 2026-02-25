@@ -15,6 +15,8 @@ const playfair = Playfair_Display({ subsets: ['latin'] })
 export default function AreasDashboard() {
     const [loading, setLoading] = useState(true)
     const [areas, setAreas] = useState<AreaEntry[]>([])
+    const [projects, setProjects] = useState<Entry[]>([])
+    const [tasks, setTasks] = useState<Entry[]>([])
     const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null)
 
     const supabase = createClient()
@@ -24,7 +26,11 @@ export default function AreasDashboard() {
         const { data: { user } } = await supabase.auth.getUser()
         const uid = user?.id || 'defaultUser'
 
-        const areaItems = await dataStore.getEntries('areas-sb', uid)
+        const [areaItems, projectItems, taskItems] = await Promise.all([
+            dataStore.getEntries('areas-sb', uid),
+            dataStore.getEntries('projects-sb', uid),
+            dataStore.getEntries('tasks-sb', uid)
+        ])
 
         // Transform to AreaEntry type
         const typedAreas = areaItems.map(item => ({
@@ -33,6 +39,8 @@ export default function AreasDashboard() {
         })) as AreaEntry[]
 
         setAreas(typedAreas)
+        setProjects(projectItems)
+        setTasks(taskItems)
         setLoading(false)
     }
 
@@ -85,6 +93,8 @@ export default function AreasDashboard() {
                 area={selectedArea || null}
                 onClose={() => setSelectedAreaId(null)}
                 onUpdate={handleUpdateArea}
+                projects={projects}
+                tasks={tasks}
             />
         </div>
     )

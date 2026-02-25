@@ -12,7 +12,7 @@ import { createClient } from '@/utils/supabase/client'
 import { dataStore, Entry } from '@/lib/data-store'
 import { ProjectData } from './project-utils'
 import { generateProjectPlan, GeneratedTask } from '@/app/actions/project-architect'
-import { toast } from 'sonner'
+import { sileo } from 'sileo'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
@@ -39,7 +39,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
     const [form, setForm] = useState<Partial<ProjectData>>({
         title: '',
         complexity: 'M',
-        priority: 'P2',
+        priority: 'Medium',
         ragStatus: 'Green',
         status: 'backlog',
         subtasks: [],
@@ -89,7 +89,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
             const errorMessage = error.message.includes('GEMINI_API_KEY')
                 ? 'API Key missing. Please add GEMINI_API_KEY to .env.local'
                 : 'Failed to generate plan. Please try again.'
-            toast.error(errorMessage)
+            sileo.error({ description: errorMessage })
         } finally {
             setGenerating(false)
         }
@@ -124,7 +124,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
             startDate: form.startDate!,
             deadline: form.deadline!,
             complexity: form.complexity || 'M',
-            priority: form.priority || 'P2',
+            priority: form.priority || 'Medium',
             blockedBy: form.blockedBy,
             status: form.status || 'backlog',
             Area: form.Area
@@ -172,7 +172,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
         if (onProjectCreated) onProjectCreated()
 
         // Reset
-        setForm({ title: '', complexity: 'M', priority: 'P2', ragStatus: 'Green', subtasks: [], blockedBy: '' })
+        setForm({ title: '', complexity: 'M', priority: 'Medium', ragStatus: 'Green', subtasks: [], blockedBy: '' })
         setStep(0)
         setMode('manual')
         setGeneratedTasks([])
@@ -359,12 +359,11 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
                                             {/* Priority */}
                                             <div className="space-y-2">
                                                 <label className="text-[10px] text-white/40 uppercase tracking-widest">Priority Level</label>
-                                                <div className="grid grid-cols-2 gap-1">
+                                                <div className="grid grid-cols-3 gap-1">
                                                     {[
-                                                        { label: 'Critical', value: 'P0' },
-                                                        { label: 'High', value: 'P1' },
-                                                        { label: 'Normal', value: 'P2' },
-                                                        { label: 'Low', value: 'P3' }
+                                                        { label: 'High', value: 'High' },
+                                                        { label: 'Medium', value: 'Medium' },
+                                                        { label: 'Low', value: 'Low' }
                                                     ].map((item) => (
                                                         <button
                                                             key={item.value}

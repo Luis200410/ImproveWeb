@@ -9,9 +9,10 @@ import { usePomodoro } from '@/components/productivity/pomodoro/pomodoro-context
 interface ProjectForgeProps {
     project: ProjectEntry
     onUpdate: (project: ProjectEntry, updates: Partial<ProjectData>) => void
+    onDelete?: () => void
 }
 
-export function ProjectForge({ project, onUpdate }: ProjectForgeProps) {
+export function ProjectForge({ project, onUpdate, onDelete }: ProjectForgeProps) {
     const { data } = project
     const { startSession } = usePomodoro()
 
@@ -46,9 +47,9 @@ export function ProjectForge({ project, onUpdate }: ProjectForgeProps) {
                 </label>
                 <div className="grid grid-cols-3 gap-1">
                     {[
-                        { id: 'backlog', label: 'Stasis', color: 'border-white/20 text-white/50 hover:bg-white/5' },
-                        { id: 'active', label: 'Active', color: 'border-amber-500 text-amber-500 bg-amber-500/10' },
-                        { id: 'completed', label: 'Terminated', color: 'border-emerald-500 text-emerald-500 bg-emerald-500/10' }
+                        { id: 'backlog', label: 'Inbox', color: 'border-white/20 text-white/50 hover:bg-white/5' },
+                        { id: 'active', label: 'Review', color: 'border-amber-500 text-amber-500 bg-amber-500/10' },
+                        { id: 'completed', label: 'Done', color: 'border-emerald-500 text-emerald-500 bg-emerald-500/10' }
                     ].map(status => (
                         <button
                             key={status.id}
@@ -70,8 +71,8 @@ export function ProjectForge({ project, onUpdate }: ProjectForgeProps) {
                     <label className="text-[9px] text-white/30 uppercase tracking-widest flex items-center gap-2">
                         <AlertTriangle className="w-3 h-3" /> Priority
                     </label>
-                    <div className="grid grid-cols-2 gap-1">
-                        {['P0', 'P1', 'P2', 'P3'].map(p => (
+                    <div className="grid grid-cols-3 gap-1">
+                        {['High', 'Medium', 'Low'].map(p => (
                             <button
                                 key={p}
                                 onClick={() => updateField('priority', p)}
@@ -106,6 +107,42 @@ export function ProjectForge({ project, onUpdate }: ProjectForgeProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Data Management */}
+            {(data.status === 'completed' || onDelete) && (
+                <div className="pt-4 mt-6 border-t border-white/5 space-y-2">
+                    <label className="text-[9px] text-white/30 uppercase tracking-widest flex items-center gap-2">
+                        <Activity className="w-3 h-3" /> Data Management
+                    </label>
+                    <div className="flex gap-2">
+                        {data.status === 'completed' && !(data as any).archived && (
+                            <button
+                                onClick={() => updateField('archived' as any, true)}
+                                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white/50 hover:bg-white/5 hover:text-white rounded transition-all"
+                            >
+                                Archive Project
+                            </button>
+                        )}
+                        {(data as any).archived && (
+                            <button
+                                onClick={() => updateField('archived' as any, false)}
+                                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white/50 hover:bg-white/5 hover:text-white rounded transition-all"
+                            >
+                                Unarchive
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                onClick={onDelete}
+                                className="flex items-center justify-center px-4 py-2 border border-rose-500/20 text-rose-500 hover:bg-rose-500/10 rounded transition-all"
+                                title="Permanently Delete Project"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /><line x1="10" x2="10" y1="11" y2="17" /><line x1="14" x2="14" y1="11" y2="17" /></svg>
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
