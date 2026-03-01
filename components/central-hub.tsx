@@ -1,11 +1,11 @@
 'use client'
 
-import { motion, useMotionValue, useTransform } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { System } from '@/lib/data-store'
 import { HubNode, SystemStatus } from './hub-node'
 import { Playfair_Display } from '@/lib/font-shim'
 import { cn } from '@/lib/utils'
-import { LayoutGrid } from 'lucide-react'
+import { Power, LayoutGrid } from 'lucide-react'
 import { useEffect, useState, useMemo } from 'react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
@@ -16,31 +16,30 @@ interface CentralHubProps {
 }
 
 export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
-    // User requested all systems, so we use the full list.
+    const [isSystemOnline, setIsSystemOnline] = useState(true)
     const coreSystems = systems
 
-    // Initialize motion values for each system
-    // We use useMemo to ensure value stability across renders
-    const nodes = useMemo(() => {
-        return coreSystems.map((sys, idx) => {
-            const total = coreSystems.length
+    // Calculate node orbital positions
+    const getOrbitalNodes = (items: any[], radius: number) => {
+        return items.map((item, idx) => {
+            const total = items.length
             const angleStep = 360 / total
             const angle = -90 + (idx * angleStep)
-            const radius = 460
             const rad = angle * (Math.PI / 180)
             const x = Math.cos(rad) * radius
             const y = Math.sin(rad) * radius
 
             return {
-                id: sys.id,
-                system: sys,
-                x: new MotionValueWrapper(x), // Use our wrapper or direct 0 and animate to pos?
-                // Actually framer works best if we initialize with x/y
-                // But wait, drag uses transform. If we set 'style={{x,y}}' it's transform.
+                ...item,
+                angle,
                 initialX: x,
                 initialY: y
             }
         })
+    }
+
+    const systemNodes = useMemo(() => {
+        return getOrbitalNodes(coreSystems.map(s => ({ id: s.id, system: s })), 460)
     }, [coreSystems])
 
     return (
@@ -55,72 +54,92 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
             {/* Scalable Container for Radial Layout - Desktop Only */}
             <div className="hidden lg:flex relative w-[1000px] h-[1000px] scale-[0.55] md:scale-[0.7] lg:scale-[0.85] xl:scale-100 transition-transform duration-500 items-center justify-center">
 
-                {/* Central Node */}
-                <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 0.8 }}
-                    className="relative z-20 w-80 h-64 bg-[#f8f8f2] rounded-3xl shadow-[0_0_100px_rgba(255,255,255,0.15)] flex flex-col items-center justify-center p-8 border-4 border-[#fffffa]/10"
+                {/* Central Node - Power Button */}
+                <motion.button
+                    onClick={() => setIsSystemOnline(!isSystemOnline)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                        "relative z-20 w-32 h-32 rounded-full flex flex-col items-center justify-center border-4 outline-none transition-all duration-500 shadow-2xl overflow-visible",
+                        isSystemOnline
+                            ? "bg-[#0a0a0a] border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.3)]"
+                            : "bg-[#111] border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.2)]"
+                    )}
                 >
-                    <div className="w-16 h-16 bg-[#D4AF37]/20 rounded-2xl flex items-center justify-center mb-4 text-[#D4AF37]">
-                        <LayoutGrid className="w-8 h-8" />
-                    </div>
+                    <AnimatePresence mode="wait">
+                        {isSystemOnline ? (
+                            <motion.div
+                                key="online"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex flex-col items-center"
+                            >
+                                <Power className="w-10 h-10 text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
+                                <span className="mt-2 text-[10px] uppercase font-bold tracking-widest text-emerald-500/80">Online</span>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="offline"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex flex-col items-center"
+                            >
+                                <Power className="w-10 h-10 text-red-500/50 drop-shadow-[0_0_10px_rgba(239,68,68,0.2)]" />
+                                <span className="mt-2 text-[10px] uppercase font-bold tracking-widest text-red-500/50">Standby</span>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    <div className="text-[10px] uppercase tracking-[0.2em] text-black/50 font-bold mb-1">
-                        Main Hub
-                    </div>
-                    <h1 className={cn(playfair.className, "text-3xl font-bold text-black text-center leading-tight mb-6")}>
-                        Central<br />Intelligence
-                    </h1>
+                    {isSystemOnline && (
+                        <div className="absolute inset-[-20%] rounded-full border border-emerald-500/20 animate-[spin_10s_linear_infinite]" />
+                    )}
+                </motion.button>
 
-                    <div className="w-full flex items-center justify-between border-t border-black/10 pt-4">
-                        <span className="text-[10px] text-black/40 font-medium">System Status</span>
-                        <span className="text-[10px] text-emerald-600 font-bold tracking-wider">OPTIMAL</span>
-                    </div>
+                {/* Orbiting Systems Layer (Visible only when online) */}
+                <AnimatePresence>
+                    {isSystemOnline && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0 }}
+                            transition={{ duration: 0.6, type: "spring", bounce: 0.2 }}
+                            className="absolute inset-0 pointer-events-none z-10"
+                        >
+                            <motion.div
+                                className="w-full h-full relative"
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+                            >
+                                {/* Nodes */}
+                                {systemNodes.map((node, idx) => (
+                                    <motion.div
+                                        key={node.id}
+                                        className="absolute left-1/2 top-1/2 pointer-events-auto"
+                                        style={{ x: node.initialX, y: node.initialY }}
+                                    >
+                                        <motion.div
+                                            // Counter-rotate to keep upright
+                                            animate={{ rotate: -360 }}
+                                            transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
+                                            className="-translate-x-1/2 -translate-y-1/2"
+                                        >
+                                            <HubNode
+                                                system={node.system}
+                                                status={systemStatuses[node.id]}
+                                                microappCount={node.system.microapps.length}
+                                                delay={0.2 + (idx * 0.1)}
+                                                className="w-60 hover:scale-105 transition-transform"
+                                            />
+                                        </motion.div>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                    <div className="absolute -inset-4 rounded-[2.5rem] border border-[#D4AF37]/30 opacity-50 pointer-events-none" />
-                </motion.div>
-
-                {/* Connector Lines Layer */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-                    <defs>
-                        <linearGradient id="connector-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="rgba(255,255,255,0)" />
-                            <stop offset="50%" stopColor="rgba(255,255,255,0.15)" />
-                            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                        </linearGradient>
-                    </defs>
-                    <g style={{ transform: 'translate(500px, 500px)' }}>
-                        {nodes.map((node, idx) => (
-                            <motion.line
-                                key={idx}
-                                x1={0}
-                                y1={0}
-                                x2={node.initialX}
-                                y2={node.initialY}
-                                stroke="url(#connector-grad)"
-                                strokeWidth="1"
-                                strokeDasharray="4 4"
-                            />
-                        ))}
-                    </g>
-                </svg>
-
-                {/* Orbiting Nodes */}
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                    <div className="w-full h-full relative">
-                        {nodes.map((node, idx) => (
-                            <NodeCluster
-                                key={node.id}
-                                system={node.system}
-                                status={systemStatuses[node.id]}
-                                initialX={node.initialX}
-                                initialY={node.initialY}
-                                delay={0.2 + (idx * 0.1)}
-                            />
-                        ))}
-                    </div>
-                </div>
 
             </div>
 
@@ -161,75 +180,4 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
     )
 }
 
-// Wrapper class to satisfy TS if needed, though we will just replace with hooks in sub-component
-class MotionValueWrapper {
-    value: number;
-    constructor(v: number) { this.value = v }
-}
 
-
-function NodeCluster({ system, status, initialX, initialY, delay }: { system: System, status: any, initialX: number, initialY: number, delay: number }) {
-    const x = useMotionValue(initialX)
-    const y = useMotionValue(initialY)
-
-    return (
-        <>
-            {/* The Line - rendered into a portal? No, absolute positioning works if z-index is managed. 
-                Wait, SVG lines inside a div need to be an SVG element. 
-                We can just render a DIV line that transforms. Or use SVG for the line.
-                Actually, putting the SVG line HERE relative to the main container center (0,0) is tricky because 
-                NodeCluster is mounted in the loop. 
-                
-                Workaround: Render the line as a 1px div that calculates rotation/width based on x,y.
-                Line connects (0,0) to (x,y).
-            */}
-            <ConnectorLine x={x} y={y} />
-
-            <motion.div
-                style={{ x, y }}
-                drag
-                dragMomentum={false}
-                dragElastic={0.1}
-                whileDrag={{ scale: 1.1, cursor: 'grabbing' }}
-                className="absolute left-1/2 top-1/2 pointer-events-auto cursor-grab"
-            >
-                {/* Center the node visually on its point */}
-                <div className="-translate-x-1/2 -translate-y-1/2">
-                    <HubNode
-                        system={system}
-                        status={status}
-                        microappCount={system.microapps.length}
-                        delay={delay}
-                        className="w-60"
-                    />
-                </div>
-            </motion.div>
-        </>
-    )
-}
-
-function ConnectorLine({ x, y }: { x: any, y: any }) {
-    // We need to transform x/y motion values into width/rotation.
-    // Framer motion's useTransform is perfect for this.
-
-    const distance = useTransform([x, y], ([latestX, latestY]: any) => {
-        return Math.sqrt(latestX ** 2 + latestY ** 2)
-    })
-
-    const angle = useTransform([x, y], ([latestX, latestY]: any) => {
-        return Math.atan2(latestY, latestX) * (180 / Math.PI)
-    })
-
-    return (
-        <motion.div
-            className="absolute left-1/2 top-1/2 h-px bg-white/20 origin-left -z-10 pointer-events-none"
-            style={{
-                width: distance,
-                rotate: angle, // using 'rotate' shortcut in framer motion style
-                // Line starts at 0,0 (center)
-            }}
-        >
-            <div className="w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-        </motion.div>
-    )
-}

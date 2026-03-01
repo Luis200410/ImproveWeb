@@ -115,8 +115,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
         const now = new Date().toISOString()
 
         // 1. Save Project
-        // 1. Save Project
-        const projectData: ProjectData = {
+        const projectData: ProjectData & { Habit?: string } = {
             title: form.title!,
             description: form.description,
             ragStatus: form.ragStatus || 'Green',
@@ -127,8 +126,9 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
             priority: form.priority || 'Medium',
             blockedBy: form.blockedBy,
             status: form.status || 'backlog',
-            Area: form.Area
-        }
+            Area: form.Area,
+            Habit: selectedHabitId || undefined
+        } as ProjectData
 
         const projectEntry: Entry = {
             id: projectId,

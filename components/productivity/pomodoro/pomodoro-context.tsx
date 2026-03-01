@@ -1,8 +1,9 @@
-
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react'
-import { PomodoroConfig, DEFAULT_CONFIG } from './pomodoro-utils'
+import { PomodoroConfig, DEFAULT_CONFIG, PomodoroDailyStats } from './pomodoro-utils'
+import { createClient } from '@/utils/supabase/client'
+import { dataStore } from '@/lib/data-store'
 
 type SessionType = 'WORK' | 'SHORT_BREAK' | 'LONG_BREAK' | 'IDLE'
 
@@ -11,7 +12,10 @@ interface PomodoroState {
     isActive: boolean
     sessionType: SessionType
     currentSession: number
-    totalSessions: number
+    todayCompleted: number
+    todayAbandoned: number
+    lifetimeCompleted: number
+    level: number
     config: PomodoroConfig
     isSidebarOpen: boolean
     minimized: boolean
@@ -35,7 +39,15 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     const [isActive, setIsActive] = useState(false)
     const [sessionType, setSessionType] = useState<SessionType>('IDLE')
     const [currentSession, setCurrentSession] = useState(1) // 1-indexed count for the day
-    const [totalSessions, setTotalSessions] = useState(0) // Total completed
+
+    // Leveling & Stats State
+    const [todayCompleted, setTodayCompleted] = useState(0)
+    const [todayAbandoned, setTodayAbandoned] = useState(0)
+    const [lifetimeCompleted, setLifetimeCompleted] = useState(0)
+    const [level, setLevel] = useState(1)
+    const [userId, setUserId] = useState<string | null>(null)
+    const [todayEntryId, setTodayEntryId] = useState<string | null>(null)
+
     const [config, setConfig] = useState<PomodoroConfig>(DEFAULT_CONFIG)
 
     // UI State
@@ -43,6 +55,81 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
     const [minimized, setMinimized] = useState(false)
 
     const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+    // Fetch User and Stats
+    useEffect(() => {
+        const initUser = async () => {
+            const { data: { user } } = await createClient().auth.getUser()
+            if (user) {
+                setUserId(user.id)
+                loadStats(user.id)
+            }
+        }
+        initUser()
+    }, [])
+
+    const loadStats = async (uid: string) => {
+        try {
+            const entries = await dataStore.getEntries('pomodoro-daily-stats', uid);
+            let lifetime = 0;
+            const today = new Date().toISOString().split('T')[0];
+            let foundTodayComplete = 0;
+            let foundTodayAbandoned = 0;
+            let foundEntryId = null;
+
+            entries.forEach(entry => {
+                const data = entry.data as PomodoroDailyStats;
+                lifetime += (data.completed || 0);
+                if (data.date === today) {
+                    foundTodayComplete = data.completed || 0;
+                    foundTodayAbandoned = data.abandoned || 0;
+                    foundEntryId = entry.id;
+                }
+            });
+
+            setLifetimeCompleted(lifetime);
+            setLevel(Math.floor(lifetime / 10) + 1);
+            setTodayCompleted(foundTodayComplete);
+            setTodayAbandoned(foundTodayAbandoned);
+            setTodayEntryId(foundEntryId);
+        } catch (error) {
+            console.error("Failed to load Pomodoro stats", error)
+        }
+    }
+
+    const recordStat = async (type: 'completed' | 'abandoned') => {
+        if (!userId) return;
+
+        const today = new Date().toISOString().split('T')[0]
+
+        let newCompleted = todayCompleted + (type === 'completed' ? 1 : 0);
+        let newAbandoned = todayAbandoned + (type === 'abandoned' ? 1 : 0);
+        let newLifetime = lifetimeCompleted + (type === 'completed' ? 1 : 0);
+
+        setTodayCompleted(newCompleted);
+        setTodayAbandoned(newAbandoned);
+        if (type === 'completed') {
+            setLifetimeCompleted(newLifetime);
+            setLevel(Math.floor(newLifetime / 10) + 1);
+        }
+
+        const data: PomodoroDailyStats = {
+            date: today,
+            completed: newCompleted,
+            abandoned: newAbandoned
+        };
+
+        try {
+            if (todayEntryId) {
+                await dataStore.updateEntry(todayEntryId, data);
+            } else {
+                const entry = await dataStore.addEntry(userId, 'pomodoro-daily-stats', data);
+                setTodayEntryId(entry.id);
+            }
+        } catch (error) {
+            console.error("Failed to save Pomodoro stat entry", error)
+        }
+    }
 
     // Timer Logic
     useEffect(() => {
@@ -60,16 +147,27 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
         }
     }, [isActive, timeLeft])
 
-    const handleSessionComplete = () => {
+    const handleSessionComplete = async () => {
         setIsActive(false)
         if (timerRef.current) clearInterval(timerRef.current)
 
         // Logic for next session
         if (sessionType === 'WORK') {
-            setTotalSessions(p => p + 1)
+            await recordStat('completed');
+            try {
+                if (userId) {
+                    await dataStore.savePomodoroSession({
+                        userId,
+                        workDuration: config.sprintDuration,
+                        breakDuration: config.shortBreakDuration,
+                        wasAutoTriggered: config.autoStartBreaks,
+                    })
+                }
+            } catch (err) {
+                console.error("Failed to log pomodoro session for review stats", err)
+            }
             const nextType = currentSession % config.sessionsBeforeLongBreak === 0 ? 'LONG_BREAK' : 'SHORT_BREAK'
 
-            // Auto-start break logic could go here
             if (config.autoStartBreaks) {
                 startSession(nextType === 'LONG_BREAK' ? config.longBreakDuration : config.shortBreakDuration, nextType)
             } else {
@@ -99,15 +197,18 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
 
     const pauseSession = () => setIsActive(false)
 
-    // Stop resets to initial state of current session type
-    const stopSession = () => {
+    // Stop resets to initial state of current session type and records abandoned if working
+    const stopSession = async () => {
+        if (isActive && sessionType === 'WORK') {
+            await recordStat('abandoned')
+        }
         setIsActive(false)
         const duration = sessionType === 'WORK' ? config.sprintDuration : sessionType === 'SHORT_BREAK' ? config.shortBreakDuration : config.longBreakDuration
         setTimeLeft(duration * 60)
     }
 
     const skipSession = () => {
-        handleSessionComplete(); // Cheat to next
+        handleSessionComplete(); // Cheat to finish it
     }
 
     const toggleSidebar = () => setIsSidebarOpen(prev => !prev)
@@ -126,7 +227,10 @@ export function PomodoroProvider({ children }: { children: React.ReactNode }) {
             isActive,
             sessionType,
             currentSession,
-            totalSessions,
+            todayCompleted,
+            todayAbandoned,
+            lifetimeCompleted,
+            level,
             config,
             isSidebarOpen,
             minimized,

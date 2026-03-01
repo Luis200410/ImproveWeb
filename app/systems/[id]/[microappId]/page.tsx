@@ -22,6 +22,8 @@ import { HabitTimeline } from '@/components/habit-timeline'
 import { ForgeForm } from '@/components/forge-form'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { HabitDetailsSidebar } from '@/components/second-brain/habits/habit-details-sidebar'
+import { UnexpectedEventsSheet } from '@/components/second-brain/habits/unexpected-events-sheet'
+import { ChangeHabitsSheet } from '@/components/second-brain/habits/change-habits-sheet'
 
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
@@ -48,6 +50,9 @@ export default function MicroappPage() {
     const [tasks, setTasks] = useState<Entry[]>([])
     const [areas, setAreas] = useState<Entry[]>([])
 
+    // Additional state for Atomic Habits
+    const [projects, setProjects] = useState<Entry[]>([])
+
     const [isForgeOpen, setIsForgeOpen] = useState(false)
     const [creatingRelation, setCreatingRelation] = useState<{ targetMicroappId: string, sourceFieldName: string, initialValue?: string } | null>(null)
     const [editingEntry, setEditingEntry] = useState<Entry | null>(null)
@@ -60,8 +65,10 @@ export default function MicroappPage() {
 
     // Atomic Habits State
     const [isCreatingHabit, setIsCreatingHabit] = useState(false)
+    const [isChangingRoutine, setIsChangingRoutine] = useState(false)
     const [selectedHabit, setSelectedHabit] = useState<Entry | null>(null)
-    const [habitViewMode, setHabitViewMode] = useState<'day' | 'week' | 'list'>('day')
+    const [habitViewMode, setHabitViewMode] = useState<'day' | 'week' | 'list' | 'overview'>('day')
+    const [isAdaptingRoutine, setIsAdaptingRoutine] = useState(false)
 
     const fetchEntries = useCallback(async (currentUserId: string) => {
         if (!microappId) return;
@@ -78,6 +85,12 @@ export default function MicroappPage() {
                 ]);
                 setTasks(t);
                 setAreas(a);
+            }
+
+            // If it's atomic-habits, we need projects to show linked relations
+            if (microappId === 'atomic-habits') {
+                const p = await dataStore.getEntries('projects-sb', currentUserId)
+                setProjects(p)
             }
 
             // Load Relation Options for Forms (if microapp loaded)
@@ -325,6 +338,7 @@ export default function MicroappPage() {
             creatingRelation.sourceFieldName === 'Project' ? 'Name' : 'Title']: creatingRelation.initialValue
     } : {};
 
+
     if (!microapp) return null
 
     return (
@@ -368,7 +382,7 @@ export default function MicroappPage() {
                             onClick={() => setIsCreatingHabit(true)}
                             className="bg-white text-black px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold hover:bg-white/90 transition-colors flex items-center gap-2"
                         >
-                            <Flame className="w-4 h-4" /> Forge Habit
+                            <Plus className="w-4 h-4" /> Create Habit
                         </button>
                     ) : (
                         <button
@@ -414,6 +428,19 @@ export default function MicroappPage() {
                                 existingEntries={entries.filter(e => e.id !== editingEntry?.id)}
                             />
 
+                            {userId && (
+                                <ChangeHabitsSheet
+                                    open={isChangingRoutine}
+                                    onOpenChange={setIsChangingRoutine}
+                                    currentHabits={entries}
+                                    userId={userId}
+                                    onChangeApplied={() => {
+                                        fetchEntries(userId)
+                                        setIsChangingRoutine(false)
+                                    }}
+                                />
+                            )}
+
                             <HabitDetailsSidebar
                                 entry={selectedHabit}
                                 open={!!selectedHabit}
@@ -427,41 +454,71 @@ export default function MicroappPage() {
                                 }}
                             />
 
-                            <HabitTimeline
-                                entries={entries}
-                                onToggleStatus={(entry) => {
-                                    handleSaveEntry({ ...entry.data, id: entry.id });
-                                }}
-                                onEdit={(entry) => {
-                                    setEditingEntry(entry)
-                                    setIsCreatingHabit(true)
-                                }}
-                                onSelect={(entry) => setSelectedHabit(entry)}
-                                onDelete={async (entryId, skipConfirm) => {
-                                    // "skipConfirm" from HabitTimeline implies "Delete Entirely" directly from custom modal
-                                    handleDelete(entryId, skipConfirm)
-                                }}
-                                onFocusComplete={async (duration, entry) => {
-                                    if (!userId) {
-                                        console.error("User not authenticated for focus logging")
-                                        return
-                                    }
-                                    // ...
-                                    try {
-                                        await dataStore.addEntry(userId, 'pomodoro', {
-                                            'Session Name': entry.data['Habit Name'],
-                                            'Duration': duration,
-                                            'Date': new Date().toISOString(),
-                                            'Completed': true,
-                                            'Notes': `Focus Session for ${entry.data['Category'] || 'General'} habit.`
-                                        });
-                                    } catch (e) {
-                                        console.log('Focus logging not fully configured yet', e);
-                                    }
-                                }}
-                                viewMode={habitViewMode}
-                                onChangeViewMode={setHabitViewMode}
-                            />
+                            {entries.filter(e => e.data['Type'] !== 'adaptation').length === 0 && !isLoading ? (
+                                <div className="text-center py-20 bg-white/5 border border-white/10 rounded-2xl">
+                                    <div className="text-4xl mb-4">🌱</div>
+                                    <h3 className={`${playfair.className} text-2xl mb-2 text-white`}>Begin Your Journey</h3>
+                                    <p className="text-white/60 max-w-md mx-auto mb-8">
+                                        You don't have any habits set up yet. Build your first habit manually to start crafting your ideal routine.
+                                    </p>
+                                    <button
+                                        onClick={() => setIsCreatingHabit(true)}
+                                        className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-white/90 transition-colors"
+                                    >
+                                        Create First Habit
+                                    </button>
+                                </div>
+                            ) : (
+                                <HabitTimeline
+                                    entries={entries}
+                                    linkedProjects={projects}
+                                    onProjectClick={(p) => router.push(`/systems/second-brain/projects-sb?selectedId=${p.id}`)}
+                                    onToggleStatus={(entry) => {
+                                        handleSaveEntry({ ...entry.data, id: entry.id });
+                                    }}
+                                    onEdit={(entry) => {
+                                        setEditingEntry(entry)
+                                        setIsCreatingHabit(true)
+                                    }}
+                                    onSelect={(entry) => setSelectedHabit(entry)}
+                                    onDelete={async (entryId, skipConfirm) => {
+                                        // "skipConfirm" from HabitTimeline implies "Delete Entirely" directly from custom modal
+                                        handleDelete(entryId, skipConfirm)
+                                    }}
+                                    onAdaptRoutine={() => setIsAdaptingRoutine(true)}
+                                    onFocusComplete={async (duration, entry) => {
+                                        if (!userId) {
+                                            console.error("User not authenticated for focus logging")
+                                            return
+                                        }
+                                        // ...
+                                        try {
+                                            await dataStore.addEntry(userId, 'pomodoro', {
+                                                'Session Name': entry.data['Habit Name'],
+                                                'Duration': duration,
+                                                'Date': new Date().toISOString(),
+                                                'Completed': true,
+                                                'Notes': `Focus Session for ${entry.data['Category'] || 'General'} habit.`
+                                            });
+                                        } catch (e) {
+                                            console.log('Focus logging not fully configured yet', e);
+                                        }
+                                    }}
+                                    viewMode={habitViewMode}
+                                    onChangeViewMode={setHabitViewMode}
+                                />
+                            )}
+
+                            {userId && (
+                                <UnexpectedEventsSheet
+                                    open={isAdaptingRoutine}
+                                    onOpenChange={setIsAdaptingRoutine}
+                                    todayHabits={entries.filter(e => e.data['Time'])}
+                                    currentDate={new Date()}
+                                    userId={userId}
+                                    onAdaptationApplied={() => fetchEntries(userId)}
+                                />
+                            )}
                         </>
                     ) : microappId === 'tasks-sb' ? (
                         /* Tasks Dashboard View - Adding below this image per request */
@@ -569,13 +626,13 @@ export default function MicroappPage() {
                                     className="flex items-center gap-6 mb-8"
                                 >
                                     <h2 className={`${playfair.className} text-3xl font-bold text-white`}>
-                                        Entries ({entries.length})
+                                        Entries ({entries.filter(e => e.data['Type'] !== 'adaptation').length})
                                     </h2>
                                     <div className="h-px bg-white/10 flex-1" />
                                 </motion.div>
 
                                 {/* ... (Standard Grid) ... */}
-                                {entries.length === 0 ? (
+                                {entries.filter(e => e.data['Type'] !== 'adaptation').length === 0 ? (
                                     <motion.div
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}

@@ -1,0 +1,59 @@
+
+> improve-web@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.160.48.135:3000
+- Environments: .env.local
+- Experiments (use with caution):
+  · serverActions
+
+✓ Starting...
+✓ Ready in 889ms
+Middleware: Path: /systems/productivity/atomic-habits
+Middleware: User found? true
+ GET /systems/productivity/atomic-habits 200 in 1442ms (compile: 436ms, proxy.ts: 876ms, render: 131ms)
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+ GET /api/auth/me 200 in 1199ms (compile: 73ms, proxy.ts: 391ms, render: 735ms)
+ GET /api/auth/me 200 in 1332ms (compile: 61ms, proxy.ts: 406ms, render: 866ms)
+Middleware: Path: /systems/productivity/atomic-habits
+Middleware: User found? true
+Error generating routine adaptation: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at handleResponseNotOk (.next/dev/server/chunks/ssr/_ddf55b6d._.js:644:11)
+    at async makeRequest (.next/dev/server/chunks/ssr/_ddf55b6d._.js:616:9)
+    at async generateContent (.next/dev/server/chunks/ssr/_ddf55b6d._.js:1058:22)
+    at async generateRoutineAdaptation (app/actions/generate-routine-adaptation.ts:130:24)
+  128 | `
+  129 |
+> 130 |         const result = await model.generateContent(prompt);
+      |                        ^
+  131 |         let responseText = result.response.text();
+  132 |
+  133 |         if (responseText) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+ POST /systems/productivity/atomic-habits 200 in 1324ms (compile: 13ms, proxy.ts: 928ms, render: 383ms)
+Middleware: Path: /systems/productivity/atomic-habits
+Middleware: User found? true
+ GET /systems/productivity/atomic-habits 200 in 223ms (compile: 10ms, proxy.ts: 175ms, render: 37ms)
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+ GET /api/auth/me 200 in 432ms (compile: 1978µs, proxy.ts: 123ms, render: 307ms)
+ GET /api/auth/me 200 in 579ms (compile: 1785µs, proxy.ts: 257ms, render: 321ms)
+Middleware: Path: /systems/productivity/atomic-habits
+Middleware: User found? true
+ GET /systems/productivity/atomic-habits 200 in 638ms (compile: 16ms, proxy.ts: 519ms, render: 103ms)
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+Middleware: Path: /api/auth/me
+Middleware: User found? true
+ GET /api/auth/me 200 in 975ms (compile: 3ms, proxy.ts: 372ms, render: 599ms)
+ GET /api/auth/me 200 in 1108ms (compile: 3ms, proxy.ts: 491ms, render: 614ms)

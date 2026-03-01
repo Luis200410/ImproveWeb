@@ -2,7 +2,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Minus, Play, Pause, FastForward, Maximize2 } from 'lucide-react'
+import { X, Minus, Play, Pause, RotateCcw, Maximize2 } from 'lucide-react'
 import { usePomodoro } from './pomodoro-context'
 import { formatTime, calculateEfficiency } from './pomodoro-utils'
 
@@ -14,11 +14,11 @@ export function ActiveSessionSidebar() {
         isSidebarOpen,
         minimizeSidebar,
         toggleSidebar,
-        pauseSession,
         startSession,
-        skipSession,
+        stopSession,
         config,
-        totalSessions
+        todayCompleted,
+        level
     } = usePomodoro()
 
     if (!isSidebarOpen) return null
@@ -53,7 +53,11 @@ export function ActiveSessionSidebar() {
                         <button onClick={minimizeSidebar} className="text-white/20 hover:text-white transition-colors">
                             <Minus className="w-4 h-4" />
                         </button>
-                        <button onClick={toggleSidebar} className="text-white/20 hover:text-white transition-colors">
+                        <button onClick={() => {
+                            if (window.confirm("Are you sure you want to abandon the current session?")) {
+                                stopSession()
+                            }
+                        }} className="text-white/20 hover:text-white transition-colors" title="Abandon Session">
                             <X className="w-4 h-4" />
                         </button>
                     </div>
@@ -102,15 +106,8 @@ export function ActiveSessionSidebar() {
                     </div>
 
                     {/* Active Controls */}
-                    <div className="flex items-center gap-6 z-10">
-                        {isActive ? (
-                            <button
-                                onClick={pauseSession}
-                                className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition-all group"
-                            >
-                                <Pause className="w-4 h-4 text-white/50 group-hover:text-white" />
-                            </button>
-                        ) : (
+                    <div className="flex items-center gap-6 z-10 min-h-[48px]">
+                        {!isActive && (
                             <button
                                 onClick={() => startSession()}
                                 className="w-12 h-12 rounded-full border border-amber-500/50 bg-amber-500/10 flex items-center justify-center hover:bg-amber-500/20 transition-all group shadow-[0_0_20px_rgba(245,158,11,0.2)]"
@@ -118,12 +115,6 @@ export function ActiveSessionSidebar() {
                                 <Play className="w-4 h-4 text-amber-500" />
                             </button>
                         )}
-                        <button
-                            onClick={skipSession}
-                            className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 transition-all text-white/20 hover:text-white"
-                        >
-                            <FastForward className="w-4 h-4" />
-                        </button>
                     </div>
 
                     {/* Neural Race Track (Linear Progress) */}
@@ -166,12 +157,12 @@ export function ActiveSessionSidebar() {
                 {/* Footer Stats */}
                 <div className="p-6 border-t border-white/10 grid grid-cols-2 gap-4 bg-[#050505]">
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
-                        <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Total Sessions</div>
-                        <div className="text-2xl font-serif text-white">{String(totalSessions).padStart(2, '0')}</div>
+                        <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Sessions Today</div>
+                        <div className="text-2xl font-serif text-white">{String(todayCompleted).padStart(2, '0')}</div>
                     </div>
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
-                        <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Neural Progress</div>
-                        <div className="text-2xl font-serif text-amber-500">72%</div>
+                        <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Focus Mastery</div>
+                        <div className="text-2xl font-serif text-amber-500">Lv {level}</div>
                     </div>
                 </div>
             </motion.div>

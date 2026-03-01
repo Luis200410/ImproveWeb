@@ -26,9 +26,10 @@ interface ProjectDetailsSidebarProps {
     onCreateTask?: (taskData: any) => void
     onUpdateTask?: (task: Entry, updates: Partial<Entry['data']>) => void
     areas?: Entry[]
+    habits?: Entry[]
 }
 
-export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask, onUpdateTask, areas = [] }: ProjectDetailsSidebarProps) {
+export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask, onUpdateTask, areas = [], habits = [] }: ProjectDetailsSidebarProps) {
     const deadline = getProjectDeadline(project)
     // Helper to calculate time remaining
     const getDeadlineText = () => {
@@ -53,17 +54,31 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                     Project Context
                                 </div>
 
-                                {/* Area Selector */}
-                                <select
-                                    className="bg-white/5 border border-white/10 rounded text-[10px] text-white/50 px-2 py-1 uppercase tracking-widest hover:text-white transition-colors cursor-pointer outline-none focus:border-amber-500"
-                                    value={project.data.Area || ''}
-                                    onChange={(e) => onUpdate(project, { Area: e.target.value || undefined })}
-                                >
-                                    <option value="">Unassigned</option>
-                                    {areas.map(area => (
-                                        <option key={area.id} value={area.id}>{area.data.title}</option>
-                                    ))}
-                                </select>
+                                <div className="flex gap-2">
+                                    {/* Area Selector */}
+                                    <select
+                                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white/50 px-2 py-1 uppercase tracking-widest hover:text-white transition-colors cursor-pointer outline-none focus:border-amber-500 max-w-[120px]"
+                                        value={project.data.Area || ''}
+                                        onChange={(e) => onUpdate(project, { Area: e.target.value || undefined })}
+                                    >
+                                        <option value="">No Area</option>
+                                        {areas.map(area => (
+                                            <option key={area.id} value={area.id}>{area.data.title}</option>
+                                        ))}
+                                    </select>
+
+                                    {/* Habit Selector */}
+                                    <select
+                                        className="bg-white/5 border border-white/10 rounded text-[10px] text-white/50 px-2 py-1 uppercase tracking-widest hover:text-white transition-colors cursor-pointer outline-none focus:border-amber-500 max-w-[120px]"
+                                        value={project.data.Habit || ''}
+                                        onChange={(e) => onUpdate(project, { Habit: e.target.value || undefined })}
+                                    >
+                                        <option value="">No Habit</option>
+                                        {habits.map(habit => (
+                                            <option key={habit.id} value={habit.id}>{habit.data['Habit Name'] || habit.id}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                             <SheetTitle className={`${playfair.className} text-xl text-white mb-2 leading-tight`}>{getProjectTitle(project)}</SheetTitle>
                             <div className="flex gap-2 mb-4">

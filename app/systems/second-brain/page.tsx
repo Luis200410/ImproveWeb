@@ -10,6 +10,7 @@ import { KnowledgeHub } from '@/components/second-brain/knowledge-hub'
 import { ActiveTaskStream } from '@/components/second-brain/active-task-stream'
 import { ArchitectureNodes } from '@/components/second-brain/architecture-nodes'
 import { Navigation } from '@/components/navigation'
+import { HabitTimeline } from '@/components/habit-timeline'
 import { RefreshCw } from 'lucide-react'
 import { calculateTaskMetrics, calculateProjectMetrics, calculateProductivityScore, TaskMetrics, ProjectMetrics, ProductivityScore } from '@/components/second-brain/analytics-utils'
 import { getTaskDeadline } from '@/components/second-brain/utils'
@@ -22,6 +23,9 @@ export default function SecondBrainPage() {
     const [userId, setUserId] = useState<string>('defaultUser')
     const [allTasks, setAllTasks] = useState<Entry[]>([])
     const [todayTasks, setTodayTasks] = useState<Entry[]>([])
+    const [allHabits, setAllHabits] = useState<Entry[]>([])
+    const [allProjects, setAllProjects] = useState<Entry[]>([])
+    const [timelineView, setTimelineView] = useState<'day' | 'week' | 'list' | 'overview'>('day')
     const [counts, setCounts] = useState({ projects: 0, tasks: 0, notes: 0 })
 
     // Analytics State
@@ -67,7 +71,10 @@ export default function SecondBrainPage() {
 
         // Projects & Notes for Counts & Analytics
         const projects = await dataStore.getEntries('projects-sb', userId)
+        setAllProjects(projects)
         const notes = await dataStore.getEntries('notes-sb', userId)
+        const habits = await dataStore.getEntries('atomic-habits', userId)
+        setAllHabits(habits)
 
         setCounts({
             projects: projects.length,
@@ -147,13 +154,29 @@ export default function SecondBrainPage() {
                     </motion.div>
                 </div>
 
-                {/* Bottom Row: Active Task Stream */}
-                <div className="w-full">
-                    <ActiveTaskStream
-                        tasks={todayTasks}
-                        onToggleStatus={handleToggleStatus}
-                        onUpdateLane={handleUpdateLane}
-                    />
+                {/* Bottom Row: Habit Timeline & Active Task Stream */}
+                <div className="flex flex-col xl:flex-row gap-8 w-full">
+                    <div className="w-full xl:w-2/3">
+                        <HabitTimeline
+                            entries={allHabits}
+                            linkedProjects={allProjects}
+                            systemFilter="second-brain"
+                            viewMode={timelineView}
+                            onChangeViewMode={setTimelineView}
+                            onToggleStatus={async (entry) => {
+                                await dataStore.updateEntry(entry.id, entry.data)
+                                loadData()
+                            }}
+                            onEdit={() => { }} // Not fully editing habits from dashboard yet
+                        />
+                    </div>
+                    <div className="w-full xl:w-1/3">
+                        <ActiveTaskStream
+                            tasks={todayTasks}
+                            onToggleStatus={handleToggleStatus}
+                            onUpdateLane={handleUpdateLane}
+                        />
+                    </div>
                 </div>
 
             </div>

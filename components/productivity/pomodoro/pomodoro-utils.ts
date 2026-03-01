@@ -17,7 +17,7 @@ export interface PomodoroConfig {
     autoStartBreaks: boolean;
     autoStartSprints: boolean;
     sessionsBeforeLongBreak: number;
-    dailyGoal: number;
+    hardModeLock: boolean;
 }
 
 export const DEFAULT_CONFIG: PomodoroConfig = {
@@ -27,5 +27,11 @@ export const DEFAULT_CONFIG: PomodoroConfig = {
     autoStartBreaks: true,
     autoStartSprints: false,
     sessionsBeforeLongBreak: 4,
-    dailyGoal: 10
+    hardModeLock: false
+}
+
+export interface PomodoroDailyStats {
+    date: string; // YYYY-MM-DD
+    completed: number;
+    abandoned: number;
 }

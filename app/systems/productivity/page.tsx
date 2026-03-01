@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { ArrowLeft, Clock, Calendar, Zap, Target, List, ArrowRight, Timer, Play, CheckCircle2 } from 'lucide-react'
+import { HabitTimeline } from '@/components/habit-timeline'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -299,6 +300,32 @@ export default function ProductivityPage() {
                             </div>
                             <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
                         </div>
+                    </div>
+                </motion.div>
+
+                {/* Agent Workflow / Daily Overview */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="mt-12"
+                >
+                    <h2 className={`${playfair.className} text-3xl text-white mb-6 flex items-center gap-3`}>
+                        <Zap className="w-6 h-6 text-amber-500" />
+                        Today's Execution Pipeline
+                    </h2>
+                    <div className="rounded-[32px] border border-white/10 bg-gradient-to-br from-white/[0.05] via-black to-black shadow-[0_25px_80px_rgba(0,0,0,0.55)] p-4 sm:p-8">
+                        <HabitTimeline
+                            entries={habits}
+                            viewMode="overview"
+                            onChangeViewMode={() => { }}
+                            onToggleStatus={async (entry) => {
+                                await dataStore.updateEntry(entry.id, entry.data)
+                                refreshEntries()
+                            }}
+                            onEdit={() => { }}
+                            hideControls={true}
+                        />
                     </div>
                 </motion.div>
             </div>

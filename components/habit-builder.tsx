@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
@@ -9,6 +9,17 @@ import { ArrowLeft, ArrowRight, Check, Flame, Repeat, Calendar, Clock, Plus, X }
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
+const timeToMinutes = (timeStr: string) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    return (h || 0) * 60 + (m || 0);
+};
+
+const minutesToTime = (mins: number) => {
+    const h = Math.floor(mins / 60) % 24;
+    const m = Math.floor(mins % 60);
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+};
 
 interface HabitBuilderProps {
     onSave: (data: Record<string, any>) => void
@@ -94,24 +105,116 @@ const steps = [
 export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existingEntries = [], open, onOpenChange }: HabitBuilderProps) {
     const [currentStep, setCurrentStep] = useState(0)
     const [formData, setFormData] = useState<Record<string, any>>(initialData || {
-        'frequency': 'daily',
+        'frequency': 'specific_days',
         'repeatDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], // Default to all days
         'schedule': {}, // { 'Mon': '09:00', ... }
         'Time': '', // Fallback/Default time
+        'preHabitDuration': 5,
         'duration': 30, // Default duration in minutes
+        'rewardDuration': 5,
         'Category': 'General',
         'useVariableTime': false // Flag to indicate if different times are set for specific days
     })
 
-    // ... (rest of helper functions same as before) ...
+    useEffect(() => {
+        if (open) {
+            setCurrentStep(0)
+            if (initialData) {
+                // Ensure old schedule (strings) is converted to object format for the builder UI
+                const newSchedule = { ...initialData.schedule };
+                const topPre = Number(initialData.preHabitDuration) || 5;
+                const topDur = Number(initialData.duration) || 30;
+                const topRew = Number(initialData.rewardDuration) || 5;
+                const topTotal = topPre + topDur + topRew;
+
+                for (const day in newSchedule) {
+                    if (typeof newSchedule[day] === 'string') {
+                        const t = newSchedule[day];
+                        newSchedule[day] = {
+                            time: t,
+                            endTime: minutesToTime(timeToMinutes(t) + topTotal),
+                            preHabitDuration: topPre,
+                            duration: topDur,
+                            rewardDuration: topRew,
+                            totalDuration: topTotal
+                        };
+                    } else if (!newSchedule[day].endTime) {
+                        newSchedule[day].endTime = minutesToTime(timeToMinutes(newSchedule[day].time) + (Number(newSchedule[day].totalDuration) || topTotal));
+                    }
+                }
+                setFormData({
+                    ...initialData,
+                    schedule: newSchedule,
+                    // keep top level ones for fallback/simplicity if needed elsewhere
+                    totalDuration: topTotal
+                })
+            } else {
+                setFormData({
+                    'frequency': 'specific_days',
+                    'repeatDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    'schedule': {},
+                    'Time': '',
+                    'totalDuration': 40,
+                    'preHabitDuration': 5,
+                    'duration': 30,
+                    'rewardDuration': 5,
+                    'Category': 'General',
+                    'useVariableTime': true // Default true now that we support per-day full edits
+                })
+            }
+        }
+    }, [open, initialData])
+
+    // Update schedule now handles complex object
+    const updateDaySchedule = (day: string, field: string, value: any) => {
+        setFormData(prev => {
+            const currentDayObj = prev['schedule']?.[day] || {
+                time: prev['Time'] || '09:00',
+                endTime: '',
+                totalDuration: prev['totalDuration'] || 40,
+                preHabitDuration: prev['preHabitDuration'] || 5,
+                rewardDuration: prev['rewardDuration'] || 5,
+                duration: prev['duration'] || 30
+            };
+
+            const nextDayObj = { ...currentDayObj, [field]: value };
+
+            if (field === 'time' || field === 'endTime') {
+                const startMins = timeToMinutes(nextDayObj.time || '09:00');
+                // Calculate implicit end string if not provided
+                const endStr = nextDayObj.endTime || minutesToTime(startMins + (Number(nextDayObj.totalDuration) || 40));
+                nextDayObj.endTime = endStr;
+
+                let endMins = timeToMinutes(endStr);
+                if (endMins < startMins) endMins += 24 * 60; // handle overnight
+                nextDayObj.totalDuration = Math.max(1, endMins - startMins);
+            }
+
+            // Recalculate duration if time blocks change
+            if (field === 'totalDuration' || field === 'preHabitDuration' || field === 'rewardDuration' || field === 'time' || field === 'endTime') {
+                const total = Number(nextDayObj.totalDuration) || 0;
+                const pre = Number(nextDayObj.preHabitDuration) || 0;
+                const rew = Number(nextDayObj.rewardDuration) || 0;
+                nextDayObj.duration = Math.max(1, total - pre - rew);
+            }
+
+            return {
+                ...prev,
+                'schedule': { ...prev['schedule'], [day]: nextDayObj }
+            }
+        });
+    }
+
+    const getAmPm = (tStr: string) => {
+        if (!tStr) return '';
+        const [h] = tStr.split(':').map(Number);
+        if (isNaN(h)) return '';
+        return h >= 12 ? 'PM' : 'AM';
+    };
+
     // Helper to check if using advanced schedule (diff times per day)
     const isVariableTime = formData['useVariableTime'] || false;
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    const timeToMinutes = (time: string) => {
-        const [h, m] = time.split(':').map(Number);
-        return h * 60 + m;
-    }
 
     const checkOverlap = () => {
         // ... (overlap logic same) ...
@@ -119,15 +222,14 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
         // For each day the new habit is scheduled:
         //   Check if any existing habit on that day overlaps with the proposed time + duration
         // Return true if overlap found
-        const newDuration = parseInt(formData['duration'] || 30);
-        const daysToCheck = formData['frequency'] === 'daily'
-            ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-            : (formData['repeatDays'] || []);
+        const newDuration = parseInt(formData['preHabitDuration'] || 5) + parseInt(formData['duration'] || 30) + parseInt(formData['rewardDuration'] || 5);
+        const daysToCheck = formData['repeatDays'] || [];
 
         for (const day of daysToCheck) {
             // Get start time for this day
-            const timeStr = formData['schedule']?.[day] || formData['Time'];
-            if (!timeStr) continue;
+            const daySched = formData['schedule']?.[day];
+            const timeStr = (typeof daySched === 'object' && daySched !== null ? daySched.time : daySched) || formData['Time'];
+            if (!timeStr || typeof timeStr !== 'string') continue;
 
             const newStartMin = timeToMinutes(timeStr);
             const newEndMin = newStartMin + newDuration;
@@ -138,14 +240,14 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
                 if (initialData && entry.id === initialData.id) continue;
 
                 // Check if existing runs on this day
-                const exFreq = entry.data['frequency'] || 'daily';
                 const exDays = entry.data['repeatDays'] || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                if (exFreq === 'specific_days' && !exDays.includes(day)) continue;
+                if (!exDays.includes(day)) continue;
 
-                const exTimeStr = entry.data['schedule']?.[day] || entry.data['Time'];
-                if (!exTimeStr) continue;
+                const exDaySched = entry.data['schedule']?.[day];
+                const exTimeStr = (typeof exDaySched === 'object' && exDaySched !== null ? exDaySched.time : exDaySched) || entry.data['Time'];
+                if (!exTimeStr || typeof exTimeStr !== 'string') continue;
 
-                const exDuration = parseInt(entry.data['duration'] || 30);
+                const exDuration = parseInt(entry.data['preHabitDuration'] || 5) + parseInt(entry.data['duration'] || 30) + parseInt(entry.data['rewardDuration'] || 5);
                 const exStartMin = timeToMinutes(exTimeStr);
                 const exEndMin = exStartMin + exDuration;
 
@@ -163,13 +265,8 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
         if (currentStep < steps.length - 1) {
             // Helper before moving: Ensure data consistency
             if (steps[currentStep].id === 'schedule') { // Schedule Step
-                // If daily, ensure 'repeatDays' has all days
-                // If specific_days, ensure 'repeatDays' has selection
-                // Ensure 'Time' is set (use a default if variable)
-                if (formData['frequency'] === 'daily' && !formData['Time'] && !formData['useVariableTime']) {
-                    return;
-                }
-                if (formData['frequency'] === 'specific_days' && (formData['repeatDays']?.length || 0) === 0) {
+                // Ensure at least one day is selected
+                if ((formData['repeatDays']?.length || 0) === 0) {
                     return; // require at least one day
                 }
                 // Check overlap
@@ -192,10 +289,7 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
     }
 
     const updateSchedule = (day: string, time: string) => {
-        setFormData(prev => ({
-            ...prev,
-            'schedule': { ...prev['schedule'], [day]: time }
-        }))
+        updateDaySchedule(day, 'time', time);
     }
 
     const toggleDay = (day: string) => {
@@ -246,6 +340,11 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
                             className="space-y-8"
                         >
                             <div className="space-y-2">
+                                {initialData && (
+                                    <div className="text-white/40 uppercase tracking-widest text-xs font-bold mb-4">
+                                        Editing Habit: <span className="text-white">{formData['Habit Name'] || 'Untitled'}</span>
+                                    </div>
+                                )}
                                 <h2 className={`${playfair.className} text-5xl md:text-6xl font-bold text-white`}>
                                     {step.title}
                                 </h2>
@@ -260,99 +359,96 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
                             <div className="pt-8 min-h-[300px]">
                                 {step.type === 'schedule' ? (
                                     <div className="space-y-8">
-                                        {/* Frequency Toggles */}
-                                        <div className="flex gap-4">
-                                            <button
-                                                onClick={() => handleChange('frequency', 'daily')}
-                                                className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'daily' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
-                                            >
-                                                <Repeat className="w-8 h-8 mb-4 mx-auto" />
-                                                <div className="text-xl font-serif font-bold mb-1">Repetitive</div>
-                                                <div className="text-xs opacity-60">Every Day</div>
-                                            </button>
-                                            <button
-                                                onClick={() => handleChange('frequency', 'specific_days')}
-                                                className={`flex-1 p-6 rounded-xl border transition-all ${formData['frequency'] === 'specific_days' ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/10 hover:border-white/40'}`}
-                                            >
-                                                <Calendar className="w-8 h-8 mb-4 mx-auto" />
-                                                <div className="text-xl font-serif font-bold mb-1">Specific Days</div>
-                                                <div className="text-xs opacity-60">Select Days</div>
-                                            </button>
-                                        </div>
+                                        <div className="space-y-6">
+                                            <div className="flex flex-wrap gap-2 justify-center">
+                                                {days.map(day => (
+                                                    <button
+                                                        key={day}
+                                                        onClick={() => toggleDay(day)}
+                                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${formData['repeatDays']?.includes(day) ? 'bg-white text-black border-white' : 'bg-transparent text-white/40 border-white/10 hover:border-white/60 hover:text-white'}`}
+                                                    >
+                                                        {day[0]}
+                                                    </button>
+                                                ))}
+                                            </div>
 
-                                        {/* Specific Days Selector & Time Config */}
-                                        {formData['frequency'] === 'specific_days' && (
-                                            <div className="space-y-6">
-                                                <div className="flex flex-wrap gap-2 justify-center">
-                                                    {days.map(day => (
-                                                        <button
-                                                            key={day}
-                                                            onClick={() => toggleDay(day)}
-                                                            className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border transition-all ${formData['repeatDays']?.includes(day) ? 'bg-white text-black border-white' : 'bg-transparent text-white/40 border-white/10 hover:border-white/60 hover:text-white'}`}
-                                                        >
-                                                            {day[0]}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                            {/* Logic to show inputs for selected days */}
+                                            <div className="max-h-[350px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                                                {(formData['repeatDays'] || []).length > 0 ? (
+                                                    <div className="grid grid-cols-1 gap-4 mt-4 border-t border-white/10 pt-4">
+                                                        {days.filter(d => (formData['repeatDays'] || []).includes(d)).map(day => {
+                                                            const daySched = formData['schedule']?.[day] || {};
+                                                            const timeVal = daySched.time || formData['Time'] || '';
+                                                            const totalVal = daySched.totalDuration ?? formData['totalDuration'] ?? 40;
+                                                            const preVal = daySched.preHabitDuration ?? formData['preHabitDuration'] ?? 5;
+                                                            const postVal = daySched.rewardDuration ?? formData['rewardDuration'] ?? 5;
+                                                            const coreVal = daySched.duration ?? formData['duration'] ?? 30;
 
-                                                {/* Logic to show inputs for selected days */}
-                                                <div className="max-h-[200px] overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-                                                    {(formData['repeatDays'] || []).length > 0 ? (
-                                                        <div className="grid grid-cols-1 gap-3">
-                                                            {days.filter(d => (formData['repeatDays'] || []).includes(d)).map(day => (
-                                                                <div key={day} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                                                                    <span className="font-bold text-white w-12">{day}</span>
-                                                                    <div className="relative group/time">
-                                                                        <input
-                                                                            type="time"
-                                                                            value={formData['schedule']?.[day] || formData['Time'] || ''}
-                                                                            onChange={(e) => {
-                                                                                updateSchedule(day, e.target.value);
-                                                                                // Also update main time if it's the first one, for sorting fallback
-                                                                                if (!formData['Time']) handleChange('Time', e.target.value);
-                                                                            }}
-                                                                            className="bg-transparent text-xl font-mono text-white outline-none border-b border-white/20 focus:border-white w-32 text-center transition-colors"
-                                                                        />
+                                                            return (
+                                                                <div key={day} className="flex flex-col gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                                                                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                                                                        <span className="font-bold text-white uppercase tracking-widest text-sm">{day}</span>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <div className="flex items-center bg-transparent border-b border-white/20 focus-within:border-yellow-400 transition-colors pb-1">
+                                                                                <input
+                                                                                    type="time"
+                                                                                    value={timeVal}
+                                                                                    onChange={(e) => {
+                                                                                        updateDaySchedule(day, 'time', e.target.value);
+                                                                                        if (!formData['Time']) handleChange('Time', e.target.value);
+                                                                                    }}
+                                                                                    className="bg-transparent text-xl font-mono text-white outline-none w-[110px] text-center"
+                                                                                />
+                                                                            </div>
+                                                                            <span className="text-white/40 font-mono mx-1">-</span>
+                                                                            <div className="flex items-center bg-transparent border-b border-white/20 focus-within:border-yellow-400 transition-colors pb-1">
+                                                                                <input
+                                                                                    type="time"
+                                                                                    value={daySched.endTime || minutesToTime(timeToMinutes(timeVal) + totalVal)}
+                                                                                    onChange={(e) => updateDaySchedule(day, 'endTime', e.target.value)}
+                                                                                    className="bg-transparent text-xl font-mono text-white outline-none w-[110px] text-center"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="flex items-center justify-between gap-4">
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-white/60 text-[10px] uppercase tracking-wider font-bold">Total (m)</span>
+                                                                            <span className="text-white/60 font-mono font-bold text-lg leading-[28px]">{totalVal}</span>
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-cyan-400/60 text-[10px] uppercase tracking-wider font-bold">Pre (m)</span>
+                                                                            <input
+                                                                                type="number" min="0" max="120"
+                                                                                value={preVal}
+                                                                                onChange={(e) => updateDaySchedule(day, 'preHabitDuration', parseInt(e.target.value) || 0)}
+                                                                                className="bg-transparent text-cyan-400 font-mono font-bold text-lg w-16 outline-none border-b border-white/20 focus:border-cyan-400 transition-colors"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="flex flex-col">
+                                                                            <span className="text-amber-400/60 text-[10px] uppercase tracking-wider font-bold">Post (m)</span>
+                                                                            <input
+                                                                                type="number" min="0" max="120"
+                                                                                value={postVal}
+                                                                                onChange={(e) => updateDaySchedule(day, 'rewardDuration', parseInt(e.target.value) || 0)}
+                                                                                className="bg-transparent text-amber-400 font-mono font-bold text-lg w-16 outline-none border-b border-white/20 focus:border-amber-400 transition-colors"
+                                                                            />
+                                                                        </div>
+                                                                        <div className="flex flex-col items-end">
+                                                                            <span className="text-emerald-400/60 text-[10px] uppercase tracking-wider font-bold">Core (m)</span>
+                                                                            <span className="text-emerald-400 font-mono font-bold text-lg leading-[28px]">{coreVal}</span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-center text-white/30 text-sm italic">Select days above to set times</div>
-                                                    )}
-                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center text-white/30 text-sm italic">Select days above to set times</div>
+                                                )}
                                             </div>
-                                        )}
-
-                                        {/* Link Everyday Time */}
-                                        {formData['frequency'] === 'daily' && (
-                                            <div className="flex flex-col items-center pt-8 space-y-4">
-                                                <div className="relative group w-full max-w-xs">
-                                                    <div className="absolute -inset-1 bg-gradient-to-r from-white/20 to-white/0 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-                                                    <input
-                                                        type="time"
-                                                        value={formData['Time'] || ''}
-                                                        onChange={(e) => handleChange('Time', e.target.value)}
-                                                        className="relative w-full bg-black/50 text-5xl md:text-7xl font-mono text-white outline-none border border-white/20 rounded-xl p-6 focus:border-white transition-all text-center placeholder-white/20 appearance-none time-picker-icon-hidden"
-                                                        style={{ colorScheme: 'dark' }}
-                                                    />
-                                                </div>
-
-                                                {/* Duration Input */}
-                                                <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                                                    <span className="text-white/40 text-sm uppercase tracking-wider">Duration</span>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        value={formData['duration'] || 30}
-                                                        onChange={(e) => handleChange('duration', parseInt(e.target.value))}
-                                                        className="bg-transparent text-white font-mono font-bold text-center w-12 outline-none border-b border-white/20 focus:border-white transition-colors"
-                                                    />
-                                                    <span className="text-white/40 text-sm">min</span>
-                                                </div>
-                                            </div>
-                                        )}
-
+                                        </div>
                                     </div>
                                 ) : step.type === 'select' ? (
                                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -367,7 +463,7 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
                                             </button>
                                         ))}
                                     </div>
-                                ) : (
+                                ) : step.field === 'Habit Name' ? (
                                     <input
                                         type="text"
                                         autoFocus
@@ -376,6 +472,16 @@ export function HabitBuilder({ onSave, onCancel, onDelete, initialData, existing
                                         onChange={(e) => handleChange(step.field, e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleNext()}
                                         className="w-full bg-transparent text-3xl md:text-4xl font-light text-white outline-none border-b-2 border-white/20 focus:border-white pb-4 transition-colors placeholder-white/20"
+                                    />
+                                ) : (
+                                    <textarea
+                                        autoFocus
+                                        placeholder={step.placeholder}
+                                        value={formData[step.field] || ''}
+                                        onChange={(e) => handleChange(step.field, e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleNext())}
+                                        className="w-full bg-transparent text-2xl md:text-3xl font-light text-white outline-none border-b-2 border-white/20 focus:border-white pb-4 transition-colors placeholder-white/20 custom-scrollbar resize-none"
+                                        rows={3}
                                     />
                                 )}
                             </div>

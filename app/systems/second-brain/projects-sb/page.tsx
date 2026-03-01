@@ -17,11 +17,11 @@ import { Entry } from '@/lib/data-store'
 import { AreasList } from '@/components/second-brain/projects/areas-list'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
-
 export default function ProjectsDashboard() {
     const [projects, setProjects] = useState<ProjectEntry[]>([])
     const [areas, setAreas] = useState<Entry[]>([]) // Areas state
     const [tasks, setTasks] = useState<Entry[]>([])
+    const [habits, setHabits] = useState<Entry[]>([]) // Habits state
     const [loading, setLoading] = useState(true)
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [userId, setUserId] = useState<string>('defaultUser') // Add userId state
@@ -38,10 +38,11 @@ export default function ProjectsDashboard() {
             const uid = user?.id || 'defaultUser'
             setUserId(uid)
 
-            const [projectsData, tasksSbData, areasData] = await Promise.all([
+            const [projectsData, tasksSbData, areasData, habitsData] = await Promise.all([
                 dataStore.getEntries('projects-sb', uid),
                 dataStore.getEntries('tasks-sb', uid), // Fetch tasks-sb
-                dataStore.getEntries('areas-sb', uid) // Fetch Areas
+                dataStore.getEntries('areas-sb', uid), // Fetch Areas
+                dataStore.getEntries('atomic-habits', uid) // Fetch Habits
             ])
 
             // Filter tasks that belong to the 'tasks-sb' microapp
@@ -53,6 +54,7 @@ export default function ProjectsDashboard() {
                     ...(p.data as any),
                     // Sanitize Area: if it's the string "unassigned", treat it as undefined
                     Area: p.data.Area === 'unassigned' ? undefined : p.data.Area,
+                    Habit: p.data.Habit === 'unassigned' ? undefined : p.data.Habit,
                     subtasks: allTasks.filter(t => t.data.Project === p.id || t.data.projectId === p.id)
                 }
             })) as unknown as ProjectEntry[]
@@ -110,6 +112,11 @@ export default function ProjectsDashboard() {
     }
 
     useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const id = params.get('selectedId')
+        if (id) {
+            setSelectedId(id)
+        }
         loadProjects()
     }, [])
 
@@ -205,6 +212,7 @@ export default function ProjectsDashboard() {
                 onCreateTask={handleCreateTask}
                 onUpdateTask={handleUpdateTask}
                 areas={areas}
+                habits={habits}
             />
 
             <GlobalConstraintsSheet

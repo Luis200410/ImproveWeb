@@ -56,8 +56,10 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                         </div>
                         <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center">
                             <div className="text-4xl mb-2">⏱️</div>
-                            <div className={`${inter.className} text-white font-bold text-2xl`}>{data['duration'] || 30}m</div>
-                            <div className="text-xs uppercase tracking-widest text-white/40 mt-1">Session Target</div>
+                            <div className={`${inter.className} text-white font-bold text-2xl`}>
+                                {(parseInt(data['preHabitDuration'] || 0) + parseInt(data['duration'] || 30) + parseInt(data['rewardDuration'] || 0))}m
+                            </div>
+                            <div className="text-xs uppercase tracking-widest text-white/40 mt-1">Total Time</div>
                         </div>
                     </div>
 
@@ -77,6 +79,25 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                                 label="Time"
                                 value={data['Time'] || 'Variable (Check Timeline)'}
                             />
+                        </div>
+
+                        <h3 className={`${playfair.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-2 pt-4`}>
+                            <Zap className="w-5 h-5 text-amber-400" />
+                            Time Breakdown
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
+                                <div className="text-[10px] uppercase tracking-widest text-cyan-400">Pre-Habit</div>
+                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['preHabitDuration'] || 0}m</div>
+                            </div>
+                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
+                                <div className="text-[10px] uppercase tracking-widest text-emerald-400">Core Habit</div>
+                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['duration'] || 30}m</div>
+                            </div>
+                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
+                                <div className="text-[10px] uppercase tracking-widest text-amber-400">Reward</div>
+                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['rewardDuration'] || 0}m</div>
+                            </div>
                         </div>
                     </div>
 

@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@genkit-ai/ai": "^1.29.0",
+    "@genkit-ai/googleai": "^1.28.0",
     "@google/generative-ai": "^0.24.1",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.2.2",
