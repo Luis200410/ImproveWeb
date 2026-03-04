@@ -10,7 +10,7 @@ import { dataStore, Entry } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { DragDropContext, DropResult } from '@hello-pangea/dnd'
 
-export default function TasksMatrixPage() {
+function TasksMatrixContent() {
     const [tasks, setTasks] = useState<Entry[]>([])
     const [projects, setProjects] = useState<Entry[]>([])
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
@@ -134,5 +134,15 @@ export default function TasksMatrixPage() {
                 </div>
             </DragDropContext>
         </div>
+    )
+}
+
+import { Suspense } from 'react'
+
+export default function TasksMatrixPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-[#020202] text-white font-sans flex items-center justify-center">Loading...</div>}>
+            <TasksMatrixContent />
+        </Suspense>
     )
 }

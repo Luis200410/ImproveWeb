@@ -191,14 +191,25 @@ export default function RadialOrbitalTimeline({
                     }}
                 >
                     <div className="absolute z-10 flex items-center justify-center">
-                        <div className="absolute w-[470px] h-[470px] rounded-full border border-white/20 animate-ping opacity-70"></div>
+                        <div className="absolute w-[620px] h-[620px] rounded-full border border-white/20 animate-ping opacity-70 pointer-events-none"></div>
                         <div
-                            className="absolute w-[530px] h-[530px] rounded-full border border-white/10 animate-ping opacity-50"
+                            className="absolute w-[680px] h-[680px] rounded-full border border-white/10 animate-ping opacity-50 pointer-events-none"
                             style={{ animationDelay: "0.5s" }}
                         ></div>
                         <InteractiveGlobe
-                            size={460}
+                            size={600}
                             markers={globeMarkers}
+                            activeMarkerId={
+                                Object.keys(expandedItems).find(
+                                    (id) => expandedItems[Number(id)]
+                                )
+                                    ? Number(
+                                        Object.keys(expandedItems).find(
+                                            (id) => expandedItems[Number(id)]
+                                        )
+                                    )
+                                    : undefined
+                            }
                             onMarkerClick={(marker) => {
                                 toggleItem(marker.id);
                             }}
@@ -211,7 +222,7 @@ export default function RadialOrbitalTimeline({
                         />
                     </div>
 
-                    <div className="absolute w-[680px] h-[680px] rounded-full border border-white/10"></div>
+                    <div className="absolute w-[800px] h-[800px] rounded-full border border-white/10 pointer-events-none"></div>
 
                     {timelineData.map((item) => {
                         const isExpanded = expandedItems[item.id];
@@ -224,11 +235,11 @@ export default function RadialOrbitalTimeline({
                                 key={item.id}
                                 className="absolute transition-all duration-700 pointer-events-none z-50 flex items-center justify-center w-full h-full"
                             >
-                                <div className="absolute top-[80px] left-1/2 -translate-x-1/2 w-12 h-12 rounded-full flex items-center justify-center bg-white text-black border-2 border-white shadow-lg shadow-white/30 scale-150 pointer-events-auto z-[100] transition-all animate-in zoom-in">
-                                    <Icon size={18} />
+                                <div className="absolute top-[16%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-125 pointer-events-auto z-[100] transition-all animate-in zoom-in duration-300">
+                                    <Icon size={24} />
                                 </div>
 
-                                <Card className="absolute top-[600px] left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/30 shadow-xl shadow-white/10 overflow-visible pointer-events-auto z-[99]">
+                                <Card className="absolute top-[16%] mt-10 left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/20 shadow-2xl shadow-black/50 overflow-visible pointer-events-auto z-[99]">
                                     <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
                                     <CardHeader className="pb-2">
                                         <div className="flex justify-between items-center">
