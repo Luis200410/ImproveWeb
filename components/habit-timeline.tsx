@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Entry, dataStore } from '@/lib/data-store'
 import { sileo } from 'sileo'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { Check, Edit2, Trash2, ArrowLeft, ArrowRight, Zap } from 'lucide-react'
+import { Check, Edit2, Trash2, ArrowLeft, ArrowRight, Zap, Play } from 'lucide-react'
+import { Timeline } from '@/components/ui/timeline'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -185,7 +186,7 @@ function DailyHabitShape({ N, status, size = 20 }: { N: number, status: 'complet
 }
 
 interface HabitTimelineProps {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     entries: Entry[]
     linkedProjects?: Entry[]
     systemFilter?: string
@@ -399,7 +400,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         const rawTime = adaptation?.time || (typeof daySched === 'object' ? daySched.time : daySched) || entry.data['Time'] || '00:00';
 
         const timeStrRaw = String(rawTime).replace(/[^0-9:]/g, ''); // Strip AM/PM for basic calculation
-        let [hStr, mStr] = timeStrRaw.split(':');
+        const [hStr, mStr] = timeStrRaw.split(':');
 
         // Handle 12-hour format loosely if PM was in raw string
         let h = parseInt(hStr || '0', 10);
@@ -515,7 +516,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         let displayTimeStr = String(rawTime);
         try {
             const timeStrRaw = String(rawTime).replace(/[^0-9:]/g, '');
-            let [hStr, mStr] = timeStrRaw.split(':');
+            const [hStr, mStr] = timeStrRaw.split(':');
             let h = parseInt(hStr || '0', 10);
             let m = parseInt(mStr || '0', 10);
             if (isNaN(h)) h = 12;
@@ -662,272 +663,105 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="relative min-h-[4800px] border-l border-white/10 ml-8 md:ml-20 py-8"
+                        className="relative w-full"
                     >
-                        {/* Current Time Line */}
-                        {currentTimePercent >= 0 && currentTimePercent <= 100 && (
-                            <div
-                                className="absolute left-[-20px] md:left-[-40px] right-0 h-px bg-red-500/50 z-0 flex items-center pointer-events-none"
-                                style={{ top: `${currentTimePercent}%` }}
-                            >
-                                <div className="absolute -left-1 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]" />
-                            </div>
-                        )}
+                        <Timeline
+                            title="Daily Timeline"
+                            description="A chronological overview of your day's tasks, unexpected events, and habits."
+                            data={(() => {
+                                const now = new Date();
+                                const currentH = now.getHours() + now.getMinutes() / 60;
+                                const ampm = Math.floor(now.getHours()) >= 12 ? 'PM' : 'AM';
+                                const displayH = Math.floor(now.getHours()) % 12 || 12;
+                                const currentDisplayTimeStr = `${displayH}:${now.getMinutes().toString().padStart(2, '0')} ${ampm}`;
 
-                        {entriesWithLayout.length === 0 && (
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <div className="text-center">
-                                    <p className={`${playfair.className} text-2xl text-white/20 mb-2`}>No habits for today</p>
-                                    <p className={`${inter.className} text-white/10`}>Enjoy your free time or add a new one.</p>
-                                </div>
-                            </div>
-                        )}
+                                const timeMarker = {
+                                    title: currentDisplayTimeStr,
+                                    sortKey: currentH,
+                                    content: (
+                                        <div className="relative h-full flex flex-col pb-12 mb-2 items-center justify-center w-full">
+                                            <div className="w-full flex items-center pr-12 md:pr-48 gap-4 drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]">
+                                                <div className="w-4 h-4 rounded-full bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] z-10 shrink-0 border-2 border-[#0A0A0A]" />
+                                                <div className="w-full h-[2px] bg-gradient-to-r from-red-500 to-transparent" />
+                                            </div>
+                                            <div className="absolute -top-6 left-0 text-[10px] font-mono font-bold text-red-500/80 uppercase tracking-widest pl-2">Current Time</div>
+                                        </div>
+                                    )
+                                };
 
-                        {/* Time Markers — major every hour, minor every 30 min */}
-                        {slots.map((slotVal, idx) => {
-                            const isHour = idx % 2 === 0
-                            const h = Math.floor(slotVal)
-                            const isHalf = !isHour
-                            const label = isHour
-                                ? (h === 0 ? '12AM' : h === 12 ? '12PM' : h > 12 ? `${h - 12}PM` : `${h}AM`)
-                                : null
-                            return (
-                                <div
-                                    key={idx}
-                                    className="absolute"
-                                    style={{ top: `${(slotVal / 24) * 100}%`, left: '-64px', right: 0 }}
-                                >
-                                    {/* Horizontal grid line */}
-                                    <div className={`absolute left-16 right-0 ${isHour ? 'border-t border-white/[0.06]' : 'border-t border-white/[0.025]'}`} />
-                                    {/* Label */}
-                                    {label && (
-                                        <span className="absolute right-full pr-2 text-[10px] font-mono text-white/25 leading-none -translate-y-1/2">{label}</span>
-                                    )}
-                                    {isHalf && (
-                                        <span className="absolute right-full pr-2 text-[9px] font-mono text-white/10 leading-none -translate-y-1/2">:30</span>
-                                    )}
-                                </div>
-                            )
-                        })}
+                                const formattedEntries = entriesWithLayout.filter(e => !e.id.toString().endsWith('_overflow')).map((entry, index) => {
+                                    const completedDates = entry.data['completedDates'] || [];
+                                    const isCompletedToday = completedDates.includes(todayKey);
 
-                        {/* Habits */}
-                        {entriesWithLayout.map((entry, index) => {
-                            // Positioning logic
-                            const startHourIndex = entry.start;
-                            const topPercent = Math.max(0, Math.min(100, (startHourIndex / 24) * 100));
-
-                            // Height based on duration
-                            // total hours = 19. duration is in minutes.
-                            // height % = (duration / 60) / 19 * 100
-                            const heightPercent = ((entry.duration / 60) / 24) * 100;
-
-                            // Horizontal offset based on column
-                            // We can use fixed widths or percentages. Let's use % to keep it responsive.
-                            // 90% available width, split by columns?
-                            // Or just simple indentation.
-                            const leftOffset = entry.colIndex * 20; // 20% shift per column
-                            const widthPercent = Math.max(40, 90 - leftOffset); // Shrink width slightly
-
-                            // Check Status Logic (Array based)
-                            const completedDates = entry.data['completedDates'] || [];
-                            const isCompletedToday = completedDates.includes(todayKey);
-
-                            // Check Category
-                            const category = entry.data['Category'] || 'General';
-                            const isProductivity = ['Work', 'Study'].includes(category);
-
-                            // Color mapping based on Law/Category? Or just clean dark/light
-                            // User mention "each color or area of each habit".
-                            // Let's use the category or a generated color for the border/accent
-
-                            const isCompact = entry.duration <= 45;
-
-                            return (
-                                <motion.div
-                                    key={entry.id}
-                                    initial={{ x: -20, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="absolute z-10"
-                                    style={{
-                                        top: `${topPercent}%`,
-                                        height: `${heightPercent}%`,
-                                        left: `${leftOffset + 2}%`, // base offset + column shift
-                                        right: '2%', // or width
-                                        width: `${96 - leftOffset}%` // dynamic width
-                                    }}
-                                >
-                                    <div className="relative group/card h-full flex flex-col">
-                                        {/* Activity Line to Axis - adjust to point to timeline */}
-                                        <div className="absolute left-[-20px] md:left-[-40px] top-0 w-[20px] md:w-[40px] h-px bg-white/10" style={{ left: `-${leftOffset + 4}%`, width: `${leftOffset + 4}%` }} />
-                                        {/* Ideally the line should reach the axis. calculated roughly above */}
-
-                                        {/* Card content - full height */}
-                                        {entry.isEventBlock ? (
-                                            <div className="bg-red-500/10 backdrop-blur-md border border-red-500/30 rounded-lg p-3 md:p-4 h-full flex flex-col relative overflow-hidden justify-center">
-                                                <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full pointer-events-none" />
-                                                <div className="flex justify-between items-center relative z-10 w-full">
-                                                    <div className="flex items-center gap-3 w-full">
-                                                        <div className="text-xs font-mono text-red-400/80 shrink-0 flex items-center gap-2">
-                                                            {entry.timeStr}
-                                                            <span className="text-red-400/40">({entry.duration}m)</span>
-                                                            <span className="hidden sm:inline-block px-1.5 py-0.5 rounded border border-red-500/20 text-[10px] uppercase tracking-wider text-red-400/80 font-bold whitespace-nowrap bg-red-500/10">Unexpected Event</span>
+                                    return {
+                                        title: entry.timeStr,
+                                        sortKey: entry.start,
+                                        content: (
+                                            <div className="relative group/card h-full flex flex-col mb-12">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent blur-xl opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                                <div className="relative bg-[#050505] border border-white/10 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-white/20 transition-all shadow-xl shadow-black group-hover/card:shadow-[0_8px_30px_rgba(0,0,0,0.8)]">
+                                                    <div className="flex-1">
+                                                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                            <span className="text-[10px] text-emerald-500 uppercase tracking-[0.2em] font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 whitespace-nowrap">
+                                                                {entry.data['Category'] || 'General'}
+                                                            </span>
+                                                            {entry.duration > 0 && (
+                                                                <span className="text-[10px] text-white/40 font-mono tracking-widest bg-white/5 px-2 py-1 rounded whitespace-nowrap">
+                                                                    {entry.duration} MIN
+                                                                </span>
+                                                            )}
+                                                            {entry.isAdapted && (
+                                                                <span className="text-[10px] text-yellow-500 uppercase tracking-[0.2em] font-bold bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20 whitespace-nowrap">
+                                                                    Adapted
+                                                                </span>
+                                                            )}
+                                                            {entry.isEventBlock && (
+                                                                <span className="text-[10px] text-red-500 uppercase tracking-[0.2em] font-bold bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 whitespace-nowrap">
+                                                                    Unexpected Event
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                        <h3 className={`${playfair.className} text-lg md:text-xl text-red-100 truncate`}>{entry.data['Habit Name']}</h3>
+                                                        <h3 className={`${playfair.className} text-3xl text-white mb-2 group-hover/card:text-emerald-100 transition-colors`}>{entry.data['Habit Name']}</h3>
+                                                        <p className={`${inter.className} text-sm text-white/50 max-w-xl`}>{entry.data['Description'] || 'Daily focus task.'}</p>
+
+                                                        {/* 4-law color bar */}
+                                                        <div className="mt-4 flex gap-1 h-1 w-48 rounded-full overflow-hidden opacity-30 mt-6">
+                                                            <div className="bg-cyan-500 flex-1" />
+                                                            <div className="bg-purple-500 flex-1" />
+                                                            <div className="bg-emerald-500 flex-1" />
+                                                            <div className="bg-amber-500 flex-1" />
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-3 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onToggleStatus({
+                                                                    ...entry,
+                                                                    data: {
+                                                                        ...entry.data,
+                                                                        completedDates: isCompletedToday
+                                                                            ? completedDates.filter((d: string) => d !== todayKey)
+                                                                            : [...completedDates, todayKey]
+                                                                    }
+                                                                });
+                                                            }}
+                                                            className={`w-full sm:w-auto px-8 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-bold transition-all ${isCompletedToday ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/30' : 'bg-white text-black hover:bg-emerald-100 hover:scale-105 active:scale-95'}`}
+                                                        >
+                                                            {isCompletedToday ? 'Done ✓' : 'Complete'}
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <div
-                                                className={`relative h-full rounded-xl border flex flex-col overflow-hidden group/block transition-all duration-200 ${isCompletedToday ? 'bg-white/10 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.07] hover:border-white/20'}`}
-                                            >
-                                                {/* Slim 3-zone left accent bar: cyan = pre, white = core, amber = post */}
-                                                <div className="absolute left-0 top-0 bottom-0 w-[3px] flex flex-col overflow-hidden rounded-l-xl">
-                                                    {entry.preDuration > 0 && (
-                                                        <div className="bg-cyan-500/60" style={{ flex: entry.preDuration }} />
-                                                    )}
-                                                    <div className="bg-white/40" style={{ flex: entry.coreDuration }} />
-                                                    {entry.postDuration > 0 && (
-                                                        <div className="bg-amber-500/60" style={{ flex: entry.postDuration }} />
-                                                    )}
-                                                </div>
+                                        )
+                                    };
+                                });
 
-                                                {/* Card body */}
-                                                {entry.rationale === "Continued from yesterday" ? (
-                                                    <div className="flex flex-col items-center justify-center h-full opacity-40 select-none pl-3">
-                                                        <span className="text-white/40 italic text-sm">Continued from yesterday</span>
-                                                    </div>
-                                                ) : (
-                                                    <div className={`flex flex-col flex-1 min-h-0 pl-4 pr-3 ${isCompact ? 'justify-center py-2' : 'py-3'}`}>
-                                                        {/* Top row: time + actions */}
-                                                        <div className="flex items-center justify-between gap-2 mb-1">
-                                                            <div className="flex items-center gap-2 text-[11px] font-mono text-white/35 group-hover/block:text-white/55 transition-colors">
-                                                                <span>{!entry.isAdapted ? (entry.data['schedule']?.[todayDayKey]?.time || entry.data['Time']) : <span className="text-yellow-400">{entry.timeStr}</span>}</span>
-                                                                <span className="text-white/20">{entry.duration}m</span>
-                                                                {entry.isAdapted && (
-                                                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-[9px] uppercase tracking-wider">
-                                                                        <Zap className="w-2.5 h-2.5" /> Adapted
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover/block:opacity-100 transition-opacity">
-                                                                {isProductivity && !isCompletedToday && (
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); setFocusEntry(entry); }}
-                                                                        className="px-2.5 py-1 bg-white/10 border border-white/20 text-[10px] text-white uppercase tracking-widest rounded hover:bg-white hover:text-black transition-colors hidden md:block"
-                                                                    >Focus</button>
-                                                                )}
-                                                                {onDelete && (
-                                                                    <button
-                                                                        onClick={(e) => { e.stopPropagation(); setDeleteCandidate(entry); }}
-                                                                        className="p-1.5 text-white/20 hover:text-red-400 transition-all"
-                                                                    ><Trash2 className="w-3.5 h-3.5" /></button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Habit name */}
-                                                        <h3
-                                                            className={`${playfair.className} ${isCompact ? 'text-base' : 'text-lg md:text-xl'} text-white leading-snug truncate cursor-pointer`}
-                                                            onClick={() => onEdit(entry)}
-                                                        >{entry.data['Habit Name']}</h3>
-
-                                                        {/* Linked projects (only when block is tall enough) */}
-                                                        {!isCompact && linkedProjects.filter(p => p.data['Habit'] === entry.id).length > 0 && (
-                                                            <div className="mt-2 flex flex-wrap gap-1.5">
-                                                                {linkedProjects.filter(p => p.data['Habit'] === entry.id).map(p => (
-                                                                    <button
-                                                                        key={p.id}
-                                                                        onClick={(e) => { e.stopPropagation(); if (onProjectClick) onProjectClick(p); }}
-                                                                        className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-400 hover:bg-amber-500/20 transition-colors"
-                                                                    >🎯 {p.data['title'] || p.data['Title'] || p.data['Project Name'] || 'Project'}</button>
-                                                                ))}
-                                                            </div>
-                                                        )}
-
-                                                        {/* 4-law color bar — stacked at bottom */}
-                                                        <div className={`mt-auto ${isCompact ? 'h-1 grid grid-cols-4 gap-px' : 'h-2 grid grid-cols-4 gap-0.5 mt-2'}`}>
-                                                            {([
-                                                                { label: 'Cue', color: 'bg-cyan-500', text: entry.data['Cue'] },
-                                                                { label: 'Craving', color: 'bg-purple-500', text: entry.data['Craving'] },
-                                                                { label: 'Response', color: 'bg-emerald-500', text: entry.data['Response'] },
-                                                                { label: 'Reward', color: 'bg-amber-500', text: entry.data['Reward'] }
-                                                            ] as const).map(law => {
-                                                                const isExpanded = expandedLaw === `${entry.id}-${law.label}`
-                                                                return (
-                                                                    <div
-                                                                        key={law.label}
-                                                                        onClick={() => setExpandedLaw(isExpanded ? null : `${entry.id}-${law.label}`)}
-                                                                        className="relative group/law h-full rounded-sm cursor-pointer overflow-visible"
-                                                                    >
-                                                                        <div className={`absolute inset-0 ${law.color} ${isCompletedToday ? 'opacity-90' : 'opacity-30 group-hover/law:opacity-70'} transition-opacity rounded-sm`} />
-                                                                        {isExpanded && !isCompact && (
-                                                                            <motion.div
-                                                                                initial={{ opacity: 0, y: 6 }}
-                                                                                animate={{ opacity: 1, y: 0 }}
-                                                                                className="absolute top-full left-0 mt-2 w-48 p-3 bg-black border border-white/20 rounded-lg shadow-2xl text-xs text-white z-50"
-                                                                            >
-                                                                                <span className="font-bold block mb-1 uppercase tracking-wider text-white/40">{law.label}</span>
-                                                                                {law.text}
-                                                                            </motion.div>
-                                                                        )}
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Toggle done button — pill at bottom right */}
-                                                <motion.button
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        onToggleStatus({
-                                                            ...entry,
-                                                            data: {
-                                                                ...entry.data,
-                                                                completedDates: isCompletedToday
-                                                                    ? completedDates.filter((d: string) => d !== todayKey)
-                                                                    : [...completedDates, todayKey]
-                                                            }
-                                                        })
-                                                    }}
-                                                    className={`absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 shrink-0 ${isCompletedToday
-                                                        ? 'bg-white border-white text-black'
-                                                        : 'border-white/20 text-transparent hover:border-white/50 hover:bg-white/5'
-                                                        }`}
-                                                >
-                                                    <Check className="w-4 h-4" />
-                                                </motion.button>
-
-                                            </div>
-                                        )}
-
-                                        {/* Puzzle connector to NEXT habit */}
-                                        {!entry.isEventBlock && entry.hasNextConnection && (
-                                            <div className="absolute -bottom-[22px] left-1/2 -translate-x-1/2 flex flex-col items-center z-[20] pointer-events-none">
-                                                <div className="bg-amber-500 text-black text-[11px] font-bold px-4 pt-1 pb-4 rounded-full shadow-sm relative whitespace-nowrap">
-                                                    post habit
-                                                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-cyan-500 rounded-full border-2 border-amber-500"></div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Puzzle connector from PREV habit */}
-                                        {!entry.isEventBlock && entry.hasPrevConnection && (
-                                            <div className="absolute -top-[22px] left-1/2 -translate-x-1/2 flex flex-col items-center z-[20] transition-transform pointer-events-none">
-                                                <div className="bg-cyan-500 text-black text-[11px] font-bold px-4 pt-4 pb-1 rounded-full shadow-sm relative whitespace-nowrap">
-                                                    pre Habit
-                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-amber-500 rounded-full border-2 border-cyan-500"></div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>{/* /group/card */}
-                                </motion.div>
-                            )
-                        })}
+                                return [...formattedEntries, timeMarker].sort((a, b) => a.sortKey - b.sortKey);
+                            })()}
+                        />
                     </motion.div>
+
                 ) : viewMode === 'week' ? (
                     <motion.div
                         key="week"
@@ -1106,81 +940,75 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="py-12 px-4 overflow-x-auto hide-scrollbar"
+                        className="py-12 px-4 w-full"
                     >
-                        {entriesWithLayout.length === 0 ? (
-                            <div className="flex items-center justify-center p-12">
-                                <div className="text-center">
-                                    <p className={`${playfair.className} text-2xl text-white/20 mb-2`}>No tasks in the pipeline today</p>
-                                    <p className={`${inter.className} text-white/10`}>The workflow is clear.</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-8 min-w-max pb-8 pt-12 relative w-full pr-12">
-                                {/* The connecting spine line */}
-                                <div className="absolute left-16 right-16 top-1/2 -translate-y-1/2 h-1 bg-white/10 rounded-full" />
-
-                                {entriesWithLayout.map((entry, index) => {
-                                    if (entry.id.toString().endsWith('_overflow')) return null;
+                        <Timeline
+                            title="Productivity Overview"
+                            description="A high level snapshot of today's tasks and routine."
+                            data={(() => {
+                                const formattedEntries = entriesWithLayout.filter(e => !e.id.toString().endsWith('_overflow')).map((entry, index) => {
                                     const completedDates = entry.data['completedDates'] || [];
                                     const isCompletedToday = completedDates.includes(todayKey);
 
-                                    return (
-                                        <div key={entry.id} className="relative z-10 flex flex-col items-center group/node shrink-0 w-64">
-                                            {/* Top Label: Time */}
-                                            <div className="mb-4 text-xs font-mono text-white/60 tracking-widest bg-black px-3 py-1 border border-white/10 rounded shadow-sm shadow-black z-20">
-                                                {entry.timeStr} <span className="text-white/20 ml-1">({entry.duration}m)</span>
-                                            </div>
-
-                                            {/* Node Circle */}
-                                            <motion.div
-                                                whileHover={{ scale: 1.1 }}
-                                                className={`w-16 h-16 rounded-full flex items-center justify-center border-4 shadow-2xl transition-all duration-500 cursor-pointer z-20 ${isCompletedToday ? 'bg-white border-white text-black shadow-[0_0_30px_rgba(255,255,255,0.3)]' : 'bg-[#0A0A0A] border-white/20 text-white/40 shadow-[0_0_15px_rgba(0,0,0,0.8)] group-hover/node:border-white/50 group-hover/node:text-white'}`}
-                                                onClick={() => onSelect?.(entry)}
-                                            >
-                                                {isCompletedToday ? <Check className="w-8 h-8" /> : <div className="text-xl font-mono">{index + 1}</div>}
-                                            </motion.div>
-
-                                            {/* Bottom Card */}
-                                            <div className="mt-6 bg-[#0A0A0A] border border-white/10 p-5 rounded-2xl text-center w-full relative z-20 group-hover/node:bg-white/5 group-hover/node:border-white/20 transition-all shadow-xl shadow-black">
-                                                {/* Arrow pointing up */}
-                                                <div className="absolute -top-[7px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0A0A0A] border-t border-l border-white/10 rotate-45 group-hover/node:bg-[#0f0f0f] group-hover/node:border-white/20 transition-colors" />
-
-                                                <h3 className={`${playfair.className} text-lg text-white mb-2 truncate group-hover/node:text-yellow-100 transition-colors`}>{entry.data['Habit Name']}</h3>
-
-                                                <div className="flex justify-center items-center gap-2 mb-3">
-                                                    <span className="text-[10px] text-white/40 uppercase tracking-widest px-2 py-0.5 border border-white/10 rounded-full">{entry.data['Category'] || 'General'}</span>
-                                                    {entry.isAdapted && (
-                                                        <span className="text-[10px] text-yellow-400 uppercase tracking-widest px-2 py-0.5 border border-yellow-400/20 bg-yellow-400/10 rounded-full flex items-center gap-1">
-                                                            <Zap className="w-3 h-3" /> Adapted
-                                                        </span>
-                                                    )}
+                                    return {
+                                        title: entry.timeStr,
+                                        sortKey: entry.start,
+                                        content: (
+                                            <div className="relative group/card h-full flex flex-col mb-12">
+                                                <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-transparent blur-xl opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                                                <div className="relative bg-[#050505] border border-white/10 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-white/20 transition-all shadow-xl shadow-black group-hover/card:shadow-[0_8px_30px_rgba(0,0,0,0.8)]">
+                                                    <div className="flex-1">
+                                                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                            <span className="text-[10px] text-amber-500 uppercase tracking-[0.2em] font-bold bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 whitespace-nowrap">
+                                                                {entry.data['Category'] || 'General'}
+                                                            </span>
+                                                            {entry.duration > 0 && (
+                                                                <span className="text-[10px] text-white/40 font-mono tracking-widest bg-white/5 px-2 py-1 rounded whitespace-nowrap">
+                                                                    {entry.duration} MIN
+                                                                </span>
+                                                            )}
+                                                            {entry.isAdapted && (
+                                                                <span className="text-[10px] text-yellow-500 uppercase tracking-[0.2em] font-bold bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20 whitespace-nowrap">
+                                                                    Adapted
+                                                                </span>
+                                                            )}
+                                                            {entry.isEventBlock && (
+                                                                <span className="text-[10px] text-red-500 uppercase tracking-[0.2em] font-bold bg-red-500/10 px-3 py-1 rounded-full border border-red-500/20 whitespace-nowrap">
+                                                                    Unexpected Event
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <h3 className={`${playfair.className} text-3xl text-white mb-2 group-hover/card:text-amber-100 transition-colors`}>{entry.data['Habit Name']}</h3>
+                                                        <p className={`${inter.className} text-sm text-white/50 max-w-xl`}>{entry.data['Description'] || 'Daily focus task.'}</p>
+                                                    </div>
+                                                    <div className="flex gap-3 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onToggleStatus({
+                                                                    ...entry,
+                                                                    data: {
+                                                                        ...entry.data,
+                                                                        completedDates: isCompletedToday
+                                                                            ? completedDates.filter((d: string) => d !== todayKey)
+                                                                            : [...completedDates, todayKey]
+                                                                    }
+                                                                });
+                                                            }}
+                                                            className={`w-full sm:w-auto px-8 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-bold transition-all ${isCompletedToday ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30 hover:bg-amber-500/30' : 'bg-white text-black hover:bg-amber-100 hover:scale-105 active:scale-95'}`}
+                                                        >
+                                                            {isCompletedToday ? 'Done ✓' : 'Complete'}
+                                                        </button>
+                                                    </div>
                                                 </div>
-
-                                                {/* Toggle Button Inside Card */}
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onToggleStatus({
-                                                            ...entry,
-                                                            data: {
-                                                                ...entry.data,
-                                                                completedDates: isCompletedToday
-                                                                    ? completedDates.filter((d: string) => d !== todayKey)
-                                                                    : [...completedDates, todayKey]
-                                                            }
-                                                        });
-                                                    }}
-                                                    className={`w-full py-2 rounded-lg text-xs uppercase tracking-widest font-bold transition-all ${isCompletedToday ? 'bg-white/10 text-white/60 hover:bg-white/20 hover:text-white' : 'bg-white text-black hover:bg-white/90'}`}
-                                                >
-                                                    {isCompletedToday ? 'Undo' : 'Mark Done'}
-                                                </button>
                                             </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
+                                        )
+                                    };
+                                });
+
+                                return [...formattedEntries].sort((a, b) => a.sortKey - b.sortKey);
+                            })()}
+                        />
                     </motion.div>
                 ) : null
                 }
