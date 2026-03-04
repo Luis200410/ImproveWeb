@@ -33,6 +33,9 @@ export default function ProductivityPage() {
             setUserId(user?.id || 'defaultUser')
 
             if (user?.id) {
+                // Migrate habits from old Category → Life Area (safe to call repeatedly)
+                dataStore.migrateHabitsToLifeAreas(user.id)
+
                 // AUTO-MIGRATION & CLEANUP LOGIC
                 // Check if 'tasks' exists in Productivity
                 const prod = dataStore.getSystem('productivity')

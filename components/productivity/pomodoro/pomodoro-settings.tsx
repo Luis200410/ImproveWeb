@@ -29,9 +29,9 @@ interface TripleWatchDialProps {
 
 function TripleWatchDial({ config, onChange }: TripleWatchDialProps) {
     const rings: RingConfig[] = [
-        { key: 'sprint', label: 'Focus Session', radius: 100, color: '#f59e0b', min: 10, max: 90, step: 5 },
-        { key: 'shortBreak', label: 'Rest', radius: 75, color: '#34d399', min: 1, max: 15, step: 1 },
-        { key: 'longBreak', label: 'Long Rest', radius: 50, color: '#fef08a', min: 10, max: 45, step: 5 },
+        { key: 'longBreak', label: 'Long Rest', radius: 110, color: '#fef08a', min: 10, max: 45, step: 5 },
+        { key: 'shortBreak', label: 'Rest', radius: 85, color: '#34d399', min: 1, max: 15, step: 1 },
+        { key: 'sprint', label: 'Focus Session', radius: 60, color: '#f59e0b', min: 10, max: 90, step: 5 },
     ]
 
     const [activeRing, setActiveRing] = useState<RingConfig['key'] | null>(null)
@@ -70,12 +70,12 @@ function TripleWatchDial({ config, onChange }: TripleWatchDialProps) {
 
         // On initial down, determine which ring we grabbed based on distance
         if (isDown) {
-            if (distance > 87.5) {
-                targetRingKey = 'sprint'      // Focus (100)
-            } else if (distance > 62.5) {
-                targetRingKey = 'shortBreak'  // Rest (75)
+            if (distance > 97.5) {
+                targetRingKey = 'longBreak'      // Long Rest (110)
+            } else if (distance > 72.5) {
+                targetRingKey = 'shortBreak'  // Rest (85)
             } else {
-                targetRingKey = 'longBreak'   // Long Rest (50)
+                targetRingKey = 'sprint'   // Focus (60)
             }
             setActiveRing(targetRingKey)
         }
@@ -121,12 +121,12 @@ function TripleWatchDial({ config, onChange }: TripleWatchDialProps) {
                 const scale = 240 / rect.width
                 const distance = screenDistance * scale
 
-                // Focus Session (radius 100) -> 87.5 to 115
-                // Rest (radius 75) -> 62.5 to 87.5
-                // Long Rest (radius 50) -> 30 to 62.5
-                if (distance > 87.5 && distance <= 115) setHoveredRing('sprint')
-                else if (distance > 62.5 && distance <= 87.5) setHoveredRing('shortBreak')
-                else if (distance > 30 && distance <= 62.5) setHoveredRing('longBreak')
+                // Focus Session (radius 60) -> 40 to 72.5
+                // Rest (radius 85) -> 72.5 to 97.5
+                // Long Rest (radius 110) -> 97.5 to 125
+                if (distance > 97.5 && distance <= 125) setHoveredRing('longBreak')
+                else if (distance > 72.5 && distance <= 97.5) setHoveredRing('shortBreak')
+                else if (distance > 40 && distance <= 72.5) setHoveredRing('sprint')
                 else setHoveredRing(null)
             }
         }
@@ -151,7 +151,7 @@ function TripleWatchDial({ config, onChange }: TripleWatchDialProps) {
     const displayValue = displayData ? getValue(displayData.key) : 0
 
     return (
-        <div className="flex flex-col items-center justify-center relative select-none w-full max-w-[500px] mx-auto">
+        <div className="flex flex-col items-center justify-center relative select-none w-full max-w-[600px] mx-auto">
             <div className="relative w-full aspect-square">
                 <svg
                     ref={svgRef}
@@ -242,7 +242,7 @@ export function PomodoroSettings({ config, updateConfig }: PomodoroSettingsProps
     return (
         <div className="w-full flex flex-col items-center justify-center max-w-5xl mx-auto px-4">
             {/* Center: Triple Watch Dial */}
-            <div className="w-full min-w-[280px] max-w-[500px] flex items-center justify-center py-4 relative">
+            <div className="w-full min-w-[280px] max-w-[600px] flex items-center justify-center py-4 relative">
                 <TripleWatchDial config={config} onChange={updateConfig} />
             </div>
         </div>

@@ -1,5 +1,6 @@
 'use client'
 import { supabase } from '@/lib/supabase'
+import { LIFE_AREA_IDS, CATEGORY_MIGRATION_MAP } from '@/lib/life-areas'
 
 export type ViewType = 'list' | 'calendar' | 'kanban' | 'table' | 'chart' | 'timeline' | 'gallery'
 
@@ -184,44 +185,65 @@ class DataStore {
 
     // Systems
     getSystems(): System[] {
-        // Check if we need to reset (version mismatch or no systems)
         const stored = this.getItem<System[]>('systems', [])
 
-        const productivity = stored.find(s => s.id === 'productivity')
-        const hasAtomicHabits = productivity?.microapps.some(m => m.id === 'atomic-habits')
-        const hasPomodoro = productivity?.microapps.some(m => m.id === 'pomodoro')
-        const hasReview = productivity?.microapps.some(m => m.id === 'review')
-        const money = stored.find(s => s.id === 'money')
-        const hasBudget = money?.microapps.some(m => m.id === 'budget')
-        const hasExpenses = money?.microapps.some(m => m.id === 'expenses')
-        const hasIncome = money?.microapps.some(m => m.id === 'income')
-        const hasSubscriptions = money?.microapps.some(m => m.id === 'subscriptions')
-        const hasSavings = money?.microapps.some(m => m.id === 'savings-goals')
-        const body = stored.find(s => s.id === 'body')
-        const hasRoutineBuilder = body?.microapps.some(m => m.id === 'routine-builder')
-        const hasRecovery = body?.microapps.some(m => m.id === 'recovery')
-        const hasDiet = body?.microapps.some(m => m.id === 'diet')
-
-        if (stored.length === 0
-            || stored.length !== 8
-            || !hasAtomicHabits
-            || !hasPomodoro
-            || !hasReview
-            || !hasBudget
-            || !hasExpenses
-            || !hasIncome
-            || !hasSubscriptions
-            || !hasSavings
-            || !hasRoutineBuilder
-            || !hasRecovery
-            || !hasDiet) {
-            // Reset to defaults if wrong number of systems or any key productivity microapps are missing
+        // Bootstrap from scratch only when localStorage is completely empty
+        if (stored.length === 0) {
             const defaults = this.getDefaultSystems()
             this.setItem('systems', defaults)
             return defaults
         }
-        return stored
+
+        // ── Surgical patch: only fix what's missing, never reset everything ──
+        try {
+            let patched = false
+            const updated = stored.map(system => {
+                if (system.id !== 'productivity') return system
+
+                let microapps = [...(system.microapps || [])]
+
+                // 1. Add 'projection' microapp if missing
+                if (!microapps.some(m => m.id === 'projection')) {
+                    microapps.push({
+                        id: 'projection',
+                        systemId: 'productivity',
+                        name: 'Projection & Reflexión',
+                        description: 'Annual goals, 4 Bigs, and monthly area reviews',
+                        icon: '🗺️',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [],
+                        customPath: '/systems/productivity/projection'
+                    } as any)
+                    patched = true
+                }
+
+                // 2. Replace 'Category' field with 'Life Area' in atomic-habits
+                microapps = microapps.map(m => {
+                    if (m.id !== 'atomic-habits') return m
+                    const hasLifeArea = m.fields?.some((f: any) => f.name === 'Life Area')
+                    if (hasLifeArea) return m
+                    patched = true
+                    const fields = (m.fields || [])
+                        .filter((f: any) => f.name !== 'Category')
+                        .concat([{ name: 'Life Area', type: 'select', options: LIFE_AREA_IDS, required: true, width: 'full' }])
+                    return { ...m, fields }
+                })
+
+                return { ...system, microapps }
+            })
+
+            if (patched) {
+                this.setItem('systems', updated)
+            }
+            return updated
+        } catch (e) {
+            console.warn('[DataStore] getSystems patch failed, returning stored as-is:', e)
+            return stored
+        }
     }
+
+
 
     resetSystems(): void {
         const defaults = this.getDefaultSystems()
@@ -706,8 +728,19 @@ class DataStore {
                             { name: 'repeatDays', type: 'json', required: false, width: 'full' },
                             { name: 'schedule', type: 'json', required: false, width: 'full', placeholder: '{"Mon": "09:00", "Tue": "10:00"}' },
                             { name: 'duration', type: 'number', required: true, width: '1/4', min: 1, placeholder: 'Minutes' },
-                            { name: 'Category', type: 'select', options: ['General', 'Work', 'Study', 'Health', 'Creative'], required: true, width: 'full' }
+                            { name: 'Life Area', type: 'select', options: LIFE_AREA_IDS, required: true, width: 'full' }
                         ]
+                    },
+                    {
+                        id: 'projection',
+                        systemId: 'productivity',
+                        name: 'Projection & Reflexión',
+                        description: 'Annual goals, 4 Bigs, and monthly area reviews',
+                        icon: '🗺️',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [],
+                        customPath: '/systems/productivity/projection'
                     },
                     {
                         id: 'pomodoro',
@@ -1397,6 +1430,205 @@ class DataStore {
             dailyBreakdown: []
         }
     }
+
+    // ─── HABITS MIGRATION ────────────────────────────────────────────────────
+    /**
+     * Migrates legacy `Category` field on atomic-habits entries → `Life Area`.
+     * Safe to call repeatedly (skips entries that already have a Life Area).
+     */
+    async migrateHabitsToLifeAreas(userId: string): Promise<void> {
+        try {
+            const habits = await this.getEntries('atomic-habits', userId)
+            const promises: Promise<void>[] = []
+            for (const habit of habits) {
+                const hasLifeArea = habit.data['Life Area'] && LIFE_AREA_IDS.includes(habit.data['Life Area'])
+                if (!hasLifeArea) {
+                    const oldCategory: string = habit.data['Category'] || 'General'
+                    const mapped = CATEGORY_MIGRATION_MAP[oldCategory] ?? 'purpose'
+                    const updatedData: Record<string, any> = { ...habit.data, 'Life Area': mapped }
+                    delete updatedData['Category']
+                    promises.push(this.saveEntry({ ...habit, data: updatedData }))
+                }
+            }
+            if (promises.length > 0) {
+                await Promise.all(promises)
+                console.log(`[IMPROVE] Migrated ${promises.length} habits to Life Areas`)
+            }
+        } catch (e) {
+            console.warn('[IMPROVE] Habit migration failed silently:', e)
+        }
+    }
+
+    // ─── PROJECTION: LIFE AREA GOALS (macrodatabase — entries table) ──────────
+    // Microapp: 'projection-goals'
+    // Entry.data shape: { 'Life Area': LifeAreaId, year: number, goal: string, 'Is Big Four': boolean }
+
+    async getLifeAreaGoals(userId: string, year: number): Promise<LifeAreaGoal[]> {
+        try {
+            const entries = await this.getEntries('projection-goals', userId)
+            return entries
+                .filter(e => Number(e.data['year']) === year)
+                .map(e => ({
+                    id: e.id,
+                    userId,
+                    lifeAreaId: e.data['Life Area'] as string,
+                    year: Number(e.data['year']),
+                    goal: e.data['goal'] as string ?? '',
+                    isBigFour: Boolean(e.data['Is Big Four']),
+                    createdAt: e.createdAt,
+                    updatedAt: e.updatedAt ?? e.createdAt,
+                }))
+        } catch {
+            return []
+        }
+    }
+
+    async upsertLifeAreaGoal(userId: string, lifeAreaId: string, year: number, goal: string, isBigFour = false): Promise<void> {
+        try {
+            const entries = await this.getEntries('projection-goals', userId)
+            const existing = entries.find(e => e.data['Life Area'] === lifeAreaId && Number(e.data['year']) === year)
+            const payload = { 'Life Area': lifeAreaId, year, goal, 'Is Big Four': isBigFour }
+            if (existing) {
+                await this.updateEntry(existing.id, payload)
+            } else {
+                await this.addEntry(userId, 'projection-goals', payload)
+            }
+        } catch (e) {
+            console.warn('[IMPROVE] upsertLifeAreaGoal error:', e)
+        }
+    }
+
+    // ─── PROJECTION: MONTHLY REFLECTIONS (macrodatabase — entries table) ──────
+    // Microapp: 'projection-reflections'
+    // Entry.data shape: { 'Life Area': LifeAreaId, year: number, month: number, rating: number, journal: string }
+
+    async getMonthlyReflections(userId: string, year: number): Promise<MonthlyReflection[]> {
+        try {
+            const entries = await this.getEntries('projection-reflections', userId)
+            return entries
+                .filter(e => Number(e.data['year']) === year)
+                .map(e => ({
+                    id: e.id,
+                    userId,
+                    lifeAreaId: e.data['Life Area'] as string,
+                    year: Number(e.data['year']),
+                    month: Number(e.data['month']),
+                    rating: e.data['rating'] != null ? Number(e.data['rating']) : null,
+                    journal: e.data['journal'] as string ?? null,
+                    createdAt: e.createdAt,
+                    updatedAt: e.updatedAt ?? e.createdAt,
+                }))
+        } catch {
+            return []
+        }
+    }
+
+    async upsertMonthlyReflection(userId: string, lifeAreaId: string, year: number, month: number, rating: number, journal: string): Promise<void> {
+        try {
+            const entries = await this.getEntries('projection-reflections', userId)
+            const existing = entries.find(e =>
+                e.data['Life Area'] === lifeAreaId &&
+                Number(e.data['year']) === year &&
+                Number(e.data['month']) === month
+            )
+            const payload = { 'Life Area': lifeAreaId, year, month, rating, journal }
+            if (existing) {
+                await this.updateEntry(existing.id, payload)
+            } else {
+                await this.addEntry(userId, 'projection-reflections', payload)
+            }
+        } catch (e) {
+            console.warn('[IMPROVE] upsertMonthlyReflection error:', e)
+        }
+    }
+
+    /**
+     * Area Average Rating = (habit_completion_rate × 0.5) + (monthly_rating/10 × 0.5)
+     * All data comes from the entries table — no custom tables needed.
+     */
+    async getAreaAverageRating(
+        userId: string,
+        lifeAreaId: string,
+        year: number,
+        month: number
+    ): Promise<number | null> {
+        try {
+            // Get monthly reflection rating for this area
+            const reflections = await this.getMonthlyReflections(userId, year)
+            const reflection = reflections.find(r => r.lifeAreaId === lifeAreaId && r.month === month)
+            const monthlyRating = reflection?.rating ?? null
+
+            // Get all habits for this area and compute completion rate for this month
+            const habits = await this.getEntries('atomic-habits', userId)
+            const areaHabits = habits.filter(h => h.data['Life Area'] === lifeAreaId)
+
+            let habitRate = 0
+            if (areaHabits.length > 0) {
+                const daysInMonth = new Date(year, month, 0).getDate()
+                let totalPossible = 0
+                let totalCompleted = 0
+
+                for (const habit of areaHabits) {
+                    let completedDates: string[] = []
+                    try {
+                        const raw = habit.data['completedDates']
+                        if (Array.isArray(raw)) completedDates = raw
+                        else if (typeof raw === 'string') completedDates = JSON.parse(raw)
+                    } catch { /* ignore */ }
+
+                    const frequency = habit.data['frequency'] || 'daily'
+                    const repeatDays: string[] = (() => {
+                        try { return JSON.parse(habit.data['repeatDays'] || '[]') } catch { return [] }
+                    })()
+
+                    const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+                        const dayName = DAY_NAMES[new Date(year, month - 1, d).getDay()]
+                        const isScheduled = frequency === 'daily' || (frequency === 'specific_days' && repeatDays.includes(dayName))
+                        if (isScheduled) {
+                            totalPossible++
+                            if (completedDates.includes(dateStr)) totalCompleted++
+                        }
+                    }
+                }
+                habitRate = totalPossible > 0 ? totalCompleted / totalPossible : 0
+            }
+
+            if (monthlyRating === null && areaHabits.length === 0) return null
+            if (monthlyRating === null) return Math.round(habitRate * 10 * 10) / 10
+            if (areaHabits.length === 0) return monthlyRating
+
+            const avg = (habitRate * 0.5 + (monthlyRating / 10) * 0.5) * 10
+            return Math.round(avg * 10) / 10
+        } catch {
+            return null
+        }
+    }
 }
 
 export const dataStore = new DataStore()
+
+// ─── PROJECTION TYPES ────────────────────────────────────────────────────────
+export interface LifeAreaGoal {
+    id: string
+    userId: string
+    lifeAreaId: string
+    year: number
+    goal: string
+    isBigFour: boolean
+    createdAt: string
+    updatedAt: string
+}
+
+export interface MonthlyReflection {
+    id: string
+    userId: string
+    lifeAreaId: string
+    year: number
+    month: number
+    rating: number | null
+    journal: string | null
+    createdAt: string
+    updatedAt: string
+}

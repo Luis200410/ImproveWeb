@@ -26,7 +26,7 @@ export const DEFAULT_CONFIG: PomodoroConfig = {
     longBreakDuration: 25,
     autoStartBreaks: true,
     autoStartSprints: false,
-    sessionsBeforeLongBreak: 4,
+    sessionsBeforeLongBreak: 3,
     hardModeLock: false
 }
 

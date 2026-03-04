@@ -15,9 +15,10 @@ interface TaskMatrixProps {
     projects: Entry[]
     selectedProjectId: string | null
     onSelectProject: (id: string | null) => void
+    highlightTaskId?: string
 }
 
-export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, onSelectProject }: TaskMatrixProps) {
+export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, onSelectProject, highlightTaskId }: TaskMatrixProps) {
     // Local state for immediate UI updates while parent persists
     // We group tasks into columns
     const [columns, setColumns] = useState<{ [key: string]: Entry[] }>({
@@ -137,6 +138,7 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                     tasks={columns.backlog}
                     onAction={handleAction}
                     accentColor="text-white/50"
+                    highlightTaskId={highlightTaskId}
                 />
 
                 <MatrixColumn
@@ -146,6 +148,7 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                     tasks={columns.processing}
                     onAction={handleAction}
                     accentColor="text-blue-500"
+                    highlightTaskId={highlightTaskId}
                 />
 
                 <MatrixColumn
@@ -155,19 +158,21 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                     tasks={columns.deployment}
                     onAction={handleAction}
                     accentColor="text-emerald-500"
+                    highlightTaskId={highlightTaskId}
                 />
             </div>
         </div>
     )
 }
 
-function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor }: {
+function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor, highlightTaskId }: {
     id: string,
     title: string,
     subtitle: string,
     tasks: Entry[],
     onAction: (task: Entry, action: 'done' | 'wait' | 'exec') => void,
-    accentColor: string
+    accentColor: string,
+    highlightTaskId?: string
 }) {
     return (
         <div className="flex-1 flex flex-col h-full bg-[#050505]/50 border-r border-white/5 last:border-r-0 pr-6">
@@ -190,11 +195,20 @@ function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor }: {
                             <Draggable key={task.id} draggableId={task.id} index={index}>
                                 {(provided, snapshot) => (
                                     <div
-                                        ref={provided.innerRef}
+                                        ref={el => {
+                                            provided.innerRef(el)
+                                            // Scroll highlighted task into view
+                                            if (el && task.id === highlightTaskId) {
+                                                setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)
+                                            }
+                                        }}
                                         {...provided.draggableProps}
                                         {...provided.dragHandleProps}
                                         style={{ ...provided.draggableProps.style }}
-                                        className={`${snapshot.isDragging ? 'opacity-90 scale-[1.02] z-50' : ''}`}
+                                        className={`${snapshot.isDragging ? 'opacity-90 scale-[1.02] z-50' : ''} ${task.id === highlightTaskId
+                                                ? 'ring-2 ring-amber-400/70 ring-offset-2 ring-offset-transparent rounded-xl'
+                                                : ''
+                                            }`}
                                     >
                                         <MatrixCard task={task} onAction={(a) => onAction(task, a)} />
                                     </div>

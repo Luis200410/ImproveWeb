@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { NeuralCalendar } from '@/components/second-brain/matrix/neural-calendar'
 import { TaskMatrix } from '@/components/second-brain/matrix/task-matrix'
@@ -14,6 +15,8 @@ export default function TasksMatrixPage() {
     const [projects, setProjects] = useState<Entry[]>([])
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
     const [userId, setUserId] = useState<string>('defaultUser')
+    const searchParams = useSearchParams()
+    const highlightTaskId = searchParams.get('task')
 
     useEffect(() => {
         createClient().auth.getUser().then(({ data: { user } }) => {
@@ -125,6 +128,7 @@ export default function TasksMatrixPage() {
                             projects={projects}
                             selectedProjectId={selectedProjectId}
                             onSelectProject={setSelectedProjectId}
+                            highlightTaskId={highlightTaskId ?? undefined}
                         />
                     </main>
                 </div>

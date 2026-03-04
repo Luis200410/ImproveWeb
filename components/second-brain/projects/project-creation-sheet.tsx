@@ -86,10 +86,12 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
             setStep(5) // Move to selection view
         } catch (error: any) {
             console.error('Project Architect Error:', error)
-            const errorMessage = error.message.includes('GEMINI_API_KEY')
-                ? 'API Key missing. Please add GEMINI_API_KEY to .env.local'
-                : 'Failed to generate plan. Please try again.'
-            sileo.error({ description: errorMessage })
+            // Surface the real error message from the server action
+            const msg: string = error?.message || 'Failed to generate plan. Please try again.'
+            const displayMsg = msg.includes('GEMINI_API_KEY')
+                ? 'API Key missing. Add GEMINI_API_KEY to .env.local'
+                : msg.length > 150 ? msg.slice(0, 150) + '…' : msg
+            sileo.error({ description: displayMsg })
         } finally {
             setGenerating(false)
         }
@@ -509,8 +511,8 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
                             }}
                             disabled={
                                 saving || generating ||
-                                (step === 1 && (!form.title || !form.Area)) ||
-                                (step === 2 && mode === 'ai' && !selectedHabitId)
+                                (step === 1 && !form.title) ||
+                                (step === 2 && mode === 'ai' && (!selectedHabitId || !form.startDate || !form.deadline))
                             }
                             className="bg-amber-500 text-black hover:bg-amber-400 ml-auto font-bold tracking-wider"
                         >

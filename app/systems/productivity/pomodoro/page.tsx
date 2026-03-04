@@ -1,11 +1,14 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Playfair_Display } from '@/lib/font-shim'
 import { usePomodoro } from '@/components/productivity/pomodoro/pomodoro-context'
 import { Play, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PomodoroSettings } from '@/components/productivity/pomodoro/pomodoro-settings'
+import { SmartPomodoro } from '@/components/productivity/pomodoro/smart-pomodoro'
+import { createClient } from '@/utils/supabase/client'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -21,6 +24,13 @@ export default function PomodoroDashboard() {
         todayAbandoned,
         level
     } = usePomodoro()
+
+    const [userId, setUserId] = useState<string>('defaultUser')
+    useEffect(() => {
+        createClient().auth.getUser().then(({ data }) => {
+            if (data.user) setUserId(data.user.id)
+        })
+    }, [])
 
     return (
         <div className="min-h-screen bg-[#050505] text-white p-8">
@@ -46,21 +56,22 @@ export default function PomodoroDashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="flex flex-col"
+                className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-start"
             >
-                <PomodoroSettings config={config} updateConfig={updateConfig} />
+                {/* Left — Timer controls */}
+                <div className="flex flex-col gap-8">
+                    <PomodoroSettings config={config} updateConfig={updateConfig} />
 
-                <div className="flex justify-center mt-12 w-full">
-                    {!isActive ? (
-                        <Button
-                            onClick={() => startSession(config.sprintDuration, 'WORK')}
-                            size="lg"
-                            className="w-full md:w-auto md:min-w-[400px] h-16 bg-white text-black hover:bg-white/90 font-bold text-xs tracking-[0.2em] uppercase rounded-full shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center gap-3"
-                        >
-                            <Play className="w-5 h-5" /> Initialize Sprint
-                        </Button>
-                    ) : (
-                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center justify-center">
+                    <div className="flex justify-center w-full">
+                        {!isActive ? (
+                            <Button
+                                onClick={() => startSession(config.sprintDuration, 'WORK')}
+                                size="lg"
+                                className="w-full h-16 bg-white text-black hover:bg-white/90 font-bold text-xs tracking-[0.2em] uppercase rounded-full shadow-[0_0_40px_rgba(255,255,255,0.15)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] transition-all flex items-center justify-center gap-3"
+                            >
+                                <Play className="w-5 h-5" /> Initialize Sprint
+                            </Button>
+                        ) : (
                             <Button
                                 onClick={() => {
                                     if (window.confirm("Are you sure you want to abandon the current session?")) {
@@ -69,13 +80,16 @@ export default function PomodoroDashboard() {
                                 }}
                                 size="lg"
                                 variant="outline"
-                                className="border-white/10 text-white/70 hover:text-rose-500 hover:border-rose-500/50 hover:bg-rose-500/10 h-16 md:px-12 w-full sm:w-auto rounded-full uppercase tracking-[0.2em] text-xs font-bold transition-all"
+                                className="border-white/10 text-white/70 hover:text-rose-500 hover:border-rose-500/50 hover:bg-rose-500/10 h-16 w-full rounded-full uppercase tracking-[0.2em] text-xs font-bold transition-all"
                             >
                                 <X className="w-4 h-4 mr-2" /> Abandon Session
                             </Button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
+
+                {/* Right — Smart Schedule always visible */}
+                <SmartPomodoro userId={userId} />
             </motion.div>
         </div>
     )

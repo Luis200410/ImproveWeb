@@ -7,6 +7,7 @@ import { PomodoroProvider } from '@/components/productivity/pomodoro/pomodoro-co
 import { ActiveSessionSidebar, MinimizedSessionWidget } from '@/components/productivity/pomodoro/active-session-sidebar'
 import { Toaster } from 'sileo'
 import 'sileo/styles.css'
+import { HabitReminderProvider } from '@/components/habit-reminder-provider'
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -39,6 +40,7 @@ export default function RootLayout({
             <GlobalTimerIndicator />
             <ActiveSessionSidebar />
             <MinimizedSessionWidget />
+            <HabitReminderProvider />
             <Toaster />
           </TimerProvider>
         </PomodoroProvider>

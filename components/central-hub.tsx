@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { System } from '@/lib/data-store'
 import { HubNode, SystemStatus } from './hub-node'
+import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline'
 import { Playfair_Display } from '@/lib/font-shim'
 import { cn } from '@/lib/utils'
 import { Power, LayoutGrid } from 'lucide-react'
@@ -42,6 +43,27 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
         return getOrbitalNodes(coreSystems.map(s => ({ id: s.id, system: s })), 460)
     }, [coreSystems])
 
+    const timelineData = useMemo(() => {
+        return coreSystems.map((sys, i) => {
+            const stat = systemStatuses[sys.id] === 'operational' ? 'completed'
+                : systemStatuses[sys.id] === 'warning' ? 'in-progress'
+                    : 'pending';
+
+            return {
+                id: i + 1,
+                title: sys.name,
+                date: 'System Online',
+                content: sys.description,
+                category: sys.id,
+                icon: () => <span className="text-lg leading-none">{sys.icon}</span>,
+                rawIcon: sys.icon,
+                relatedIds: i > 0 ? [i] : [],
+                status: stat as any,
+                energy: sys.microapps.length * 20
+            };
+        });
+    }, [coreSystems, systemStatuses]);
+
     return (
         <div className="relative w-full min-h-[900px] flex items-center justify-center py-10 overflow-visible">
 
@@ -51,96 +73,9 @@ export function CentralHub({ systems, systemStatuses }: CentralHubProps) {
                 <div className="absolute w-[600px] h-[600px] border border-white/5 rounded-full opacity-30" />
             </div>
 
-            {/* Scalable Container for Radial Layout - Desktop Only */}
-            <div className="hidden lg:flex relative w-[1000px] h-[1000px] scale-[0.55] md:scale-[0.7] lg:scale-[0.85] xl:scale-100 transition-transform duration-500 items-center justify-center">
-
-                {/* Central Node - Power Button */}
-                <motion.button
-                    onClick={() => setIsSystemOnline(!isSystemOnline)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={cn(
-                        "relative z-20 w-32 h-32 rounded-full flex flex-col items-center justify-center border-4 outline-none transition-all duration-500 shadow-2xl overflow-visible",
-                        isSystemOnline
-                            ? "bg-[#0a0a0a] border-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.3)]"
-                            : "bg-[#111] border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.2)]"
-                    )}
-                >
-                    <AnimatePresence mode="wait">
-                        {isSystemOnline ? (
-                            <motion.div
-                                key="online"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                className="flex flex-col items-center"
-                            >
-                                <Power className="w-10 h-10 text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-                                <span className="mt-2 text-[10px] uppercase font-bold tracking-widest text-emerald-500/80">Online</span>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="offline"
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                className="flex flex-col items-center"
-                            >
-                                <Power className="w-10 h-10 text-red-500/50 drop-shadow-[0_0_10px_rgba(239,68,68,0.2)]" />
-                                <span className="mt-2 text-[10px] uppercase font-bold tracking-widest text-red-500/50">Standby</span>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {isSystemOnline && (
-                        <div className="absolute inset-[-20%] rounded-full border border-emerald-500/20 animate-[spin_10s_linear_infinite]" />
-                    )}
-                </motion.button>
-
-                {/* Orbiting Systems Layer (Visible only when online) */}
-                <AnimatePresence>
-                    {isSystemOnline && (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0 }}
-                            transition={{ duration: 0.6, type: "spring", bounce: 0.2 }}
-                            className="absolute inset-0 pointer-events-none z-10"
-                        >
-                            <motion.div
-                                className="w-full h-full relative"
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
-                            >
-                                {/* Nodes */}
-                                {systemNodes.map((node, idx) => (
-                                    <motion.div
-                                        key={node.id}
-                                        className="absolute left-1/2 top-1/2 pointer-events-auto"
-                                        style={{ x: node.initialX, y: node.initialY }}
-                                    >
-                                        <motion.div
-                                            // Counter-rotate to keep upright
-                                            animate={{ rotate: -360 }}
-                                            transition={{ duration: 180, repeat: Infinity, ease: "linear" }}
-                                            className="-translate-x-1/2 -translate-y-1/2"
-                                        >
-                                            <HubNode
-                                                system={node.system}
-                                                status={systemStatuses[node.id]}
-                                                microappCount={node.system.microapps.length}
-                                                delay={0.2 + (idx * 0.1)}
-                                                className="w-60 hover:scale-105 transition-transform"
-                                            />
-                                        </motion.div>
-                                    </motion.div>
-                                ))}
-                            </motion.div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-
-
+            {/* Desktop Dashboard View using mixed component */}
+            <div className="hidden lg:flex w-full h-full absolute inset-0 items-center justify-center">
+                <RadialOrbitalTimeline timelineData={timelineData} />
             </div>
 
             {/* Mobile Stack */}

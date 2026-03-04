@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Entry } from '@/lib/data-store'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { Edit2, RefreshCw, Calendar, Target, Zap, Heart, CheckCircle2, Award } from 'lucide-react'
+import { getLifeArea } from '@/lib/life-areas'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -38,7 +39,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                 <SheetHeader className="p-6 border-b border-white/10 shrink-0 sticky top-0 bg-black/80 backdrop-blur z-10 flex flex-row items-center justify-between">
                     <div>
                         <div className="text-xs uppercase tracking-widest text-emerald-400 mb-1">
-                            {data['Category'] || 'General'}
+                            {(() => { const area = getLifeArea(data['Life Area'] || data['Category']); return area ? `${area.emoji} ${area.label}` : (data['Life Area'] || data['Category'] || 'General'); })()}
                         </div>
                         <SheetTitle className={`${playfair.className} text-3xl text-white m-0`}>
                             {String(data['Habit Name'] || 'Untitled')}
@@ -83,21 +84,45 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
 
                         <h3 className={`${playfair.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-2 pt-4`}>
                             <Zap className="w-5 h-5 text-amber-400" />
-                            Time Breakdown
+                            Habit Chain
                         </h3>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
-                                <div className="text-[10px] uppercase tracking-widest text-cyan-400">Pre-Habit</div>
-                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['preHabitDuration'] || 0}m</div>
+                        <div className="flex flex-col items-center">
+                            <div className="text-[10px] uppercase tracking-widest text-cyan-400 mb-2">Pre-Habit Sequence</div>
+                            <svg viewBox="0 0 24 40" className="w-6 h-10 overflow-visible mb-2">
+                                <defs>
+                                    <linearGradient id="chain-grad-top" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#06b6d4" />
+                                        <stop offset="100%" stopColor="#ffffff" />
+                                    </linearGradient>
+                                </defs>
+                                <g stroke="url(#chain-grad-top)" fill="none" strokeWidth="2.5">
+                                    <rect x="9" y="0" width="6" height="14" rx="3" />
+                                    <rect x="9" y="10" width="6" height="14" rx="3" />
+                                    <rect x="9" y="20" width="6" height="14" rx="3" />
+                                    <rect x="9" y="30" width="6" height="14" rx="3" />
+                                </g>
+                            </svg>
+
+                            <div className="w-full flex flex-col gap-1 p-4 bg-white/5 rounded-xl border border-white/10 text-center relative z-10 shadow-lg shadow-black/50">
+                                <div className="text-[10px] uppercase tracking-widest text-white/50">Core Habit</div>
+                                <div className={`${inter.className} text-white text-lg font-bold`}>{data['duration'] || 30}m</div>
                             </div>
-                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
-                                <div className="text-[10px] uppercase tracking-widest text-emerald-400">Core Habit</div>
-                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['duration'] || 30}m</div>
-                            </div>
-                            <div className="flex flex-col gap-1 p-3 bg-white/5 rounded-xl border border-white/10">
-                                <div className="text-[10px] uppercase tracking-widest text-amber-400">Reward</div>
-                                <div className={`${inter.className} text-white text-sm font-bold`}>{data['rewardDuration'] || 0}m</div>
-                            </div>
+
+                            <svg viewBox="0 0 24 40" className="w-6 h-10 overflow-visible mt-2 mb-2">
+                                <defs>
+                                    <linearGradient id="chain-grad-bottom" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#ffffff" />
+                                        <stop offset="100%" stopColor="#f59e0b" />
+                                    </linearGradient>
+                                </defs>
+                                <g stroke="url(#chain-grad-bottom)" fill="none" strokeWidth="2.5">
+                                    <rect x="9" y="0" width="6" height="14" rx="3" />
+                                    <rect x="9" y="10" width="6" height="14" rx="3" />
+                                    <rect x="9" y="20" width="6" height="14" rx="3" />
+                                    <rect x="9" y="30" width="6" height="14" rx="3" />
+                                </g>
+                            </svg>
+                            <div className="text-[10px] uppercase tracking-widest text-amber-500 mt-2">Post-Habit Sequence</div>
                         </div>
                     </div>
 

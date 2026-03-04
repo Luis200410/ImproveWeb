@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Entry } from '@/lib/data-store'
+import { Entry, dataStore } from '@/lib/data-store'
+import { sileo } from 'sileo'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { Check, Edit2, Trash2, ArrowLeft, ArrowRight, Zap } from 'lucide-react'
 
@@ -216,7 +217,10 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     const [currentTimePercent, setCurrentTimePercent] = useState(0)
     const [expandedLaw, setExpandedLaw] = useState<string | null>(null)
 
-    const hours = Array.from({ length: 24 }, (_, i) => i) // 0 to 23
+    // 48 half-hour slots (0, 0.5, 1, 1.5 ... 23.5)
+    const TOTAL_SLOTS = 48
+    const SLOT_HEIGHT_HOURS = 0.5
+    const slots = Array.from({ length: TOTAL_SLOTS }, (_, i) => i * SLOT_HEIGHT_HOURS)
 
     // Navigation Helpers
     const nextDay = () => {
@@ -231,56 +235,111 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     }
     const goToToday = () => setVisibleDate(new Date())
 
+    // Track which habits have already shown a notification today
+    const notifiedRef = useRef<Set<string>>(new Set())
+
     useEffect(() => {
-        // Request notification permission
-        if (typeof window !== 'undefined' && 'Notification' in window) {
-            Notification.requestPermission();
-        }
-
         const interval = setInterval(() => {
-            const currentNow = new Date();
-            setCurrentTime(currentNow);
+            const currentNow = new Date()
+            setCurrentTime(currentNow)
 
-            // Calculate current time position %
-            const currentHour = currentNow.getHours();
-            const currentMinute = currentNow.getMinutes();
-            const currentHourIndex = currentHour;
-            const newTimePercent = ((currentHourIndex + (currentMinute / 60)) / hours.length) * 100;
-            setCurrentTimePercent(newTimePercent);
+            // Update the time-bar position
+            const currentHour = currentNow.getHours()
+            const currentMinute = currentNow.getMinutes()
+            setCurrentTimePercent(((currentHour + currentMinute / 60) / 24) * 100)
 
-            // Check for notifications (always based on actual current time, not visibleDate)
-            const timeString = currentNow.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            const actualTodayKey = currentNow.toISOString().split('T')[0];
-            const actualTodayDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][currentNow.getDay()];
+            // Check notifications once per minute (when seconds === 0)
+            if (currentNow.getSeconds() !== 0) return
 
-            entries.forEach(entry => {
-                // Check if habit is for today (actual today)
-                const freq = entry.data['frequency'] || 'daily';
-                const repeatDays = entry.data['repeatDays'] || [];
-                if (freq === 'specific_days' && !repeatDays.includes(actualTodayDay)) return;
+            const actualTodayKey = currentNow.toISOString().split('T')[0]
+            const actualTodayDay = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][currentNow.getDay()]
+            const currentMins = currentHour * 60 + currentMinute
 
-                // Check if excluded for today (actual today)
-                const excludedDates = entry.data['excludedDates'] || [];
-                if (excludedDates.includes(actualTodayKey)) return;
+            // Build sorted list of active habits for today
+            const todayHabits = entries
+                .filter(e => {
+                    if (e.data['Type'] === 'adaptation' || e.data['archived']) return false
+                    const freq = e.data['frequency'] || 'daily'
+                    if (freq === 'specific_days') {
+                        const days: string[] = e.data['repeatDays'] || []
+                        if (!days.includes(actualTodayDay)) return false
+                    }
+                    const excluded: string[] = e.data['excludedDates'] || []
+                    if (excluded.includes(actualTodayKey)) return false
+                    const done: string[] = e.data['completedDates'] || []
+                    if (done.includes(actualTodayKey)) return false
+                    return true
+                })
+                .map(e => {
+                    const daySched = e.data['schedule']?.[actualTodayDay]
+                    const rawTime = (typeof daySched === 'object' ? daySched?.time : daySched) || e.data['Time'] || ''
+                    if (!rawTime) return null
+                    const clean = String(rawTime).replace(/[^0-9:]/g, '')
+                    const [hStr, mStr] = clean.split(':')
+                    let h = parseInt(hStr || '0', 10)
+                    let m = parseInt(mStr || '0', 10)
+                    if (isNaN(h)) h = 0; if (isNaN(m)) m = 0
+                    if (String(rawTime).toLowerCase().includes('pm') && h < 12) h += 12
+                    if (String(rawTime).toLowerCase().includes('am') && h === 12) h = 0
+                    return { entry: e, mins: h * 60 + m }
+                })
+                .filter(Boolean)
+                .sort((a, b) => a!.mins - b!.mins) as { entry: Entry; mins: number }[]
 
-                // Check if already done today (optional: suppress notification if done)
-                const completedDates = entry.data['completedDates'] || [];
-                if (completedDates.includes(actualTodayKey)) return;
+            for (let i = 0; i < todayHabits.length; i++) {
+                const { entry, mins } = todayHabits[i]
+                const minutesUntil = mins - currentMins
+                // Fire at T-5, T-4, T-3, T-2, T-1, and T-0
+                if (minutesUntil < 0 || minutesUntil > 5) continue
 
-                const habitTime = entry.data['schedule']?.[actualTodayDay] || entry.data['Time'];
-                if (habitTime === timeString && currentNow.getSeconds() === 0) {
-                    // Trigger Notification
-                    if (Notification.permission === 'granted') {
-                        new Notification(`Time for ${entry.data['Habit Name']}`, {
-                            body: entry.data['Cue'] || 'Time to build your habit!',
-                        });
+                // Key = habitId + today + which window (5min or 0min)
+                const windowKey = minutesUntil === 0 ? 'now' : '5min'
+                const key = `${entry.id}_${actualTodayKey}_${windowKey}`
+                if (notifiedRef.current.has(key)) continue
+                notifiedRef.current.add(key)
+
+                const nextItem = todayHabits.slice(i + 1)[0]
+                const minsToDisp = (m: number) => {
+                    const h = Math.floor(m / 60) % 24, min = m % 60
+                    return `${h % 12 || 12}:${min.toString().padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
+                }
+                const nextHint = nextItem
+                    ? `Next: "${nextItem.entry.data['Habit Name'] || 'Habit'}" at ${minsToDisp(nextItem.mins)}`
+                    : '✓ Last habit of the day'
+                const habitName = entry.data['Habit Name'] || 'Habit'
+                const label = minutesUntil === 0 ? `Starting now! · ${minsToDisp(mins)}` : `In ${minutesUntil} min · ${minsToDisp(mins)}`
+
+                const markDone = async () => {
+                    try {
+                        const today = new Date().toISOString().split('T')[0]
+                        const existing: string[] = Array.isArray(entry.data['completedDates']) ? [...entry.data['completedDates']] : []
+                        if (!existing.includes(today)) {
+                            existing.push(today)
+                            await dataStore.updateEntry(entry.id, {
+                                ...entry.data,
+                                completedDates: existing,
+                                Streak: (Number(entry.data['Streak'] || 0)) + 1,
+                            })
+                            onToggleStatus(entry)
+                        }
+                        sileo.success({ title: '✓ Logged', description: `${habitName} marked complete.`, duration: 3000 })
+                    } catch {
+                        sileo.error({ description: 'Failed to mark habit as done.' })
                     }
                 }
-            });
 
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [entries, hours.length]);
+                sileo.action({
+                    title: `⏰ ${habitName}`,
+                    description: `${label}\n${nextHint}`,
+                    duration: 5 * 60 * 1000,
+                    button: { title: minutesUntil === 0 ? '✓ Done' : 'Mark Done', onClick: markDone },
+                })
+            }
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [entries, onToggleStatus])
+
 
 
     // Helper to determine if an entry is active on a specific date string / day of week
@@ -522,7 +581,13 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         });
         const hasNextConnection = !!nextConnected;
 
-        return { ...entry, colIndex, totalCols: 0, hasNextConnection }; // totalCols update later if needed, but simple left offset is enough
+        const prevConnected = positionedEntries.slice(0, idx).find(prevEntry => {
+            const gap = entry.start - prevEntry.end;
+            return gap >= 0 && gap <= (5 / 60);
+        });
+        const hasPrevConnection = !!prevConnected;
+
+        return { ...entry, colIndex, totalCols: 0, hasNextConnection, hasPrevConnection }; // totalCols update later if needed, but simple left offset is enough
     });
 
     const getWeekDays = () => {
@@ -597,7 +662,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        className="relative min-h-[2000px] border-l border-white/10 ml-8 md:ml-16 py-8"
+                        className="relative min-h-[4800px] border-l border-white/10 ml-8 md:ml-20 py-8"
                     >
                         {/* Current Time Line */}
                         {currentTimePercent >= 0 && currentTimePercent <= 100 && (
@@ -618,23 +683,43 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                             </div>
                         )}
 
-                        {/* Time Markers */}
-                        {hours.map(h => (
-                            <div key={h} className="absolute left-[-40px] md:left-[-60px]" style={{ top: `${(h / hours.length) * 100}%` }}>
-                                <span className="text-xs font-mono text-white/20">{h === 0 ? '12AM' : h === 12 ? '12PM' : h > 12 ? `${h - 12}PM` : `${h}AM`}</span>
-                            </div>
-                        ))}
+                        {/* Time Markers — major every hour, minor every 30 min */}
+                        {slots.map((slotVal, idx) => {
+                            const isHour = idx % 2 === 0
+                            const h = Math.floor(slotVal)
+                            const isHalf = !isHour
+                            const label = isHour
+                                ? (h === 0 ? '12AM' : h === 12 ? '12PM' : h > 12 ? `${h - 12}PM` : `${h}AM`)
+                                : null
+                            return (
+                                <div
+                                    key={idx}
+                                    className="absolute"
+                                    style={{ top: `${(slotVal / 24) * 100}%`, left: '-64px', right: 0 }}
+                                >
+                                    {/* Horizontal grid line */}
+                                    <div className={`absolute left-16 right-0 ${isHour ? 'border-t border-white/[0.06]' : 'border-t border-white/[0.025]'}`} />
+                                    {/* Label */}
+                                    {label && (
+                                        <span className="absolute right-full pr-2 text-[10px] font-mono text-white/25 leading-none -translate-y-1/2">{label}</span>
+                                    )}
+                                    {isHalf && (
+                                        <span className="absolute right-full pr-2 text-[9px] font-mono text-white/10 leading-none -translate-y-1/2">:30</span>
+                                    )}
+                                </div>
+                            )
+                        })}
 
                         {/* Habits */}
                         {entriesWithLayout.map((entry, index) => {
                             // Positioning logic
                             const startHourIndex = entry.start;
-                            const topPercent = Math.max(0, Math.min(100, (startHourIndex / hours.length) * 100));
+                            const topPercent = Math.max(0, Math.min(100, (startHourIndex / 24) * 100));
 
                             // Height based on duration
                             // total hours = 19. duration is in minutes.
                             // height % = (duration / 60) / 19 * 100
-                            const heightPercent = ((entry.duration / 60) / hours.length) * 100;
+                            const heightPercent = ((entry.duration / 60) / 24) * 100;
 
                             // Horizontal offset based on column
                             // We can use fixed widths or percentages. Let's use % to keep it responsive.
@@ -693,170 +778,152 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className={`bg-transparent backdrop-blur-md rounded-lg h-full flex flex-col relative overflow-hidden group/block shadow-[0_4px_30px_rgba(0,0,0,0.1)] ${isCompletedToday ? 'border-l-4 border-l-white' : ''}`}>
-                                                {/* Pre Habit block */}
-                                                {entry.preDuration > 0 && (
-                                                    <div className="bg-white/5 border border-white/10 w-full shrink-0 flex items-center justify-center relative overflow-hidden group-hover/block:bg-white/10 transition-colors rounded-t-lg" style={{ height: `${(entry.preDuration / entry.duration) * 100}%` }}>
-                                                        <div className="absolute inset-0" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)' }}></div>
-                                                        {(entry.preDuration / entry.duration) * 100 > 15 && <span className="text-[10px] uppercase font-bold tracking-widest text-white/40 z-10 px-2 py-0.5 rounded bg-black/40 backdrop-blur-sm">Pre-Habit</span>}
-                                                    </div>
-                                                )}
-
-                                                {/* Core Habit block */}
-                                                <div className={`flex flex-col flex-1 bg-white/5 ${entry.preDuration === 0 ? 'rounded-t-lg border-t' : 'border-t-0'} ${entry.postDuration === 0 ? 'rounded-b-lg border-b' : 'border-b-0'} border-l border-r border-white/10 ${isCompact ? 'p-2 px-3 justify-center' : 'p-4'} group-hover/block:bg-white/10 transition-colors z-10 w-full`} style={{ height: `${(entry.coreDuration / entry.duration) * 100}%` }}>
-                                                    {entry.rationale === "Continued from yesterday" ? (
-                                                        <div className="flex flex-col items-center justify-center h-full opacity-50 select-none">
-                                                            <span className="text-white/40 italic text-sm">Continued</span>
-                                                        </div>
-                                                    ) : (
-                                                        <>
-                                                            <div className={`flex ${isCompact ? 'flex-row items-center gap-4 flex-1 w-full' : 'justify-between items-start mb-2'}`}>
-                                                                <div className={`cursor-pointer ${isCompact ? 'flex flex-row items-center gap-3 shrink min-w-0 flex-1' : 'flex-1'}`} onClick={() => onEdit(entry)}>
-                                                                    <div className={`text-xs font-mono text-white/40 group-hover/block:text-white/60 transition-colors flex items-center gap-2 shrink-0 ${isCompact ? 'mb-0' : 'mb-1'}`}>
-                                                                        {!entry.isAdapted ? (entry.data['schedule']?.[todayDayKey]?.time || entry.data['Time']) : <span className="text-yellow-400">{entry.timeStr}</span>}
-                                                                        <span className={entry.isAdapted ? "text-yellow-400/60" : "text-white/20"}>({entry.coreDuration}m)</span>
-                                                                        {!isCompact && <span className="px-1.5 py-0.5 rounded border border-white/10 text-[10px] uppercase tracking-wider text-white/40">{category}</span>}
-                                                                        {entry.isAdapted && !isCompact && (
-                                                                            <span className="px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-[10px] uppercase tracking-wider flex items-center gap-1 group relative">
-                                                                                <Zap className="w-3 h-3" /> Adapted
-                                                                                {entry.rationale && (
-                                                                                    <span className="absolute left-0 top-full mt-2 w-48 p-2 bg-black border border-white/10 text-white/80 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 normal-case tracking-normal">
-                                                                                        {entry.rationale}
-                                                                                    </span>
-                                                                                )}
-                                                                            </span>
-                                                                        )}
-                                                                        <Edit2 className="w-3 h-3 opacity-0 group-hover/block:opacity-100 transition-opacity" />
-                                                                    </div>
-                                                                    <h3 className={`${playfair.className} ${isCompact ? 'text-lg' : 'text-xl'} text-white truncate`}>{entry.data['Habit Name']}</h3>
-
-                                                                    {/* Linked Projects */}
-                                                                    {!isCompact && linkedProjects.filter(p => p.data['Habit'] === entry.id).length > 0 && (
-                                                                        <div className="mt-2 flex flex-wrap gap-2">
-                                                                            {linkedProjects.filter(p => p.data['Habit'] === entry.id).map(p => (
-                                                                                <button
-                                                                                    key={p.id}
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        if (onProjectClick) onProjectClick(p);
-                                                                                    }}
-                                                                                    className="px-2 py-1 rounded bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 hover:bg-amber-500/20 transition-colors flex items-center gap-1"
-                                                                                >
-                                                                                    🎯 {p.data['title'] || p.data['Title'] || p.data['Project Name'] || 'Project'}
-                                                                                </button>
-                                                                            ))}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                                <div className={`flex items-center gap-2 shrink-0 z-10 relative`}>
-                                                                    {/* Focus Button */}
-                                                                    {isProductivity && !isCompletedToday && !isCompact && (
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setFocusEntry(entry);
-                                                                            }}
-                                                                            className="px-3 py-1.5 bg-white/10 border border-white/20 text-xs text-white uppercase tracking-widest rounded hover:bg-white hover:text-black transition-colors mr-2 hidden md:block"
-                                                                        >
-                                                                            Start Focus
-                                                                        </button>
-                                                                    )}
-
-                                                                    {/* Trash Button */}
-                                                                    {onDelete && (
-                                                                        <button
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                // Open Custom Modal
-                                                                                setDeleteCandidate(entry);
-                                                                            }}
-                                                                            className="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover/block:opacity-100 transition-all"
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        </button>
-                                                                    )}
-
-                                                                    {/* Toggle Button - IMPROVED SMOOTHNESS */}
-                                                                    <motion.button
-                                                                        whileTap={{ scale: 0.9 }}
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            // Prevent toggling the ghost copy independently
-                                                                            onToggleStatus({
-                                                                                ...entry,
-                                                                                data: {
-                                                                                    ...entry.data,
-                                                                                    completedDates: isCompletedToday
-                                                                                        ? completedDates.filter((d: string) => d !== todayKey)
-                                                                                        : [...completedDates, todayKey]
-                                                                                }
-                                                                            });
-                                                                        }}
-                                                                        className={`${isCompact ? 'w-8 h-8' : 'w-12 h-12'} rounded-full flex items-center justify-center border transition-all duration-300 shrink-0 ${isCompletedToday ? 'bg-white border-white text-black hover:bg-white/90' : 'border-white/20 text-transparent hover:border-white/50 hover:bg-white/5'}`}
-                                                                    >
-                                                                        <Check className={`${isCompact ? 'w-4 h-4' : 'w-6 h-6'}`} />
-                                                                    </motion.button>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className={`${isCompact ? 'absolute bottom-0 left-0 right-0 grid grid-cols-4 h-1' : 'grid grid-cols-4 gap-1 h-3 group-hover/block:h-auto transition-all duration-300 mt-auto'}`}>
-                                                                {([
-                                                                    { label: 'Cue', color: 'bg-cyan-500', text: entry.data['Cue'] },
-                                                                    { label: 'Craving', color: 'bg-purple-500', text: entry.data['Craving'] },
-                                                                    { label: 'Response', color: 'bg-emerald-500', text: entry.data['Response'] },
-                                                                    { label: 'Reward', color: 'bg-amber-500', text: entry.data['Reward'] }
-                                                                ] as const).map(law => {
-                                                                    const isExpanded = expandedLaw === `${entry.id}-${law.label}`;
-                                                                    return (
-                                                                        <div
-                                                                            key={law.label}
-                                                                            onClick={() => setExpandedLaw(isExpanded ? null : `${entry.id}-${law.label}`)}
-                                                                            className={`relative group/law h-full rounded-sm overflow-visible ${isCompact ? '' : 'min-h-[12px] cursor-pointer'}`}
-                                                                        >
-                                                                            <div className={`absolute inset-0 ${law.color} ${isCompletedToday ? 'opacity-100' : 'opacity-40 group-hover/block:opacity-60 group-hover/law:opacity-100'} transition-opacity ${isCompact ? 'rounded-none' : 'rounded-sm'}`} />
-                                                                            {!isCompact && (
-                                                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/law:opacity-100 transition-opacity">
-                                                                                    <span className="text-[10px] font-bold text-black uppercase tracking-wider truncate px-1">{law.label}</span>
-                                                                                </div>
-                                                                            )}
-                                                                            {(isExpanded && !isCompact) && (
-                                                                                <motion.div
-                                                                                    initial={{ opacity: 0, y: 10 }}
-                                                                                    animate={{ opacity: 1, y: 0 }}
-                                                                                    className="absolute top-full left-0 mt-2 w-48 p-3 bg-black border border-white/20 rounded-lg shadow-2xl text-xs text-white z-50"
-                                                                                >
-                                                                                    <span className="font-bold block mb-1 uppercase tracking-wider text-white/40">{law.label}</span>
-                                                                                    {law.text}
-                                                                                </motion.div>
-                                                                            )}
-                                                                        </div>
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </>
+                                            <div
+                                                className={`relative h-full rounded-xl border flex flex-col overflow-hidden group/block transition-all duration-200 ${isCompletedToday ? 'bg-white/10 border-white/30 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.07] hover:border-white/20'}`}
+                                            >
+                                                {/* Slim 3-zone left accent bar: cyan = pre, white = core, amber = post */}
+                                                <div className="absolute left-0 top-0 bottom-0 w-[3px] flex flex-col overflow-hidden rounded-l-xl">
+                                                    {entry.preDuration > 0 && (
+                                                        <div className="bg-cyan-500/60" style={{ flex: entry.preDuration }} />
+                                                    )}
+                                                    <div className="bg-white/40" style={{ flex: entry.coreDuration }} />
+                                                    {entry.postDuration > 0 && (
+                                                        <div className="bg-amber-500/60" style={{ flex: entry.postDuration }} />
                                                     )}
                                                 </div>
 
-                                                {/* Post Habit block */}
-                                                {entry.postDuration > 0 && (
-                                                    <div className="bg-white/5 border border-white/10 w-full shrink-0 flex items-center justify-center relative overflow-hidden group-hover/block:bg-white/10 transition-colors rounded-b-lg" style={{ height: `${(entry.postDuration / entry.duration) * 100}%` }}>
-                                                        <div className="absolute inset-0" style={{ backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 20px)' }}></div>
-                                                        {(entry.postDuration / entry.duration) * 100 > 15 && <span className="text-[10px] uppercase font-bold tracking-widest text-white/40 z-10 px-2 py-0.5 rounded bg-black/40 backdrop-blur-sm">Reward / Post-Habit</span>}
+                                                {/* Card body */}
+                                                {entry.rationale === "Continued from yesterday" ? (
+                                                    <div className="flex flex-col items-center justify-center h-full opacity-40 select-none pl-3">
+                                                        <span className="text-white/40 italic text-sm">Continued from yesterday</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className={`flex flex-col flex-1 min-h-0 pl-4 pr-3 ${isCompact ? 'justify-center py-2' : 'py-3'}`}>
+                                                        {/* Top row: time + actions */}
+                                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                                            <div className="flex items-center gap-2 text-[11px] font-mono text-white/35 group-hover/block:text-white/55 transition-colors">
+                                                                <span>{!entry.isAdapted ? (entry.data['schedule']?.[todayDayKey]?.time || entry.data['Time']) : <span className="text-yellow-400">{entry.timeStr}</span>}</span>
+                                                                <span className="text-white/20">{entry.duration}m</span>
+                                                                {entry.isAdapted && (
+                                                                    <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-[9px] uppercase tracking-wider">
+                                                                        <Zap className="w-2.5 h-2.5" /> Adapted
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 shrink-0 opacity-0 group-hover/block:opacity-100 transition-opacity">
+                                                                {isProductivity && !isCompletedToday && (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); setFocusEntry(entry); }}
+                                                                        className="px-2.5 py-1 bg-white/10 border border-white/20 text-[10px] text-white uppercase tracking-widest rounded hover:bg-white hover:text-black transition-colors hidden md:block"
+                                                                    >Focus</button>
+                                                                )}
+                                                                {onDelete && (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); setDeleteCandidate(entry); }}
+                                                                        className="p-1.5 text-white/20 hover:text-red-400 transition-all"
+                                                                    ><Trash2 className="w-3.5 h-3.5" /></button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Habit name */}
+                                                        <h3
+                                                            className={`${playfair.className} ${isCompact ? 'text-base' : 'text-lg md:text-xl'} text-white leading-snug truncate cursor-pointer`}
+                                                            onClick={() => onEdit(entry)}
+                                                        >{entry.data['Habit Name']}</h3>
+
+                                                        {/* Linked projects (only when block is tall enough) */}
+                                                        {!isCompact && linkedProjects.filter(p => p.data['Habit'] === entry.id).length > 0 && (
+                                                            <div className="mt-2 flex flex-wrap gap-1.5">
+                                                                {linkedProjects.filter(p => p.data['Habit'] === entry.id).map(p => (
+                                                                    <button
+                                                                        key={p.id}
+                                                                        onClick={(e) => { e.stopPropagation(); if (onProjectClick) onProjectClick(p); }}
+                                                                        className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-400 hover:bg-amber-500/20 transition-colors"
+                                                                    >🎯 {p.data['title'] || p.data['Title'] || p.data['Project Name'] || 'Project'}</button>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        {/* 4-law color bar — stacked at bottom */}
+                                                        <div className={`mt-auto ${isCompact ? 'h-1 grid grid-cols-4 gap-px' : 'h-2 grid grid-cols-4 gap-0.5 mt-2'}`}>
+                                                            {([
+                                                                { label: 'Cue', color: 'bg-cyan-500', text: entry.data['Cue'] },
+                                                                { label: 'Craving', color: 'bg-purple-500', text: entry.data['Craving'] },
+                                                                { label: 'Response', color: 'bg-emerald-500', text: entry.data['Response'] },
+                                                                { label: 'Reward', color: 'bg-amber-500', text: entry.data['Reward'] }
+                                                            ] as const).map(law => {
+                                                                const isExpanded = expandedLaw === `${entry.id}-${law.label}`
+                                                                return (
+                                                                    <div
+                                                                        key={law.label}
+                                                                        onClick={() => setExpandedLaw(isExpanded ? null : `${entry.id}-${law.label}`)}
+                                                                        className="relative group/law h-full rounded-sm cursor-pointer overflow-visible"
+                                                                    >
+                                                                        <div className={`absolute inset-0 ${law.color} ${isCompletedToday ? 'opacity-90' : 'opacity-30 group-hover/law:opacity-70'} transition-opacity rounded-sm`} />
+                                                                        {isExpanded && !isCompact && (
+                                                                            <motion.div
+                                                                                initial={{ opacity: 0, y: 6 }}
+                                                                                animate={{ opacity: 1, y: 0 }}
+                                                                                className="absolute top-full left-0 mt-2 w-48 p-3 bg-black border border-white/20 rounded-lg shadow-2xl text-xs text-white z-50"
+                                                                            >
+                                                                                <span className="font-bold block mb-1 uppercase tracking-wider text-white/40">{law.label}</span>
+                                                                                {law.text}
+                                                                            </motion.div>
+                                                                        )}
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
                                                     </div>
                                                 )}
 
-                                                {/* Sequence Connector */}
-                                                {entry.hasNextConnection && (
-                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-4 h-[20px] sm:h-[30px] z-[5] flex justify-center text-white/20 -mt-px pointer-events-none">
-                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full opacity-50">
-                                                            <path d="M12 0v24M5 17l7 7 7-7" />
-                                                        </svg>
-                                                    </div>
-                                                )}
+                                                {/* Toggle done button — pill at bottom right */}
+                                                <motion.button
+                                                    whileTap={{ scale: 0.9 }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        onToggleStatus({
+                                                            ...entry,
+                                                            data: {
+                                                                ...entry.data,
+                                                                completedDates: isCompletedToday
+                                                                    ? completedDates.filter((d: string) => d !== todayKey)
+                                                                    : [...completedDates, todayKey]
+                                                            }
+                                                        })
+                                                    }}
+                                                    className={`absolute bottom-2.5 right-2.5 w-8 h-8 rounded-full flex items-center justify-center border transition-all duration-300 shrink-0 ${isCompletedToday
+                                                        ? 'bg-white border-white text-black'
+                                                        : 'border-white/20 text-transparent hover:border-white/50 hover:bg-white/5'
+                                                        }`}
+                                                >
+                                                    <Check className="w-4 h-4" />
+                                                </motion.button>
+
                                             </div>
                                         )}
-                                    </div>
+
+                                        {/* Puzzle connector to NEXT habit */}
+                                        {!entry.isEventBlock && entry.hasNextConnection && (
+                                            <div className="absolute -bottom-[22px] left-1/2 -translate-x-1/2 flex flex-col items-center z-[20] pointer-events-none">
+                                                <div className="bg-amber-500 text-black text-[11px] font-bold px-4 pt-1 pb-4 rounded-full shadow-sm relative whitespace-nowrap">
+                                                    post habit
+                                                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-cyan-500 rounded-full border-2 border-amber-500"></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Puzzle connector from PREV habit */}
+                                        {!entry.isEventBlock && entry.hasPrevConnection && (
+                                            <div className="absolute -top-[22px] left-1/2 -translate-x-1/2 flex flex-col items-center z-[20] transition-transform pointer-events-none">
+                                                <div className="bg-cyan-500 text-black text-[11px] font-bold px-4 pt-4 pb-1 rounded-full shadow-sm relative whitespace-nowrap">
+                                                    pre Habit
+                                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-amber-500 rounded-full border-2 border-cyan-500"></div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>{/* /group/card */}
                                 </motion.div>
                             )
                         })}
@@ -1115,99 +1182,104 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                             </div>
                         )}
                     </motion.div>
-                ) : null}
-            </AnimatePresence>
+                ) : null
+                }
+            </AnimatePresence >
 
             {/* Focus Session Modal */}
             <AnimatePresence>
-                {focusEntry && (
-                    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-8">
-                        <motion.div
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="text-center max-w-2xl w-full"
-                        >
-                            <div className="text-white/40 uppercase tracking-[0.3em] mb-4 text-sm">Focus Mode</div>
-                            <h2 className={`${playfair.className} text-6xl text-white mb-2`}>{focusEntry.data['Habit Name']}</h2>
-                            <p className={`${inter.className} text-xl text-white/60 mb-12`}>No distractions. Just you and your goal.</p>
+                {
+                    focusEntry && (
+                        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-8">
+                            <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                className="text-center max-w-2xl w-full"
+                            >
+                                <div className="text-white/40 uppercase tracking-[0.3em] mb-4 text-sm">Focus Mode</div>
+                                <h2 className={`${playfair.className} text-6xl text-white mb-2`}>{focusEntry.data['Habit Name']}</h2>
+                                <p className={`${inter.className} text-xl text-white/60 mb-12`}>No distractions. Just you and your goal.</p>
 
-                            {/* Timer (Visual Only for now) */}
-                            <div className="w-64 h-64 rounded-full border border-white/20 flex items-center justify-center mx-auto mb-12 relative">
-                                <div className="absolute inset-0 rounded-full border-t-2 border-white animate-spin duration-[3000ms]" />
-                                <div className="text-6xl font-mono text-white">25:00</div>
-                            </div>
+                                {/* Timer (Visual Only for now) */}
+                                <div className="w-64 h-64 rounded-full border border-white/20 flex items-center justify-center mx-auto mb-12 relative">
+                                    <div className="absolute inset-0 rounded-full border-t-2 border-white animate-spin duration-[3000ms]" />
+                                    <div className="text-6xl font-mono text-white">25:00</div>
+                                </div>
 
-                            <div className="flex gap-4 justify-center">
-                                <button
-                                    onClick={() => {
-                                        if (onFocusComplete && focusEntry) onFocusComplete(25, focusEntry);
-                                        setFocusEntry(null)
-                                    }}
-                                    className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full uppercase tracking-widest text-sm transition-colors border border-white/10"
-                                >
-                                    End Session
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+                                <div className="flex gap-4 justify-center">
+                                    <button
+                                        onClick={() => {
+                                            if (onFocusComplete && focusEntry) onFocusComplete(25, focusEntry);
+                                            setFocusEntry(null)
+                                        }}
+                                        className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full uppercase tracking-widest text-sm transition-colors border border-white/10"
+                                    >
+                                        End Session
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
 
             {/* Custom Delete Modal */}
             <AnimatePresence>
-                {deleteCandidate && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            className="bg-black border border-white/10 p-6 rounded-xl shadow-2xl max-w-sm w-full relative overflow-hidden"
-                        >
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-900" />
-                            <h3 className={`${playfair.className} text-2xl text-white mb-2`}>Delete Habit?</h3>
-                            <p className={`${inter.className} text-white/60 mb-6 text-sm`}>
-                                You can remove {deleteCandidate.data['Habit Name']} for just today, or delete the habit entirely.
-                            </p>
+                {
+                    deleteCandidate && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.95, opacity: 0 }}
+                                className="bg-black border border-white/10 p-6 rounded-xl shadow-2xl max-w-sm w-full relative overflow-hidden"
+                            >
+                                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-900" />
+                                <h3 className={`${playfair.className} text-2xl text-white mb-2`}>Delete Habit?</h3>
+                                <p className={`${inter.className} text-white/60 mb-6 text-sm`}>
+                                    You can remove {deleteCandidate.data['Habit Name']} for just today, or delete the habit entirely.
+                                </p>
 
-                            <div className="flex flex-col gap-3">
-                                <button
-                                    onClick={() => {
-                                        // Update excludedDates
-                                        const excludedDates = deleteCandidate.data['excludedDates'] || [];
-                                        onToggleStatus({ // Reusing generic update handler
-                                            ...deleteCandidate,
-                                            data: {
-                                                ...deleteCandidate.data,
-                                                excludedDates: [...excludedDates, todayKey]
-                                            }
-                                        });
-                                        setDeleteCandidate(null);
-                                    }}
-                                    className="w-full py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg transition-colors text-sm uppercase tracking-widest"
-                                >
-                                    Remove for Today Only
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (onDelete) onDelete(deleteCandidate.id, true);
-                                        setDeleteCandidate(null);
-                                    }}
-                                    className="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors text-sm uppercase tracking-widest"
-                                >
-                                    Delete Habit Entirely
-                                </button>
-                                <button
-                                    onClick={() => setDeleteCandidate(null)}
-                                    className="w-full py-2 text-white/40 hover:text-white transition-colors text-xs uppercase tracking-widest mt-2"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={() => {
+                                            // Update excludedDates
+                                            const excludedDates = deleteCandidate.data['excludedDates'] || [];
+                                            onToggleStatus({ // Reusing generic update handler
+                                                ...deleteCandidate,
+                                                data: {
+                                                    ...deleteCandidate.data,
+                                                    excludedDates: [...excludedDates, todayKey]
+                                                }
+                                            });
+                                            setDeleteCandidate(null);
+                                        }}
+                                        className="w-full py-3 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg transition-colors text-sm uppercase tracking-widest"
+                                    >
+                                        Remove for Today Only
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (onDelete) onDelete(deleteCandidate.id, true);
+                                            setDeleteCandidate(null);
+                                        }}
+                                        className="w-full py-3 bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors text-sm uppercase tracking-widest"
+                                    >
+                                        Delete Habit Entirely
+                                    </button>
+                                    <button
+                                        onClick={() => setDeleteCandidate(null)}
+                                        className="w-full py-2 text-white/40 hover:text-white transition-colors text-xs uppercase tracking-widest mt-2"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )
+                }
+            </AnimatePresence >
+        </div >
     )
 }
