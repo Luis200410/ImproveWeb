@@ -15,6 +15,7 @@ interface GlobeProps {
     onMarkerClick?: (marker: any) => void;
     onMarkerDoubleClick?: (marker: any) => void;
     activeMarkerId?: any;
+    onSpin?: () => void;
 }
 
 const DEFAULT_MARKERS = [
@@ -103,6 +104,7 @@ export function InteractiveGlobe({
     onMarkerClick,
     onMarkerDoubleClick,
     activeMarkerId,
+    onSpin,
 }: GlobeProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const rotYRef = useRef(0.4);
@@ -297,23 +299,11 @@ export function InteractiveGlobe({
             ctx.stroke();
 
             // Marker rendering
-            if (marker.emoji) {
-                // White background circle for emojis
-                ctx.beginPath();
-                ctx.arc(sx, sy, 12, 0, Math.PI * 2);
-                ctx.fillStyle = "rgba(255, 255, 255, 1)";
-                ctx.fill();
-
-                // Draw Emoji
-                ctx.font = "16px system-ui, sans-serif";
-                ctx.fillText(marker.emoji, sx - 10, sy + 5);
-            } else {
-                // Default Core dot
-                ctx.beginPath();
-                ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = markerColor;
-                ctx.fill();
-            }
+            // Default Core dot
+            ctx.beginPath();
+            ctx.arc(sx, sy, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = markerColor;
+            ctx.fill();
 
             // Label
             if (marker.label) {
@@ -346,8 +336,11 @@ export function InteractiveGlobe({
                 startRotX: rotXRef.current,
             };
             (e.target as HTMLElement).setPointerCapture(e.pointerId);
+            if (onSpin) {
+                onSpin();
+            }
         },
-        []
+        [onSpin]
     );
 
     const onPointerMove = useCallback(

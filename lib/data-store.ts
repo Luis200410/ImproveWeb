@@ -625,6 +625,36 @@ class DataStore {
                             { name: 'Due Date', type: 'date', required: false },
                             { name: 'Category', type: 'select', options: ['Emergency', 'Vacation', 'Investment', 'Purchase', 'Other'], required: false }
                         ]
+                    },
+                    {
+                        id: 'investment-hub',
+                        systemId: 'money',
+                        name: 'Investment Hub',
+                        description: 'Real-time tracking of brokerage assets',
+                        icon: '📈',
+                        availableViews: ['list', 'table', 'chart'],
+                        defaultView: 'chart',
+                        fields: [
+                            { name: 'Asset Name', type: 'text', required: true },
+                            { name: 'Ticker', type: 'text', required: false },
+                            { name: 'Amount', type: 'number', required: true },
+                            { name: 'Type', type: 'select', options: ['Stock', 'Crypto', 'ETFs', 'Mutual Funds', 'Other'], required: true }
+                        ]
+                    },
+                    {
+                        id: 'net-worth-radar',
+                        systemId: 'money',
+                        name: 'Net Worth Radar',
+                        description: 'Asset vs Liability tracking',
+                        icon: '📡',
+                        availableViews: ['list', 'table', 'chart'],
+                        defaultView: 'chart',
+                        fields: [
+                            { name: 'Item', type: 'text', required: true },
+                            { name: 'Category', type: 'select', options: ['Cash & Bank', 'Investments', 'Real Estate', 'Cars', 'Personal Items', 'Credit Cards', 'Loans', 'Mortgages', 'Other'], required: true },
+                            { name: 'Value', type: 'number', required: true },
+                            { name: 'Is Liability', type: 'checkbox', required: false }
+                        ]
                     }
                 ]
             },

@@ -186,7 +186,7 @@ function DailyHabitShape({ N, status, size = 20 }: { N: number, status: 'complet
 }
 
 interface HabitTimelineProps {
-     
+
     entries: Entry[]
     linkedProjects?: Entry[]
     systemFilter?: string
@@ -534,7 +534,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         const end = start + (safeDuration / 60);
 
         positionedEntries.push({
-            id: 'unexpected-event-block',
+            id: dailyAdaptation.id,
             data: {
                 'Habit Name': dailyAdaptation.data['Event Title'],
                 'Category': 'Unexpected Event',
@@ -597,6 +597,10 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     }
 
     const [focusEntry, setFocusEntry] = useState<Entry | null>(null);
+
+    console.log("DEBUG: entries len=", entries.length);
+    console.log("DEBUG: activeEntriesToday len=", activeEntriesToday.length);
+    console.log("DEBUG: entriesWithLayout len=", entriesWithLayout.length);
 
     return (
         <div className="space-y-8 relative">
@@ -668,6 +672,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                         <Timeline
                             title="Daily Timeline"
                             description="A chronological overview of your day's tasks, unexpected events, and habits."
+                            isDailyProportional={true}
                             data={(() => {
                                 const now = new Date();
                                 const currentH = now.getHours() + now.getMinutes() / 60;

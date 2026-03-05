@@ -40,10 +40,34 @@ export default function RadialOrbitalTimeline({
         y: 0,
     });
     const [activeNodeId, setActiveNodeId] = useState<number | null>(null);
+    const [isPoweredOn, setIsPoweredOn] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const orbitRef = useRef<HTMLDivElement>(null);
     const nodeRefs = useRef<Record<number, HTMLDivElement | null>>({});
     const router = useRouter();
+
+    const handleSpin = () => {
+        if (!isPoweredOn) {
+            setIsPoweredOn(true);
+        }
+    };
+
+    const calculateNodePosition = (index: number, total: number) => {
+        const angle = ((index / total) * 360 + rotationAngle) % 360;
+        const radius = 300;
+        const radian = (angle * Math.PI) / 180;
+
+        const x = radius * Math.cos(radian) + centerOffset.x;
+        const y = radius * Math.sin(radian) + centerOffset.y;
+
+        const zIndex = Math.round(100 + 50 * Math.cos(radian));
+        const opacity = Math.max(
+            0.4,
+            Math.min(1, 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2))
+        );
+
+        return { x, y, angle, zIndex, opacity };
+    };
 
     const globeMarkers = useMemo(() => {
         const DEFAULT_COORDS = [
@@ -183,19 +207,23 @@ export default function RadialOrbitalTimeline({
         >
             <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
                 <div
-                    className="absolute w-full h-[800px] flex items-center justify-center"
+                    className="absolute w-full h-[800px] flex items-center justify-center transition-all duration-1000"
                     ref={orbitRef}
                     style={{
                         perspective: "1000px",
                         transform: `translate(${centerOffset.x}px, ${centerOffset.y}px)`,
                     }}
                 >
-                    <div className="absolute z-10 flex items-center justify-center">
-                        <div className="absolute w-[620px] h-[620px] rounded-full border border-white/20 animate-ping opacity-70 pointer-events-none"></div>
-                        <div
-                            className="absolute w-[680px] h-[680px] rounded-full border border-white/10 animate-ping opacity-50 pointer-events-none"
-                            style={{ animationDelay: "0.5s" }}
-                        ></div>
+                    <div className="absolute z-10 flex items-center justify-center transition-all duration-1000" style={{ transform: isPoweredOn ? "scale(0.5)" : "scale(1)" }}>
+                        {isPoweredOn && (
+                            <>
+                                <div className="absolute w-[620px] h-[620px] rounded-full border border-white/20 animate-ping opacity-70 pointer-events-none"></div>
+                                <div
+                                    className="absolute w-[680px] h-[680px] rounded-full border border-white/10 animate-ping opacity-50 pointer-events-none"
+                                    style={{ animationDelay: "0.5s" }}
+                                ></div>
+                            </>
+                        )}
                         <InteractiveGlobe
                             size={600}
                             markers={globeMarkers}
@@ -219,105 +247,131 @@ export default function RadialOrbitalTimeline({
                                     router.push(`/systems/${item.category}`);
                                 }
                             }}
+                            onSpin={handleSpin}
                         />
                     </div>
 
-                    <div className="absolute w-[800px] h-[800px] rounded-full border border-white/10 pointer-events-none"></div>
+                    <div className={`absolute w-[800px] h-[800px] rounded-full border border-white/10 pointer-events-none transition-opacity duration-1000 ${isPoweredOn ? 'opacity-100' : 'opacity-0'}`}></div>
 
-                    {timelineData.map((item) => {
+                    {timelineData.map((item, index) => {
                         const isExpanded = expandedItems[item.id];
-                        if (!isExpanded) return null;
-
+                        const position = isPoweredOn ? calculateNodePosition(index, timelineData.length) : { x: 0, y: 0, zIndex: 0, opacity: 0 };
+                        const isRelated = isRelatedToActive(item.id);
+                        const isPulsing = pulseEffect[item.id];
                         const Icon = item.icon;
 
                         return (
                             <div
                                 key={item.id}
-                                className="absolute transition-all duration-700 pointer-events-none z-50 flex items-center justify-center w-full h-full"
+                                ref={(el) => { nodeRefs.current[item.id] = el; }}
+                                className={`absolute transition-all duration-700 pointer-events-none z-50 flex items-center justify-center w-full h-full ${isPoweredOn ? 'opacity-100' : 'opacity-0'}`}
                             >
-                                <div className="absolute top-[16%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-125 pointer-events-auto z-[100] transition-all animate-in zoom-in duration-300">
-                                    <Icon size={24} />
-                                </div>
+                                {!isExpanded && isPoweredOn && (
+                                    <div
+                                        className="absolute transition-all duration-700 cursor-pointer pointer-events-auto"
+                                        style={{
+                                            transform: `translate(${position.x}px, ${position.y}px)`,
+                                            zIndex: position.zIndex,
+                                            opacity: position.opacity,
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleItem(item.id);
+                                        }}
+                                    >
+                                        <div
+                                            className={`absolute rounded-full -inset-1 ${isPulsing ? "animate-pulse duration-1000" : ""}`}
+                                            style={{
+                                                background: `radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)`,
+                                                width: `${item.energy * 0.5 + 40}px`,
+                                                height: `${item.energy * 0.5 + 40}px`,
+                                                left: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
+                                                top: `-${(item.energy * 0.5 + 40 - 40) / 2}px`,
+                                            }}
+                                        ></div>
 
-                                <Card className="absolute top-[16%] mt-10 left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/20 shadow-2xl shadow-black/50 overflow-visible pointer-events-auto z-[99]">
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
-                                    <CardHeader className="pb-2">
-                                        <div className="flex justify-between items-center">
-                                            <Badge
-                                                className={`px-2 text-xs ${getStatusStyles(
-                                                    item.status
-                                                )}`}
-                                            >
-                                                {item.status === "completed"
-                                                    ? "COMPLETE"
-                                                    : item.status === "in-progress"
-                                                        ? "IN PROGRESS"
-                                                        : "PENDING"}
-                                            </Badge>
-                                            <span className="text-xs font-mono text-white/50">
-                                                {item.date}
-                                            </span>
+                                        <div
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center bg-black text-white border-2 ${isRelated ? "border-white animate-pulse" : "border-white/40"} transition-all duration-300`}
+                                        >
+                                            <Icon size={16} />
                                         </div>
-                                        <CardTitle className="text-sm mt-2">
+
+                                        <div className={`absolute top-12 whitespace-nowrap text-xs font-semibold tracking-wider transition-all duration-300 ${isRelated ? "text-white scale-125" : "text-white/70"}`}>
                                             {item.title}
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="text-xs text-white/80">
-                                        <p>{item.content}</p>
+                                        </div>
+                                    </div>
+                                )}
 
-                                        <div className="mt-4 pt-3 border-t border-white/10">
-                                            <div className="flex justify-between items-center text-xs mb-1">
-                                                <span className="flex items-center">
-                                                    <Zap size={10} className="mr-1" />
-                                                    Energy Level
-                                                </span>
-                                                <span className="font-mono">{item.energy}%</span>
-                                            </div>
-                                            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                                                    style={{ width: `${item.energy}%` }}
-                                                ></div>
-                                            </div>
+                                {isExpanded && (
+                                    <>
+                                        <div className="absolute top-[16%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-125 pointer-events-auto z-[100] transition-all animate-in zoom-in duration-300">
+                                            <Icon size={24} />
                                         </div>
 
-                                        {item.relatedIds.length > 0 && (
-                                            <div className="mt-4 pt-3 border-t border-white/10">
-                                                <div className="flex items-center mb-2">
-                                                    <Link size={10} className="text-white/70 mr-1" />
-                                                    <h4 className="text-xs uppercase tracking-wider font-medium text-white/70">
-                                                        Connected Nodes
-                                                    </h4>
+                                        <Card className="absolute top-[16%] mt-10 left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/20 shadow-2xl shadow-black/50 overflow-visible pointer-events-auto z-[99]">
+                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
+                                            <CardHeader className="pb-2">
+                                                <div className="flex justify-between items-center">
+                                                    <Badge
+                                                        className={`px-2 text-xs ${getStatusStyles(
+                                                            item.status
+                                                        )}`}
+                                                    >
+                                                        {item.status === "completed"
+                                                            ? "COMPLETE"
+                                                            : item.status === "in-progress"
+                                                                ? "IN PROGRESS"
+                                                                : "PENDING"}
+                                                    </Badge>
+                                                    <span className="text-xs font-mono text-white/50">
+                                                        {item.date}
+                                                    </span>
                                                 </div>
-                                                <div className="flex flex-wrap gap-1">
-                                                    {item.relatedIds.map((relatedId) => {
-                                                        const relatedItem = timelineData.find(
-                                                            (i) => i.id === relatedId
-                                                        );
-                                                        return (
-                                                            <Button
-                                                                key={relatedId}
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="flex items-center h-6 px-2 py-0 text-xs rounded-none border-white/20 bg-transparent hover:bg-white/10 text-white/80 hover:text-white transition-all"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    toggleItem(relatedId);
-                                                                }}
-                                                            >
-                                                                {relatedItem?.title}
-                                                                <ArrowRight
-                                                                    size={8}
-                                                                    className="ml-1 text-white/60"
-                                                                />
-                                                            </Button>
-                                                        );
-                                                    })}
+                                                <CardTitle className="text-sm mt-2">
+                                                    {item.title}
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="text-xs text-white/80">
+                                                <p>{item.content}</p>
+
+                                                <div className="mt-4 pt-3 border-t border-white/10">
+                                                    <div className="flex justify-between items-center text-xs mb-1">
+                                                        <span className="flex items-center">
+                                                            <Zap size={10} className="mr-1" />
+                                                            Energy Level
+                                                        </span>
+                                                        <span className="font-mono">{item.energy}%</span>
+                                                    </div>
+                                                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                                                            style={{ width: `${item.energy}%` }}
+                                                        ></div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
+
+                                                <div className="mt-4 pt-3 border-t border-white/10 flex justify-center">
+                                                    <Button
+                                                        variant="outline"
+                                                        className="w-full flex items-center justify-center h-8 px-4 text-xs font-semibold rounded bg-white text-black hover:bg-white/80 hover:text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] border-none uppercase tracking-widest"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (item.category) {
+                                                                router.push(`/systems/${item.category}`);
+                                                            }
+                                                        }}
+                                                    >
+                                                        Enter {item.title} System
+                                                        <ArrowRight
+                                                            size={12}
+                                                            className="ml-2"
+                                                        />
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </>
+                                )}
                             </div>
                         );
                     })}

@@ -69,8 +69,9 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
 
                 // Get the scheduled time for today or fallback to default Time
                 const todayDayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][currentDate.getDay()]
-                const rawTime = habit.data['schedule']?.[todayDayKey] || habit.data['Time'] || '00:00'
-                const habitStartMins = parseTimeToMinutes(rawTime)
+                const daySched = habit.data['schedule']?.[todayDayKey]
+                const rawTime = (typeof daySched === 'object' ? daySched.time : daySched) || habit.data['Time'] || '00:00'
+                const habitStartMins = parseTimeToMinutes(String(rawTime))
 
                 // If habit is after or exactly at the event start time, shift it down
                 if (habitStartMins >= eventStartMins) {

@@ -217,30 +217,33 @@ export default function MicroappPage() {
     const handleSaveEntry = async (data: Record<string, any>) => {
         if (!microapp || !userId) return
 
-        // Check if we are updating (prioritize explicit data.id, then fallback to editingEntry)
-        const updateId = data.id || editingEntry?.id;
+        try {
+            // Destructure id to avoid saving it inside the JSONB data column if possible,
+            // while keeping a copy for the update call.
+            const { id: dataId, ...cleanData } = data;
+            const updateId = dataId || editingEntry?.id;
 
-        if (updateId) {
-            await dataStore.updateEntry(updateId, data)
-        } else {
-            // For Atomic Habits, ensure defaults
-            if (microappId === 'atomic-habits') {
-                // Ensure status/streak initialized
+            if (updateId) {
+                await dataStore.updateEntry(updateId, cleanData)
+            } else {
+                await dataStore.addEntry(userId, microapp.id, cleanData)
             }
-            await dataStore.addEntry(userId, microapp.id, data)
-        }
 
-        // Refresh
-        fetchEntries(userId);
-        setIsForgeOpen(false)
-        setEditingEntry(null)
-        setExternalFieldUpdate(null)
+            // Refresh
+            await fetchEntries(userId);
+            setIsForgeOpen(false)
+            setEditingEntry(null)
+            setExternalFieldUpdate(null)
 
-        // Clear query param
-        const params = new URLSearchParams(searchParams.toString())
-        if (params.has('new')) {
-            params.delete('new')
-            router.replace(`?${params.toString()}`)
+            // Clear query param
+            const params = new URLSearchParams(searchParams.toString())
+            if (params.has('new')) {
+                params.delete('new')
+                router.replace(`?${params.toString()}`)
+            }
+        } catch (error) {
+            console.error("Critical error in handleSaveEntry:", error);
+            // Optional: toast error
         }
     }
 
