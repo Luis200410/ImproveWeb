@@ -65,11 +65,15 @@ export function NeuralCalendar({ tasks = [] }: NeuralCalendarProps) {
     // INBOX: Tasks with NO status or explicitly 'inbox' (Catch-all for anything not in Matrix)
     const inboxTasks = useMemo(() => {
         return tasks.filter(t => {
-            const s = t.data.Status
+            const s = String(t.data.Status).toLowerCase()
+
+            // Inbox catches null/undefined/empty
+            if (!t.data.Status || s === 'null' || s === 'undefined' || s === 'inbox' || s === '') return true
+
             // Matrix Filters (Must match TaskMatrix.tsx exactly)
-            const isBacklog = s === 'backlog' || s === 'Someday' || s === 'Next' || s === 'Todo'
-            const isProcessing = s === 'active' || s === 'wait' || s === 'Waiting' || s === 'In Progress'
-            const isDone = s === true || s === 'Done' || s === 'Completed'
+            const isBacklog = s === 'backlog' || s === 'someday' || s === 'next' || s === 'todo' || s === 'to do' || s === 'pending' || s === 'due'
+            const isProcessing = s === 'active' || s === 'wait' || s === 'waiting' || s === 'in progress' || s === 'working on'
+            const isDone = t.data.Status === true || s === 'true' || s === 'done' || s === 'completed'
 
             return !isBacklog && !isProcessing && !isDone
         })

@@ -35,9 +35,9 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                 const pId = typeof p === 'object' ? p?.id : p
                 if (pId !== selectedProjectId) return false
             }
-            const s = t.data.Status
-            // Exclude empty/false status (Inbox)
-            return s === 'backlog' || s === 'Someday' || s === 'Next' || s === 'Todo'
+            const s = String(t.data.Status).toLowerCase()
+            // Only explicitly backlogged tasks go here. Null/undefined go to inbox.
+            return s === 'backlog' || s === 'someday' || s === 'next' || s === 'todo' || s === 'to do' || s === 'pending' || s === 'due'
         })
         const processing = tasks.filter(t => {
             if (selectedProjectId) {
@@ -45,8 +45,8 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                 const pId = typeof p === 'object' ? p?.id : p
                 if (pId !== selectedProjectId) return false
             }
-            const s = t.data.Status
-            return s === 'active' || s === 'wait' || s === 'Waiting' || s === 'In Progress'
+            const s = String(t.data.Status).toLowerCase()
+            return s === 'active' || s === 'wait' || s === 'waiting' || s === 'in progress' || s === 'working on'
         })
         const deployment = tasks.filter(t => {
             if (selectedProjectId) {
@@ -54,8 +54,8 @@ export function TaskMatrix({ tasks, onUpdateTask, projects, selectedProjectId, o
                 const pId = typeof p === 'object' ? p?.id : p
                 if (pId !== selectedProjectId) return false
             }
-            const s = t.data.Status
-            return s === true || s === 'Done' || s === 'Completed'
+            const s = String(t.data.Status).toLowerCase()
+            return t.data.Status === true || s === 'true' || s === 'done' || s === 'completed'
         })
 
         setColumns({
@@ -206,8 +206,8 @@ function MatrixColumn({ id, title, subtitle, tasks, onAction, accentColor, highl
                                         {...provided.dragHandleProps}
                                         style={{ ...provided.draggableProps.style }}
                                         className={`${snapshot.isDragging ? 'opacity-90 scale-[1.02] z-50' : ''} ${task.id === highlightTaskId
-                                                ? 'ring-2 ring-amber-400/70 ring-offset-2 ring-offset-transparent rounded-xl'
-                                                : ''
+                                            ? 'ring-2 ring-amber-400/70 ring-offset-2 ring-offset-transparent rounded-xl'
+                                            : ''
                                             }`}
                                     >
                                         <MatrixCard task={task} onAction={(a) => onAction(task, a)} />

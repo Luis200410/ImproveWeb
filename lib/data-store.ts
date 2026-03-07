@@ -286,7 +286,12 @@ class DataStore {
         const { data, error } = await query.order('created_at', { ascending: false })
 
         if (error) {
-            console.error('Error fetching entries:', error)
+            console.error('Error fetching entries [DATA-STORE]:', error, 'microappId:', microappId, 'userId:', userId)
+            return []
+        }
+
+        if (!data || data.length === 0) {
+            console.warn('Zero entries returned [DATA-STORE] for microappId:', microappId, 'userId:', userId)
             return []
         }
 
@@ -951,6 +956,7 @@ class DataStore {
                             { name: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Urgent'], required: true, width: '1/3' },
                             { name: 'Due Date', type: 'date', required: false, width: '1/3' },
                             { name: 'Area', type: 'relation', required: true, relationMicroappId: 'areas-sb', width: 'full' },
+                            { name: 'Cover Image', type: 'url', required: false, width: 'full' },
                             { name: 'Description', type: 'textarea', required: false, width: 'full', placeholder: 'Scope, objectives, success criteria...' }
                         ]
                     },

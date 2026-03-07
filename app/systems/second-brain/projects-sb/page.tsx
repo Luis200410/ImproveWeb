@@ -16,8 +16,10 @@ import { ProjectEntry, sortProjects, calculateProjectStats, ProjectStats } from 
 import { Entry } from '@/lib/data-store'
 import { AreasList } from '@/components/second-brain/projects/areas-list'
 
+import { ProjectsDashboard } from '@/components/projects-dashboard'
+
 const playfair = Playfair_Display({ subsets: ['latin'] })
-export default function ProjectsDashboard() {
+export default function ProjectsPage() {
     const [projects, setProjects] = useState<ProjectEntry[]>([])
     const [areas, setAreas] = useState<Entry[]>([]) // Areas state
     const [tasks, setTasks] = useState<Entry[]>([])
@@ -190,16 +192,24 @@ export default function ProjectsDashboard() {
 
 
             {/* Main Content Area - Full Width */}
-            <div className="flex-1 w-full min-w-0 h-[calc(100vh-250px)]">
+            <div className="flex-1 w-full min-w-0">
                 {loading ? (
                     <div className="h-full flex items-center justify-center text-white/20">Loading Neural Lattice...</div>
                 ) : (
-                    <ProjectBoard
-                        projects={filteredProjects}
-                        onUpdateProject={handleUpdateProject}
-                        onProjectClick={setSelectedId}
-                        tasks={tasks}
-                    />
+                    <div className="py-8">
+                        <ProjectsDashboard
+                            projects={filteredProjects as any}
+                            tasks={tasks}
+                            areas={areas}
+                            statusOptions={['Active', 'On Hold', 'Completed']}
+                            onUpdateProject={async (id: string, updates: any) => {
+                                const project = projects.find(p => p.id === id)
+                                if (project) handleUpdateProject(project, updates)
+                            }}
+                            onEditProject={(project: Entry) => setSelectedId(project.id)}
+                            onCreateProject={() => { }}
+                        />
+                    </div>
                 )}
             </div>
 

@@ -2,11 +2,14 @@ import { NextResponse } from "next/server";
 import { plaidClient } from "@/lib/plaid";
 import { createClient } from "@/utils/supabase/server";
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
         const userId = url.searchParams.get('userId');
         const accountId = url.searchParams.get('accountId');
+        const forceRefresh = url.searchParams.get('refresh') === 'true';
 
         if (!userId || !accountId) {
             return NextResponse.json({ error: "Missing userId or accountId" }, { status: 400 });
@@ -35,12 +38,10 @@ export async function GET(req: Request) {
         const endDateStr = now.toISOString().split('T')[0];
 
         // 2. Loop through items to fetch transactions. Only the item possessing the accountId will succeed.
-        for (const item of items) {
-            const accessToken = item.access_token;
-
+        const fetchPromises = items.map(async (item) => {
             try {
                 const txResponse = await plaidClient.transactionsGet({
-                    access_token: accessToken,
+                    access_token: item.access_token,
                     start_date: startDateStr,
                     end_date: endDateStr,
                     options: {
@@ -48,23 +49,28 @@ export async function GET(req: Request) {
                         count: 50 // Limit to 50 latest 
                     }
                 });
-
-                accountTransactions = [...accountTransactions, ...txResponse.data.transactions];
-                break; // If we successfully got transactions for this account ID, we can stop searching other items
+                return txResponse.data.transactions;
             } catch (err: any) {
                 // If the account doesn't belong to this item, Plaid will throw an INVALID_ACCOUNT_ID error, which we ignore
                 if (err.response?.data?.error_code !== "INVALID_ACCOUNT_ID") {
                     console.error("Error fetching transactions:", err.response?.data || err.message);
                 }
+                return [];
             }
+        });
+        const txResults = await Promise.all(fetchPromises);
+        for (const txs of txResults) {
+            accountTransactions = [...accountTransactions, ...txs];
         }
 
         // Sort by date descending
         accountTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        return NextResponse.json({
+        const responseData = {
             transactions: accountTransactions
-        });
+        };
+
+        return NextResponse.json(responseData);
 
     } catch (error: any) {
         console.error("Account Transactions GET Error:", error);

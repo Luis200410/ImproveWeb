@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { plaidClient } from "@/lib/plaid";
 import { createClient } from "@/utils/supabase/server";
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
         const userId = url.searchParams.get('userId');
+        const forceRefresh = url.searchParams.get('refresh') === 'true';
 
         if (!userId) {
             return NextResponse.json({ error: "Missing userId" }, { status: 400 });
@@ -34,60 +37,61 @@ export async function GET(req: Request) {
         let allBalances = 0;
         let upcomingBillsTotal = 0;
 
-        // Date math for 6 month historical window
+        // Date math for 1 month historical window (Current and Last Month)
         const now = new Date();
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(now.getMonth() - 6);
-        const startDateStr = sixMonthsAgo.toISOString().split('T')[0];
+        const oneMonthAgo = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const startDateStr = oneMonthAgo.toISOString().split('T')[0];
         const endDateStr = now.toISOString().split('T')[0];
 
-        for (const item of items) {
+        const fetchPromises = items.map(async (item) => {
             const accessToken = item.access_token;
+            let itemBalances = 0;
+            let itemUpcomingBills = 0;
+            let itemTransactions: any[] = [];
 
-            // Get balances for Safe-to-Spend
-            try {
-                const balanceResponse = await plaidClient.accountsBalanceGet({ access_token: accessToken });
-                const accounts = balanceResponse.data.accounts;
-                allBalances += accounts.reduce((acc, a) => {
-                    // Only sum depository accounts for spending cash
-                    if (a.type === 'depository' && a.balances.available !== null) {
-                        return acc + a.balances.available;
-                    }
-                    return acc;
-                }, 0);
-            } catch (err) {
-                console.error("Error fetching balance:", err);
-            }
+            // Get balances
+            const balancePromise = plaidClient.accountsBalanceGet({ access_token: accessToken })
+                .then(res => {
+                    itemBalances = res.data.accounts.reduce((acc, a) => {
+                        if (a.type === 'depository' && a.balances.available !== null) {
+                            return acc + a.balances.available;
+                        }
+                        return acc;
+                    }, 0);
+                }).catch(err => console.error("Error fetching balance:", err));
 
-            // Get Recurring Transactions (Fixed bills)
-            try {
-                const recurringRes = await plaidClient.transactionsRecurringGet({ access_token: accessToken });
-                const streams = recurringRes.data.outflow_streams;
-                // Sum active streams that are billed monthly to find remaining bills
-                streams.forEach(stream => {
-                    if (stream.status === 'MATURE' && stream.frequency === 'MONTHLY') {
-                        // Simply add the average amount
-                        upcomingBillsTotal += Math.abs(stream.average_amount?.amount || 0);
-                    }
-                });
-            } catch (err) {
-                console.error("Error fetching recurring:", err);
-            }
+            // Get Recurring Transactions
+            const recurringPromise = plaidClient.transactionsRecurringGet({ access_token: accessToken })
+                .then(res => {
+                    res.data.outflow_streams.forEach(stream => {
+                        if (stream.status === 'MATURE' && stream.frequency === 'MONTHLY') {
+                            itemUpcomingBills += Math.abs(stream.average_amount?.amount || 0);
+                        }
+                    });
+                }).catch(err => console.error("Error fetching recurring:", err));
 
-            // RAM-Only extraction: Fetch historical transactions via /transactions/get
-            // PRD specifies 730 days initially, but 6-month (180 days) for Budget Planner "Target" heuristic.
-            try {
-                const txResponse = await plaidClient.transactionsGet({
-                    access_token: accessToken,
-                    start_date: startDateStr,
-                    end_date: endDateStr,
-                    options: { count: 500 } // Get up to 500 recent transactions for bucketing
-                });
+            // Get Historical Transactions (180 days)
+            const transactionsPromise = plaidClient.transactionsGet({
+                access_token: accessToken,
+                start_date: startDateStr,
+                end_date: endDateStr,
+                options: { count: 500 }
+            }).then(res => {
+                itemTransactions = res.data.transactions;
+            }).catch(err => console.error("Error fetching transactions:", err));
 
-                allTransactions = [...allTransactions, ...txResponse.data.transactions];
-            } catch (err) {
-                console.error("Error fetching transactions:", err);
-            }
+            await Promise.all([balancePromise, recurringPromise, transactionsPromise]);
+
+            return { itemBalances, itemUpcomingBills, itemTransactions };
+        });
+
+        const results = await Promise.all(fetchPromises);
+        let totalIncome = 0;
+
+        for (const res of results) {
+            allBalances += res.itemBalances;
+            upcomingBillsTotal += res.itemUpcomingBills;
+            allTransactions = [...allTransactions, ...res.itemTransactions];
         }
 
         // --- ZERO-KNOWLEDGE RAM PROCESSING ---
@@ -99,17 +103,28 @@ export async function GET(req: Request) {
         };
 
         const currentMonthId = now.toISOString().substring(0, 7); // YYYY-MM
+        const lastMonthId = oneMonthAgo.toISOString().substring(0, 7);
         const burnRateMap: Record<string, number> = {};
 
         // Bucketing Heuristic
         allTransactions.forEach(tx => {
             const amount = tx.amount;
-            // Ignore income
-            if (amount <= 0) return;
-
             const categoryPrimary = tx.personal_finance_category?.primary || '';
             const txDate = tx.date; // YYYY-MM-DD
             const txMonth = txDate.substring(0, 7);
+
+            // Income Detection (Plaid treats incoming money as negative)
+            if (amount < 0 && categoryPrimary !== 'TRANSFER_IN') {
+                if (txMonth === currentMonthId || txMonth === lastMonthId) {
+                    totalIncome += Math.abs(amount);
+                }
+            }
+
+            // Ignore income for expense buckets
+            if (amount <= 0) return;
+
+            // We only process current month for expenses
+            if (txMonth !== currentMonthId) return;
 
             // Determine bucket
             let bucketName = 'flexible';
@@ -122,16 +137,13 @@ export async function GET(req: Request) {
             buckets[bucketName as keyof typeof buckets] += amount;
 
             // Burn Rate Tracking for CURRENT MONTH only
-            if (txMonth === currentMonthId && bucketName === 'flexible') {
+            if (bucketName === 'flexible') {
                 const day = parseInt(txDate.split('-')[2]);
                 burnRateMap[day] = (burnRateMap[day] || 0) + amount;
             }
         });
 
-        // Average out the 6 month buckets to get a "Target Baseline"
-        buckets.fixed = buckets.fixed / 6;
-        buckets.goals = buckets.goals / 6;
-        buckets.flexible = buckets.flexible / 6;
+        const averageIncome = totalIncome / 2;
 
         // Build Cumulative Burn Rate Chart Data
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -170,14 +182,17 @@ export async function GET(req: Request) {
         // Discard all raw transaction objects from RAM
         allTransactions.length = 0;
 
-        return NextResponse.json({
+        const responseData = {
             buckets,
+            averageIncome,
             burnRate: burnRateChart,
             safeToSpend: Math.max(0, safeToSpend),
             remainingFixedBills: upcomingBillsTotal,
             totalBalances: allBalances,
             status: "success"
-        });
+        };
+
+        return NextResponse.json(responseData);
 
     } catch (error: any) {
         console.error("Budget Data Error:", error);

@@ -2,10 +2,13 @@ import { NextResponse } from "next/server";
 import { plaidClient } from "@/lib/plaid";
 import { createClient } from "@/utils/supabase/server";
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
         const userId = url.searchParams.get('userId');
+        const forceRefresh = url.searchParams.get('refresh') === 'true';
 
         if (!userId) {
             return NextResponse.json({ error: "Missing userId" }, { status: 400 });
@@ -43,28 +46,31 @@ export async function GET(req: Request) {
 
         let allTransactions: any[] = [];
 
-        // Date math for YTD (Year To Date)
+        // Date math: Only fetch last month and current month
         const now = new Date();
-        const startOfYear = new Date(now.getFullYear(), 0, 1);
-        const startDateStr = startOfYear.toISOString().split('T')[0];
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const startDateStr = lastMonth.toISOString().split('T')[0];
         const endDateStr = now.toISOString().split('T')[0];
 
-        for (const item of items) {
-            const accessToken = item.access_token;
-
+        const fetchPromises = items.map(async (item) => {
             try {
                 // Plaid /transactions/get
                 const txResponse = await plaidClient.transactionsGet({
-                    access_token: accessToken,
+                    access_token: item.access_token,
                     start_date: startDateStr,
                     end_date: endDateStr,
                     options: { count: 500 } // up to 500 txs per item for YTD cashflow should be reasonable for summary
                 });
-
-                allTransactions = [...allTransactions, ...txResponse.data.transactions];
+                return txResponse.data.transactions;
             } catch (err) {
                 console.error("Error fetching Plaid transactions for cashflow:", err);
+                return [];
             }
+        });
+
+        const txResults = await Promise.all(fetchPromises);
+        for (const txs of txResults) {
+            allTransactions = [...allTransactions, ...txs];
         }
 
         // Aggregate into Month Buckets
@@ -112,10 +118,12 @@ export async function GET(req: Request) {
         // Discard raw transactions from RAM
         allTransactions.length = 0;
 
-        return NextResponse.json({
+        const responseData = {
             chartData,
             status: "success"
-        });
+        };
+
+        return NextResponse.json(responseData);
 
     } catch (error: any) {
         console.error("Cashflow Data Error:", error);

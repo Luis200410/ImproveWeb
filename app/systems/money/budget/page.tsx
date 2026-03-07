@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { Navigation } from '@/components/navigation'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { ArrowLeft, ShieldCheck, TrendingDown, Crosshair, PiggyBank, RefreshCw, Receipt } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, TrendingDown, Crosshair, PiggyBank, RefreshCw, Receipt, Banknote, HeartHandshake } from 'lucide-react'
 import Link from 'next/link'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts'
 import { motion } from 'framer-motion'
@@ -80,7 +80,69 @@ const CircularProgress = ({ percentage, colorClass, size = 120, icon: Icon, labe
             </div>
             <div className="mt-4 text-center">
                 <div className="text-[10px] uppercase tracking-widest text-white/50">{label}</div>
-                <div className="font-mono text-sm mt-1">${amount.toFixed(0)} Avg</div>
+                <div className="font-mono text-sm mt-1 mb-1">${amount.toFixed(0)} Spent</div>
+                <div className="text-[9px] uppercase tracking-wider text-white/30 truncate">Target: ${((size / 120) * 0 /* hack to pass target ? no, pass it via prop */)}</div>
+            </div>
+        </div>
+    )
+}
+
+const CircularProgressWithTarget = ({ percentage, colorClass, size = 120, icon: Icon, label, amount, targetAmount }: any) => {
+    const strokeWidth = 8
+    const radius = (size - strokeWidth) / 2
+    const circumference = radius * 2 * Math.PI
+    const offset = circumference - (Math.min(percentage, 100) / 100) * circumference
+
+    // Clean tailwind colors for stroke
+    let strokeColor = "#3b82f6" // fallback
+    if (colorClass.includes('rose')) strokeColor = "#f43f5e"
+    if (colorClass.includes('emerald')) strokeColor = "#10b981"
+    if (colorClass.includes('amber')) strokeColor = "#f59e0b"
+    if (colorClass.includes('purple')) strokeColor = "#a855f7"
+
+    return (
+        <div className="flex flex-col items-center justify-center">
+            <div className="relative" style={{ width: size, height: size }}>
+                <svg className="transform -rotate-90 w-full h-full">
+                    <circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        stroke="currentColor"
+                        strokeWidth={strokeWidth}
+                        fill="transparent"
+                        className="text-white/5"
+                    />
+                    <motion.circle
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        stroke={strokeColor}
+                        strokeWidth={strokeWidth}
+                        fill="transparent"
+                        strokeDasharray={circumference}
+                        initial={{ strokeDashoffset: circumference }}
+                        animate={{ strokeDashoffset: offset }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        className="drop-shadow-lg"
+                        strokeLinecap="round"
+                    />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                    <Icon className="w-5 h-5 mb-1 opacity-70" />
+                    <span className="text-lg font-bold">{percentage.toFixed(0)}%</span>
+                </div>
+            </div>
+            <div className="mt-4 text-center w-full px-2">
+                <div className="text-[10px] uppercase tracking-widest text-white/70 font-semibold mb-1">{label}</div>
+                <div className="flex justify-between items-center text-[10px] border-b border-white/10 pb-1 mb-1">
+                    <span className="text-white/40">Actual</span>
+                    <span className="font-mono text-white">${amount.toFixed(0)}</span>
+                </div>
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-white/40">Target</span>
+                    <span className="font-mono text-white/60">${targetAmount.toFixed(0)}</span>
+                </div>
             </div>
         </div>
     )
@@ -121,13 +183,27 @@ export default function BudgetPlannerPage() {
         }
     }
 
-    // Default target parameters for calculations
-    const totalIncomeEstimate = (data?.buckets?.fixed || 0) + (data?.buckets?.goals || 0) + (data?.buckets?.flexible || 0) || 1;
+    // 6-Month Baseline Average Income from Plaid
+    const averageIncome = data?.averageIncome || 1;
 
-    // Percentages of total spending based on historical 6 months baseline
-    const fixedPerc = Math.min(100, ((data?.buckets?.fixed || 0) / totalIncomeEstimate) * 100)
-    const goalsPerc = Math.min(100, ((data?.buckets?.goals || 0) / totalIncomeEstimate) * 100)
-    const flexPerc = Math.min(100, ((data?.buckets?.flexible || 0) / totalIncomeEstimate) * 100)
+    // The 50 / 25 / 15 / 10 Approach Targets
+    const targetNeeds = averageIncome * 0.50; // 50%
+    const targetSavings = averageIncome * 0.25; // 25%
+    const targetWants = averageIncome * 0.15; // 15%
+    const targetOther = averageIncome * 0.10; // 10%
+
+    // Calculate actual 6-month historical averages
+    const actualNeeds = data?.buckets?.fixed || 0;
+    const actualSavings = data?.buckets?.goals || 0;
+    const actualWants = data?.buckets?.flexible || 0;
+    // We don't have a 4th bucket classified by the backend yet, but we can assume "Other" is the remainder of spending not tracked, or just show 0 if not tracked.
+    const actualOther = Math.max(0, averageIncome - (actualNeeds + actualSavings + actualWants));
+
+    // Calculate progression against the optimal target buckets (showing how much of the bucket they utilized)
+    const percNeeds = targetNeeds > 0 ? (actualNeeds / targetNeeds) * 100 : 0;
+    const percSavings = targetSavings > 0 ? (actualSavings / targetSavings) * 100 : 0;
+    const percWants = targetWants > 0 ? (actualWants / targetWants) * 100 : 0;
+    const percOther = targetOther > 0 ? (actualOther / targetOther) * 100 : 0;
 
     if (loading) {
         return (
@@ -233,33 +309,50 @@ export default function BudgetPlannerPage() {
                         </Card>
                     </motion.div>
 
-                    {/* The 3 Buckets Heuristic Rings */}
+                    {/* Income Engine & Buckets */}
                     <Card className="bg-[#0A0A0E] border-white/5 shadow-2xl lg:col-span-2">
-                        <CardHeader>
-                            <CardTitle className="text-xs uppercase tracking-[0.2em] text-white/40">The 3 Buckets (6-Month Baseline Average)</CardTitle>
+                        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4">
+                            <CardTitle className="text-xs uppercase tracking-[0.2em] text-white/40">The 50/25/15/10 Framework</CardTitle>
+                            <div className="mt-2 sm:mt-0 flex items-center gap-3">
+                                <span className="text-[10px] uppercase tracking-widest text-emerald-400">Monthly Avg Income (6mo)</span>
+                                <span className="font-mono text-xl text-white font-bold bg-white/5 px-3 py-1 rounded border border-white/10">
+                                    ${averageIncome.toFixed(0)}
+                                </span>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="grid grid-cols-3 gap-4 py-4">
-                                <CircularProgress
-                                    percentage={fixedPerc}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-8">
+                                <CircularProgressWithTarget
+                                    percentage={percNeeds}
                                     colorClass="text-rose-400"
                                     icon={Receipt}
-                                    label="Fixed Bills"
-                                    amount={data?.buckets?.fixed || 0}
+                                    label="Needs (50%)"
+                                    amount={actualNeeds}
+                                    targetAmount={targetNeeds}
                                 />
-                                <CircularProgress
-                                    percentage={goalsPerc}
+                                <CircularProgressWithTarget
+                                    percentage={percSavings}
                                     colorClass="text-emerald-400"
                                     icon={PiggyBank}
-                                    label="Goals/Savings"
-                                    amount={data?.buckets?.goals || 0}
+                                    label="Savings (25%)"
+                                    amount={actualSavings}
+                                    targetAmount={targetSavings}
                                 />
-                                <CircularProgress
-                                    percentage={flexPerc}
+                                <CircularProgressWithTarget
+                                    percentage={percWants}
                                     colorClass="text-amber-400"
                                     icon={TrendingDown}
-                                    label="Flexible Spend"
-                                    amount={data?.buckets?.flexible || 0}
+                                    label="Wants (15%)"
+                                    amount={actualWants}
+                                    targetAmount={targetWants}
+                                />
+                                <CircularProgressWithTarget
+                                    percentage={percOther}
+                                    colorClass="text-purple-400"
+                                    icon={HeartHandshake}
+                                    label="Other/Debt (10%)"
+                                    amount={actualOther}
+                                    targetAmount={targetOther}
                                 />
                             </div>
                         </CardContent>

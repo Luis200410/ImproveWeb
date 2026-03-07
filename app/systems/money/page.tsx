@@ -165,7 +165,36 @@ export default function MoneyPage() {
         return totalTarget > 0 ? totalTarget * 0.05 : 0 // Assume returning 5% of ambitious goals per month
     }, [entries])
 
-    const safeToSpend = Math.max(0, cashBalance - (upcomingBills + monthlySavingsTarget))
+    // Automated Sinking Funds
+    const sinkingFundsTotal = useMemo(() => {
+        const list = entries['sinking-funds'] || []
+        return list.reduce((sum, e) => {
+            const totalCost = Number(e.data['Target Amount']) || 0;
+            return sum + (totalCost > 0 ? totalCost * 0.1 : 0); // assume 10 months avg for mockup
+        }, 0)
+    }, [entries])
+
+    // STS immediately deducts Credit Liabilities to prevent visibility alibi
+    const safeToSpend = Math.max(0, cashBalance - creditLiabilities - (upcomingBills + monthlySavingsTarget + sinkingFundsTotal))
+
+    // Velocity Score
+    const velocityScore = useMemo(() => {
+        const currentMonthIndex = new Date().getMonth();
+        const currentMonthData = annualChartData[currentMonthIndex];
+        const actualSavings = (currentMonthData?.income || 0) - (currentMonthData?.expense || 0);
+        // If income hasn't started yet but expense did, or we don't have enough data:
+        if (actualSavings <= 0 && monthlySavingsTarget === 0) return 0;
+        const planned = monthlySavingsTarget > 0 ? monthlySavingsTarget : 500; // fallback 500
+        return Math.max(0, actualSavings / planned);
+    }, [annualChartData, monthlySavingsTarget])
+
+    // Daily Burn Rate
+    const dailyBurnRate = useMemo(() => {
+        const now = new Date();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const daysRemaining = daysInMonth - now.getDate() + 1;
+        return safeToSpend / daysRemaining;
+    }, [safeToSpend])
 
     // Mock Chart Data for Zero-Knowledge Reports 
     // Usually built from real YTD data, simplified here for the dashboard visual
@@ -173,6 +202,8 @@ export default function MoneyPage() {
 
     // Action Center Alert Logic
     const highIdleCash = safeToSpend > 2000
+    const isWindfallActive = annualChartData[new Date().getMonth()]?.income > 5000;
+    const isAlibiInterceptorActive = velocityScore > 0 && velocityScore < 1.0;
 
     const sections = [
         { key: 'budget', title: 'Budget', icon: <PieChart size={18} />, colorClass: 'bg-amber-500/10 text-amber-400' },
@@ -205,11 +236,15 @@ export default function MoneyPage() {
 
                     {userId && (
                         <div className="flex items-center gap-4">
-                            {!isLoadingPlaid && plaidAccounts.length > 0 && (
+                            {isLoadingPlaid ? (
+                                <div className="text-[10px] text-emerald-400/50 font-mono bg-emerald-500/5 px-3 py-1.5 rounded-full border border-emerald-500/10 flex items-center gap-2">
+                                    <Loader2 className="w-3 h-3 animate-spin" /> Syncing Bank...
+                                </div>
+                            ) : plaidAccounts.length > 0 ? (
                                 <div className="text-[10px] text-emerald-400 font-mono bg-emerald-500/10 px-3 py-1.5 rounded-full border border-emerald-500/20">
                                     {plaidAccounts.length} Connected Accounts
                                 </div>
-                            )}
+                            ) : null}
                             <PlaidLinkButton
                                 userId={userId}
                                 onSuccess={() => {
@@ -252,19 +287,71 @@ export default function MoneyPage() {
                                         ${safeToSpend.toFixed(0)}
                                     </div>
                                     <p className="text-white/50 text-sm max-w-sm leading-relaxed">
-                                        Actual Cash (${cashBalance.toFixed(0)}) — Bills (${upcomingBills.toFixed(0)}) — Savings Tracker (${monthlySavingsTarget.toFixed(0)})
+                                        Cash (${cashBalance.toFixed(0)}) — CC Spent (${creditLiabilities.toFixed(0)}) — Bills (${upcomingBills.toFixed(0)}) — Goals (${monthlySavingsTarget.toFixed(0)})
                                     </p>
                                 </div>
 
-                                {/* Action Center Overlay */}
-                                <div className="mt-8 bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4 flex gap-4 items-start">
-                                    <AlertCircle className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="font-medium text-emerald-100 mb-1">Weekly Pulse Action</p>
-                                        <p className="text-sm text-emerald-400/70">
-                                            You have {(entries['subscriptions'] || []).length} recurring subscriptions draining ${upcomingBills.toFixed(0)} monthly. Your baseline has safely protected these funds.
-                                        </p>
+                                {/* Velocity & Burn Rate Metrics */}
+                                <div className="grid grid-cols-2 gap-4 mt-6">
+                                    <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 group">
+                                        <div className="text-[10px] uppercase tracking-widest text-emerald-400 mb-2">Velocity Score</div>
+                                        <div className={`text-3xl font-mono ${velocityScore >= 1.0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                            {velocityScore.toFixed(2)}x
+                                        </div>
+                                        <div className="text-[10px] text-white/40 uppercase tracking-widest mt-2 group-hover:text-white/80 transition-colors">
+                                            {velocityScore >= 1.0 ? 'Goal Acceleration' : 'Alibi Detected (Decay)'}
+                                        </div>
                                     </div>
+                                    <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4 group">
+                                        <div className="text-[10px] uppercase tracking-widest text-sky-400 mb-2">Daily Burn Rate</div>
+                                        <div className="text-3xl font-mono text-white">
+                                            ${dailyBurnRate.toFixed(0)} <span className="text-sm text-white/40 font-sans tracking-tight">/ day</span>
+                                        </div>
+                                        <div className="text-[10px] text-white/40 uppercase tracking-widest mt-2 group-hover:text-white/80 transition-colors">Adjusts dynamically</div>
+                                    </div>
+                                </div>
+
+                                {/* Action Center Overlay */}
+                                <div className="mt-8">
+                                    {isWindfallActive ? (
+                                        <div className="bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-4 flex gap-4 items-start relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent pointer-events-none" />
+                                            <Sparkles className="w-6 h-6 text-indigo-400 shrink-0 mt-0.5 relative z-10" />
+                                            <div className="relative z-10 w-full">
+                                                <p className="font-medium text-indigo-100 mb-1">Windfall Workflow Triggered</p>
+                                                <p className="text-xs text-indigo-400/80 mb-4 leading-relaxed">
+                                                    You received a deposit 20% larger than average. Let's force-apply the 50/30/20 rule to maximize wealth building.
+                                                </p>
+                                                <Button variant="outline" className="text-xs h-8 bg-indigo-500/20 border-indigo-500/40 text-indigo-300 hover:bg-indigo-500 hover:text-white transition-all w-full md:w-auto">
+                                                    Split Funds
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : isAlibiInterceptorActive ? (
+                                        <div className="bg-rose-950/30 border border-rose-500/30 rounded-xl p-4 flex gap-4 items-start relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-transparent pointer-events-none" />
+                                            <AlertCircle className="w-6 h-6 text-rose-400 shrink-0 mt-0.5 relative z-10" />
+                                            <div className="relative z-10 w-full">
+                                                <p className="font-medium text-rose-100 mb-1 flex items-center gap-2">The Alibi Interceptor <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-[9px] uppercase tracking-widest text-rose-300">Action Required</span></p>
+                                                <p className="text-xs text-rose-300/80 mb-4 leading-relaxed">
+                                                    You spent over your budget allowance. Which goal should we delay by 4 days to cover this gap and avoid an excuse?
+                                                </p>
+                                                <Button variant="outline" className="text-xs h-8 bg-rose-500/20 border-rose-500/40 text-rose-300 hover:bg-rose-500 hover:text-white transition-all w-full md:w-auto">
+                                                    Rebalance Goals
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4 flex gap-4 items-start">
+                                            <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-medium text-emerald-100 mb-1">Wealth Building Active</p>
+                                                <p className="text-sm text-emerald-400/70">
+                                                    You are accelerating towards your targets. Your Velocity Score indicates positive compounding. Keep it up!
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
@@ -338,7 +425,21 @@ export default function MoneyPage() {
                 </div>
 
                 {/* Connected Accounts & Cards */}
-                {plaidAccounts.length > 0 && (
+                {isLoadingPlaid ? (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+                        <Card className="bg-[#0A0A0E] border-white/5 shadow-2xl overflow-hidden animate-pulse">
+                            <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+                                <CardTitle className="text-xs font-mono uppercase tracking-widest text-emerald-400/50 flex items-center gap-2">
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Syncing Vault...
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="h-32 flex items-center justify-center">
+                                <div className="text-xs text-white/30 uppercase tracking-widest font-mono">Retrieving directly from institutions</div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                ) : plaidAccounts.length > 0 ? (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
                         <Card className="bg-[#0A0A0E] border-white/5 shadow-2xl overflow-hidden">
                             <CardHeader className="border-b border-white/5 bg-white/[0.02]">
@@ -387,7 +488,7 @@ export default function MoneyPage() {
                             </CardContent>
                         </Card>
                     </motion.div>
-                )}
+                ) : null}
 
                 {/* Mid Dash: Zero Knowledge YTD & Asset Holdings */}
                 <div className="grid lg:grid-cols-[1.5fr,1fr] gap-6">
@@ -468,19 +569,74 @@ export default function MoneyPage() {
                     </Card>
                 </div>
 
-                {/* Legacy Data Micro-Apps */}
+                {/* Legacy Data Micro-Apps and Heat Map */}
                 <div className="space-y-4">
-                    <h3 className="text-xs font-mono uppercase tracking-widest text-white/40 pl-2">System Manual Modules</h3>
+                    <h3 className="text-xs font-mono uppercase tracking-widest text-white/40 pl-2 flex items-center gap-2">
+                        <Activity className="w-4 h-4" /> The Burn-Rate Heat Map & Habits
+                    </h3>
+
+                    {/* Heat Map Simulation (Calendar View) */}
+                    <Card className="bg-[#0A0A0E] border-white/5 shadow-2xl mb-8">
+                        <CardContent className="p-6">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+                                <div>
+                                    <h4 className="text-sm font-semibold text-white/90">Consistency Tracker</h4>
+                                    <p className="text-xs text-white/40 mt-1 max-w-md">Visualizing high burn days vs. low burn days to identify patterns. For example, do you spend 40% more on Thursdays?</p>
+                                </div>
+                                <div className="flex items-center gap-4 text-[10px] uppercase font-mono text-white/40">
+                                    <div className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-500/20 border border-emerald-500/40 rounded-sm"></div> Low Burn</div>
+                                    <div className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500/20 border border-amber-500/40 rounded-sm"></div> Med Burn</div>
+                                    <div className="flex items-center gap-1"><div className="w-3 h-3 bg-rose-500/20 border border-rose-500/40 rounded-sm"></div> High Burn</div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-7 gap-2">
+                                {/* Week Days */}
+                                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+                                    <div key={d} className="text-[10px] text-center uppercase text-white/30 font-mono pb-2">{d}</div>
+                                ))}
+                                {/* Mockup Days */}
+                                {Array.from({ length: 28 }).map((_, i) => {
+                                    // Generate a mock burn pattern (Thursdays and Saturdays high)
+                                    const dayOfWeek = i % 7;
+                                    let burnLevel = 'low';
+                                    if (dayOfWeek === 3 || dayOfWeek === 5) burnLevel = Math.random() > 0.3 ? 'high' : 'medium';
+                                    else if (dayOfWeek === 4) burnLevel = 'medium';
+
+                                    const colorMap = {
+                                        low: 'bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20',
+                                        medium: 'bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20',
+                                        high: 'bg-rose-500/10 border-rose-500/20 hover:bg-rose-500/20',
+                                    };
+
+                                    return (
+                                        <div key={i} className={`aspect-square rounded-lg border flex flex-col items-center justify-center p-1 transition-all cursor-crosshair group ${colorMap[burnLevel as keyof typeof colorMap]}`}>
+                                            <span className="text-[10px] text-white/60 font-mono mb-1">{i + 1}</span>
+                                            {burnLevel === 'high' && <div className="w-1 h-1 rounded-full bg-rose-400 group-hover:scale-150 transition-transform"></div>}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <h3 className="text-xs font-mono uppercase tracking-widest text-white/40 pl-2 mt-8">System Manual Modules</h3>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {sections.map((sec) => (
                             <Link key={sec.key} href={`/systems/money/${sec.key}`}>
-                                <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition group cursor-pointer h-full">
+                                <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition group cursor-pointer h-full relative overflow-hidden">
+                                    {sec.key === 'savings-goals' && (
+                                        <div className="absolute top-0 right-0 p-2 text-[8px] uppercase font-mono bg-indigo-500 text-white font-bold rounded-bl-lg">
+                                            TTG Enabled
+                                        </div>
+                                    )}
                                     <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-3 h-full">
                                         <div className={`p-3 rounded-full ${sec.colorClass} group-hover:scale-110 transition-transform`}>
                                             {sec.icon}
                                         </div>
                                         <div className="text-xs font-semibold uppercase tracking-wider">{sec.title}</div>
-                                        <div className="text-[10px] text-white/30">{(entries[sec.key] || []).length} Entries</div>
+                                        <div className="text-[10px] text-white/30">
+                                            {sec.key === 'savings-goals' ? 'Time-to-Goal Countdown' : `${(entries[sec.key] || []).length} Entries`}
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </Link>

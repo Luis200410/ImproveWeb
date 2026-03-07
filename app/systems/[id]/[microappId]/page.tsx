@@ -581,6 +581,7 @@ export default function MicroappPage() {
                                     projects={entries}
                                     tasks={tasks}
                                     areas={areas}
+                                    statusOptions={microapp.fields.find(f => f.name === 'Status')?.options}
                                     onUpdateProject={handleUpdateProject}
                                     onEditProject={handleEditEntry}
                                     onCreateProject={handleCreateProject}

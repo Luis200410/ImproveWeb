@@ -54,7 +54,7 @@ export default function RadialOrbitalTimeline({
 
     const calculateNodePosition = (index: number, total: number) => {
         const angle = ((index / total) * 360 + rotationAngle) % 360;
-        const radius = 300;
+        const radius = 220;
         const radian = (angle * Math.PI) / 180;
 
         const x = radius * Math.cos(radian) + centerOffset.x;
@@ -207,7 +207,7 @@ export default function RadialOrbitalTimeline({
         >
             <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
                 <div
-                    className="absolute w-full h-[800px] flex items-center justify-center transition-all duration-1000"
+                    className="absolute w-full h-[500px] flex items-center justify-center transition-all duration-1000"
                     ref={orbitRef}
                     style={{
                         perspective: "1000px",
@@ -217,15 +217,15 @@ export default function RadialOrbitalTimeline({
                     <div className="absolute z-10 flex items-center justify-center transition-all duration-1000" style={{ transform: isPoweredOn ? "scale(0.5)" : "scale(1)" }}>
                         {isPoweredOn && (
                             <>
-                                <div className="absolute w-[620px] h-[620px] rounded-full border border-white/20 animate-ping opacity-70 pointer-events-none"></div>
+                                <div className="absolute w-[420px] h-[420px] rounded-full border border-white/20 animate-ping opacity-70 pointer-events-none"></div>
                                 <div
-                                    className="absolute w-[680px] h-[680px] rounded-full border border-white/10 animate-ping opacity-50 pointer-events-none"
+                                    className="absolute w-[480px] h-[480px] rounded-full border border-white/10 animate-ping opacity-50 pointer-events-none"
                                     style={{ animationDelay: "0.5s" }}
                                 ></div>
                             </>
                         )}
                         <InteractiveGlobe
-                            size={600}
+                            size={400}
                             markers={globeMarkers}
                             activeMarkerId={
                                 Object.keys(expandedItems).find(
@@ -251,7 +251,7 @@ export default function RadialOrbitalTimeline({
                         />
                     </div>
 
-                    <div className={`absolute w-[800px] h-[800px] rounded-full border border-white/10 pointer-events-none transition-opacity duration-1000 ${isPoweredOn ? 'opacity-100' : 'opacity-0'}`}></div>
+                    <div className={`absolute w-[500px] h-[500px] rounded-full border border-white/10 pointer-events-none transition-opacity duration-1000 ${isPoweredOn ? 'opacity-100' : 'opacity-0'}`}></div>
 
                     {timelineData.map((item, index) => {
                         const isExpanded = expandedItems[item.id];
@@ -304,72 +304,75 @@ export default function RadialOrbitalTimeline({
 
                                 {isExpanded && (
                                     <>
-                                        <div className="absolute top-[16%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-125 pointer-events-auto z-[100] transition-all animate-in zoom-in duration-300">
-                                            <Icon size={24} />
-                                        </div>
+                                        {/* Counter-scale wrapper for readability on mobile */}
+                                        <div className="absolute top-[16%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] transform-gpu scale-[1.5] sm:scale-[1.25] lg:scale-100 origin-top">
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.4)] scale-125 pointer-events-auto transition-all animate-in zoom-in duration-300">
+                                                <Icon size={24} />
+                                            </div>
 
-                                        <Card className="absolute top-[16%] mt-10 left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/20 shadow-2xl shadow-black/50 overflow-visible pointer-events-auto z-[99]">
-                                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
-                                            <CardHeader className="pb-2">
-                                                <div className="flex justify-between items-center">
-                                                    <Badge
-                                                        className={`px-2 text-xs ${getStatusStyles(
-                                                            item.status
-                                                        )}`}
-                                                    >
-                                                        {item.status === "completed"
-                                                            ? "COMPLETE"
-                                                            : item.status === "in-progress"
-                                                                ? "IN PROGRESS"
-                                                                : "PENDING"}
-                                                    </Badge>
-                                                    <span className="text-xs font-mono text-white/50">
-                                                        {item.date}
-                                                    </span>
-                                                </div>
-                                                <CardTitle className="text-sm mt-2">
-                                                    {item.title}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="text-xs text-white/80">
-                                                <p>{item.content}</p>
-
-                                                <div className="mt-4 pt-3 border-t border-white/10">
-                                                    <div className="flex justify-between items-center text-xs mb-1">
-                                                        <span className="flex items-center">
-                                                            <Zap size={10} className="mr-1" />
-                                                            Energy Level
+                                            <Card className="absolute top-0 mt-10 left-1/2 -translate-x-1/2 w-80 bg-black/90 backdrop-blur-lg border-white/20 shadow-2xl shadow-black/50 overflow-visible pointer-events-auto">
+                                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-px h-3 bg-white/50"></div>
+                                                <CardHeader className="pb-2">
+                                                    <div className="flex justify-between items-center">
+                                                        <Badge
+                                                            className={`px-2 text-xs ${getStatusStyles(
+                                                                item.status
+                                                            )}`}
+                                                        >
+                                                            {item.status === "completed"
+                                                                ? "COMPLETE"
+                                                                : item.status === "in-progress"
+                                                                    ? "IN PROGRESS"
+                                                                    : "PENDING"}
+                                                        </Badge>
+                                                        <span className="text-xs font-mono text-white/50">
+                                                            {item.date}
                                                         </span>
-                                                        <span className="font-mono">{item.energy}%</span>
                                                     </div>
-                                                    <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                                                            style={{ width: `${item.energy}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
+                                                    <CardTitle className="text-sm mt-2">
+                                                        {item.title}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="text-xs text-white/80">
+                                                    <p>{item.content}</p>
 
-                                                <div className="mt-4 pt-3 border-t border-white/10 flex justify-center">
-                                                    <Button
-                                                        variant="outline"
-                                                        className="w-full flex items-center justify-center h-8 px-4 text-xs font-semibold rounded bg-white text-black hover:bg-white/80 hover:text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] border-none uppercase tracking-widest"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            if (item.category) {
-                                                                router.push(`/systems/${item.category}`);
-                                                            }
-                                                        }}
-                                                    >
-                                                        Enter {item.title} System
-                                                        <ArrowRight
-                                                            size={12}
-                                                            className="ml-2"
-                                                        />
-                                                    </Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
+                                                    <div className="mt-4 pt-3 border-t border-white/10">
+                                                        <div className="flex justify-between items-center text-xs mb-1">
+                                                            <span className="flex items-center">
+                                                                <Zap size={10} className="mr-1" />
+                                                                Energy Level
+                                                            </span>
+                                                            <span className="font-mono">{item.energy}%</span>
+                                                        </div>
+                                                        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                                                                style={{ width: `${item.energy}%` }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-4 pt-3 border-t border-white/10 flex justify-center">
+                                                        <Button
+                                                            variant="outline"
+                                                            className="w-full flex items-center justify-center h-8 px-4 text-xs font-semibold rounded bg-white text-black hover:bg-white/80 hover:text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] border-none uppercase tracking-widest"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (item.category) {
+                                                                    router.push(`/systems/${item.category}`);
+                                                                }
+                                                            }}
+                                                        >
+                                                            Enter {item.title} System
+                                                            <ArrowRight
+                                                                size={12}
+                                                                className="ml-2"
+                                                            />
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
                                     </>
                                 )}
                             </div>

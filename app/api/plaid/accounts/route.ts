@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { plaidClient } from "@/lib/plaid";
 import { createClient } from "@/utils/supabase/server";
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);
@@ -31,35 +32,41 @@ export async function GET(req: Request) {
         let allHoldings: any[] = [];
         let allSecurities: any[] = [];
 
-        // 2. Loop through items to fetch balances and potentially investments
-        for (const item of items) {
+        // 2. Map items to fetch promises and run in parallel
+        const fetchPromises = items.map(async (item) => {
             const accessToken = item.access_token;
+            let itemAccounts: any[] = [];
+            let itemHoldings: any[] = [];
+            let itemSecurities: any[] = [];
 
             // Fetch Accounts & Balances
-            try {
-                const balanceResponse = await plaidClient.accountsBalanceGet({
-                    access_token: accessToken,
-                });
-
-                // Keep track of institutional source if needed, but for now just accounts
-                allAccounts = [...allAccounts, ...balanceResponse.data.accounts];
-            } catch (err: any) {
-                console.error("Error fetching balance:", err.response?.data || err.message);
-            }
+            const balancePromise = plaidClient.accountsBalanceGet({ access_token: accessToken })
+                .then(res => { itemAccounts = res.data.accounts; })
+                .catch((err: any) => console.error("Error fetching balance:", err.response?.data || err.message));
 
             // Fetch Investments (if supported by this item)
-            try {
-                const investmentResponse = await plaidClient.investmentsHoldingsGet({
-                    access_token: accessToken,
+            const investmentPromise = plaidClient.investmentsHoldingsGet({ access_token: accessToken })
+                .then(res => {
+                    itemHoldings = res.data.holdings;
+                    itemSecurities = res.data.securities;
+                })
+                .catch((err: any) => {
+                    if (err.response?.data?.error_code !== "INVALID_PRODUCT") {
+                        console.error("Error fetching investments:", err.response?.data || err.message);
+                    }
                 });
-                allHoldings = [...allHoldings, ...investmentResponse.data.holdings];
-                allSecurities = [...allSecurities, ...investmentResponse.data.securities];
-            } catch (err: any) {
-                // Not all items will have investments, so ignore this error
-                if (err.response?.data?.error_code !== "INVALID_PRODUCT") {
-                    console.error("Error fetching investments:", err.response?.data || err.message);
-                }
-            }
+
+            await Promise.all([balancePromise, investmentPromise]);
+
+            return { itemAccounts, itemHoldings, itemSecurities };
+        });
+
+        const results = await Promise.all(fetchPromises);
+
+        for (const result of results) {
+            allAccounts = [...allAccounts, ...result.itemAccounts];
+            allHoldings = [...allHoldings, ...result.itemHoldings];
+            allSecurities = [...allSecurities, ...result.itemSecurities];
         }
 
         // 3. Format Investments by attaching security info to holdings
@@ -74,10 +81,12 @@ export async function GET(req: Request) {
         });
 
         // 4. Return aggregated data
-        return NextResponse.json({
+        const responseData = {
             accounts: allAccounts,
             holdings: formattedHoldings
-        });
+        };
+
+        return NextResponse.json(responseData);
 
     } catch (error: any) {
         console.error("Error fetching user accounts:", error.response?.data || error.message);

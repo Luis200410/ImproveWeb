@@ -6,7 +6,7 @@ import { Entry } from '@/lib/data-store'
  */
 export function getTaskTitle(task: Entry | null | undefined, fallback = 'Untitled Task'): string {
     if (!task || !task.data) return fallback
-    return task.data.Task || task.data.Title || task.data.title || fallback
+    return task.data.Task || task.data.Title || task.data.title || task.data.Description || task.data.Name || task.data.name || fallback
 }
 
 /**

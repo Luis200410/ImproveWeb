@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { ImproveLogo } from '@/components/ui/improve-logo'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -120,23 +121,11 @@ export function Navigation() {
 
     async function handleLogout() {
         setSigningOut(true)
-        const { error } = await supabase.auth.signOut()
-        if (error) {
-            console.warn('Client signOut error', error)
-        }
-        try {
-            await fetch('/api/auth/signout', { method: 'POST', credentials: 'include' })
-        } catch (err) {
-            console.warn('Server signout fetch failed', err)
-        }
-        setSessionUser(null)
-        setSubscriptionStatus(null)
-        setSigningOut(false)
         setIsMemberMenuOpen(false)
-        // Send user back to landing page with the public header
-        if (typeof window !== 'undefined') {
-            window.location.href = '/'
-        }
+        // Navigate directly to the server-side signout route.
+        // It clears all auth cookies AND redirects to / in ONE response.
+        // This avoids any race condition between clearing cookies and redirecting.
+        window.location.href = '/api/auth/signout'
     }
 
     return (
@@ -146,10 +135,10 @@ export function Navigation() {
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/10"
         >
-            <div className="max-w-7xl mx-auto px-8 py-6 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-6 flex justify-between items-center">
                 {/* Logo */}
-                <Link href="/" className={`${playfair.className} text-2xl font-bold tracking-tight text-white hover:text-white/80 transition-colors`}>
-                    IMPROVE
+                <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+                    <ImproveLogo small />
                 </Link>
 
                 {/* Desktop Navigation */}

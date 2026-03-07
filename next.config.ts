@@ -7,6 +7,18 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'me7aitdbxq.ufs.sh',
+      }
+    ],
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
