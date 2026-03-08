@@ -27,6 +27,7 @@ import { ChangeHabitsSheet } from '@/components/second-brain/habits/change-habit
 
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
+import { MacroRingsPanel } from '@/components/body/macro-rings-panel'
 import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
 
 import { TasksDashboard } from '@/components/tasks-dashboard'
@@ -387,6 +388,13 @@ export default function MicroappPage() {
                         >
                             <Plus className="w-4 h-4" /> Create Habit
                         </button>
+                    ) : microappId === 'diet' ? (
+                        <Link
+                            href="/systems/body/macro-scanner"
+                            className="bg-emerald-500 text-black px-6 py-2 rounded-full uppercase tracking-widest text-xs font-bold hover:bg-emerald-400 transition-colors flex items-center gap-2"
+                        >
+                            <Utensils className="w-4 h-4" /> Scan Meal
+                        </Link>
                     ) : (
                         <button
                             onClick={() => {
@@ -623,6 +631,11 @@ export default function MicroappPage() {
 
                             {/* Entries List */}
                             <div>
+                                {/* ── Macro rings (diet only) ── */}
+                                {microappId === 'diet' && userId && (
+                                    <MacroRingsPanel entries={entries} userId={userId} />
+                                )}
+
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -807,20 +820,29 @@ export default function MicroappPage() {
                                                                 </div>
                                                             ) : microappId === 'diet' ? (
                                                                 <div className="space-y-4">
+                                                                    {/* Meal name + calories */}
                                                                     <div className="flex justify-between items-start">
                                                                         <div>
                                                                             <div className="flex items-center gap-2 mb-1">
                                                                                 <span className="text-[10px] uppercase tracking-wider text-white/40">{entry.data['Meal']}</span>
-                                                                                <span className="text-[10px] uppercase tracking-wider text-white/40 mx-1">·</span>
-                                                                                <span className="text-[10px] uppercase tracking-wider text-white/40">{entry.data['Date']}</span>
+                                                                                {entry.data['Fuel Grade'] && (
+                                                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${Number(entry.data['Fuel Grade']) >= 8 ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
+                                                                                            : Number(entry.data['Fuel Grade']) >= 5 ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                                                                                                : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                                                                                        }`}>
+                                                                                        ⚡ {entry.data['Fuel Grade']}/10
+                                                                                    </span>
+                                                                                )}
                                                                             </div>
-                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Plate Build'] || 'Meal Log'}</h3>
+                                                                            <h3 className={`${playfair.className} text-xl text-white`}>{entry.data['Plate Build'] || entry.data['Meal'] || 'Meal Log'}</h3>
                                                                         </div>
-                                                                        <div className="text-right">
+                                                                        <div className="text-right shrink-0 ml-3">
                                                                             <div className="text-2xl font-mono text-emerald-200">{entry.data['Calories']}</div>
                                                                             <div className="text-[10px] uppercase tracking-wider text-white/40">Kcal</div>
                                                                         </div>
                                                                     </div>
+
+                                                                    {/* Macros — food only */}
                                                                     <div className="grid grid-cols-3 gap-2 py-2 bg-white/5 rounded-lg border border-white/10 text-center">
                                                                         <div>
                                                                             <div className="text-lg font-mono">{entry.data['Protein (g)']}</div>
@@ -835,10 +857,15 @@ export default function MicroappPage() {
                                                                             <div className="text-[10px] text-white/40">FAT</div>
                                                                         </div>
                                                                     </div>
-                                                                    <div className="flex justify-between items-center text-xs text-white/50">
-                                                                        <span>💧 {entry.data['Hydration (glasses)']} glasses</span>
-                                                                        <span>{entry.data['Mood After']}</span>
-                                                                    </div>
+
+                                                                    {/* Hydration — separate row */}
+                                                                    {entry.data['Hydration (glasses)'] > 0 && (
+                                                                        <div className="flex items-center gap-2 border-t border-white/8 pt-3">
+                                                                            <Droplets className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                                                                            <span className="text-xs text-sky-300/80">{entry.data['Hydration (glasses)']} glass{entry.data['Hydration (glasses)'] !== 1 ? 'es' : ''} of water</span>
+                                                                            {entry.data['Mood After'] && <span className="ml-auto text-xs text-white/30">{entry.data['Mood After']}</span>}
+                                                                        </div>
+                                                                    )}
                                                                 </div>
                                                             ) : microappId === 'income' ? (
                                                                 <div className="space-y-4">
