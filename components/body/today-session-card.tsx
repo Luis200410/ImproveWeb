@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/utils/supabase/client'
 import {
     Dumbbell, Wind, BedDouble, ChevronDown, ChevronUp,
-    Save, Trophy, Check, RotateCcw,
+    Save, Trophy, Check, RotateCcw, Timer
 } from 'lucide-react'
 
 /* ──────────────────────────────────────────────────────────────
@@ -63,11 +63,13 @@ function ExerciseRow({
     exercise,
     log,
     userId,
+    isActive,
     onLogged,
 }: {
     exercise: Exercise
     log: ExerciseLog | undefined
     userId: string
+    isActive: boolean
     onLogged: () => void
 }) {
     const supabase = createClient()
@@ -78,6 +80,20 @@ function ExerciseRow({
     const [notes, setNotes] = useState('')
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
+
+    // Rest Timer State
+    const [restSeconds, setRestSeconds] = useState(0)
+
+    useEffect(() => {
+        if (restSeconds > 0) {
+            const timer = setInterval(() => setRestSeconds(r => r - 1), 1000)
+            return () => clearInterval(timer)
+        }
+    }, [restSeconds])
+
+    const startRest = (secs: number) => {
+        setRestSeconds(secs)
+    }
 
     const currentPR = log?.pr_weight_kg ?? 0
     const newPR = parseFloat(weight) > currentPR && parseFloat(weight) > 0
@@ -108,9 +124,15 @@ function ExerciseRow({
 
         setSaving(false)
         setSaved(true)
-        setOpen(false)
+        if (!isActive) setOpen(false) // Only collapse automatically if not in an active session
         onLogged() // re-fetch to update last performance display
         setTimeout(() => setSaved(false), 4000)
+    }
+
+    const formatTime = (secs: number) => {
+        const m = Math.floor(secs / 60)
+        const s = secs % 60
+        return `${m}:${s.toString().padStart(2, '0')}`
     }
 
     return (
@@ -209,16 +231,63 @@ function ExerciseRow({
                                 </div>
                             )}
 
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="flex items-center gap-2 px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-white/90 transition disabled:opacity-40"
-                            >
-                                {saving
-                                    ? <RotateCcw className="w-3 h-3 animate-spin" />
-                                    : <Save className="w-3 h-3" />}
-                                {saving ? 'Saving…' : 'Log this session'}
-                            </button>
+                            <div className="flex flex-wrap gap-2 pt-2">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition disabled:opacity-40 shadow-md ${isActive ? 'bg-orange-500 hover:bg-orange-400 text-white' : 'bg-white text-black hover:bg-white/90'
+                                        }`}
+                                >
+                                    {saving
+                                        ? <RotateCcw className="w-4 h-4 animate-spin" />
+                                        : <Check className="w-4 h-4" />}
+                                    {saving ? 'Saving…' : (isActive ? 'Log Set' : 'Log Session')}
+                                </button>
+
+                                {isActive && (
+                                    <>
+                                        <button
+                                            onClick={() => { handleSave(); startRest(60); }}
+                                            disabled={saving}
+                                            className="px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-xs font-medium text-white transition flex items-center gap-1"
+                                        >
+                                            <Timer className="w-3.5 h-3.5" /> 60s
+                                        </button>
+                                        <button
+                                            onClick={() => { handleSave(); startRest(90); }}
+                                            disabled={saving}
+                                            className="px-3 py-2 bg-white/5 border border-white/10 hover:bg-white/10 rounded-lg text-xs font-medium text-white transition flex items-center gap-1"
+                                        >
+                                            <Timer className="w-3.5 h-3.5" /> 90s
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
+                            {/* Active Rest Timer overlay element inline */}
+                            <AnimatePresence>
+                                {restSeconds > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="mt-3 p-4 rounded-xl border border-sky-500/30 bg-sky-500/10 flex flex-col items-center justify-center space-y-2">
+                                            <p className="text-[10px] uppercase tracking-[0.2em] text-sky-200/60">Resting</p>
+                                            <div className="text-4xl font-mono font-bold text-sky-400">
+                                                {formatTime(restSeconds)}
+                                            </div>
+                                            <button
+                                                onClick={() => setRestSeconds(0)}
+                                                className="text-[10px] text-sky-300/50 hover:text-sky-300 transition underline underline-offset-2"
+                                            >
+                                                Skip rest
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </motion.div>
                 )}
@@ -237,10 +306,21 @@ export function TodaySessionCard({ userId }: Props) {
     const [exerciseLogs, setExerciseLogs] = useState<ExerciseLog[]>([])
     const [loading, setLoading] = useState(true)
     const [refreshKey, setRefreshKey] = useState(0)
+    const [isSessionActive, setIsSessionActive] = useState(false)
+
+    // Compute "today"
+    const todayStr = useMemo(() => {
+        if (typeof window === 'undefined') return ''
+        const d = new Date()
+        const yyyy = d.getFullYear()
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd}`
+    }, [refreshKey])
 
     const load = useCallback(async () => {
         const [{ data: identity }, { data: logs }] = await Promise.all([
-            supabase.from('body_identity').select('week_plan, goal_label').eq('user_id', userId).single(),
+            supabase.from('body_identity').select('week_plan, goal_label').eq('user_id', userId).maybeSingle(),
             supabase.from('exercise_log').select('*').eq('user_id', userId),
         ])
 
@@ -263,24 +343,34 @@ export function TodaySessionCard({ userId }: Props) {
 
     const logMap = new Map(exerciseLogs.map(l => [l.exercise_name, l]))
 
+    const typeKey = (todayPlan.type?.toLowerCase() || 'rest') as 'training' | 'recovery' | 'rest';
     const typeStyle = {
         training: { icon: <Dumbbell className="w-4 h-4" />, color: 'text-orange-300', border: 'border-orange-500/20', badge: 'border-orange-500/20 bg-orange-500/8 text-orange-300' },
         recovery: { icon: <Wind className="w-4 h-4" />, color: 'text-sky-300', border: 'border-sky-500/20', badge: 'border-sky-500/20 bg-sky-500/8 text-sky-300' },
         rest: { icon: <BedDouble className="w-4 h-4" />, color: 'text-white/40', border: 'border-white/10', badge: 'border-white/10 bg-white/5 text-white/40' },
-    }[todayPlan.type]
+    }[typeKey] || { icon: <BedDouble className="w-4 h-4" />, color: 'text-white/40', border: 'border-white/10', badge: 'border-white/10 bg-white/5 text-white/40' };
 
     const exercises = todayPlan.exercises ?? []
+
+    // Formula for progress
+    const completedToday = exercises.filter(ex => {
+        const log = logMap.get(ex.name.toLowerCase().trim())
+        if (!log || !log.last_logged_at) return false
+        return log.last_logged_at.startsWith(todayStr)
+    }).length
+
+    const progressPct = exercises.length > 0 ? completedToday / exercises.length : 0
 
     return (
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`rounded-2xl border ${typeStyle.border} bg-white/[0.03] p-5 space-y-4`}
+            className={`rounded-2xl border ${typeStyle.border} bg-white/[0.03] p-5 space-y-5`}
         >
             {/* Header */}
             <div className="flex items-start justify-between">
-                <div className="space-y-1">
+                <div className="space-y-1 mt-1">
                     <div className="flex items-center gap-2">
                         <span className={typeStyle.color}>{typeStyle.icon}</span>
                         <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">Today's Session</span>
@@ -290,30 +380,84 @@ export function TodaySessionCard({ userId }: Props) {
                     <h3 className="text-white font-semibold text-lg">{todayPlan.focus}</h3>
                     <p className="text-[10px] text-white/30">{todayPlan.day} · {goalLabel}</p>
                 </div>
-                <span className={`px-2.5 py-1 rounded-full border text-[10px] font-medium ${typeStyle.badge}`}>
-                    {todayPlan.type}
-                </span>
+                {/* Visual Ring for Session Progress */}
+                {todayPlan.type === 'training' && exercises.length > 0 && (
+                    <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                        <svg className="w-full h-full -rotate-90">
+                            <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
+                            <motion.circle
+                                cx="24" cy="24" r="20"
+                                fill="none"
+                                stroke="#f97316"
+                                strokeWidth="4"
+                                strokeLinecap="round"
+                                strokeDasharray={2 * Math.PI * 20}
+                                initial={{ strokeDashoffset: 2 * Math.PI * 20 }}
+                                animate={{ strokeDashoffset: 2 * Math.PI * 20 * (1 - progressPct) }}
+                                transition={{ duration: 1, ease: 'easeOut' }}
+                                className={progressPct === 1 ? 'stroke-emerald-500' : 'stroke-orange-500'}
+                            />
+                        </svg>
+                        <span className="absolute text-[10px] font-bold font-mono text-white">
+                            {completedToday}/{exercises.length}
+                        </span>
+                    </div>
+                )}
+                {todayPlan.type !== 'training' && (
+                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-medium ${typeStyle.badge}`}>
+                        {todayPlan.type}
+                    </span>
+                )}
             </div>
 
             {/* Exercises list — training days */}
             {exercises.length > 0 && (
-                <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                        <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
-                            {exercises.length} Exercise{exercises.length !== 1 ? 's' : ''} · tap to log
-                        </p>
-                        <div className="h-px flex-1 bg-white/8" />
-                        <p className="text-[9px] text-white/20">upserts on save</p>
+                <div className="space-y-3">
+                    {/* Linear Comparison Formula Diagram */}
+                    <div className="space-y-1.5">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[10px] uppercase tracking-[0.1em] text-white/40">Session Completion</span>
+                            <span className="text-[10px] font-mono text-white/30">{Math.round(progressPct * 100)}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                            <motion.div
+                                className={`h-full rounded-full ${progressPct === 1 ? 'bg-emerald-500' : 'bg-orange-500'}`}
+                                initial={{ width: 0 }}
+                                animate={{ width: `${progressPct * 100}%` }}
+                                transition={{ duration: 1 }}
+                            />
+                        </div>
                     </div>
-                    {exercises.map((ex, i) => (
-                        <ExerciseRow
-                            key={ex.name + i}
-                            exercise={ex}
-                            log={logMap.get(ex.name.toLowerCase().trim())}
-                            userId={userId}
-                            onLogged={handleLogged}
-                        />
-                    ))}
+
+                    {!isSessionActive && progressPct < 1 ? (
+                        <div className="pt-2 pb-1">
+                            <button
+                                onClick={() => setIsSessionActive(true)}
+                                className="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs tracking-wide uppercase hover:bg-white/90 transition shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                            >
+                                Start Exercise Session
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-2 pt-2">
+                            <div className="flex items-center gap-3">
+                                <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
+                                    {exercises.length} Exercise{exercises.length !== 1 ? 's' : ''} · tap to log
+                                </p>
+                                <div className="h-px flex-1 bg-white/8" />
+                            </div>
+                            {exercises.map((ex, i) => (
+                                <ExerciseRow
+                                    key={ex.name + i}
+                                    exercise={ex}
+                                    log={logMap.get(ex.name.toLowerCase().trim())}
+                                    userId={userId}
+                                    isActive={isSessionActive}
+                                    onLogged={handleLogged}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 

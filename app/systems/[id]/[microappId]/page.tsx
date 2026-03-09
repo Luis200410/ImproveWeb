@@ -28,6 +28,7 @@ import { ChangeHabitsSheet } from '@/components/second-brain/habits/change-habit
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
 import { MacroRingsPanel } from '@/components/body/macro-rings-panel'
+import { TodaySessionCard } from '@/components/body/today-session-card'
 import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
 
 import { TasksDashboard } from '@/components/tasks-dashboard'
@@ -222,6 +223,17 @@ export default function MicroappPage() {
             // Destructure id to avoid saving it inside the JSONB data column if possible,
             // while keeping a copy for the update call.
             const { id: dataId, ...cleanData } = data;
+
+            // Enforce numeric types for Diet microapp macros to prevent bar charts from breaking
+            if (microapp.id === 'diet') {
+                const numFields = ['Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Hydration (glasses)'];
+                numFields.forEach(f => {
+                    if (cleanData[f] !== undefined && cleanData[f] !== '') {
+                        cleanData[f] = Number(cleanData[f]);
+                    }
+                });
+            }
+
             const updateId = dataId || editingEntry?.id;
 
             if (updateId) {
@@ -410,6 +422,14 @@ export default function MicroappPage() {
 
                 {/* Content Area */}
                 <div className="relative">
+                    {/* Routine Builder Today Session */}
+                    {microappId === 'routine-builder' && userId && userId !== 'defaultUser' && (
+                        <div className="mb-8 max-w-xl">
+                            <h2 className="text-xs uppercase tracking-widest text-white/40 mb-3 px-1">Active Session Dashboard</h2>
+                            <TodaySessionCard userId={userId} />
+                        </div>
+                    )}
+
                     {/* Atomic Habits Custom View */}
                     {microappId === 'atomic-habits' ? (
                         <>
@@ -603,7 +623,12 @@ export default function MicroappPage() {
                             <AnimatePresence>
                                 {isForgeOpen && (
                                     <ForgeForm
-                                        microapp={microapp}
+                                        microapp={{
+                                            ...microapp,
+                                            fields: microapp.id === 'diet'
+                                                ? microapp.fields.filter(f => f.name !== 'Hydration (glasses)')
+                                                : microapp.fields
+                                        }}
                                         systemId={systemId}
                                         onSave={handleSaveEntry}
                                         onCancel={handleCancelForm}
@@ -827,8 +852,8 @@ export default function MicroappPage() {
                                                                                 <span className="text-[10px] uppercase tracking-wider text-white/40">{entry.data['Meal']}</span>
                                                                                 {entry.data['Fuel Grade'] && (
                                                                                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${Number(entry.data['Fuel Grade']) >= 8 ? 'border-emerald-500/30 text-emerald-400 bg-emerald-500/10'
-                                                                                            : Number(entry.data['Fuel Grade']) >= 5 ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
-                                                                                                : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
+                                                                                        : Number(entry.data['Fuel Grade']) >= 5 ? 'border-amber-500/30 text-amber-400 bg-amber-500/10'
+                                                                                            : 'border-rose-500/30 text-rose-400 bg-rose-500/10'
                                                                                         }`}>
                                                                                         ⚡ {entry.data['Fuel Grade']}/10
                                                                                     </span>

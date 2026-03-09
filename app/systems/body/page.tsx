@@ -12,6 +12,7 @@ import { ArrowLeft, ChefHat, HeartPulse, ScanLine, Sparkles, Target } from 'luci
 import { IdentitySetupSheet } from '@/components/body/identity-setup-sheet'
 import { BodyAnalytics } from '@/components/body/body-analytics'
 import { TodaySessionCard } from '@/components/body/today-session-card'
+import { HydrationQuickLog } from '@/components/body/hydration-quick-log'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -37,8 +38,8 @@ export default function BodyPage() {
             setUserId(uid)
             if (user?.id) {
                 const [{ data: id }, { data: mt }] = await Promise.all([
-                    supabase.from('body_identity').select('id').eq('user_id', uid).single(),
-                    supabase.from('macro_targets').select('*').eq('user_id', uid).single(),
+                    supabase.from('body_identity').select('id').eq('user_id', uid).maybeSingle(),
+                    supabase.from('macro_targets').select('*').eq('user_id', uid).maybeSingle(),
                 ])
                 setIdentityReady(!!id)
                 if (!id) setShowSetup(true)
@@ -65,7 +66,13 @@ export default function BodyPage() {
         return Number.isFinite(num) ? num : 0
     }
 
-    const today = new Date().toISOString().split('T')[0]
+    const today = useMemo(() => {
+        const d = new Date()
+        const yyyy = d.getFullYear()
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd}`
+    }, [])
     const recoveryEntries = entries['recovery'] || []
     const dietEntries = entries['diet'] || []
 
@@ -125,123 +132,129 @@ export default function BodyPage() {
                     <span className="uppercase tracking-[0.3em] text-xs">Body System</span>
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    className="space-y-6"
-                >
-                    {/* ── Hero ── */}
-                    <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.04] p-8 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
-                        <div className="flex flex-wrap items-center gap-3 text-emerald-200 relative z-10">
-                            <Sparkles className="w-5 h-5" />
-                            <span className="text-xs uppercase tracking-[0.32em] text-white/70">Athletic OS · Body</span>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+                    {/* Left Column (Main Content) */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* ── Hero ── */}
+                        <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.04] p-8 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
+                            <div className="flex flex-wrap items-center gap-3 text-emerald-200 relative z-10">
+                                <Sparkles className="w-5 h-5" />
+                                <span className="text-xs uppercase tracking-[0.32em] text-white/70">Athletic OS · Body</span>
+                            </div>
+                            <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold mt-4 mb-3 text-white relative z-10`}>
+                                Build + Recover + Fuel
+                            </h1>
+                            <p className={`${inter.className} text-lg text-white/55 max-w-2xl relative z-10`}>
+                                Your AI-generated week plan is live. Log your session, scan your meals, track your recovery.
+                            </p>
+                            <div className="mt-6 flex flex-wrap gap-3 relative z-10">
+                                <Button asChild className="bg-emerald-500/90 hover:bg-emerald-500 text-black border-0 font-bold">
+                                    <Link href="/systems/body/macro-scanner">
+                                        <ScanLine className="w-4 h-4" />
+                                        Scan a Meal
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="outline" className="border-white/25 text-white hover:bg-white/10">
+                                    <Link href="/systems/body/routine-builder">View Routine Log</Link>
+                                </Button>
+                            </div>
                         </div>
-                        <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold mt-4 mb-3 text-white relative z-10`}>
-                            Build + Recover + Fuel
-                        </h1>
-                        <p className={`${inter.className} text-lg text-white/55 max-w-2xl relative z-10`}>
-                            Your AI-generated week plan is live. Log your session, scan your meals, track your recovery.
-                        </p>
-                        <div className="mt-6 flex flex-wrap gap-3 relative z-10">
-                            <Button asChild className="bg-emerald-500/90 hover:bg-emerald-500 text-black border-0 font-bold">
-                                <Link href="/systems/body/macro-scanner">
-                                    <ScanLine className="w-4 h-4" />
-                                    Scan a Meal
+
+                        {/* ── 4-stat strip ── */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Readiness', value: typeof readinessAvg === 'number' && readinessAvg > 0 ? String(readinessAvg) : '—', sub: '/10' },
+                                { label: 'Fuel today', value: typeof caloriesToday === 'number' ? caloriesToday.toFixed(0) : '—', sub: 'kcal' },
+                                { label: 'Protein', value: typeof proteinToday === 'number' ? proteinToday.toFixed(0) + 'g' : '—', sub: 'today' },
+                                { label: 'Hydration', value: typeof hydrationToday === 'number' ? String(hydrationToday) : '—', sub: 'glasses' },
+                            ].map(({ label, value, sub }) => (
+                                <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">{label}</p>
+                                    <div className="flex items-baseline gap-1 mt-2">
+                                        <span className="text-3xl font-bold text-white">{value}</span>
+                                        {value !== '—' && <span className="text-xs text-white/35">{sub}</span>}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* ── Today's Session moved to Right Sidebar ── */}
+                        {/* ── Recovery last log ── */}
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <HeartPulse className="w-4 h-4 text-white/40" />
+                                    <span className="text-xs uppercase tracking-[0.2em] text-white/40">Recovery</span>
+                                </div>
+                                <Link href="/systems/body/recovery" className="text-[11px] text-white/30 hover:text-white transition">
+                                    View log →
                                 </Link>
-                            </Button>
-                            <Button asChild variant="outline" className="border-white/25 text-white hover:bg-white/10">
-                                <Link href="/systems/body/routine-builder">View Routine Log</Link>
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* ── 4-stat strip ── */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                        {[
-                            { label: 'Readiness', value: readinessAvg ? String(readinessAvg) : '—', sub: '/10' },
-                            { label: 'Fuel today', value: caloriesToday ? caloriesToday.toFixed(0) : '—', sub: 'kcal' },
-                            { label: 'Protein', value: proteinToday ? proteinToday.toFixed(0) + 'g' : '—', sub: 'today' },
-                            { label: 'Hydration', value: hydrationToday ? String(hydrationToday) : '—', sub: 'glasses' },
-                        ].map(({ label, value, sub }) => (
-                            <div key={label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                                <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">{label}</p>
-                                <div className="flex items-baseline gap-1 mt-2">
-                                    <span className="text-3xl font-bold text-white">{value}</span>
-                                    {value !== '—' && <span className="text-xs text-white/35">{sub}</span>}
-                                </div>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* ── Today's Session (AI week plan + exercise logger) ── */}
-                    {identityReady && userId !== 'defaultUser' && (
-                        <TodaySessionCard userId={userId} />
-                    )}
-
-                    {/* ── Recovery last log ── */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <HeartPulse className="w-4 h-4 text-white/40" />
-                                <span className="text-xs uppercase tracking-[0.2em] text-white/40">Recovery</span>
-                            </div>
-                            <Link href="/systems/body/recovery" className="text-[11px] text-white/30 hover:text-white transition">
-                                View log →
-                            </Link>
-                        </div>
-                        {recoveryEntries[0] ? (
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-white font-semibold">{recoveryEntries[0].data['Modality'] || 'Recovery'}</p>
-                                    <p className="text-xs text-white/40 mt-0.5">{recoveryEntries[0].data['Focus Area']} · {recoveryEntries[0].data['Duration (min)']}m</p>
-                                </div>
-                                <div className={`text-3xl font-bold ${Number(recoveryEntries[0].data['Readiness (1-10)']) >= 8 ? 'text-emerald-400'
+                            {recoveryEntries[0] ? (
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-white font-semibold">{recoveryEntries[0].data['Modality'] || 'Recovery'}</p>
+                                        <p className="text-xs text-white/40 mt-0.5">{recoveryEntries[0].data['Focus Area']} · {recoveryEntries[0].data['Duration (min)']}m</p>
+                                    </div>
+                                    <div className={`text-3xl font-bold ${Number(recoveryEntries[0].data['Readiness (1-10)']) >= 8 ? 'text-emerald-400'
                                         : Number(recoveryEntries[0].data['Readiness (1-10)']) >= 5 ? 'text-amber-400'
                                             : 'text-rose-400'
-                                    }`}>
-                                    {recoveryEntries[0].data['Readiness (1-10)'] || '—'}
-                                    <span className="text-base text-white/30">/10</span>
+                                        }`}>
+                                        {recoveryEntries[0].data['Readiness (1-10)'] || '—'}
+                                        <span className="text-base text-white/30">/10</span>
+                                    </div>
                                 </div>
+                            ) : (
+                                <p className="text-white/30 text-sm">No recovery logged yet. Log after today's session.</p>
+                            )}
+                        </div>
+
+                        {/* ── Diet last meal ── */}
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <ChefHat className="w-4 h-4 text-white/40" />
+                                    <span className="text-xs uppercase tracking-[0.2em] text-white/40">Last Meal Scanned</span>
+                                </div>
+                                <Link href="/systems/body/diet" className="text-[11px] text-white/30 hover:text-white transition">
+                                    View log →
+                                </Link>
                             </div>
-                        ) : (
-                            <p className="text-white/30 text-sm">No recovery logged yet. Log after today's session.</p>
+                            {dietEntries[0] ? (
+                                <div className="flex items-center justify-between">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white font-semibold truncate">{dietEntries[0].data['Meal'] || 'Scanned meal'}</p>
+                                        <p className="text-xs text-white/40 mt-0.5 truncate">{dietEntries[0].data['Plate Build']}</p>
+                                    </div>
+                                    <div className="text-right shrink-0 ml-4">
+                                        <div className="text-2xl font-bold text-emerald-300">{dietEntries[0].data['Calories']}</div>
+                                        <div className="text-[10px] text-white/35">kcal</div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-between">
+                                    <p className="text-white/30 text-sm">No meals scanned yet.</p>
+                                    <Link href="/systems/body/macro-scanner"
+                                        className="text-xs text-emerald-400 border border-emerald-500/30 rounded-full px-3 py-1 hover:bg-emerald-500/10 transition">
+                                        Scan now →
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column (Sidebar) */}
+                    <div className="space-y-6">
+                        {identityReady && userId !== 'defaultUser' && (
+                            <>
+                                <TodaySessionCard userId={userId} />
+                                <HydrationQuickLog userId={userId} onUpdate={refreshEntries} />
+                            </>
                         )}
                     </div>
 
-                    {/* ── Diet last meal ── */}
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                <ChefHat className="w-4 h-4 text-white/40" />
-                                <span className="text-xs uppercase tracking-[0.2em] text-white/40">Last Meal Scanned</span>
-                            </div>
-                            <Link href="/systems/body/diet" className="text-[11px] text-white/30 hover:text-white transition">
-                                View log →
-                            </Link>
-                        </div>
-                        {dietEntries[0] ? (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-white font-semibold truncate">{dietEntries[0].data['Meal'] || 'Scanned meal'}</p>
-                                    <p className="text-xs text-white/40 mt-0.5 truncate">{dietEntries[0].data['Plate Build']}</p>
-                                </div>
-                                <div className="text-right shrink-0 ml-4">
-                                    <div className="text-2xl font-bold text-emerald-300">{dietEntries[0].data['Calories']}</div>
-                                    <div className="text-[10px] text-white/35">kcal</div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-between">
-                                <p className="text-white/30 text-sm">No meals scanned yet.</p>
-                                <Link href="/systems/body/macro-scanner"
-                                    className="text-xs text-emerald-400 border border-emerald-500/30 rounded-full px-3 py-1 hover:bg-emerald-500/10 transition">
-                                    Scan now →
-                                </Link>
-                            </div>
-                        )}
-                    </div>
-                </motion.div>
+                </div>
 
                 {/* ── Identity Analytics (radar, heatmap, horizon) ── */}
                 {identityReady && userId !== 'defaultUser' && (

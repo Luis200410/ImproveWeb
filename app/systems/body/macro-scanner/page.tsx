@@ -62,6 +62,13 @@ function gradeLabel(grade: number) {
     return 'Weak Fuel ❌'
 }
 
+function toLocalIso(d: Date): string {
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+}
+
 function MacroBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
     const pct = Math.min(100, (value / max) * 100)
     return (
@@ -222,7 +229,7 @@ export default function MacroScannerPage() {
     /* ── Log meal ── */
     const handleLog = async () => {
         if (!result) return
-        const today = new Date().toISOString().split('T')[0]
+        const today = toLocalIso(new Date())
 
         try {
             // ── Purge diet entries older than 30 days ──────────────────

@@ -409,7 +409,7 @@ export function BodyAnalytics({ userId, dietEntries, recoveryEntries, macroTarge
 
     const load = useCallback(async () => {
         const [{ data: id }, { data: wh }] = await Promise.all([
-            supabase.from('body_identity').select('*').eq('user_id', userId).single(),
+            supabase.from('body_identity').select('*').eq('user_id', userId).maybeSingle(),
             supabase.from('body_weight_log').select('*').eq('user_id', userId).order('logged_at', { ascending: true }).limit(20),
         ])
         if (id) setIdentity(id as BodyIdentity)
