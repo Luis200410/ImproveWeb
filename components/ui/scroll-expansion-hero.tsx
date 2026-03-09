@@ -10,6 +10,8 @@ import {
 } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { Playfair_Display } from '@/lib/font-shim';
+const playfair = Playfair_Display({ subsets: ['latin'] });
 
 interface ScrollExpandMediaProps {
     mediaType?: 'video' | 'image';
@@ -168,9 +170,6 @@ const ScrollExpandMedia = ({
     const indicatorsOpacity = 1 - Math.min(scrollProgress * 4, 1);
     const titleOpacity = 1 - Math.max(0, (scrollProgress - 0.7) * 3);
 
-    const firstWord = title ? title.split(' ')[0] : '';
-    const restOfTitle = title ? title.split(' ').slice(1).join(' ') : '';
-
     return (
         <div
             ref={sectionRef}
@@ -322,16 +321,16 @@ const ScrollExpandMedia = ({
                                 style={{ opacity: titleOpacity }}
                             >
                                 <motion.h2
-                                    className='text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none'
+                                    className={`${playfair.className} text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none uppercase`}
                                     style={{ transform: `translateX(-${textTranslateX}vw)` }}
                                 >
-                                    {firstWord}
+                                    COMPLETE
                                 </motion.h2>
                                 <motion.h2
-                                    className='text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none'
+                                    className={`${playfair.className} text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none uppercase`}
                                     style={{ transform: `translateX(${textTranslateX}vw)` }}
                                 >
-                                    {restOfTitle}
+                                    INTEGRITY
                                 </motion.h2>
                             </div>
                         </div>

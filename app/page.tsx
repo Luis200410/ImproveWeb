@@ -31,7 +31,7 @@ export default function Home() {
 
   // Asset URLs
   const currentMedia = {
-    src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+    src: '/logo.png',
     background: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop',
     title: 'IMPROVE Excellence',
     date: 'EST. MMXXIV',

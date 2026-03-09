@@ -24,6 +24,7 @@ import { Playfair_Display, Inter } from '@/lib/font-shim'
 import { HabitDetailsSidebar } from '@/components/second-brain/habits/habit-details-sidebar'
 import { UnexpectedEventsSheet } from '@/components/second-brain/habits/unexpected-events-sheet'
 import { ChangeHabitsSheet } from '@/components/second-brain/habits/change-habits-sheet'
+import { DietDetailsSidebar } from '@/components/body/diet-details-sidebar'
 
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
@@ -71,6 +72,7 @@ export default function MicroappPage() {
     const [selectedHabit, setSelectedHabit] = useState<Entry | null>(null)
     const [habitViewMode, setHabitViewMode] = useState<'day' | 'week' | 'list' | 'overview'>('day')
     const [isAdaptingRoutine, setIsAdaptingRoutine] = useState(false)
+    const [selectedDietEntry, setSelectedDietEntry] = useState<Entry | null>(null)
 
     const fetchEntries = useCallback(async (currentUserId: string) => {
         if (!microappId) return;
@@ -640,6 +642,16 @@ export default function MicroappPage() {
                                 )}
                             </AnimatePresence>
 
+                            <DietDetailsSidebar
+                                entry={selectedDietEntry}
+                                open={!!selectedDietEntry}
+                                onOpenChange={(o) => !o && setSelectedDietEntry(null)}
+                                onEdit={() => {
+                                    handleEdit(selectedDietEntry!)
+                                    setSelectedDietEntry(null)
+                                }}
+                            />
+
                             {/* ... (Relation Creation Modal) ... */}
                             <AnimatePresence>
                                 {creatingRelation && targetMicroapp && (
@@ -699,7 +711,16 @@ export default function MicroappPage() {
                                                     {/* ... (Standard Card Content) ... */}
                                                     {/* ... Copied relevant parts for standard card rendering ... */}
                                                     <div className="absolute -inset-0.5 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
-                                                    <Card className="relative border border-white/10 bg-white/5 group-hover:border-white/30 transition-all duration-500 h-full flex flex-col">
+                                                    <Card
+                                                        className={`relative border border-white/10 bg-white/5 group-hover:border-white/30 transition-all duration-500 h-full flex flex-col ${microappId === 'diet' ? 'cursor-pointer' : ''}`}
+                                                        onClick={(e) => {
+                                                            if (microappId === 'diet') {
+                                                                // Prevent clicking on action buttons from opening the sidebar
+                                                                if ((e.target as HTMLElement).closest('button')) return;
+                                                                setSelectedDietEntry(entry);
+                                                            }
+                                                        }}
+                                                    >
                                                         <CardHeader className="border-b border-white/10">
                                                             <div className="flex items-center justify-between">
                                                                 <div className="flex items-center gap-3">

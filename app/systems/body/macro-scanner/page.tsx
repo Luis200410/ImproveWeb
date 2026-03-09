@@ -19,6 +19,8 @@ import {
     X,
     Zap,
     Activity,
+    Upload,
+    Image as ImageIcon
 } from 'lucide-react'
 import { dataStore } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
@@ -105,34 +107,44 @@ export default function MacroScannerPage() {
     const [userId, setUserId] = useState('defaultUser')
     const [scanProgress, setScanProgress] = useState(0)
     const [cameraError, setCameraError] = useState(false)
+    const startingCameraRef = useRef(false)
 
-    useEffect(() => {
-        const load = async () => {
-            const supabase = createClient()
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) setUserId(user.id)
-        }
-        load()
-        return () => stopCamera()
-    }, [])
+    const fileInputRefUpload = useRef<HTMLInputElement>(null)
+    const fileInputRefCapture = useRef<HTMLInputElement>(null)
 
-    /* ── Camera ── */
+
+
     const startCamera = useCallback(async () => {
         setCameraError(false)
         setError(null)
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("Camera API not supported or requires secure HTTPS connection.");
+            }
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
             })
             streamRef.current = stream
             if (videoRef.current) {
                 videoRef.current.srcObject = stream
-                await videoRef.current.play()
+                // Trigger play with a retry if it fails
+                try {
+                    await videoRef.current.play()
+                } catch (playErr) {
+                    console.warn('First play try failed, retrying...', playErr)
+                    // Sometimes on mobile it needs a second to catch
+                    setTimeout(() => {
+                        videoRef.current?.play().catch(e => console.error('Play retry still failed:', e))
+                    }, 500)
+                }
             }
             setCameraActive(true)
-        } catch {
+        } catch (e: any) {
+            console.error(e)
             setCameraError(true)
-            setError('Camera access denied. Please allow camera permissions and try again.')
+            setError(e.message || 'Camera access denied. Please allow camera permissions.')
+        } finally {
+            startingCameraRef.current = false
         }
     }, [])
 
@@ -142,10 +154,34 @@ export default function MacroScannerPage() {
             streamRef.current.getTracks().forEach(t => t.stop())
             streamRef.current = null
         }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null
+        }
         setCameraActive(false)
         setScanState('idle')
         setScanProgress(0)
     }, [])
+
+    useEffect(() => {
+        let mounted = true
+        const load = async () => {
+            const supabase = createClient()
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user && mounted) {
+                setUserId(user.id)
+            }
+            // Only start if not active and not already starting
+            if (!streamRef.current && !startingCameraRef.current && mounted) {
+                startingCameraRef.current = true
+                startCamera();
+            }
+        }
+        load()
+        return () => {
+            mounted = false
+            stopCamera()
+        }
+    }, [startCamera, stopCamera])
 
     /* ── Capture frame → base64 ── */
     const captureFrame = useCallback((): string | null => {
@@ -162,19 +198,11 @@ export default function MacroScannerPage() {
         return dataUrl.split(',')[1] // strip "data:image/jpeg;base64,"
     }, [])
 
-    /* ── Trigger scan ── */
-    const handleScan = useCallback(async () => {
-        if (!cameraActive) return
+    /* ── Analyze Base64 ── */
+    const analyzeBase64 = async (base64: string) => {
         setError(null)
         setScanProgress(0)
-
-        const base64 = captureFrame()
         setScanState('analysing')
-        if (!base64) {
-            setError('Failed to capture frame from camera.')
-            setScanState('idle')
-            return
-        }
 
         try {
             const res = await fetch('/api/ai/macro-scan', {
@@ -188,10 +216,41 @@ export default function MacroScannerPage() {
             setResult(data)
             setEditableItems(data.items.map((i: FoodItem) => ({ ...i })))
             setScanState('result')
+            stopCamera() // Stop camera if it was running, to show results properly
         } catch (err: any) {
             setError(err.message || 'Something went wrong.')
             setScanState('idle')
         }
+    }
+
+    /* ── Handle File Upload / Camera Capture ── */
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.onloadend = async () => {
+            const base64String = reader.result as string
+            const base64Data = base64String.split(',')[1] // remove data prefix
+            analyzeBase64(base64Data)
+        }
+        reader.readAsDataURL(file)
+        e.target.value = '' // reset input
+    }
+
+    /* ── Trigger scan ── */
+    const handleScanLive = useCallback(async () => {
+        if (!cameraActive) return
+        setError(null)
+        setScanProgress(0)
+
+        const base64 = captureFrame()
+        if (!base64) {
+            setError('Failed to capture frame from camera.')
+            setScanState('idle')
+            return
+        }
+        analyzeBase64(base64)
     }, [cameraActive, captureFrame])
 
     /* ── Edit weight ── */
@@ -319,8 +378,7 @@ export default function MacroScannerPage() {
                     </div>
 
                     {/* ─── Camera Viewfinder ───────────────────────── */}
-                    <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03]"
-                        style={{ aspectRatio: '16/9', maxHeight: '420px' }}>
+                    <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] w-full max-h-[70vh] aspect-[4/5] md:aspect-video">
 
                         {/* Video feed */}
                         <video
@@ -333,34 +391,29 @@ export default function MacroScannerPage() {
                         {/* Canvas (hidden, used for frame capture) */}
                         <canvas ref={canvasRef} className="hidden" />
 
-                        {/* Idle / no-camera state */}
-                        {!cameraActive && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-sm">
-                                <div className="w-20 h-20 rounded-full border border-white/15 bg-white/5 flex items-center justify-center">
+                        {/* Hidden File Inputs */}
+                        <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRefCapture} onChange={handleFileSelect} />
+                        <input type="file" accept="image/*" className="hidden" ref={fileInputRefUpload} onChange={handleFileSelect} />
+
+                        {/* Idle / error state */}
+                        {!cameraActive && scanState === 'idle' && !result && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-black/60 backdrop-blur-sm z-10 px-4">
+                                <div className="w-16 h-16 rounded-full border border-white/15 bg-white/5 flex items-center justify-center mb-2">
                                     {cameraError
-                                        ? <CameraOff className="w-8 h-8 text-red-400" />
-                                        : <Camera className="w-8 h-8 text-white/60" />
+                                        ? <CameraOff className="w-7 h-7 text-red-400" />
+                                        : <Camera className="w-7 h-7 text-white/60" />
                                     }
                                 </div>
                                 <div className="text-center">
                                     <p className="text-white/80 font-medium">
-                                        {cameraError ? 'Camera Unavailable' : 'Camera Ready'}
+                                        {cameraError ? 'Camera Unavailable' : 'Starting Camera...'}
                                     </p>
-                                    <p className="text-white/40 text-sm mt-1">
-                                        {cameraError
-                                            ? 'Allow camera access in your browser settings'
-                                            : 'Tap Activate Camera to begin scanning'}
-                                    </p>
+                                    {cameraError && (
+                                        <p className="text-white/40 text-sm mt-2 max-w-[280px] mx-auto leading-relaxed">
+                                            Please use the buttons below to upload or take a photo instead.
+                                        </p>
+                                    )}
                                 </div>
-                                {!cameraError && (
-                                    <Button
-                                        onClick={startCamera}
-                                        className="bg-white text-black hover:bg-white/90 font-semibold px-8"
-                                    >
-                                        <Camera className="w-4 h-4 mr-2" />
-                                        Activate Camera
-                                    </Button>
-                                )}
                             </div>
                         )}
 
@@ -416,24 +469,60 @@ export default function MacroScannerPage() {
                         )}
                     </div>
 
-                    {/* Scan / Stop buttons */}
-                    {cameraActive && (scanState === 'idle' || scanState === 'result') && (
-                        <div className="flex gap-3">
-                            <Button
-                                onClick={handleScan}
-                                disabled={scanState !== 'idle'}
-                                className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-14 text-base tracking-wide"
-                            >
-                                <ScanLine className="w-5 h-5 mr-2" />
-                                {scanState === 'result' ? 'Scan Again' : 'Scan Meal'}
-                            </Button>
-                            <Button
-                                onClick={stopCamera}
-                                variant="outline"
-                                className="border-white/15 text-white hover:bg-white/10 h-14 px-5"
-                            >
-                                <CameraOff className="w-5 h-5" />
-                            </Button>
+                    {/* Scan / Stop buttons & Additional Inputs */}
+                    {(scanState === 'idle' || scanState === 'result') && (
+                        <div className="space-y-4">
+                            {cameraActive && (
+                                <div className="flex gap-3">
+                                    <Button
+                                        onClick={handleScanLive}
+                                        disabled={scanState !== 'idle'}
+                                        className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-14 text-base tracking-wide"
+                                    >
+                                        <ScanLine className="w-5 h-5 mr-2" />
+                                        {scanState === 'result' ? 'Scan Again' : 'Scan Live View'}
+                                    </Button>
+                                    <Button
+                                        onClick={stopCamera}
+                                        variant="outline"
+                                        className="border-white/15 text-white hover:bg-white/10 h-14 px-5"
+                                    >
+                                        <CameraOff className="w-5 h-5" />
+                                    </Button>
+                                </div>
+                            )}
+
+                            {/* Manual Inputs Always Available */}
+                            <div className="flex gap-3">
+                                <Button
+                                    onClick={() => fileInputRefCapture.current?.click()}
+                                    disabled={scanState !== 'idle'}
+                                    variant="outline"
+                                    className="flex-1 border-white/15 bg-white/5 hover:bg-white/10 h-14"
+                                >
+                                    <Camera className="w-4 h-4 mr-2 text-white/60" />
+                                    Take Photo
+                                </Button>
+                                <Button
+                                    onClick={() => fileInputRefUpload.current?.click()}
+                                    disabled={scanState !== 'idle'}
+                                    variant="outline"
+                                    className="flex-1 border-white/15 bg-white/5 hover:bg-white/10 h-14"
+                                >
+                                    <ImageIcon className="w-4 h-4 mr-2 text-white/60" />
+                                    Upload
+                                </Button>
+                                {!cameraActive && !cameraError && (
+                                    <Button
+                                        onClick={startCamera}
+                                        disabled={scanState !== 'idle'}
+                                        variant="outline"
+                                        className="border-white/15 bg-white/5 hover:bg-white/10 h-14 px-5"
+                                    >
+                                        <ScanLine className="w-4 h-4 text-emerald-400" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     )}
 

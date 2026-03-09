@@ -19,10 +19,10 @@ export function ImproveLogo({ className = "", small = false, hero = false }: Imp
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className={`relative ${small ? 'w-32 h-16' : hero ? 'w-[700px] h-[350px]' : 'w-[400px] h-[200px]'}`}
+                className={`relative ${small ? 'w-32 h-16' : hero ? 'w-[1000px] h-[500px]' : 'w-[400px] h-[200px]'}`}
             >
                 <Image
-                    src="/logoWeb.webp"
+                    src="/logo.png"
                     alt="Improve Logo"
                     fill
                     className="object-contain"
