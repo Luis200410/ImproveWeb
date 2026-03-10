@@ -13,7 +13,7 @@ export async function POST(req: Request) {
             user: {
                 client_user_id: userId,
             },
-            client_name: "ImproveWeb Apps",
+            client_name: "Improve Club",
             products: ['auth', 'transactions', 'investments'] as any[],
             language: "en",
             country_codes: ["US"] as any[],

@@ -18,12 +18,14 @@ export const metadata: Metadata = {
         "self improvement systems",
         "holistic self improvement",
         "improve app features",
+        "Improve Club",
+        "improve club",
     ],
     openGraph: {
         title: "Eight Systems. One Life. — IMPROVE",
         description:
             "Body, Money, Work, Productivity, Relationships, Mind, Legacy, and Second Brain. All eight dimensions of human excellence, systematized in one app.",
-        url: "https://improveweb.app/sales",
+        url: "https://improve-club.com/sales",
         images: [
             {
                 url: "/og-image.png",
@@ -40,7 +42,7 @@ export const metadata: Metadata = {
         images: ["/og-image.png"],
     },
     alternates: {
-        canonical: "https://improveweb.app/sales",
+        canonical: "https://improve-club.com/sales",
     },
 };
 

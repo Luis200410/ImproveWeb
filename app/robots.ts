@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
                 '/(billing)/',  // Private billing data
             ],
         },
-        sitemap: 'https://improveweb.app/sitemap.xml',
+        sitemap: 'https://improve-club.com/sitemap.xml',
     }
 }

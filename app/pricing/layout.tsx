@@ -15,12 +15,14 @@ export const metadata: Metadata = {
         "origin plan",
         "momentum plan",
         "praxis plan",
+        "Improve Club",
+        "improve club",
     ],
     openGraph: {
         title: "Membership Pricing — IMPROVE",
         description:
             "From $10/month, unlock all 8 life systems and start your journey to excellence. Choose Origin, Momentum, or Praxis.",
-        url: "https://improveweb.app/pricing",
+        url: "https://improve-club.com/pricing",
         images: [
             {
                 url: "/og-image.png",
@@ -37,7 +39,7 @@ export const metadata: Metadata = {
         images: ["/og-image.png"],
     },
     alternates: {
-        canonical: "https://improveweb.app/pricing",
+        canonical: "https://improve-club.com/pricing",
     },
 };
 

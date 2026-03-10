@@ -21,7 +21,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const siteUrl = "https://improveweb.app";
+const siteUrl = "https://improve-club.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -58,6 +58,9 @@ export const metadata: Metadata = {
     "improve relationships",
     "IMPROVE app",
     "school of excellence",
+    "Improve Club",
+    "improve club",
+    "improve-club.com",
   ],
   authors: [{ name: "IMPROVE", url: siteUrl }],
   creator: "IMPROVE",
@@ -100,8 +103,8 @@ export const metadata: Metadata = {
     description:
       "Eight powerful life systems to master your body, wealth, work, productivity, relationships, mind, and legacy.",
     images: ["/og-image.png"],
-    creator: "@improveweb",
-    site: "@improveweb",
+    creator: "@improveclub",
+    site: "@improveclub",
   },
   alternates: {
     canonical: siteUrl,

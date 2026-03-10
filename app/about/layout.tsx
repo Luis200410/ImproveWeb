@@ -16,12 +16,14 @@ export const metadata: Metadata = {
         "personal development philosophy",
         "school of excellence",
         "improve yourself",
+        "Improve Club",
+        "improve club",
     ],
     openGraph: {
         title: "The Manifesto — IMPROVE",
         description:
             "In an age of distraction, we stand for discipline. In an era of mediocrity, we champion excellence. Discover the philosophy behind IMPROVE.",
-        url: "https://improveweb.app/about",
+        url: "https://improve-club.com/about",
         images: [
             {
                 url: "/og-image.png",
@@ -38,7 +40,7 @@ export const metadata: Metadata = {
         images: ["/og-image.png"],
     },
     alternates: {
-        canonical: "https://improveweb.app/about",
+        canonical: "https://improve-club.com/about",
     },
 };
 

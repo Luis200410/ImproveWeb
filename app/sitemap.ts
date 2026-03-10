@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-const siteUrl = "https://improveweb.app";
+const siteUrl = "https://improve-club.com";
 
 /**
  * Ensures lastmod is consistent within the current week to show "active" content.
