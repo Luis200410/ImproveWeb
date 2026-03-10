@@ -1,7 +1,15 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Ballet:opsz@16..72&display=swap');
 @import "highlight.js/styles/github-dark.css";
+@import "tailwindcss";
 
 @theme {
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-ballet: "Ballet", cursive;
+  
+  /* Update defaults */
+  --font-sans: var(--font-bebas);
+  --font-serif: var(--font-bebas);
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));

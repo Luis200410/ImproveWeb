@@ -5,14 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Sparkles, Loader2, ArrowRight, Check, Plus, Edit2, Trash2 } from 'lucide-react'
 import { Entry, dataStore } from '@/lib/data-store'
 import { generateHabitChanges, HabitChangePlan } from '@/app/actions/generate-habit-changes'
 import { sileo } from 'sileo'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface ChangeHabitsSheetProps {
     open: boolean
@@ -114,11 +113,11 @@ export function ChangeHabitsSheet({ open, onOpenChange, currentHabits, userId, o
             <SheetContent className="w-full sm:w-[540px] bg-black border-l border-white/10 p-0 flex flex-col h-full !max-w-none overflow-y-auto">
                 <SheetHeader className="p-6 border-b border-white/10 shrink-0 sticky top-0 bg-black/80 backdrop-blur z-10 flex flex-row items-center justify-between">
                     <div>
-                        <SheetTitle className={`${playfair.className} text-3xl font-bold text-white flex items-center gap-3`}>
+                        <SheetTitle className={`${bebas.className} text-3xl font-bold text-white flex items-center gap-3`}>
                             <Sparkles className="w-6 h-6 text-yellow-400" />
                             Change Habits
                         </SheetTitle>
-                        <SheetDescription className={`${inter.className} text-white/60 mt-2`}>
+                        <SheetDescription className="text-white/60 mt-2 font-bebas">
                             Tell the AI what you want to change, and it will rebuild your routine.
                         </SheetDescription>
                     </div>
@@ -131,7 +130,7 @@ export function ChangeHabitsSheet({ open, onOpenChange, currentHabits, userId, o
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-4"
                     >
-                        <label className={`${inter.className} text-sm font-medium text-white/80 uppercase tracking-wider`}>
+                        <label className="text-sm font-medium text-white/80 uppercase tracking-wider font-bebas">
                             Your Intent
                         </label>
                         <Textarea
@@ -174,12 +173,12 @@ export function ChangeHabitsSheet({ open, onOpenChange, currentHabits, userId, o
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="h-[1px] flex-1 bg-white/10" />
-                                    <span className={`${inter.className} text-xs text-yellow-400 uppercase tracking-widest font-bold`}>Proposed Architecture</span>
+                                    <span className="text-xs text-yellow-400 uppercase tracking-widest font-bold font-bebas">Proposed Architecture</span>
                                     <div className="h-[1px] flex-1 bg-white/10" />
                                 </div>
 
                                 <div className="bg-yellow-400/10 border border-yellow-400/20 rounded-xl p-5">
-                                    <p className={`${inter.className} text-sm text-yellow-200/80 leading-relaxed italic`}>
+                                    <p className="text-sm text-yellow-200/80 leading-relaxed italic font-bebas">
                                         "{plan.summary}"
                                     </p>
                                 </div>

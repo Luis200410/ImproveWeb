@@ -1,10 +1,9 @@
 "use client";
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 // --- Data for the Eight Systems ---
 const accordionItems = [
@@ -105,14 +104,14 @@ const AccordionItem = ({ item, isActive, onMouseEnter }: AccordionItemProps) => 
         `}
             >
                 <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                    <span className={`${playfair.className} text-white text-xl md:text-3xl font-bold whitespace-nowrap`}>
+                    <span className={`${bebas.className} text-white text-xl md:text-3xl font-bold whitespace-nowrap`}>
                         {item.title}
                     </span>
                     {isActive && (
                         <motion.span
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`${inter.className} text-white/60 text-xs md:text-sm mt-2 uppercase tracking-[0.2em]`}
+                            className={`${bebas.className} text-white/60 text-xs md:text-sm mt-2 uppercase tracking-[0.2em]`}
                         >
                             {item.tagline}
                         </motion.span>

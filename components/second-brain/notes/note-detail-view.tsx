@@ -12,12 +12,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Entry } from '@/lib/data-store'
-import { Playfair_Display } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { NeuralEditor } from './neural-editor'
 
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface NoteDetailViewProps {
     note: Entry
@@ -157,7 +157,7 @@ export function NoteDetailView({
                     <input
                         value={title}
                         onChange={handleTitleChange}
-                        className={`${playfair.className} text-xl text-white bg-transparent border-none w-full focus:outline-none focus:ring-0 placeholder:text-white/30`}
+                        className={`${bebas.className} text-xl text-white bg-transparent border-none w-full focus:outline-none focus:ring-0 placeholder:text-white/30`}
                         placeholder="Untitled Sequence..."
                     />
                 </div>

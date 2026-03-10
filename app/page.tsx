@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
@@ -11,8 +11,7 @@ import { EightSystemsAccordion } from "@/components/ui/interactive-image-accordi
 import { ImproveLogo } from "@/components/ui/improve-logo";
 import Image from "next/image";
 
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 const improveWords = [
   { letter: "I", word: "Intentional", description: "Living" },
@@ -31,7 +30,7 @@ export default function Home() {
 
   // Asset URLs
   const currentMedia = {
-    src: '/logo.png',
+    src: '/logo final.png',
     background: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop',
     title: 'IMPROVE Excellence',
     date: 'EST. MMXXIV',
@@ -69,10 +68,10 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
                 className="text-center mb-20"
               >
-                <h2 className={`${playfair.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
+                <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
                   Why IMPROVE?
                 </h2>
-                <p className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto`}>
+                <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto`}>
                   Because excellence is not accidental—it's systematic
                 </p>
               </motion.div>
@@ -112,10 +111,10 @@ export default function Home() {
                     <div className="absolute -inset-0.5 bg-gradient-to-b from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur" />
                     <div className="relative bg-white/5 border border-white/10 p-8 group-hover:border-white/30 transition-all duration-500">
                       <div className="text-5xl mb-4">{feature.icon}</div>
-                      <h3 className={`${playfair.className} text-2xl font-bold text-white mb-3`}>
+                      <h3 className={`${bebas.className} text-2xl font-bold text-white mb-3`}>
                         {feature.title}
                       </h3>
-                      <p className={`${inter.className} text-white/60 leading-relaxed`}>
+                      <p className={`${bebas.className} text-white/60 leading-relaxed`}>
                         {feature.desc}
                       </p>
                     </div>
@@ -135,10 +134,10 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
                 className="text-center mb-20"
               >
-                <h2 className={`${playfair.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
+                <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
                   Eight Systems.<br />One Life.
                 </h2>
-                <p className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
+                <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
                   Every dimension of human excellence, systematized
                 </p>
                 <Link href="/sales">
@@ -167,10 +166,10 @@ export default function Home() {
                 <div className="absolute -inset-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 blur-2xl opacity-50" />
 
                 <div className="relative">
-                  <p className={`${playfair.className} text-4xl md:text-5xl italic text-white/90 mb-8 leading-relaxed`}>
+                  <p className={`${bebas.className} text-4xl md:text-5xl italic text-white/90 mb-8 leading-relaxed`}>
                     "The difference between who you are and who you want to be is what you do."
                   </p>
-                  <p className={`${inter.className} text-white/40 uppercase tracking-widest text-sm`}>
+                  <p className={`${bebas.className} text-white/40 uppercase tracking-widest text-sm`}>
                     — Bill Phillips
                   </p>
                 </div>
@@ -187,22 +186,22 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
               >
-                <h2 className={`${playfair.className} text-6xl md:text-7xl font-bold mb-8 text-white`}>
+                <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-8 text-white`}>
                   Your Move
                 </h2>
 
-                <p className={`${inter.className} text-2xl text-white/70 mb-6 leading-relaxed`}>
+                <p className={`${bebas.className} text-2xl text-white/70 mb-6 leading-relaxed`}>
                   You can continue as you are—hoping, wishing, trying.
                 </p>
 
-                <p className={`${inter.className} text-2xl text-white mb-12 leading-relaxed font-medium`}>
+                <p className={`${bebas.className} text-2xl text-white mb-12 leading-relaxed font-medium`}>
                   Or you can adopt a system designed to make excellence inevitable.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
                   <Link href="/register">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-base px-16 py-10 uppercase tracking-widest relative overflow-hidden group">
+                      <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bebas text-base px-16 py-10 uppercase tracking-widest relative overflow-hidden group">
                         <motion.div
                           className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
                           initial={{ x: "-100%" }}
@@ -215,7 +214,7 @@ export default function Home() {
                   </Link>
                   <Link href="/pricing">
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button variant="ghost" size="lg" className="font-serif text-base text-white/80 hover:text-white px-16 py-10 uppercase tracking-widest border border-white/20 hover:border-white/40">
+                      <Button variant="ghost" size="lg" className="font-bebas text-base text-white/80 hover:text-white px-16 py-10 uppercase tracking-widest border border-white/20 hover:border-white/40">
                         View Membership Options
                       </Button>
                     </motion.div>
@@ -229,10 +228,10 @@ export default function Home() {
           <footer className="py-8 text-center border-t border-white/10 relative">
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
             <div className="relative z-10">
-              <p className={`${playfair.className} text-white/30 italic text-sm`}>
+              <p className={`${bebas.className} text-white/30 italic text-sm`}>
                 "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
               </p>
-              <p className={`${inter.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
+              <p className={`${bebas.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
                 — Aristotle
               </p>
             </div>

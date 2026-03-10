@@ -5,13 +5,12 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Zap, Clock, Check, AlertCircle, TrendingUp } from 'lucide-react'
 import { Entry, dataStore } from '@/lib/data-store'
 import { sileo } from 'sileo'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface UnexpectedEventsSheetProps {
     open: boolean
@@ -128,11 +127,11 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
             <SheetContent className="w-full sm:w-[540px] bg-black border-l border-white/10 p-0 flex flex-col h-full !max-w-none overflow-y-auto">
                 <SheetHeader className="p-6 border-b border-white/10 shrink-0 sticky top-0 bg-black/80 backdrop-blur z-10 flex flex-row items-center justify-between">
                     <div>
-                        <SheetTitle className={`${playfair.className} text-3xl font-bold text-white flex items-center gap-3`}>
+                        <SheetTitle className={`${bebas.className} text-3xl font-bold text-white flex items-center gap-3`}>
                             <Zap className="w-6 h-6 text-yellow-400" />
                             Unexpected Events
                         </SheetTitle>
-                        <SheetDescription className={`${inter.className} text-white/60 mt-2`}>
+                        <SheetDescription className="text-white/60 mt-2 font-bebas">
                             Log sudden changes to shift your remaining habits downwards.
                         </SheetDescription>
                     </div>
@@ -146,7 +145,7 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
                     >
                         {/* Event Type Selection */}
                         <div className="space-y-3">
-                            <label className={`${inter.className} text-sm font-medium text-white/80 uppercase tracking-wider`}>
+                            <label className="text-sm font-medium text-white/80 uppercase tracking-wider font-bebas">
                                 Event Type
                             </label>
                             <div className="grid grid-cols-2 gap-4">
@@ -169,7 +168,7 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
 
                         {/* Event Description */}
                         <div className="space-y-3">
-                            <label className={`${inter.className} text-sm font-medium text-white/80 uppercase tracking-wider`}>
+                            <label className="text-sm font-medium text-white/80 uppercase tracking-wider font-bebas">
                                 What happened?
                             </label>
                             <Textarea
@@ -183,7 +182,7 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
                         {/* Timing */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-3">
-                                <label className={`${inter.className} text-sm font-medium text-white/80 uppercase tracking-wider flex items-center gap-2`}>
+                                <label className="text-sm font-medium text-white/80 uppercase tracking-wider flex items-center gap-2 font-bebas">
                                     <Clock className="w-4 h-4 text-white/40" /> Start Time
                                 </label>
                                 <input
@@ -194,7 +193,7 @@ export function UnexpectedEventsSheet({ open, onOpenChange, todayHabits, current
                                 />
                             </div>
                             <div className="space-y-3">
-                                <label className={`${inter.className} text-sm font-medium text-white/80 uppercase tracking-wider`}>
+                                <label className="text-sm font-medium text-white/80 uppercase tracking-wider font-bebas">
                                     Duration (mins)
                                 </label>
                                 <input

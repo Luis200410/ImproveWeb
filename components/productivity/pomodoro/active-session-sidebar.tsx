@@ -1,10 +1,12 @@
-
 'use client'
 
+import { Bebas_Neue } from '@/lib/font-shim'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Minus, Play, Pause, RotateCcw, Maximize2 } from 'lucide-react'
+import { X, Minus, Play, Pause, RotateCcw, Maximize2, Activity, Zap } from 'lucide-react'
 import { usePomodoro } from './pomodoro-context'
 import { formatTime, calculateEfficiency } from './pomodoro-utils'
+
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 export function ActiveSessionSidebar() {
     const {
@@ -96,7 +98,7 @@ export function ActiveSessionSidebar() {
                         {/* Center Stats */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                             <div className="text-[10px] uppercase tracking-[0.3em] text-amber-500 mb-2 font-bold">Neural Interval</div>
-                            <div className="text-6xl font-serif text-white tracking-tighter mb-2">
+                            <div className={`${bebas.className} text-6xl text-white tracking-tighter mb-2`}>
                                 {formatTime(timeLeft)}
                             </div>
                             <div className="text-[10px] uppercase tracking-widest text-white/30">
@@ -158,11 +160,11 @@ export function ActiveSessionSidebar() {
                 <div className="p-6 border-t border-white/10 grid grid-cols-2 gap-4 bg-[#050505]">
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
                         <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Sessions Today</div>
-                        <div className="text-2xl font-serif text-white">{String(todayCompleted).padStart(2, '0')}</div>
+                        <div className={`${bebas.className} text-2xl text-white`}>{String(todayCompleted).padStart(2, '0')}</div>
                     </div>
                     <div className="p-4 bg-white/5 rounded-lg border border-white/5">
                         <div className="text-[9px] uppercase tracking-widest text-white/30 mb-1">Focus Mastery</div>
-                        <div className="text-2xl font-serif text-amber-500">Lv {level}</div>
+                        <div className={`${bebas.className} text-2xl text-amber-500`}>Lv {level}</div>
                     </div>
                 </div>
             </motion.div>
@@ -208,4 +210,3 @@ export function MinimizedSessionWidget() {
     )
 }
 
-import { Activity, Zap } from 'lucide-react'

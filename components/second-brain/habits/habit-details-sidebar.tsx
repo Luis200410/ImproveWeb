@@ -2,12 +2,11 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Entry } from '@/lib/data-store'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Edit2, RefreshCw, Calendar, Target, Zap, Heart, CheckCircle2, Award } from 'lucide-react'
 import { getLifeArea } from '@/lib/life-areas'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface HabitDetailsSidebarProps {
     entry: Entry | null
@@ -28,7 +27,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
             </div>
             <div>
                 <div className="text-xs uppercase tracking-widest text-white/40 mb-1">{label}</div>
-                <div className={`${inter.className} text-white text-sm`}>{value}</div>
+                <div className="text-white text-sm font-bebas">{value}</div>
             </div>
         </div>
     )
@@ -41,7 +40,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                         <div className="text-xs uppercase tracking-widest text-emerald-400 mb-1">
                             {(() => { const area = getLifeArea(data['Life Area'] || data['Category']); return area ? `${area.emoji} ${area.label}` : (data['Life Area'] || data['Category'] || 'General'); })()}
                         </div>
-                        <SheetTitle className={`${playfair.className} text-3xl text-white m-0`}>
+                        <SheetTitle className={`${bebas.className} text-3xl text-white m-0`}>
                             {String(data['Habit Name'] || 'Untitled')}
                         </SheetTitle>
                     </div>
@@ -52,12 +51,12 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/30 flex flex-col items-center justify-center text-center">
                             <div className="text-4xl mb-2">🔥</div>
-                            <div className={`${inter.className} text-emerald-400 font-bold text-2xl`}>{data['Streak'] || 0}</div>
+                            <div className="text-emerald-400 font-bold text-2xl font-bebas">{data['Streak'] || 0}</div>
                             <div className="text-xs uppercase tracking-widest text-emerald-400/60 mt-1">Current Streak</div>
                         </div>
                         <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-center">
                             <div className="text-4xl mb-2">⏱️</div>
-                            <div className={`${inter.className} text-white font-bold text-2xl`}>
+                            <div className="text-white font-bold text-2xl font-bebas">
                                 {(parseInt(data['preHabitDuration'] || 0) + parseInt(data['duration'] || 30) + parseInt(data['rewardDuration'] || 0))}m
                             </div>
                             <div className="text-xs uppercase tracking-widest text-white/40 mt-1">Total Time</div>
@@ -65,7 +64,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className={`${playfair.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-2`}>
+                        <h3 className={`${bebas.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-1`}>
                             <RefreshCw className="w-5 h-5 text-indigo-400" />
                             Scheduling
                         </h3>
@@ -82,7 +81,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                             />
                         </div>
 
-                        <h3 className={`${playfair.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-2 pt-4`}>
+                        <h3 className={`${bebas.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-1 pt-4`}>
                             <Zap className="w-5 h-5 text-amber-400" />
                             Habit Chain
                         </h3>
@@ -105,7 +104,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
 
                             <div className="w-full flex flex-col gap-1 p-4 bg-white/5 rounded-xl border border-white/10 text-center relative z-10 shadow-lg shadow-black/50">
                                 <div className="text-[10px] uppercase tracking-widest text-white/50">Core Habit</div>
-                                <div className={`${inter.className} text-white text-lg font-bold`}>{data['duration'] || 30}m</div>
+                                <div className="text-white text-lg font-bold font-bebas">{data['duration'] || 30}m</div>
                             </div>
 
                             <svg viewBox="0 0 24 40" className="w-6 h-10 overflow-visible mt-2 mb-2">
@@ -127,7 +126,7 @@ export function HabitDetailsSidebar({ entry, open, onOpenChange, onEdit }: Habit
                     </div>
 
                     <div className="space-y-4">
-                        <h3 className={`${playfair.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-2`}>
+                        <h3 className={`${bebas.className} text-xl text-white flex items-center gap-2 border-b border-white/10 pb-1`}>
                             <Target className="w-5 h-5 text-cyan-400" />
                             The Loop
                         </h3>

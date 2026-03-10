@@ -1,14 +1,13 @@
 'use server'
 
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Navigation } from "@/components/navigation";
 import { Check, Sparkles } from "lucide-react";
 import { PricingCTA } from "@/components/pricing-cta";
 
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 const tiers = [
     {
@@ -97,10 +96,10 @@ export default async function PricingPage() {
                         <p className="text-xs uppercase tracking-[0.4em] text-white/40">Investment in Excellence</p>
                         <Sparkles className="w-4 h-4 text-white/60" />
                     </div>
-                    <h1 className={`${playfair.className} text-6xl md:text-8xl font-medium mb-6 text-white`}>
+                    <h1 className={`${bebas.className} text-6xl md:text-8xl font-medium mb-6 text-white`}>
                         Membership Tiers
                     </h1>
-                    <p className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto font-light leading-relaxed`}>
+                    <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto font-light leading-relaxed`}>
                         Choose the level of commitment that matches your ambition
                     </p>
                 </header>
@@ -123,14 +122,14 @@ export default async function PricingPage() {
                                     )}
 
                                     <div className="text-center mb-8">
-                                        <h3 className={`${playfair.className} text-3xl font-bold mb-2 text-white`}>
+                                        <h3 className={`${bebas.className} text-3xl font-bold mb-2 text-white`}>
                                             {tier.name}
                                         </h3>
-                                        <p className={`${inter.className} text-sm text-white/50 mb-6`}>
+                                        <p className={`${bebas.className} text-sm text-white/50 mb-6`}>
                                             {tier.description}
                                         </p>
                                         <div className="flex items-baseline justify-center gap-1">
-                                            <span className={`${playfair.className} text-6xl font-bold text-white`}>
+                                            <span className={`${bebas.className} text-6xl font-bold text-white`}>
                                                 {tier.price}
                                             </span>
                                             {tier.period && (
@@ -143,7 +142,7 @@ export default async function PricingPage() {
                                         {tier.features.map((feature) => (
                                             <li key={feature} className="flex items-start gap-3">
                                                 <Check className="w-5 h-5 text-white/60 flex-shrink-0 mt-0.5" />
-                                                <span className={`${inter.className} text-sm text-white/70`}>
+                                                <span className={`${bebas.className} text-sm text-white/70`}>
                                                     {feature}
                                                 </span>
                                             </li>
@@ -158,31 +157,31 @@ export default async function PricingPage() {
 
                     {/* Final CTA */}
                     <section className="mt-32 text-center bg-white/5 border border-white/10 p-16">
-                        <h2 className={`${playfair.className} text-5xl font-bold mb-6 text-white`}>
+                        <h2 className={`${bebas.className} text-5xl font-bold mb-6 text-white`}>
                             Ready to Begin?
                         </h2>
-                        <p className={`${inter.className} text-lg text-white/60 max-w-2xl mx-auto mb-10`}>
+                        <p className={`${bebas.className} text-lg text-white/60 max-w-2xl mx-auto mb-10`}>
                             Join a community of individuals who refuse to settle for mediocrity
                         </p>
                         <Link href="/register">
-                            <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-base px-12 py-8 uppercase tracking-widest relative overflow-hidden">
+                            <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bebas text-base px-12 py-8 uppercase tracking-widest relative overflow-hidden">
                                 <span className="relative z-10">Apply for Membership</span>
                             </Button>
                         </Link>
-                    </section>
+破                    </section>
                 </main>
 
                 {/* Footer */}
                 <footer className="py-8 text-center border-t border-white/10 mt-20 relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
                     <div className="relative z-10">
-                        <p className={`${playfair.className} text-white/30 italic text-sm`}>
+                        <p className={`${bebas.className} text-white/30 italic text-sm`}>
                             "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
                         </p>
-                        <p className={`${inter.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
+                        <p className={`${bebas.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
                             — Aristotle
                         </p>
-                    </div>
+破                    </div>
                 </footer>
             </div>
         </div>

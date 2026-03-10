@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { createClient } from '@/utils/supabase/client'
 import { dataStore, Entry } from '@/lib/data-store'
 import { Button } from '@/components/ui/button'
@@ -14,8 +14,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { Plus, Sparkles, Rocket, NotebookPen, ArrowRight, Loader2 } from 'lucide-react'
 import { sileo } from 'sileo'
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 type Option = { value: string; label: string }
 
@@ -157,7 +156,7 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                         <Sparkles className="w-4 h-4 text-amber-500" />
                         <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">Forge</span>
                     </div>
-                    <SheetTitle className={`${playfair.className} text-2xl text-white`}>New Neural Fragment</SheetTitle>
+                    <SheetTitle className={`${bebas.className} text-2xl text-white`}>New Neural Fragment</SheetTitle>
                 </SheetHeader>
 
                 <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">

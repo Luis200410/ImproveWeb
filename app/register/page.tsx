@@ -2,16 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { User, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { signup } from '@/app/login/actions';
 
-import { signup } from '@/app/login/actions'
-
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 export default function RegisterPage() {
     return (
@@ -85,7 +83,7 @@ export default function RegisterPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className={`${playfair.className} text-5xl md:text-6xl font-bold mb-4 text-white`}
+                                className={`${bebas.className} text-5xl md:text-6xl font-bold mb-4 text-white`}
                             >
                                 Begin Your Journey
                             </motion.h1>
@@ -94,7 +92,7 @@ export default function RegisterPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className={`${inter.className} text-white/60`}
+                                className={`${bebas.className} text-white/60`}
                             >
                                 Create your account and join those committed to excellence
                             </motion.p>
@@ -118,7 +116,7 @@ export default function RegisterPage() {
                                     transition={{ delay: 0.6 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <User className="w-4 h-4" />
                                         Full Name
                                     </label>
@@ -139,7 +137,7 @@ export default function RegisterPage() {
                                     transition={{ delay: 0.7 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <Mail className="w-4 h-4" />
                                         Email Address
                                     </label>
@@ -160,7 +158,7 @@ export default function RegisterPage() {
                                     transition={{ delay: 0.8 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <Lock className="w-4 h-4" />
                                         Password
                                     </label>
@@ -181,7 +179,7 @@ export default function RegisterPage() {
                                     transition={{ delay: 0.9 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <Lock className="w-4 h-4" />
                                         Confirm Password
                                     </label>
@@ -204,7 +202,7 @@ export default function RegisterPage() {
                                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         <Button
                                             formAction={signup}
-                                            className="w-full bg-white text-black hover:bg-white/90 font-serif text-sm uppercase tracking-widest py-6 relative overflow-hidden group"
+                                            className="w-full bg-white text-black hover:bg-white/90 font-bebas text-sm uppercase tracking-widest py-6 relative overflow-hidden group"
                                         >
                                             <motion.div
                                                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -237,7 +235,7 @@ export default function RegisterPage() {
                                     transition={{ delay: 1.1 }}
                                     className="text-center"
                                 >
-                                    <p className={`${inter.className} text-sm text-white/60`}>
+                                    <p className={`${bebas.className} text-sm text-white/60`}>
                                         Already a member?{" "}
                                         <Link href="/login" className="text-white hover:text-white/80 transition-colors font-medium">
                                             Sign in here
@@ -254,7 +252,7 @@ export default function RegisterPage() {
                             transition={{ delay: 1.2 }}
                             className="mt-8 text-center space-y-2"
                         >
-                            <p className={`${inter.className} text-xs text-white/40`}>
+                            <p className={`${bebas.className} text-xs text-white/40`}>
                                 By creating an account, you agree to our Terms of Service
                             </p>
                             <div className="flex items-center justify-center gap-4 text-xs text-white/30">

@@ -3,13 +3,12 @@
 import { useState, useMemo } from 'react'
 import { Entry } from '@/lib/data-store'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, List, Clock, CheckCircle2, AlertCircle, Circle } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface TasksDashboardProps {
     entries: Entry[]
@@ -129,7 +128,7 @@ export function TasksDashboard({ entries, onUpdateEntry, onEditEntry, onSchedule
             <div className="space-y-6">
                 <div className="flex items-center gap-2">
                     <List className="w-5 h-5 text-amber-200" />
-                    <h2 className={`${playfair.className} text-2xl text-white`}>Motion Board</h2>
+                    <h2 className={`${bebas.className} text-2xl text-white`}>Motion Board</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto pb-4">
@@ -166,7 +165,7 @@ export function TasksDashboard({ entries, onUpdateEntry, onEditEntry, onSchedule
                                         className="bg-[#1A1A1A] p-4 rounded-xl border border-white/5 cursor-grab active:cursor-grabbing hover:border-white/20 group relative overflow-hidden"
                                     >
                                         <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-white/10 to-transparent" />
-                                        <p className={`${inter.className} text-sm font-medium text-white mb-2 line-clamp-2`}>
+                                        <p className={`${bebas.className} text-sm font-medium text-white mb-2 line-clamp-2`}>
                                             {String(entry.data['Task'] || 'Untitled')}
                                         </p>
                                         <div className="flex justify-between items-center mt-3">
@@ -193,7 +192,7 @@ export function TasksDashboard({ entries, onUpdateEntry, onEditEntry, onSchedule
                     <div>
                         <div className="flex items-center gap-2 mb-1">
                             <CalendarIcon className="w-5 h-5 text-emerald-200" />
-                            <h2 className={`${playfair.className} text-2xl text-white`}>Schedule</h2>
+                            <h2 className={`${bebas.className} text-2xl text-white`}>Schedule</h2>
                         </div>
                         <p className="text-white/40 text-sm">Drag tasks here to assign dates and details</p>
                     </div>
@@ -218,7 +217,7 @@ export function TasksDashboard({ entries, onUpdateEntry, onEditEntry, onSchedule
                             <button onClick={() => changePeriod(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white">
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
-                            <span className={`${playfair.className} text-xl min-w-[140px] text-center`}>
+                            <span className={`${bebas.className} text-xl min-w-[140px] text-center`}>
                                 {calendarView === 'month'
                                     ? `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`
                                     : `Week of ${currentDate.toLocaleDateString()}`

@@ -1,15 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { ArrowRight, Sparkles, ChevronDown, Lightbulb, Zap, Target } from "lucide-react";
 
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 const systems = [
     {
@@ -192,23 +191,23 @@ export default function SalesPage() {
                             <Sparkles className="w-5 h-5 text-white/60" />
                         </div>
 
-                        <h1 className={`${playfair.className} text-7xl md:text-9xl font-bold mb-8 text-white leading-none`}>
+                        <h1 className={`${bebas.className} text-7xl md:text-9xl font-bold mb-8 text-white leading-none`}>
                             Eight Systems.<br />
                             One Life.<br />
                             <span className="italic text-white/80">Infinite Potential.</span>
                         </h1>
 
-                        <p className={`${inter.className} text-xl md:text-2xl text-white/70 max-w-4xl mx-auto font-light leading-relaxed mb-6`}>
+                        <p className={`${bebas.className} text-xl md:text-2xl text-white/70 max-w-4xl mx-auto font-light leading-relaxed mb-6`}>
                             Most people stumble through life reacting to whatever comes their way.
                         </p>
 
-                        <p className={`${inter.className} text-xl md:text-2xl text-white max-w-4xl mx-auto font-medium leading-relaxed mb-12`}>
+                        <p className={`${bebas.className} text-xl md:text-2xl text-white max-w-4xl mx-auto font-medium leading-relaxed mb-12`}>
                             You are not most people.
                         </p>
-
+破
                         <Link href="/register">
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-base px-16 py-10 uppercase tracking-widest relative overflow-hidden">
+                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bebas text-base px-16 py-10 uppercase tracking-widest relative overflow-hidden">
                                     <motion.div
                                         className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
                                         initial={{ x: "-100%" }}
@@ -226,10 +225,10 @@ export default function SalesPage() {
                 <section className="py-20 px-6">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-16">
-                            <h2 className={`${playfair.className} text-6xl font-bold mb-6 text-white`}>
+                            <h2 className={`${bebas.className} text-6xl font-bold mb-6 text-white`}>
                                 The Eight Pillars
                             </h2>
-                            <p className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto mb-4`}>
+                            <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-4`}>
                                 Click any system to reveal its philosophy, microapps, and outcomes
                             </p>
                         </div>
@@ -264,10 +263,10 @@ export default function SalesPage() {
                                                         {system.icon}
                                                     </motion.span>
                                                     <div className="text-left">
-                                                        <h3 className={`${playfair.className} text-3xl font-bold text-white mb-1`}>
+                                                        <h3 className={`${bebas.className} text-3xl font-bold text-white mb-1`}>
                                                             {system.name}
                                                         </h3>
-                                                        <p className={`${playfair.className} text-lg italic text-white/60`}>
+                                                        <p className={`${bebas.className} text-lg italic text-white/60`}>
                                                             {system.tagline}
                                                         </p>
                                                     </div>
@@ -302,11 +301,11 @@ export default function SalesPage() {
                                                             >
                                                                 <div className="flex items-center gap-2 mb-3">
                                                                     <Lightbulb className="w-5 h-5 text-white/60" />
-                                                                    <h4 className={`${playfair.className} text-xl font-bold text-white`}>
+                                                                    <h4 className={`${bebas.className} text-xl font-bold text-white`}>
                                                                         The Philosophy
                                                                     </h4>
                                                                 </div>
-                                                                <p className={`${inter.className} text-white/80 leading-relaxed italic`}>
+                                                                <p className={`${bebas.className} text-white/80 leading-relaxed italic`}>
                                                                     {system.philosophy}
                                                                 </p>
                                                             </motion.div>
@@ -317,7 +316,7 @@ export default function SalesPage() {
                                                                 animate={{ x: 0, opacity: 1 }}
                                                                 transition={{ delay: 0.2 }}
                                                             >
-                                                                <p className={`${inter.className} text-white/70 leading-relaxed text-lg`}>
+                                                                <p className={`${bebas.className} text-white/70 leading-relaxed text-lg`}>
                                                                     {system.description}
                                                                 </p>
                                                             </motion.div>
@@ -330,7 +329,7 @@ export default function SalesPage() {
                                                             >
                                                                 <div className="flex items-center gap-2 mb-4">
                                                                     <Zap className="w-5 h-5 text-white/60" />
-                                                                    <h4 className={`${playfair.className} text-xl font-bold text-white`}>
+                                                                    <h4 className={`${bebas.className} text-xl font-bold text-white`}>
                                                                         Included Microapps
                                                                     </h4>
                                                                 </div>
@@ -345,11 +344,11 @@ export default function SalesPage() {
                                                                         >
                                                                             <div className="flex items-start gap-2 mb-2">
                                                                                 <ArrowRight className="w-4 h-4 text-white/40 flex-shrink-0 mt-1" />
-                                                                                <p className={`${inter.className} text-white font-medium text-sm`}>
+                                                                                <p className={`${bebas.className} text-white font-medium text-sm`}>
                                                                                     {microapp.name}
                                                                                 </p>
                                                                             </div>
-                                                                            <p className={`${inter.className} text-white/60 text-xs leading-relaxed ml-6`}>
+                                                                            <p className={`${bebas.className} text-white/60 text-xs leading-relaxed ml-6`}>
                                                                                 {microapp.purpose}
                                                                             </p>
                                                                         </motion.div>
@@ -366,11 +365,11 @@ export default function SalesPage() {
                                                             >
                                                                 <div className="flex items-center gap-2 mb-3">
                                                                     <Target className="w-5 h-5 text-white" />
-                                                                    <h4 className={`${playfair.className} text-xl font-bold text-white`}>
+                                                                    <h4 className={`${bebas.className} text-xl font-bold text-white`}>
                                                                         The Outcome
                                                                     </h4>
                                                                 </div>
-                                                                <p className={`${inter.className} text-white leading-relaxed font-medium text-lg`}>
+                                                                <p className={`${bebas.className} text-white leading-relaxed font-medium text-lg`}>
                                                                     {system.outcome}
                                                                 </p>
                                                             </motion.div>
@@ -395,21 +394,20 @@ export default function SalesPage() {
                     className="py-32 px-6 border-t border-white/10 text-center"
                 >
                     <div className="max-w-4xl mx-auto">
-                        <h2 className={`${playfair.className} text-6xl md:text-7xl font-bold mb-8 text-white`}>
+                        <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-8 text-white`}>
                             The Choice Is Yours
                         </h2>
 
-                        <p className={`${inter.className} text-2xl text-white/70 leading-relaxed mb-6`}>
+                        <p className={`${bebas.className} text-2xl text-white/70 leading-relaxed mb-6`}>
                             You can continue as you are—hoping, wishing, trying.
                         </p>
 
-                        <p className={`${inter.className} text-2xl text-white leading-relaxed mb-12 font-medium`}>
+                        <p className={`${bebas.className} text-2xl text-white leading-relaxed mb-12 font-medium`}>
                             Or you can adopt a system designed to make excellence inevitable.
                         </p>
-
                         <Link href="/pricing">
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-serif text-lg px-16 py-10 uppercase tracking-widest relative overflow-hidden">
+                                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bebas text-lg px-16 py-10 uppercase tracking-widest relative overflow-hidden">
                                     <motion.div
                                         className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
                                         initial={{ x: "-100%" }}
@@ -427,13 +425,13 @@ export default function SalesPage() {
                 <footer className="py-8 text-center border-t border-white/10 relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
                     <div className="relative z-10">
-                        <p className={`${playfair.className} text-white/30 italic text-sm`}>
+                        <p className={`${bebas.className} text-white/30 italic text-sm`}>
                             "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
                         </p>
-                        <p className={`${inter.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
+                        <p className={`${bebas.className} text-white/20 text-xs mt-2 uppercase tracking-widest`}>
                             — Aristotle
                         </p>
-                    </div>
+破                    </div>
                 </footer>
             </div>
         </div>

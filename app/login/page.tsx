@@ -2,20 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Navigation } from "@/components/navigation";
 import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { login } from './actions';
 
-// Removed useState dependent imports for server-compat if needed, but keeping for now as this is a Client Component 
-// due to animations. Wait, we can use Server Actions in Client Components.
-
-import { login, signup } from './actions'
-
-const playfair = Playfair_Display({ subsets: ["latin"] });
-const inter = Inter({ subsets: ["latin"] });
-
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 export default function LoginPage() {
     return (
         <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -88,7 +82,7 @@ export default function LoginPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.3 }}
-                                className={`${playfair.className} text-5xl md:text-6xl font-bold mb-4 text-white`}
+                                className={`${bebas.className} text-5xl md:text-6xl font-bold mb-4 text-white`}
                             >
                                 Welcome Back
                             </motion.h1>
@@ -97,7 +91,7 @@ export default function LoginPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.4 }}
-                                className={`${inter.className} text-white/60`}
+                                className={`${bebas.className} text-white/60`}
                             >
                                 Continue your journey toward excellence
                             </motion.p>
@@ -121,7 +115,7 @@ export default function LoginPage() {
                                     transition={{ delay: 0.6 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <Mail className="w-4 h-4" />
                                         Email Address
                                     </label>
@@ -142,7 +136,7 @@ export default function LoginPage() {
                                     transition={{ delay: 0.7 }}
                                     className="space-y-2"
                                 >
-                                    <label className={`${inter.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
+                                    <label className={`${bebas.className} text-sm text-white/60 uppercase tracking-wider flex items-center gap-2`}>
                                         <Lock className="w-4 h-4" />
                                         Password
                                     </label>
@@ -165,7 +159,7 @@ export default function LoginPage() {
                                     <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                                         <Button
                                             formAction={login}
-                                            className="w-full bg-white text-black hover:bg-white/90 font-serif text-sm uppercase tracking-widest py-6 relative overflow-hidden group"
+                                            className="w-full bg-white text-black hover:bg-white/90 font-bebas text-sm uppercase tracking-widest py-6 relative overflow-hidden group"
                                         >
                                             <motion.div
                                                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -183,7 +177,7 @@ export default function LoginPage() {
                                                 <Button
                                                     asChild
                                                     variant="outline"
-                                                    className="w-full border-white/10 text-white hover:bg-white/10 font-serif text-sm uppercase tracking-widest py-6"
+                                                    className="w-full border-white/10 text-white hover:bg-white/10 font-bebas text-sm uppercase tracking-widest py-6"
                                                 >
                                                     <Link href="/register">
                                                         Sign Up
@@ -211,7 +205,7 @@ export default function LoginPage() {
                                     transition={{ delay: 0.9 }}
                                     className="text-center"
                                 >
-                                    <p className={`${inter.className} text-sm text-white/60`}>
+                                    <p className={`${bebas.className} text-sm text-white/60`}>
                                         Not a member yet?{" "}
                                         <Link href="/register" className="text-white hover:text-white/80 transition-colors font-medium">
                                             Apply here

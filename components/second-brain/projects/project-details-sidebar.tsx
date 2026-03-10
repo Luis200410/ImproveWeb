@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { X, ChevronDown, Check, FileText, Link as LinkIcon, Download, Plus, Trash2, Lock, AlertTriangle, AlertOctagon, Activity, Square, Calendar } from 'lucide-react'
 import { ProjectEntry, calculateProgress } from './project-utils'
-import { Playfair_Display } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Entry } from '@/lib/data-store'
 import { ProjectAnalyticsModule } from './project-analytics-module'
 import { generateAnalytics } from './project-analytics'
@@ -15,7 +15,7 @@ import { getTaskTitle, getTaskDeadline, getProjectTitle, getProjectDeadline } fr
 import { sileo } from 'sileo'
 import { ProjectCleanupModal } from './project-cleanup-modal'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 import { TaskDetailsSheet } from '../task-details-sheet'
 
@@ -84,7 +84,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                         </select>
                                     </div>
                                 </div>
-                                <SheetTitle className={`${playfair.className} text-xl text-white mb-2 leading-tight`}>{getProjectTitle(project)}</SheetTitle>
+                                <SheetTitle className={`${bebas.className} text-xl text-white mb-2 leading-tight`}>{getProjectTitle(project)}</SheetTitle>
                                 <div className="flex gap-2 mb-4">
                                     <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded border ${project.data.ragStatus === 'Red' ? 'border-rose-500 text-rose-500 bg-rose-500/10' :
                                         project.data.ragStatus === 'Amber' ? 'border-amber-500 text-amber-500 bg-amber-500/10' :

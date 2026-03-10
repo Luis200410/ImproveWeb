@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "@/lib/font-shim";
+import { Bebas_Neue, Ballet } from "@/lib/font-shim";
 import "./globals.css";
 import { TimerProvider } from '@/contexts/timer-context'
 import { GlobalTimerIndicator } from '@/components/global-timer-indicator'
@@ -9,15 +9,14 @@ import { Toaster } from 'sileo'
 import 'sileo/styles.css'
 import { HabitReminderProvider } from '@/components/habit-reminder-provider'
 
-const playfair = Playfair_Display({
+const bebas = Bebas_Neue({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-bebas",
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const ballet = Ballet({
+  variable: "--font-ballet",
   display: "swap",
 });
 
@@ -185,7 +184,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSoftwareApp) }}
         />
       </head>
-      <body className={`${playfair.variable} ${inter.variable} font-sans antialiased bg-black text-white selection:bg-white selection:text-black`}>
+      <body className={`${bebas.variable} ${ballet.variable} font-bebas antialiased bg-black text-white selection:bg-white selection:text-black`}>
         <PomodoroProvider>
           <TimerProvider>
             {children}

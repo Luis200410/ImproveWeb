@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Link, Loader2, ArrowRight, ChevronDown } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { dataStore, Entry } from '@/lib/data-store'
-import { Playfair_Display } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { sileo } from 'sileo'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface ResourceCreationSheetProps {
     notes: Entry[]
@@ -93,7 +93,7 @@ export function ResourceCreationSheet({ notes, defaultNoteId, onResourceCreated,
                         <Link className="w-4 h-4 text-blue-500" />
                         <span className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">Forge: Resource</span>
                     </div>
-                    <SheetTitle className={`${playfair.className} text-2xl text-white`}>
+                    <SheetTitle className={`${bebas.className} text-2xl text-white`}>
                         New Resource
                     </SheetTitle>
                 </SheetHeader>

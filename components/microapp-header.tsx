@@ -1,13 +1,12 @@
 'use client'
 
 import { Microapp } from '@/lib/data-store'
-import { Playfair_Display, Inter } from 'next/font/google'
+import { Bebas_Neue } from "@/lib/font-shim";
 import { ArrowLeft, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface MicroappHeaderProps {
     microapp: Microapp
@@ -15,7 +14,6 @@ interface MicroappHeaderProps {
     onAdd?: () => void
     systemId: string
 }
-
 export function MicroappHeader({ microapp, onBack, onAdd, systemId }: MicroappHeaderProps) {
     const router = useRouter()
 
@@ -41,12 +39,12 @@ export function MicroappHeader({ microapp, onBack, onAdd, systemId }: MicroappHe
                 <div className="flex items-center gap-3">
                     <span className="text-4xl md:text-5xl">{microapp.icon}</span>
                     <div>
-                        <h1 className={`${playfair.className} text-4xl md:text-5xl font-bold text-white`}>
+                        <h1 className={`${bebas.className} text-4xl md:text-5xl font-bold text-white`}>
                             {microapp.name}
                         </h1>
                     </div>
                 </div>
-                <p className={`${inter.className} text-white/40 max-w-lg text-lg`}>
+                <p className={`${bebas.className} text-white/40 max-w-lg text-lg`}>
                     {microapp.description}
                 </p>
             </div>

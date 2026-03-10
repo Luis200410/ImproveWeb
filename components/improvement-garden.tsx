@@ -1,11 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { TrendingUp, Mountain, Zap, Target, Flame, Trophy } from 'lucide-react'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 export type VisualTheme = 'arrows' | 'peaks' | 'energy' | 'targets' | 'streak' | 'trophies'
 
@@ -75,11 +74,11 @@ export function ImprovementGarden({
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className={`${playfair.className} text-3xl font-bold text-white`}>
+                    <h3 className={`${bebas.className} text-3xl font-bold text-white`}>
                         Your Progress Garden
                     </h3>
                     <div className="text-right">
-                        <p className={`${playfair.className} text-4xl font-bold text-white`}>
+                        <p className={`${bebas.className} text-4xl font-bold text-white`}>
                             {completedSessions}
                         </p>
                         <p className="text-xs uppercase tracking-wider text-white/40">Total Sessions</p>
@@ -89,17 +88,17 @@ export function ImprovementGarden({
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="bg-white/5 border border-white/10 p-4">
-                        <p className={`${playfair.className} text-2xl font-bold text-white`}>{todayCount}</p>
+                        <p className={`${bebas.className} text-2xl font-bold text-white`}>{todayCount}</p>
                         <p className="text-xs uppercase tracking-wider text-white/40">Today</p>
                     </div>
                     <div className="bg-white/5 border border-white/10 p-4">
-                        <p className={`${playfair.className} text-2xl font-bold text-white`}>
+                        <p className={`${bebas.className} text-2xl font-bold text-white`}>
                             {Math.floor(totalFocusTime / 60)}h {totalFocusTime % 60}m
                         </p>
                         <p className="text-xs uppercase tracking-wider text-white/40">Total Focus</p>
                     </div>
                     <div className="bg-white/5 border border-white/10 p-4">
-                        <p className={`${playfair.className} text-2xl font-bold text-white`}>
+                        <p className={`${bebas.className} text-2xl font-bold text-white`}>
                             {completedSessions > 0 ? Math.round(totalFocusTime / completedSessions) : 0}m
                         </p>
                         <p className="text-xs uppercase tracking-wider text-white/40">Avg Session</p>
@@ -138,7 +137,7 @@ export function ImprovementGarden({
                 {completedSessions === 0 ? (
                     <div className="flex flex-col items-center justify-center h-64 text-center">
                         <Icon className="w-16 h-16 text-white/20 mb-4" />
-                        <p className={`${playfair.className} text-2xl text-white/40 mb-2`}>
+                        <p className={`${bebas.className} text-2xl text-white/40 mb-2`}>
                             Your garden awaits
                         </p>
                         <p className="text-sm text-white/30">
@@ -193,7 +192,7 @@ export function ImprovementGarden({
                 transition={{ delay: 0.5 }}
                 className="mt-6 text-center"
             >
-                <p className={`${inter.className} text-sm text-white/60 italic`}>
+                <p className={`${bebas.className} text-sm text-white/60 italic`}>
                     {completedSessions === 0 && "Begin your journey to excellence"}
                     {completedSessions > 0 && completedSessions < 5 && "Great start! Keep the momentum going"}
                     {completedSessions >= 5 && completedSessions < 20 && "You're building consistency"}

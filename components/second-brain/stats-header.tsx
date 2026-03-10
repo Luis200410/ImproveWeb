@@ -1,12 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { cn } from '@/lib/utils'
 import { ProductivityScore, ProjectMetrics, TaskMetrics } from './analytics-utils'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface StatsHeaderProps {
     productivity?: ProductivityScore;
@@ -74,7 +73,7 @@ export function StatsHeader({ productivity, taskMetrics, projectMetrics }: Stats
                                 strokeLinecap="round" stroke="currentColor" fill="transparent" r="36" cx="40" cy="40" />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span className={cn(playfair.className, "text-xl font-bold text-white")}>
+                            <span className="text-xl font-bold text-white font-bebas">
                                 {taskCompletion.toFixed(0)}%
                             </span>
                         </div>

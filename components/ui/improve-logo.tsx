@@ -2,9 +2,9 @@
 import React from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Playfair_Display } from "@/lib/font-shim";
+import { Bebas_Neue } from "@/lib/font-shim";
 
-const playfair = Playfair_Display({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ subsets: ["latin"] });
 
 interface ImproveLogoProps {
     className?: string;
@@ -22,7 +22,7 @@ export function ImproveLogo({ className = "", small = false, hero = false }: Imp
                 className={`relative ${small ? 'w-32 h-16' : hero ? 'w-[1000px] h-[500px]' : 'w-[400px] h-[200px]'}`}
             >
                 <Image
-                    src="/logo.png"
+                    src="/logo final.png"
                     alt="Improve Logo"
                     fill
                     className="object-contain"

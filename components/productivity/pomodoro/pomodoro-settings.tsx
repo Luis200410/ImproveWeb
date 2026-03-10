@@ -2,13 +2,12 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Switch } from '@/components/ui/switch'
 import { Zap, Activity, Coffee, Settings2 } from 'lucide-react'
 import { PomodoroConfig } from './pomodoro-utils'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 
@@ -215,7 +214,7 @@ function TripleWatchDial({ config, onChange }: TripleWatchDialProps) {
                 </svg>
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-2">
-                    <span className={`${playfair.className} text-7xl font-bold tracking-tighter drop-shadow-lg transition-colors`} style={{ color: displayData?.color }}>
+                    <span className={`${bebas.className} text-7xl font-bold tracking-tighter drop-shadow-lg transition-colors`} style={{ color: displayData?.color }}>
                         {displayValue}
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.2em] mt-2 font-bold text-white/50 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full backdrop-blur-md">

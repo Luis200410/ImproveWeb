@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Playfair_Display } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { ImproveLogo } from '@/components/ui/improve-logo'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface NavLink {
     href: string
@@ -175,7 +175,7 @@ export function Navigation() {
                         >
                             <Button
                                 variant="outline"
-                                className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
+                                className="font-bebas border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
                                 onClick={() => setIsMemberMenuOpen(prev => !prev)}
                             >
                                 Log In
@@ -221,7 +221,7 @@ export function Navigation() {
                         </div>
                     ) : (
                         <Link href="/login">
-                            <Button variant="outline" className="font-serif border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
+                            <Button variant="outline" className="font-bebas border-white text-white hover:bg-white hover:text-black transition-all bg-transparent">
                                 Member Login
                             </Button>
                         </Link>
@@ -284,7 +284,7 @@ export function Navigation() {
                         )}
                         {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                                <Button className="w-full bg-white text-black hover:bg-white/90 font-serif text-base uppercase tracking-widest py-6">
+                                <Button className="w-full bg-white text-black hover:bg-white/90 font-bebas text-base uppercase tracking-widest py-6">
                                     Member Login
                                 </Button>
                             </Link>

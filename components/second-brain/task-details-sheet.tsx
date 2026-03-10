@@ -16,7 +16,7 @@ import {
     Maximize2, Link as LinkIcon, Calendar, Activity,
     Hash, Terminal, CheckCircle2, Trash2, Save, Timer, Play, ChevronDown, Sparkles, NotebookPen, ExternalLink, Plus, Minimize2
 } from 'lucide-react'
-import { Playfair_Display, Inter } from '@/lib/font-shim'
+import { Bebas_Neue } from '@/lib/font-shim'
 import { usePomodoro } from '@/components/productivity/pomodoro/pomodoro-context'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 import { NoteDetailView } from '@/components/second-brain/notes/note-detail-view'
@@ -26,8 +26,7 @@ import { AnimatePresence } from 'framer-motion'
 import { getTaskTitle, getTaskDeadline } from './utils'
 import { sileo } from 'sileo'
 
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 interface TaskDetailsSheetProps {
     task: Entry
@@ -237,7 +236,7 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
                     <input
                         value={localTitle}
                         onChange={(e) => handleTitleChange(e.target.value)}
-                        className={`${playfair.className} text-4xl text-white leading-tight bg-transparent border-none outline-none placeholder:text-white/20 w-full focus:ring-0 px-0`}
+                        className={`${bebas.className} text-4xl text-white leading-tight bg-transparent border-none outline-none placeholder:text-white/20 w-full focus:ring-0 px-0`}
                         placeholder="Untitled Node"
                     />
                     <Button variant="ghost" size="icon" className="text-white/30 hover:text-white shrink-0" onClick={onTogglePopup}>
@@ -355,7 +354,7 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
                     {linkedNote ? (
                         <div className="bg-[#0A0A0A] border border-emerald-500/30 rounded-lg p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group hover:border-emerald-500/60 transition-colors">
                             <div>
-                                <h4 className="text-white font-serif text-lg leading-none mb-2">{linkedNote.data.Title || 'Untitled Sequence'}</h4>
+                                <h4 className="text-white font-bebas text-lg leading-none mb-2">{linkedNote.data.Title || 'Untitled Sequence'}</h4>
                                 <p className="text-xs text-white/40 font-mono">Last edited: {new Date(linkedNote.createdAt).toLocaleDateString()}</p>
                             </div>
                             <Button

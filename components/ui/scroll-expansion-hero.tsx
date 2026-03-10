@@ -10,8 +10,8 @@ import {
 } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Playfair_Display } from '@/lib/font-shim';
-const playfair = Playfair_Display({ subsets: ['latin'] });
+import { Ballet } from '@/lib/font-shim';
+const ballet = Ballet({ subsets: ['latin'] });
 
 interface ScrollExpandMediaProps {
     mediaType?: 'video' | 'image';
@@ -163,8 +163,8 @@ const ScrollExpandMedia = ({
         return () => window.removeEventListener('resize', checkIfMobile);
     }, []);
 
-    const mediaWidth = 300 + scrollProgress * (isMobileState ? 650 : 1250);
-    const mediaHeight = 400 + scrollProgress * (isMobileState ? 200 : 400);
+    const mediaWidth = 450 + scrollProgress * (isMobileState ? 650 : 1100);
+    const mediaHeight = 550 + scrollProgress * (isMobileState ? 200 : 250);
     const textTranslateX = scrollProgress * (isMobileState ? 100 : 80); // Adjusted for better exit
 
     const indicatorsOpacity = 1 - Math.min(scrollProgress * 4, 1);
@@ -235,12 +235,6 @@ const ScrollExpandMedia = ({
                                                 style={{ pointerEvents: 'none' }}
                                             ></div>
 
-                                            <motion.div
-                                                className='absolute inset-0 bg-black/30 rounded-xl'
-                                                initial={{ opacity: 0.7 }}
-                                                animate={{ opacity: 0.5 - scrollProgress * 0.3 }}
-                                                transition={{ duration: 0.2 }}
-                                            />
                                         </div>
                                     ) : (
                                         <div className='relative w-full h-full pointer-events-none'>
@@ -262,12 +256,7 @@ const ScrollExpandMedia = ({
                                                 style={{ pointerEvents: 'none' }}
                                             ></div>
 
-                                            <motion.div
-                                                className='absolute inset-0 bg-black/30 rounded-xl'
-                                                initial={{ opacity: 0.7 }}
-                                                animate={{ opacity: 0.5 - scrollProgress * 0.3 }}
-                                                transition={{ duration: 0.2 }}
-                                            />
+
                                         </div>
                                     )
                                 ) : (
@@ -280,12 +269,7 @@ const ScrollExpandMedia = ({
                                             className='w-full h-full object-cover rounded-xl'
                                         />
 
-                                        <motion.div
-                                            className='absolute inset-0 bg-black/50 rounded-xl'
-                                            initial={{ opacity: 0.7 }}
-                                            animate={{ opacity: 0.7 - scrollProgress * 0.3 }}
-                                            transition={{ duration: 0.2 }}
-                                        />
+
                                     </div>
                                 )}
 
@@ -293,44 +277,30 @@ const ScrollExpandMedia = ({
                                     className='flex flex-col items-center text-center relative z-10 mt-4 transition-none'
                                     style={{ opacity: indicatorsOpacity }}
                                 >
-                                    {date && (
-                                        <p
-                                            className='text-2xl text-blue-200'
-                                        >
-                                            {date}
-                                        </p>
-                                    )}
-                                    {scrollToExpand && (
-                                        <div className="flex flex-col items-center gap-2">
-                                            <p className='text-blue-200 font-medium text-center uppercase tracking-[0.2em] text-xs'>
-                                                {scrollToExpand}
-                                            </p>
-                                            <motion.div
-                                                animate={{ y: [0, 5, 0] }}
-                                                transition={{ duration: 1.5, repeat: Infinity }}
-                                                className="w-[1px] h-8 bg-gradient-to-b from-blue-200 to-transparent"
-                                            />
-                                        </div>
-                                    )}
+                                    <motion.div
+                                        animate={{ y: [0, 5, 0] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                        className="w-[1px] h-8 bg-gradient-to-b from-blue-200 to-transparent"
+                                    />
                                 </motion.div>
                             </div>
 
                             <div
-                                className={`flex items-center justify-center text-center gap-2 w-full relative z-20 transition-none flex-col ${textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
+                                className={`flex items-stretch justify-center gap-24 md:gap-32 w-full relative z-20 transition-none flex-col ${textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
                                     }`}
                                 style={{ opacity: titleOpacity }}
                             >
                                 <motion.h2
-                                    className={`${playfair.className} text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none uppercase`}
+                                    className={`${ballet.className} self-start ml-40 text-7xl md:text-9xl lg:text-[11rem] font-bold text-blue-200 tracking-tighter leading-none`}
                                     style={{ transform: `translateX(-${textTranslateX}vw)` }}
                                 >
-                                    COMPLETE
+                                    Complete
                                 </motion.h2>
                                 <motion.h2
-                                    className={`${playfair.className} text-6xl md:text-8xl lg:text-9xl font-bold text-blue-200 tracking-tighter leading-none uppercase`}
+                                    className={`${ballet.className} self-end mr-40 text-7xl md:text-9xl lg:text-[11rem] font-bold text-blue-200 tracking-tighter leading-none`}
                                     style={{ transform: `translateX(${textTranslateX}vw)` }}
                                 >
-                                    INTEGRITY
+                                    Integrity
                                 </motion.h2>
                             </div>
                         </div>
