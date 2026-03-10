@@ -1,6 +1,7 @@
 'use server'
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { aiOrchestrator } from '@/lib/ai/orchestrator'
+import { createClient } from '@/utils/supabase/server'
 
 export async function summarizeResource(
     type: 'website' | 'image' | 'file',
@@ -8,15 +9,11 @@ export async function summarizeResource(
     mimeType?: string
 ): Promise<{ summary: string; success: boolean }> {
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY is not set in environment variables')
-        }
-
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
 
         if (type === 'website') {
-            // Fetch URL content
             const res = await fetch(content, {
                 headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
             })
@@ -26,8 +23,6 @@ export async function summarizeResource(
             }
 
             const html = await res.text()
-
-            // Basic HTML strip to get readable text
             const textContent = html
                 .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                 .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
@@ -35,42 +30,39 @@ export async function summarizeResource(
                 .replace(/\s+/g, ' ')
                 .trim()
 
-            // Summarize prompt
-            const prompt = `You are a helpful research assistant. Summarize the following website content comprehensively. Extract the main ideas and highlight the BEST points or takeaways from the resource. Keep it structured and easy to read.\n\nWebsite Content Limit Reached:\n${textContent.slice(0, 50000)}`
+            const prompt = `You are a helpful research assistant. Summarize the following website content comprehensively. Extract the main ideas and highlight the BEST points. Keep it structured.\n\nContent:\n${textContent.slice(0, 30000)}`
 
-            const result = await model.generateContent(prompt)
-            return { summary: result.response.text(), success: true }
+            const summary = await aiOrchestrator.generate({
+                userId: user.id,
+                tier: 'LITE',
+                intent: 'Website Summary',
+                prompt,
+            });
+
+            return { summary, success: true }
         }
         else if (type === 'image' || type === 'file') {
-            if (!mimeType) {
-                throw new Error("MIME type is required for files and images")
-            }
+            if (!mimeType) throw new Error("MIME type required");
 
-            // Remove base64 data URI prefix if it exists (e.g. data:image/png;base64,xxxx)
-            const base64Data = content.includes('base64,')
-                ? content.split('base64,')[1]
-                : content
-
+            const base64Data = content.includes('base64,') ? content.split('base64,')[1] : content
             const prompt = type === 'image'
-                ? "You are a helpful assistant. Analyze this image carefully. Summarize its contents, any readable text, and highlight the most important visual information or takeaways."
-                : "You are a helpful research assistant. Analyze this document. Summarize its key contents and highlight the BEST points, main arguments, or most important takeaways."
+                ? "Analyze this image. Summarize its contents and readable text."
+                : "Analyze this document. Summarize its key contents and highlight best points."
 
-            const result = await model.generateContent([
-                {
-                    inlineData: {
-                        data: base64Data,
-                        mimeType: mimeType
-                    }
-                },
-                prompt
-            ])
+            const summary = await aiOrchestrator.generate({
+                userId: user.id,
+                tier: 'LITE',
+                intent: 'Media Summary',
+                prompt,
+                media: [{ mimeType, data: base64Data }]
+            });
 
-            return { summary: result.response.text(), success: true }
+            return { summary, success: true }
         }
 
         throw new Error("Invalid resource type")
     } catch (error: any) {
-        console.error('Error in summarizeResource:', error)
-        throw new Error(error.message || 'Failed to summarize resource')
+        console.error('Error in summarizeResource:', error);
+        throw new Error(error.message || 'Failed to summarize resource');
     }
 }

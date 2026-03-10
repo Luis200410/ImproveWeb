@@ -1,29 +1,21 @@
-import { MetadataRoute } from "next";
-
-const siteUrl = "https://improveweb.app";
+import type { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
     return {
-        rules: [
-            {
-                userAgent: "*",
-                allow: ["/", "/about", "/sales", "/pricing", "/register", "/login"],
-                disallow: [
-                    "/dashboard/",
-                    "/systems/",
-                    "/api/",
-                    "/profile/",
-                    "/(billing)/",
-                ],
-            },
-            {
-                // Allow Googlebot full access to public pages
-                userAgent: "Googlebot",
-                allow: "/",
-                disallow: ["/api/", "/dashboard/", "/systems/", "/profile/"],
-            },
-        ],
-        sitemap: `${siteUrl}/sitemap.xml`,
-        host: siteUrl,
-    };
+        rules: {
+            userAgent: '*',
+            allow: '/',
+            disallow: [
+                '/dashboard/',   // Private athlete progress
+                '/profile/',     // Identity data
+                '/api/',         // Internal backend calls
+                '/settings/',    // Account security
+                '/admin/',       // Management dashboard
+                '/logs/',        // Private macro logs
+                '/systems/',     // Internal systems
+                '/(billing)/',  // Private billing data
+            ],
+        },
+        sitemap: 'https://improveweb.app/sitemap.xml',
+    }
 }

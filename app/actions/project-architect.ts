@@ -1,6 +1,7 @@
 'use server'
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { aiOrchestrator } from '@/lib/ai/orchestrator'
+import { createClient } from '@/utils/supabase/server'
 
 export interface GeneratedTask {
     title: string
@@ -21,12 +22,9 @@ export async function generateProjectPlan(
     startDate: string,
     deadline: string
 ): Promise<GeneratedTask[]> {
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error('GEMINI_API_KEY is not set in environment variables. Add it to your .env.local file.')
-    }
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({ model: 'models/gemini-1.5-flash' })
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
 
     const prompt = `
 System Role: You are a Senior Project Architect. Your mission is to take a high-level goal and deconstruct it into a realistic, professional execution plan.
@@ -39,7 +37,7 @@ Linked Habit: ${habitName}
 Break the project into 3 phases: Setup (Foundation), Execution (Bulk), and Polishing (Launch).
 Distribute tasks across the calendar from Start Date to Deadline.
 
-Return ONLY a valid JSON array, no markdown, no code blocks, no explanation — just raw JSON:
+Return ONLY a valid JSON array:
 
 [
   {
@@ -56,28 +54,19 @@ Return ONLY a valid JSON array, no markdown, no code blocks, no explanation — 
 ]
 `
 
-    let text: string
     try {
-        const result = await model.generateContent(prompt)
-        const response = await result.response
-        text = response.text()
-    } catch (apiError: any) {
-        const msg = apiError?.message || String(apiError)
-        console.error('[project-architect] Gemini API call failed:', msg)
-        throw new Error(`Gemini API error: ${msg}`)
-    }
+        const responseText = await aiOrchestrator.generate({
+            userId: user.id,
+            tier: 'FLASH',
+            intent: 'Project Architect',
+            prompt,
+            jsonResponse: true
+        });
 
-    // Strip any markdown fences if model adds them despite instructions
-    text = text.trim()
-    if (text.startsWith('```')) {
-        text = text.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-    }
-
-    try {
-        const tasks: GeneratedTask[] = JSON.parse(text)
+        const tasks: GeneratedTask[] = JSON.parse(responseText)
         return tasks
     } catch (parseError: any) {
-        console.error('[project-architect] JSON parse failed. Raw response:\n', text)
-        throw new Error(`AI returned invalid JSON. Raw response: ${text.slice(0, 200)}`)
+        console.error('[project-architect] AI call or JSON parse failed:', parseError)
+        throw new Error(`AI Architecture failed: ${parseError.message}`)
     }
 }

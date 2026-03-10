@@ -13,6 +13,7 @@ import { IdentitySetupSheet } from '@/components/body/identity-setup-sheet'
 import { BodyAnalytics } from '@/components/body/body-analytics'
 import { TodaySessionCard } from '@/components/body/today-session-card'
 import { HydrationQuickLog } from '@/components/body/hydration-quick-log'
+import { CoachingPanel } from '@/components/body/coaching-panel'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -248,6 +249,7 @@ export default function BodyPage() {
                     <div className="space-y-6">
                         {identityReady && userId !== 'defaultUser' && (
                             <>
+                                <CoachingPanel userId={userId} />
                                 <TodaySessionCard userId={userId} />
                                 <HydrationQuickLog userId={userId} onUpdate={refreshEntries} />
                             </>

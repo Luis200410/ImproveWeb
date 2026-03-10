@@ -2,43 +2,55 @@ import { MetadataRoute } from "next";
 
 const siteUrl = "https://improveweb.app";
 
+/**
+ * Ensures lastmod is consistent within the current week to show "active" content.
+ */
+function getCurrentWeekStart() {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday
+    const startOfWeek = new Date(d.getFullYear(), d.getMonth(), diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+    return startOfWeek;
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
-    const now = new Date();
+    const weeklyFreshness = getCurrentWeekStart();
 
     return [
         {
             url: siteUrl,
-            lastModified: now,
+            lastModified: weeklyFreshness,
             changeFrequency: "weekly",
             priority: 1.0,
         },
         {
-            url: `${siteUrl}/about`,
-            lastModified: now,
-            changeFrequency: "monthly",
-            priority: 0.8,
-        },
-        {
             url: `${siteUrl}/sales`,
-            lastModified: now,
+            lastModified: weeklyFreshness,
             changeFrequency: "weekly",
             priority: 0.9,
         },
         {
             url: `${siteUrl}/pricing`,
-            lastModified: now,
+            lastModified: weeklyFreshness,
             changeFrequency: "weekly",
             priority: 0.9,
         },
         {
+            url: `${siteUrl}/about`,
+            lastModified: weeklyFreshness,
+            changeFrequency: "monthly",
+            priority: 0.8,
+        },
+        {
             url: `${siteUrl}/register`,
-            lastModified: now,
+            lastModified: weeklyFreshness,
             changeFrequency: "monthly",
             priority: 0.7,
         },
         {
             url: `${siteUrl}/login`,
-            lastModified: now,
+            lastModified: weeklyFreshness,
             changeFrequency: "yearly",
             priority: 0.4,
         },

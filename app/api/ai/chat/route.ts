@@ -1,26 +1,31 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { aiOrchestrator } from '@/lib/ai/orchestrator';
+import { createClient } from '@/utils/supabase/server';
 
+/**
+ * POST /api/ai/chat
+ * 
+ * Tier 3: Efficiency & Chat (Gemini Flash-Lite)
+ */
 export async function POST(req: Request) {
     try {
         const { messages } = await req.json();
 
-        if (!process.env.GEMINI_API_KEY) {
-            return NextResponse.json({ error: 'GEMINI_API_KEY is not set' }, { status: 500 });
+        // 1. Authenticate
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
         }
-
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            generationConfig: {
-                responseMimeType: "application/json",
-            }
-        });
 
         const prompt = messages[messages.length - 1].content;
 
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
+        const responseText = await aiOrchestrator.generate({
+            userId: user.id,
+            tier: 'LITE',
+            intent: 'General Chat',
+            prompt,
+        });
 
         return new NextResponse(responseText, {
             headers: { 'Content-Type': 'application/json' },

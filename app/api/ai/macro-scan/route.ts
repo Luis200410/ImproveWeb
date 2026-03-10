@@ -1,5 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
+import { aiOrchestrator } from '@/lib/ai/orchestrator';
+import { createClient } from '@/utils/supabase/server';
 
 const BASKETBALL_SHOPPING_LIST = [
     'grilled chicken', 'turkey', 'salmon', 'tuna', 'eggs', 'greek yogurt', 'cottage cheese',
@@ -24,10 +25,13 @@ function calcFuelGrade(items: any[], totalCalories: number, totalProtein: number
     return Math.min(10, Math.max(1, Math.round(score * 10) / 10))
 }
 
+/**
+ * POST /api/ai/macro-scan
+ * 
+ * Tier 2: High-Performance Vision (Gemini Flash)
+ * Limit: 50 scans per day.
+ */
 export async function POST(req: Request) {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000) // 15-second session limit
-
     try {
         const body = await req.json()
         const { imageBase64, mimeType = 'image/jpeg' } = body
@@ -36,13 +40,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No image data provided' }, { status: 400 })
         }
 
-        if (!process.env.GEMINI_API_KEY) {
-            return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })
+        // 1. Authenticate
+        const supabase = await createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+            return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
         }
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-
+        // 2. Orchestrate with Flash Tier
         const prompt = `You are a precision nutrition AI. Analyze this food image and return ONLY valid JSON.
 
 NAMING RULES (most important):
@@ -50,15 +55,13 @@ NAMING RULES (most important):
 - Examples: "Kimchi", "Beef Patty", "Burger Bun", "White Rice", "Avocado", "Bacon Strip", "Cheddar Cheese", "Broccoli"
 - DO NOT include cooking method adjectives in the name (no "Grilled", "Toasted", "Crispy", "Melted", "Shredded").
 - DO NOT add brand names, percentages, or parenthetical details like "(80/20)" in the name.
-- Think of the name as what you would write on a grocery list.
 
 ANALYSIS RULES:
 - Identify each individual food component separately.
 - Use reference scaling: estimate weight by comparing food to visible plate/utensil/hand size in the image.
 - If no food is detected, return an empty items array.
-- Use cooking method knowledge internally to calculate accurate calories, but keep it OUT of the name.
 
-Return this exact JSON structure with NO markdown or code fences:
+Return this exact JSON structure:
 {
   "items": [
     {
@@ -75,31 +78,34 @@ Return this exact JSON structure with NO markdown or code fences:
   "total_protein_g": 31,
   "total_carbs_g": 0,
   "total_fat_g": 3.6,
-  "summary": "One-line meal label, e.g. Burger, Kimchi Bowl, Grilled Chicken Plate",
-  "portion_reference": "Reference object used for scaling (e.g. dinner plate, fork, hand)"
+  "summary": "One-line meal label",
+  "portion_reference": "Reference object used for scaling"
 }`
 
-        const result = await model.generateContent([
+        const responseText = await aiOrchestrator.generate({
+            userId: user.id,
+            tier: 'FLASH',
+            intent: 'Macro Scan',
             prompt,
-            {
-                inlineData: {
-                    mimeType,
-                    data: imageBase64
-                }
-            }
-        ])
-
-        clearTimeout(timeout)
-        const text = result.response.text().trim()
-
-        // Strip markdown fences if model wraps output
-        const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
+            media: [{ mimeType, data: imageBase64 }],
+            jsonResponse: true
+        });
 
         let parsed: any
         try {
-            parsed = JSON.parse(cleaned)
-        } catch {
-            return NextResponse.json({ error: 'AI returned unparseable response', raw: text }, { status: 422 })
+            // Helper to clean potential markdown backticks or extra text
+            const extractJson = (str: string) => {
+                const match = str.match(/\{[\s\S]*\}/);
+                return match ? match[0] : str;
+            }
+            parsed = JSON.parse(extractJson(responseText))
+        } catch (jsonErr) {
+            console.error('[macro-scan] JSON Parse Error:', jsonErr)
+            console.error('[macro-scan] Raw Response:', responseText)
+            return NextResponse.json({
+                error: 'AI returned invalid data format',
+                details: 'Please try scanning again with a clearer view of the food.'
+            }, { status: 422 })
         }
 
         // Ensure required fields
@@ -122,11 +128,10 @@ Return this exact JSON structure with NO markdown or code fences:
             portion_reference: parsed.portion_reference || 'visual estimation'
         })
     } catch (err: any) {
-        clearTimeout(timeout)
-        if (err.name === 'AbortError') {
-            return NextResponse.json({ error: 'Analysis timed out (15s limit). Please try again.' }, { status: 408 })
+        console.error('[macro-scan] Global error:', err)
+        if (err.message?.includes('Daily limit exceeded')) {
+            return NextResponse.json({ error: err.message }, { status: 429 })
         }
-        console.error('[macro-scan] error:', err)
         return NextResponse.json({ error: err.message || 'Vision analysis failed' }, { status: 500 })
     }
 }

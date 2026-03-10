@@ -1,7 +1,9 @@
 'use server'
 
-import { GoogleGenerativeAI, Schema, SchemaType } from '@google/generative-ai'
+import { Schema, SchemaType } from '@google/generative-ai'
 import { Entry } from '@/lib/data-store'
+import { aiOrchestrator } from '@/lib/ai/orchestrator'
+import { createClient } from '@/utils/supabase/server'
 
 export interface HabitChangePlan {
     add: {
@@ -94,18 +96,9 @@ export async function generateHabitChanges(
     currentHabits: Entry[]
 ): Promise<HabitChangePlan | null> {
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY is not set in environment variables');
-        }
-
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-flash-latest',
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: changePlanSchema,
-            }
-        });
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
 
         const activeHabits = currentHabits.filter(h => h.data['Type'] !== 'adaptation' && !h.data['archived']);
 
@@ -128,22 +121,23 @@ ${JSON.stringify(activeHabits.map(h => ({
 
 Strict Instructions:
 1. Parse the user intent to figure out if they want to ADD, MODIFY, or DELETE habits.
-2. If adding a new habit, you MUST determine a realistic Time in 24h format (HH:MM) and provide great Atomic Habit fields (Cue, Craving, Response, Reward).
-3. If modifying an existing habit (because the user asked, or to make room for a new habit), include it in 'modify'. ALWAYS provide the 'id' of the habit you are modifying. Provide ONLY the fields that are changing. Provide a short 'rationale' for why it changed.
-4. If deleting a habit (only if the user explicitly asks to remove it), add its 'id' to the 'delete' array.
-5. Make sure the schedule makes logical sense (no overlapping habits if possible, though minor overlaps are okay if unavoidable). Time format MUST be HH:MM in 24h format.
-6. Provide a short, friendly 'summary' explaining the new setup to the user.
+2. If adding a new habit, you MUST determine a realistic Time (HH:MM) and provide Atomic Habit fields.
+3. Provide a short, friendly 'summary' explaining the new setup to the user.
 `
 
-        const result = await model.generateContent(prompt);
-        let responseText = result.response.text();
+        const responseText = await aiOrchestrator.generate({
+            userId: user.id,
+            tier: 'LITE',
+            intent: 'Habit Rotation',
+            prompt,
+            jsonResponse: true
+        });
 
         if (responseText) {
-            let cleanedText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
             try {
-                return JSON.parse(cleanedText) as HabitChangePlan;
+                return JSON.parse(responseText) as HabitChangePlan;
             } catch (e: any) {
-                console.error("JSON Parse Error:", e, "Raw Text:", cleanedText);
+                console.error("JSON Parse Error:", e, "Raw Text:", responseText);
                 return { add: [], modify: [], delete: [], summary: "", error: `JSON Parse failed: ${e.message}` };
             }
         }
