@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
                 '/admin/',       // Management dashboard
                 '/logs/',        // Private macro logs
                 '/systems/',     // Internal systems
-                '/(billing)/',  // Private billing data
+                '/billing/',  // Private billing data
             ],
         },
         sitemap: 'https://improve-club.com/sitemap.xml',
