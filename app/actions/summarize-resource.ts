@@ -37,6 +37,7 @@ export async function summarizeResource(
                 tier: 'LITE',
                 intent: 'Website Summary',
                 prompt,
+                supabase,
             });
 
             return { summary, success: true }
@@ -54,7 +55,8 @@ export async function summarizeResource(
                 tier: 'LITE',
                 intent: 'Media Summary',
                 prompt,
-                media: [{ mimeType, data: base64Data }]
+                media: [{ mimeType, data: base64Data }],
+                supabase,
             });
 
             return { summary, success: true }

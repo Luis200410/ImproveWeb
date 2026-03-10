@@ -60,7 +60,8 @@ Return ONLY a valid JSON array:
             tier: 'FLASH',
             intent: 'Project Architect',
             prompt,
-            jsonResponse: true
+            jsonResponse: true,
+            supabase
         });
 
         const tasks: GeneratedTask[] = JSON.parse(responseText)

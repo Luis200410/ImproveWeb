@@ -75,7 +75,8 @@ Return ONLY valid JSON.
       tier: 'PRO',
       intent: 'Identity Plan Generation',
       prompt,
-      jsonResponse: true
+      jsonResponse: true,
+      supabase
     })
 
     const plan = JSON.parse(planJson)

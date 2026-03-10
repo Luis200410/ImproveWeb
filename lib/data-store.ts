@@ -1,6 +1,9 @@
 'use client'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/client'
 import { LIFE_AREA_IDS, CATEGORY_MIGRATION_MAP } from '@/lib/life-areas'
+
+// Always create a fresh client per operation to pick up the current browser session
+const getSupabase = () => createClient()
 
 export type ViewType = 'list' | 'calendar' | 'kanban' | 'table' | 'chart' | 'timeline' | 'gallery'
 
@@ -271,14 +274,14 @@ class DataStore {
     // Entries - now persisted with Prisma (PostgreSQL)
     // Entries - now persisted with Supabase
     async getEntries(microappId?: string, userId?: string): Promise<Entry[]> {
+        const supabase = getSupabase()
         let query = supabase.from('entries').select('*')
 
         if (microappId) {
             query = query.eq('microapp_id', microappId)
         }
 
-        // If we have a userId, we could filter by it, but RLS should handle it securely on the server side.
-        // However, for explicit client-side filtering (if needed):
+        // Explicitly filter by user_id for correctness (RLS also enforces this)
         if (userId) {
             query = query.eq('user_id', userId)
         }
@@ -306,6 +309,7 @@ class DataStore {
     }
 
     async getEntry(id: string): Promise<Entry | undefined> {
+        const supabase = getSupabase()
         const { data, error } = await supabase
             .from('entries')
             .select('*')
@@ -353,10 +357,10 @@ class DataStore {
     }
 
     async saveEntry(entry: Entry): Promise<void> {
+        const supabase = getSupabase()
         // Map Entry to Supabase table structure
-        // If ID exists, upsert
         const payload = {
-            id: entry.id, // Supabase/Postgres is UUID, ensure entry.id is UUID
+            id: entry.id,
             user_id: entry.userId,
             microapp_id: entry.microappId,
             data: entry.data,
@@ -374,6 +378,7 @@ class DataStore {
     }
 
     async deleteEntry(id: string): Promise<void> {
+        const supabase = getSupabase()
         const { error } = await supabase
             .from('entries')
             .delete()
@@ -387,6 +392,7 @@ class DataStore {
     // Pomodoro Sessions
     async savePomodoroSession(session: Omit<PomodoroSession, 'id' | 'completedAt'>): Promise<void> {
         try {
+            const supabase = getSupabase()
             const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2) + Date.now().toString(36)
             const completedAt = new Date().toISOString()
 
@@ -415,6 +421,7 @@ class DataStore {
 
     async getPomodoroSessions(userId: string, limit = 100): Promise<PomodoroSession[]> {
         try {
+            const supabase = getSupabase()
             const { data, error } = await supabase
                 .from('pomodoro_sessions')
                 .select('*')
@@ -443,6 +450,7 @@ class DataStore {
 
     async getTodayPomodoroCount(userId: string): Promise<number> {
         try {
+            const supabase = getSupabase()
             const today = new Date().toISOString().split('T')[0]
 
             const { data, error } = await supabase
@@ -1068,6 +1076,7 @@ class DataStore {
     // Get habit statistics for a period
     async getHabitStats(userId: string, startDate: string, endDate: string): Promise<HabitStats> {
         try {
+            const supabase = getSupabase()
             const { data: entries } = await supabase
                 .from('app_entries')
                 .select('*')
@@ -1121,6 +1130,7 @@ class DataStore {
     // Get Pomodoro statistics for a period
     async getPomodoroStats(userId: string, startDate: string, endDate: string): Promise<PomodoroStats> {
         try {
+            const supabase = getSupabase()
             const { data: sessions } = await supabase
                 .from('pomodoro_sessions')
                 .select('*')
@@ -1173,6 +1183,7 @@ class DataStore {
     // Save review session
     async saveReviewSession(session: Omit<ReviewSession, 'id' | 'completedAt'>): Promise<void> {
         try {
+            const supabase = getSupabase()
             const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)
             const completedAt = new Date().toISOString()
 
@@ -1195,6 +1206,7 @@ class DataStore {
     // Get review sessions
     async getReviewSessions(userId: string, reviewType?: 'weekly' | 'monthly' | 'yearly'): Promise<ReviewSession[]> {
         try {
+            const supabase = getSupabase()
             let query = supabase
                 .from('review_sessions')
                 .select('*')
@@ -1227,6 +1239,7 @@ class DataStore {
     // Fitness goals (for AI routine generation)
     async saveFitnessGoal(goal: Omit<FitnessGoal, 'id' | 'createdAt'>): Promise<void> {
         try {
+            const supabase = getSupabase()
             const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
             const createdAt = new Date().toISOString()
             const payload = {
@@ -1248,6 +1261,7 @@ class DataStore {
 
     async getFitnessGoals(userId: string): Promise<FitnessGoal[]> {
         try {
+            const supabase = getSupabase()
             const { data, error } = await supabase
                 .from('fitness_goals')
                 .select('*')
@@ -1271,6 +1285,7 @@ class DataStore {
     // Libraries: Exercises
     async listExercises(options?: { search?: string; difficulty?: 'easy' | 'medium' | 'hard'; energy?: 'low' | 'medium' | 'high' }): Promise<Exercise[]> {
         try {
+            const supabase = getSupabase()
             let query = supabase.from('exercise_library').select('*')
             if (options?.difficulty) query = query.eq('difficulty', options.difficulty)
             if (options?.energy) query = query.eq('energy_band', options.energy)
@@ -1304,6 +1319,7 @@ class DataStore {
 
     async saveExercise(item: Partial<Exercise> & { name: string }): Promise<void> {
         try {
+            const supabase = getSupabase()
             const payload = {
                 id: item.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
                 name: item.name,
@@ -1339,6 +1355,7 @@ class DataStore {
     // Libraries: Food
     async listFoods(options?: { search?: string; tag?: string }): Promise<FoodItem[]> {
         try {
+            const supabase = getSupabase()
             let query = supabase.from('food_library').select('*')
             if (options?.search) query = query.ilike('name', `%${options.search}%`)
             if (options?.tag) query = query.contains('tags', [options.tag])
@@ -1365,6 +1382,7 @@ class DataStore {
 
     async saveFood(item: Partial<FoodItem> & { name: string }): Promise<void> {
         try {
+            const supabase = getSupabase()
             const payload = {
                 id: item.id || (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)),
                 name: item.name,
@@ -1394,6 +1412,7 @@ class DataStore {
     // Live sessions + sets
     async saveLiveSession(session: Omit<LiveSession, 'id' | 'startedAt'>): Promise<string | null> {
         try {
+            const supabase = getSupabase()
             const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)
             const startedAt = new Date().toISOString()
             const payload = {
@@ -1419,6 +1438,7 @@ class DataStore {
     async saveExerciseSets(sets: Array<Omit<ExerciseSet, 'id' | 'completedAt'>>): Promise<void> {
         if (sets.length === 0) return
         try {
+            const supabase = getSupabase()
             const now = new Date().toISOString()
             const payload = sets.map(set => ({
                 id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2),

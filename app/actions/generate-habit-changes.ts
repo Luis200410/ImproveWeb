@@ -130,7 +130,8 @@ Strict Instructions:
             tier: 'LITE',
             intent: 'Habit Rotation',
             prompt,
-            jsonResponse: true
+            jsonResponse: true,
+            supabase
         });
 
         if (responseText) {

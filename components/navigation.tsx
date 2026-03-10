@@ -6,7 +6,7 @@ import { Bebas_Neue } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/client'
 import { ImproveLogo } from '@/components/ui/improve-logo'
 
 const bebas = Bebas_Neue({ subsets: ['latin'] })
@@ -39,6 +39,7 @@ export function Navigation() {
                 setSubscriptionStatus(null)
                 return
             }
+            const supabase = createClient()
             const { data: entry } = await supabase
                 .from('entries')
                 .select('data')
@@ -75,6 +76,7 @@ export function Navigation() {
             } catch (err) {
                 console.warn('Navigation /api/auth/me failed, falling back to client session', err)
                 // Fallback to client-side session check to avoid hiding menu if server fetch fails
+                const supabase = createClient()
                 const { data, error } = await supabase.auth.getSession()
                 if (error) console.warn('Navigation getSession error', error)
                 if (!active) return
@@ -88,6 +90,7 @@ export function Navigation() {
 
         hydrateFromServer()
 
+        const supabase = createClient()
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
             console.debug('Navigation auth state change', { event, hasUser: Boolean(session?.user) })
             const user = session?.user?.id ? session.user : null

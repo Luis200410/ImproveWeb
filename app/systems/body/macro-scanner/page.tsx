@@ -202,6 +202,8 @@ export default function MacroScannerPage() {
     const analyzeBase64 = async (base64: string) => {
         setError(null)
         setScanProgress(0)
+        setResult(null)
+        setEditableItems([])
         setScanState('analysing')
 
         try {
@@ -470,13 +472,13 @@ export default function MacroScannerPage() {
                     </div>
 
                     {/* Scan / Stop buttons & Additional Inputs */}
-                    {(scanState === 'idle' || scanState === 'result') && (
+                    {scanState !== 'logged' && (
                         <div className="space-y-4">
                             {cameraActive && (
                                 <div className="flex gap-3">
                                     <Button
                                         onClick={handleScanLive}
-                                        disabled={scanState !== 'idle'}
+                                        disabled={scanState === 'analysing' || scanState === 'scanning'}
                                         className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-14 text-base tracking-wide"
                                     >
                                         <ScanLine className="w-5 h-5 mr-2" />
@@ -496,7 +498,7 @@ export default function MacroScannerPage() {
                             <div className="flex gap-3">
                                 <Button
                                     onClick={() => fileInputRefCapture.current?.click()}
-                                    disabled={scanState !== 'idle'}
+                                    disabled={scanState === 'analysing' || scanState === 'scanning'}
                                     variant="outline"
                                     className="flex-1 border-white/15 bg-white/5 hover:bg-white/10 h-14"
                                 >
@@ -505,17 +507,17 @@ export default function MacroScannerPage() {
                                 </Button>
                                 <Button
                                     onClick={() => fileInputRefUpload.current?.click()}
-                                    disabled={scanState !== 'idle'}
+                                    disabled={scanState === 'analysing' || scanState === 'scanning'}
                                     variant="outline"
                                     className="flex-1 border-white/15 bg-white/5 hover:bg-white/10 h-14"
                                 >
                                     <ImageIcon className="w-4 h-4 mr-2 text-white/60" />
                                     Upload
                                 </Button>
-                                {!cameraActive && !cameraError && (
+                                {!cameraActive && !cameraError && scanState !== 'result' && (
                                     <Button
                                         onClick={startCamera}
-                                        disabled={scanState !== 'idle'}
+                                        disabled={scanState === 'analysing' || scanState === 'scanning'}
                                         variant="outline"
                                         className="border-white/15 bg-white/5 hover:bg-white/10 h-14 px-5"
                                     >

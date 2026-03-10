@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { LIFE_AREAS, getLifeArea, LifeAreaId } from '@/lib/life-areas'
 import { dataStore, LifeAreaGoal, MonthlyReflection } from '@/lib/data-store'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/utils/supabase/client'
 import { ChevronLeft, ChevronRight, Star, Target, Flame, BookOpen, X, Zap } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -348,7 +348,7 @@ export default function ProjectionPage() {
 
     // Auth
     useEffect(() => {
-        supabase.auth.getUser().then(({ data }) => {
+        createClient().auth.getUser().then(({ data }) => {
             if (data.user) setUserId(data.user.id)
         })
     }, [])

@@ -57,7 +57,8 @@ Provide a "15-Second Coaching Session".
             userId: user.id,
             tier: 'FLASH',
             intent: 'coaching_review',
-            prompt: context
+            prompt: context,
+            supabase
         });
 
         return NextResponse.json({ coaching: response });

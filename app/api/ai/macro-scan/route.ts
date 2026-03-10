@@ -88,7 +88,8 @@ Return this exact JSON structure:
             intent: 'Macro Scan',
             prompt,
             media: [{ mimeType, data: imageBase64 }],
-            jsonResponse: true
+            jsonResponse: true,
+            supabase
         });
 
         let parsed: any

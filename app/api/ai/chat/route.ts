@@ -25,6 +25,7 @@ export async function POST(req: Request) {
             tier: 'LITE',
             intent: 'General Chat',
             prompt,
+            supabase,
         });
 
         return new NextResponse(responseText, {
