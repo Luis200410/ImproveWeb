@@ -51,6 +51,9 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.startsWith('/sales') &&
         !request.nextUrl.pathname.startsWith('/pricing') &&
         !request.nextUrl.pathname.startsWith('/api') &&
+        !request.nextUrl.pathname.endsWith('.xml') &&
+        !request.nextUrl.pathname.endsWith('.txt') &&
+        !request.nextUrl.pathname.endsWith('.json') &&
         request.nextUrl.pathname !== '/'
     ) {
         // no user, potentially redirect to login
