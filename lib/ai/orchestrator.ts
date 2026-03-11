@@ -15,20 +15,20 @@ export interface AIStrategy {
 
 const STRATEGIES: Record<AITier, AIStrategy> = {
     PRO: {
-        model: 'gemini-1.5-pro',
+        model: 'gemini-2.5-pro',
         maxTokens: 4096,
         dailyLimit: 3, // Very tight for PRO
         weeklyLimit: 1, // As per PRD: 1 execution per week
         baseCostPer1M: 3.50,
     },
     FLASH: {
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         maxTokens: 2048,
         dailyLimit: 50, // As per PRD
         baseCostPer1M: 0.10,
     },
     LITE: {
-        model: 'gemini-1.5-flash-8b', // Using flash-8b as lite equivalent
+        model: 'gemini-2.5-flash-lite', // Using flash-lite as lite equivalent
         maxTokens: 1024,
         dailyLimit: 200, // As per PRD
         baseCostPer1M: 0.03,
