@@ -11,14 +11,14 @@ import {
 /* ──────────────────────────────────────────────────────────────
    Types
    ────────────────────────────────────────────────────────── */
-interface Exercise {
+export interface Exercise {
     name: string
     sets: string
     reps: string
     notes: string
 }
 
-interface DayPlan {
+export interface DayPlan {
     day_index: number
     day: string
     type: 'training' | 'recovery' | 'rest'
@@ -29,7 +29,7 @@ interface DayPlan {
     coaching_note: string
 }
 
-interface ExerciseLog {
+export interface ExerciseLog {
     exercise_name: string
     plan_sets: string
     plan_reps: string
@@ -59,7 +59,7 @@ function todayDayIndex(): number {
 /* ──────────────────────────────────────────────────────────────
    ExerciseRow — inline logging with upsert
    ────────────────────────────────────────────────────────── */
-function ExerciseRow({
+export function ExerciseRow({
     exercise,
     log,
     userId,
@@ -429,43 +429,56 @@ export function TodaySessionCard({ userId }: Props) {
                         </div>
                     </div>
 
-                    {!isSessionActive && progressPct < 1 ? (
+                    <div className="space-y-2 pt-2">
+                        <div className="flex items-center gap-3">
+                            <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
+                                {exercises.length} Exercise{exercises.length !== 1 ? 's' : ''} · tap to log
+                            </p>
+                            <div className="h-px flex-1 bg-white/8" />
+                        </div>
+                        {exercises.map((ex, i) => (
+                            <ExerciseRow
+                                key={ex.name + i}
+                                exercise={ex}
+                                log={logMap.get(ex.name.toLowerCase().trim())}
+                                userId={userId}
+                                isActive={isSessionActive}
+                                onLogged={handleLogged}
+                            />
+                        ))}
+                    </div>
+
+                    {!isSessionActive && progressPct < 1 && (
                         <div className="pt-2 pb-1">
                             <button
                                 onClick={() => setIsSessionActive(true)}
-                                className="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs tracking-wide uppercase hover:bg-white/90 transition shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                                className="w-full py-3 rounded-xl bg-white/5 text-white font-semibold text-xs tracking-wide uppercase hover:bg-white border border-white/10 hover:text-black transition shadow-[0_0_20px_rgba(255,255,255,0.02)]"
                             >
                                 Start Exercise Session
                             </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-2 pt-2">
-                            <div className="flex items-center gap-3">
-                                <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
-                                    {exercises.length} Exercise{exercises.length !== 1 ? 's' : ''} · tap to log
-                                </p>
-                                <div className="h-px flex-1 bg-white/8" />
-                            </div>
-                            {exercises.map((ex, i) => (
-                                <ExerciseRow
-                                    key={ex.name + i}
-                                    exercise={ex}
-                                    log={logMap.get(ex.name.toLowerCase().trim())}
-                                    userId={userId}
-                                    isActive={isSessionActive}
-                                    onLogged={handleLogged}
-                                />
-                            ))}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Recovery/rest day notes */}
-            {(todayPlan.type === 'recovery' || todayPlan.type === 'rest') && todayPlan.recovery_notes && (
-                <div className="flex items-start gap-2.5 bg-sky-500/5 border border-sky-500/15 rounded-xl px-4 py-3">
-                    <Wind className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
-                    <p className="text-xs text-sky-300/70 leading-relaxed">{todayPlan.recovery_notes}</p>
+            {/* Non-training empty state / Recovery emphasis */}
+            {(todayPlan.type === 'recovery' || todayPlan.type === 'rest') && exercises.length === 0 && (
+                <div className="py-6 flex flex-col items-center justify-center text-center space-y-4">
+                    <div className="w-16 h-16 rounded-full bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+                        <Wind className="w-8 h-8 text-sky-400" />
+                    </div>
+                    <div>
+                        <h4 className="text-white font-medium mb-1">Active Recovery Day</h4>
+                        <p className="text-xs text-white/40 max-w-[200px] mx-auto">
+                            No heavy lifting scheduled. Focus on mobility, breathing, or light cardio.
+                        </p>
+                    </div>
+                    {todayPlan.recovery_notes && (
+                        <div className="inline-flex items-start gap-2.5 bg-sky-500/5 border border-sky-500/15 rounded-xl px-4 py-3 mt-2 text-left">
+                            <Wind className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+                            <p className="text-xs text-sky-300/80 leading-relaxed font-medium">{todayPlan.recovery_notes}</p>
+                        </div>
+                    )}
                 </div>
             )}
 

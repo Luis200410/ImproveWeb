@@ -148,7 +148,8 @@ export default function MacroScannerPage() {
         }
     }, [])
 
-    const stopCamera = useCallback(() => {
+    const stopCamera = useCallback((preserveState?: boolean) => {
+        const shouldPreserve = preserveState === true;
         if (captureIntervalRef.current) clearInterval(captureIntervalRef.current)
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(t => t.stop())
@@ -158,8 +159,10 @@ export default function MacroScannerPage() {
             videoRef.current.srcObject = null
         }
         setCameraActive(false)
-        setScanState('idle')
-        setScanProgress(0)
+        if (!shouldPreserve) {
+            setScanState('idle')
+            setScanProgress(0)
+        }
     }, [])
 
     useEffect(() => {
@@ -218,7 +221,7 @@ export default function MacroScannerPage() {
             setResult(data)
             setEditableItems(data.items.map((i: FoodItem) => ({ ...i })))
             setScanState('result')
-            stopCamera() // Stop camera if it was running, to show results properly
+            stopCamera(true) // Preserve the result state while stopping the camera
         } catch (err: any) {
             setError(err.message || 'Something went wrong.')
             setScanState('idle')
@@ -318,6 +321,7 @@ export default function MacroScannerPage() {
                 'Prep Time (min)': 0,
                 'Mood After': '',
                 'Hydration (glasses)': 0,
+                'Fuel Grade': result.fuel_grade,
                 Notes: `AI Scanned · Fuel Grade ${result.fuel_grade}/10 · ${editableItems.length} components identified`
             })
             setScanState('logged')
@@ -485,7 +489,7 @@ export default function MacroScannerPage() {
                                         {scanState === 'result' ? 'Scan Again' : 'Scan Live View'}
                                     </Button>
                                     <Button
-                                        onClick={stopCamera}
+                                        onClick={() => stopCamera()}
                                         variant="outline"
                                         className="border-white/15 text-white hover:bg-white/10 h-14 px-5"
                                     >

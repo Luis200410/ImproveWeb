@@ -80,6 +80,39 @@ Return ONLY valid JSON.
     })
 
     const plan = JSON.parse(planJson)
+
+    // UPSERT unique exercises into the global `exercises` table
+    const uniqueExNames = new Set<string>()
+    if (plan.week_plan && Array.isArray(plan.week_plan)) {
+      plan.week_plan.forEach((day: any) => {
+        if (day.exercises && Array.isArray(day.exercises)) {
+          day.exercises.forEach((ex: any) => {
+            if (ex.name) uniqueExNames.add(ex.name.trim().toLowerCase())
+          })
+        }
+      })
+    }
+
+    if (uniqueExNames.size > 0) {
+      const namesArray = Array.from(uniqueExNames)
+      
+      // Query existing exercises to avoid inserting duplicates
+      const { data: existing } = await supabase
+        .from('exercises')
+        .select('name')
+        .in('name', namesArray)
+      
+      const existingNames = new Set((existing || []).map(e => e.name))
+      const toInsert = namesArray
+        .filter(name => !existingNames.has(name))
+        .map(name => ({ name }))
+        
+      if (toInsert.length > 0) {
+        // Insert new global exercises
+        await supabase.from('exercises').insert(toInsert)
+      }
+    }
+
     return NextResponse.json(plan)
 
   } catch (err: any) {

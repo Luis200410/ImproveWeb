@@ -14,6 +14,9 @@ import { BodyAnalytics } from '@/components/body/body-analytics'
 import { TodaySessionCard } from '@/components/body/today-session-card'
 import { HydrationQuickLog } from '@/components/body/hydration-quick-log'
 import { CoachingPanel } from '@/components/body/coaching-panel'
+import { BodyCalendar } from '@/components/body/body-calendar'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { Dumbbell } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -74,6 +77,18 @@ export default function BodyPage() {
         const dd = String(d.getDate()).padStart(2, '0')
         return `${yyyy}-${mm}-${dd}`
     }, [])
+
+    const isToday = useCallback((dStr: string) => {
+        if (!dStr) return false;
+        if (!dStr.includes('T')) return dStr.startsWith(today);
+        const d = new Date(dStr);
+        if (isNaN(d.getTime())) return false;
+        const yyyy = d.getFullYear()
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        const dd = String(d.getDate()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd}` === today;
+    }, [today])
+
     const recoveryEntries = entries['recovery'] || []
     const dietEntries = entries['diet'] || []
 
@@ -84,19 +99,19 @@ export default function BodyPage() {
     }, [recoveryEntries])
 
     const caloriesToday = useMemo(() => dietEntries
-        .filter(d => (d.data['Date'] || '').startsWith(today))
+        .filter(d => isToday(String(d.data['Date'] || d.createdAt || '')))
         .reduce((sum, d) => sum + numeric(d.data['Calories']), 0),
-        [dietEntries, today])
+        [dietEntries, isToday])
 
     const proteinToday = useMemo(() => dietEntries
-        .filter(d => (d.data['Date'] || '').startsWith(today))
+        .filter(d => isToday(String(d.data['Date'] || d.createdAt || '')))
         .reduce((sum, d) => sum + numeric(d.data['Protein (g)']), 0),
-        [dietEntries, today])
+        [dietEntries, isToday])
 
     const hydrationToday = useMemo(() => dietEntries
-        .filter(d => (d.data['Date'] || '').startsWith(today))
+        .filter(d => isToday(String(d.data['Date'] || d.createdAt || '')))
         .reduce((sum, d) => sum + numeric(d.data['Hydration (glasses)']), 0),
-        [dietEntries, today])
+        [dietEntries, isToday])
 
     if (!system) return null
 
@@ -133,10 +148,10 @@ export default function BodyPage() {
                     <span className="uppercase tracking-[0.3em] text-xs">Body System</span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                <div className="space-y-8">
 
                     {/* Left Column (Main Content) */}
-                    <div className="lg:col-span-2 space-y-6">
+                    <div className="space-y-6">
                         {/* ── Hero ── */}
                         <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.04] p-8 shadow-[0_16px_50px_rgba(0,0,0,0.35)]">
                             <div className="flex flex-wrap items-center gap-3 text-emerald-200 relative z-10">
@@ -152,14 +167,43 @@ export default function BodyPage() {
                             <div className="mt-6 flex flex-wrap gap-3 relative z-10">
                                 <Button asChild className="bg-emerald-500/90 hover:bg-emerald-500 text-black border-0 font-bold">
                                     <Link href="/systems/body/macro-scanner">
-                                        <ScanLine className="w-4 h-4" />
+                                        <ScanLine className="w-4 h-4 mr-2" />
                                         Scan a Meal
                                     </Link>
                                 </Button>
-                                <Button asChild variant="outline" className="border-white/25 text-white hover:bg-white/10">
-                                    <Link href="/systems/body/routine-builder">View Routine Log</Link>
-                                </Button>
+                                <Sheet>
+                                    <SheetTrigger asChild>
+                                        <Button variant="outline" className="border-white/25 text-white hover:bg-white/10">
+                                            <Dumbbell className="w-4 h-4 mr-2" />
+                                            View Routine & Log
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent className="bg-[#050505] border-l border-white/10 w-full sm:max-w-[450px] p-0 flex flex-col z-[100] custom-scrollbar overflow-y-auto" showCloseButton={true}>
+                                        <SheetHeader className="p-6 pb-2 border-b border-white/10 sticky top-0 bg-[#050505]/95 backdrop-blur z-10 shrink-0">
+                                            <SheetTitle className="text-white text-xl flex items-center gap-2">
+                                                <Dumbbell className="w-5 h-5 text-emerald-400" />
+                                                Routine Log
+                                            </SheetTitle>
+                                        </SheetHeader>
+                                        <div className="p-6 space-y-6">
+                                            {identityReady && userId !== 'defaultUser' && (
+                                                <>
+                                                    <CoachingPanel userId={userId} />
+                                                    <TodaySessionCard userId={userId} />
+                                                    <HydrationQuickLog userId={userId} onUpdate={refreshEntries} />
+                                                </>
+                                            )}
+                                        </div>
+                                    </SheetContent>
+                                </Sheet>
                             </div>
+                        </div>
+
+                        {/* Hydration quick log */}
+                        <div className="mb-2">
+                            {identityReady && userId !== 'defaultUser' && (
+                                <HydrationQuickLog userId={userId} onUpdate={refreshEntries} />
+                            )}
                         </div>
 
                         {/* ── 4-stat strip ── */}
@@ -245,18 +289,18 @@ export default function BodyPage() {
                         </div>
                     </div>
 
-                    {/* Right Column (Sidebar) */}
-                    <div className="space-y-6">
-                        {identityReady && userId !== 'defaultUser' && (
-                            <>
-                                <CoachingPanel userId={userId} />
-                                <TodaySessionCard userId={userId} />
-                                <HydrationQuickLog userId={userId} onUpdate={refreshEntries} />
-                            </>
-                        )}
-                    </div>
+                    {/* Right Column (Removed - Replaced by Slide-Over Routine Sheet) */}
 
                 </div>
+
+                {/* ── Body Calendar Overview ── */}
+                {identityReady && userId !== 'defaultUser' && (
+                    <BodyCalendar 
+                        dietEntries={dietEntries} 
+                        recoveryEntries={recoveryEntries} 
+                        userId={userId} 
+                    />
+                )}
 
                 {/* ── Identity Analytics (radar, heatmap, horizon) ── */}
                 {identityReady && userId !== 'defaultUser' && (

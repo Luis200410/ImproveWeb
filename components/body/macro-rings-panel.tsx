@@ -284,11 +284,29 @@ export function MacroRingsPanel({ entries, userId }: Props) {
 
     const effectiveTargets = targets;
 
+    const isToday = (dStr: string) => {
+        if (!dStr) return false;
+        if (!dStr.includes('T')) {
+            return dStr.startsWith(todayStr);
+        }
+        const d = new Date(dStr);
+        if (isNaN(d.getTime())) return false;
+        return toLocalIso(d) === todayStr;
+    }
+
+    /* ── Hydration Total ── */
+    const hydrationTotal = useMemo(() =>
+        entries.filter(e => {
+            const d = String(e.data?.['Date'] || e.createdAt || '')
+            return e.data?.['Type'] === 'hydration' && isToday(d)
+        }).reduce((acc, e) => acc + Number(e.data?.['Hydration (glasses)'] || 0), 0)
+        , [entries, todayStr])
+
     /* ── Today's consumed totals ── */
     const todayEntries = useMemo(() =>
         entries.filter(e => {
             const dateStr = String(e.data?.['Date'] || e.createdAt || '');
-            return dateStr.startsWith(todayStr) && e.data?.['Type'] !== 'hydration';
+            return isToday(dateStr) && e.data?.['Type'] !== 'hydration';
         }),
         [entries, todayStr])
 

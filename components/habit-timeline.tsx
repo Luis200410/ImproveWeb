@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Entry, dataStore } from '@/lib/data-store'
 import { sileo } from 'sileo'
 import { Playfair_Display, Inter } from '@/lib/font-shim'
-import { Check, Edit2, Trash2, ArrowLeft, ArrowRight, Zap, Play } from 'lucide-react'
+import { Check, Edit2, Trash2, ArrowLeft, ArrowRight, Zap, Play, Dumbbell, Utensils } from 'lucide-react'
 import { Timeline } from '@/components/ui/timeline'
+import Link from 'next/link'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -222,6 +223,30 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     const TOTAL_SLOTS = 48
     const SLOT_HEIGHT_HOURS = 0.5
     const slots = Array.from({ length: TOTAL_SLOTS }, (_, i) => i * SLOT_HEIGHT_HOURS)
+
+    const getActionLink = (entry: Entry) => {
+        const name = (entry.data['Habit Name'] || '').toLowerCase();
+        const cat = (entry.data['Category'] || '').toLowerCase();
+        const lifeArea = (entry.data['Life Area'] || '').toLowerCase();
+        
+        if (cat === 'eating' || lifeArea === 'eating' || cat === 'diet' || lifeArea === 'nutrition' || name.includes('eat') || name.includes('diet') || name.includes('food') || name.includes('meal') || name.includes('macro') || name.includes('breakfast') || name.includes('lunch') || name.includes('dinner')) {
+            return {
+                href: '/systems/body/macro-scanner',
+                label: 'Scan Meal',
+                icon: <Utensils className="w-4 h-4 mr-2" />
+            };
+        }
+
+        if (cat === 'health' || lifeArea === 'physical-health' || name.includes('workout') || name.includes('exercise') || name.includes('session') || name.includes('recovery') || name.includes('train')) {
+            return {
+                href: '/systems/body',
+                label: 'Log Session',
+                icon: <Dumbbell className="w-4 h-4 mr-2" />
+            };
+        }
+        
+        return null;
+    };
 
     // Navigation Helpers
     const nextDay = () => {
@@ -694,18 +719,22 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                     )
                                 };
 
-                                const formattedEntries = entriesWithLayout.filter(e => !e.id.toString().endsWith('_overflow')).map((entry, index) => {
+                                const formattedEntries = entriesWithLayout.map((entry, index) => {
                                     const completedDates = entry.data['completedDates'] || [];
                                     const isCompletedToday = completedDates.includes(todayKey);
 
                                     return {
                                         title: entry.timeStr,
                                         sortKey: entry.start,
+                                        durationHours: entry.duration / 60,
                                         content: (
-                                            <div className="relative group/card h-full flex flex-col mb-12">
+                                            <div 
+                                                className="relative group/card h-[calc(100%-4px)] flex flex-col min-h-[120px]" 
+                                                style={{ marginLeft: `${entry.colIndex * 32}px`, zIndex: entry.colIndex + 20 }}
+                                            >
                                                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent blur-xl opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                                                <div className="relative bg-[#050505] border border-white/10 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-white/20 transition-all shadow-xl shadow-black group-hover/card:shadow-[0_8px_30px_rgba(0,0,0,0.8)]">
-                                                    <div className="flex-1">
+                                                <div className="relative h-full bg-[#050505] border border-white/10 p-5 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-white/20 transition-all shadow-xl shadow-black group-hover/card:shadow-[0_8px_30px_rgba(0,0,0,0.8)] overflow-hidden">
+                                                    <div className="flex-1 min-w-0">
                                                         <div className="flex flex-wrap items-center gap-2 mb-3">
                                                             <span className="text-[10px] text-emerald-500 uppercase tracking-[0.2em] font-bold bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20 whitespace-nowrap">
                                                                 {entry.data['Category'] || 'General'}
@@ -726,18 +755,29 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <h3 className={`${playfair.className} text-3xl text-white mb-2 group-hover/card:text-emerald-100 transition-colors`}>{entry.data['Habit Name']}</h3>
-                                                        <p className={`${inter.className} text-sm text-white/50 max-w-xl`}>{entry.data['Description'] || 'Daily focus task.'}</p>
+                                                        <h3 className={`${playfair.className} text-2xl text-white mb-1 group-hover/card:text-emerald-100 transition-colors truncate`}>{entry.data['Habit Name']}</h3>
+                                                        <p className={`${inter.className} text-xs text-white/50 max-w-xl line-clamp-2`}>{entry.data['Description'] || 'Daily focus task.'}</p>
 
-                                                        {/* 4-law color bar */}
-                                                        <div className="mt-4 flex gap-1 h-1 w-48 rounded-full overflow-hidden opacity-30 mt-6">
+                                                        <div className="hidden sm:flex mt-3 gap-1 h-1 w-32 rounded-full overflow-hidden opacity-30">
                                                             <div className="bg-cyan-500 flex-1" />
                                                             <div className="bg-purple-500 flex-1" />
                                                             <div className="bg-emerald-500 flex-1" />
                                                             <div className="bg-amber-500 flex-1" />
                                                         </div>
                                                     </div>
-                                                    <div className="flex gap-3 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto">
+                                                    <div className="flex gap-2 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto items-center mt-2 sm:mt-0">
+                                                        {(() => {
+                                                            const action = getActionLink(entry);
+                                                            return action ? (
+                                                                <Link 
+                                                                    href={action.href}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="w-full text-center flex items-center justify-center sm:w-auto px-6 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-bold transition-all bg-white/5 text-white border border-white/20 hover:bg-white/10 hover:border-white/40"
+                                                                >
+                                                                    {action.icon} {action.label}
+                                                                </Link>
+                                                            ) : null;
+                                                        })()}
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -751,7 +791,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                                                     }
                                                                 });
                                                             }}
-                                                            className={`w-full sm:w-auto px-8 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-bold transition-all ${isCompletedToday ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/30' : 'bg-white text-black hover:bg-emerald-100 hover:scale-105 active:scale-95'}`}
+                                                            className={`w-full sm:w-auto px-6 py-2.5 rounded-full text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold transition-all ${isCompletedToday ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/30' : 'bg-white text-black hover:bg-emerald-100 hover:scale-105 active:scale-95'}`}
                                                         >
                                                             {isCompletedToday ? 'Done ✓' : 'Complete'}
                                                         </button>
@@ -824,7 +864,21 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                                     {entry.data['Habit Name']}
                                                     <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-white/40" />
                                                 </div>
-                                                <div className="text-xs text-white/40 font-mono mt-1">{entry.data['Time']}</div>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <div className="text-xs text-white/40 font-mono">{entry.data['Time']}</div>
+                                                    {(() => {
+                                                        const action = getActionLink(entry);
+                                                        return action ? (
+                                                            <Link 
+                                                                href={action.href}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                                className="inline-flex items-center justify-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold transition-all bg-white/5 text-white border border-white/20 hover:bg-white/10 hover:border-white/40"
+                                                            >
+                                                                {action.icon} Connect
+                                                            </Link>
+                                                        ) : null;
+                                                    })()}
+                                                </div>
                                             </td>
 
                                             {currentWeekDates.map((dateObj, i) => {
@@ -891,6 +945,18 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                             <div>
                                                 <div className="text-xs uppercase tracking-widest text-white/40 mb-1">{entry.data['Category'] || 'General'}</div>
                                                 <h3 className={`${playfair.className} text-2xl text-white`}>{String(entry.data['Habit Name'] || 'Untitled')}</h3>
+                                                {(() => {
+                                                    const action = getActionLink(entry);
+                                                    return action ? (
+                                                        <Link 
+                                                            href={action.href}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            className="mt-3 inline-flex items-center justify-center px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.2em] font-bold transition-all bg-white/5 text-white border border-white/20 hover:bg-white/10 hover:border-white/40"
+                                                        >
+                                                            {action.icon} {action.label}
+                                                        </Link>
+                                                    ) : null;
+                                                })()}
                                             </div>
                                             <div className="flex bg-black/50 rounded-lg overflow-hidden border border-white/10">
                                                 <button onClick={(e) => { e.stopPropagation(); onEdit(entry); }} className="p-2 text-white/40 hover:text-white hover:bg-white/10 transition-colors">
@@ -986,7 +1052,19 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
                                                         <h3 className={`${playfair.className} text-3xl text-white mb-2 group-hover/card:text-amber-100 transition-colors`}>{entry.data['Habit Name']}</h3>
                                                         <p className={`${inter.className} text-sm text-white/50 max-w-xl`}>{entry.data['Description'] || 'Daily focus task.'}</p>
                                                     </div>
-                                                    <div className="flex gap-3 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto">
+                                                    <div className="flex gap-3 sm:flex-col lg:flex-row shadow-lg shrink-0 w-full sm:w-auto items-center">
+                                                        {(() => {
+                                                            const action = getActionLink(entry);
+                                                            return action ? (
+                                                                <Link 
+                                                                    href={action.href}
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                    className="w-full text-center flex items-center justify-center sm:w-auto px-6 py-3 rounded-full text-xs uppercase tracking-[0.2em] font-bold transition-all bg-white/5 text-white border border-white/20 hover:bg-white/10 hover:border-white/40"
+                                                                >
+                                                                    {action.icon} {action.label}
+                                                                </Link>
+                                                            ) : null;
+                                                        })()}
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();

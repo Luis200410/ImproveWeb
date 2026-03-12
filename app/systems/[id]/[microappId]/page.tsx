@@ -33,6 +33,9 @@ import { TodaySessionCard } from '@/components/body/today-session-card'
 import { useRealtimeSubscription } from '@/hooks/use-realtime-data'
 
 import { TasksDashboard } from '@/components/tasks-dashboard'
+import { RoutineBuilderDashboard } from '@/components/body/routine-builder-dashboard'
+import { DietDashboard } from '@/components/body/diet-dashboard'
+import { RecoveryDashboard } from '@/components/body/recovery-dashboard'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
@@ -75,11 +78,18 @@ export default function MicroappPage() {
     const [selectedDietEntry, setSelectedDietEntry] = useState<Entry | null>(null)
 
     const fetchEntries = useCallback(async (currentUserId: string) => {
-        if (!microappId) return;
+        if (!microappId || !systemId) return;
 
         try {
             const loadedEntries = await dataStore.getEntries(microappId, currentUserId);
             setEntries(loadedEntries);
+
+            const app = dataStore.getMicroapp(systemId, microappId);
+            if (!app) {
+                console.error(`Microapp with ID ${microappId} not found in system ${systemId}`);
+                return;
+            }
+            setMicroapp(app); // Update the microapp state here
 
             // If it's the projects dashboard, we need more data
             if (microappId === 'projects-sb') {
@@ -98,9 +108,9 @@ export default function MicroappPage() {
             }
 
             // Load Relation Options for Forms (if microapp loaded)
-            if (microapp) {
+            if (app) {
                 const options: Record<string, { value: string, label: string }[]> = {};
-                for (const field of microapp.fields) {
+                for (const field of app.fields) {
                     if (field.type === 'relation' && field.relationMicroappId) {
                         const targetEntries = await dataStore.getEntries(field.relationMicroappId, currentUserId);
                         const targetApp = dataStore.getMicroappById(field.relationMicroappId);
@@ -121,7 +131,7 @@ export default function MicroappPage() {
                 // Fetch related names
                 const names: Record<string, string> = {}
                 for (const entry of loadedEntries) {
-                    for (const field of microapp.fields) {
+                    for (const field of app.fields) {
                         if (field.type === 'relation' && entry.data[field.name]) {
                             const relId = entry.data[field.name];
                             if (!names[relId]) {
@@ -155,7 +165,7 @@ export default function MicroappPage() {
         } finally {
             setIsLoading(false)
         }
-    }, [microappId, microapp]);
+    }, [microappId, systemId]);
 
     // Realtime Sync
     useRealtimeSubscription('entries', () => {
@@ -170,9 +180,6 @@ export default function MicroappPage() {
             // 1. Get Microapp
             const app = dataStore.getMicroapp(systemId, microappId);
             if (!app) {
-                // If not found, maybe wait or redirect. 
-                // For now, assume it might be a hydration timing issue, but getMicroapp is sync from LS.
-                // If it fails, redirecting is safe.
                 router.push(`/systems/${systemId}`);
                 return;
             }
@@ -184,30 +191,20 @@ export default function MicroappPage() {
 
             if (user) {
                 setUserId(user.id);
-                // 3. Fetch Entries Immediately
-                await fetchEntries(user.id);
             } else {
-                // Handle not logged in?
                 setIsLoading(false);
             }
         };
         init();
-    }, [systemId, microappId, router]); // Only run on mount changes
+    }, [systemId, microappId, router]); 
 
-    // We don't need the separate useEffect [microapp, userId] anymore because we call fetchEntries directly in init 
-    // AND we have it in realtime subscription for updates.
-    // However, if `microapp` state updates LATER (e.g. if we had async microapp loading), we might need it. 
-    // But here `getMicroapp` is sync.
-    // To be safe, let's keep a simple effect that runs if userId changes later (e.g. login/logout without unmount)
+    // Fetch entries when user connects
     useEffect(() => {
-        if (userId && microapp) {
-            // Avoid double fetching if init already did it.
-            // This effect primarily handles cases where userId might change *after* initial load
-            // (e.g., user logs in/out without a full page reload, or if init() didn't fetch for some reason).
-            // The `isLoading` state should prevent premature rendering.
+        if (userId) {
+            // Avoid double fetching manually
             fetchEntries(userId);
         }
-    }, [userId, microapp]);
+    }, [userId, fetchEntries]);
 
     useEffect(() => {
         const newParam = searchParams.get('new')
@@ -618,6 +615,83 @@ export default function MicroappPage() {
                                 />
                             </div>
                         </>
+                    ) : microappId === 'routine-builder' ? (
+                        <>
+                            <AnimatePresence>
+                                {isForgeOpen && (
+                                    <ForgeForm
+                                        microapp={microapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                        variant="panel"
+                                    />
+                                )}
+                            </AnimatePresence>
+                            <RoutineBuilderDashboard
+                                entries={entries}
+                                userId={userId}
+                                onEditEntry={handleEditEntry}
+                                onDeleteEntry={handleDelete}
+                                onCreateEntry={() => { setEditingEntry(null); setIsForgeOpen(true) }}
+                            />
+                        </>
+                    ) : microappId === 'diet' && userId ? (
+                        <>
+                            <AnimatePresence>
+                                {isForgeOpen && (
+                                    <ForgeForm
+                                        microapp={{
+                                            ...microapp,
+                                            fields: microapp.fields.filter(f => f.name !== 'Hydration (glasses)')
+                                        }}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                        variant="fullscreen"
+                                    />
+                                )}
+                            </AnimatePresence>
+                            <DietDashboard
+                                entries={entries}
+                                userId={userId}
+                                onEditEntry={handleEditEntry}
+                                onDeleteEntry={handleDelete}
+                                onScanMeal={() => router.push('/systems/body/macro-scanner')}
+                                onManualLog={() => { setEditingEntry(null); setIsForgeOpen(true) }}
+                                onUpdate={() => fetchEntries(userId)}
+                            />
+                        </>
+                    ) : microappId === 'recovery' && userId ? (
+                        <>
+                            <AnimatePresence>
+                                {isForgeOpen && (
+                                    <ForgeForm
+                                        microapp={microapp}
+                                        systemId={systemId}
+                                        onSave={handleSaveEntry}
+                                        onCancel={handleCancelForm}
+                                        initialData={editingEntry ? editingEntry.data : defaultFormData}
+                                        onRequestCreateRelation={(targetId, fieldName) => setCreatingRelation({ targetMicroappId: targetId, sourceFieldName: fieldName })}
+                                        relationOptions={relationOptions}
+                                        variant="panel"
+                                    />
+                                )}
+                            </AnimatePresence>
+                            <RecoveryDashboard
+                                entries={entries}
+                                userId={userId}
+                                onEditEntry={handleEditEntry}
+                                onDeleteEntry={handleDelete}
+                                onManualLog={() => { setEditingEntry(null); setIsForgeOpen(true) }}
+                            />
+                        </>
                     ) : (
                         /* Standard View */
                         <>
@@ -668,10 +742,6 @@ export default function MicroappPage() {
 
                             {/* Entries List */}
                             <div>
-                                {/* ── Macro rings (diet only) ── */}
-                                {microappId === 'diet' && userId && (
-                                    <MacroRingsPanel entries={entries} userId={userId} />
-                                )}
 
                                 <motion.div
                                     initial={{ opacity: 0 }}
