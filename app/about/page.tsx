@@ -4,7 +4,6 @@ import { Playfair_Display, Inter } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { Navigation } from "@/components/navigation";
 import { Sparkles, Quote } from "lucide-react";
 
 const playfair = Playfair_Display({ subsets: ["latin"] });
@@ -59,7 +58,6 @@ export default function AboutPage() {
 
             {/* Content */}
             <div className="relative z-10">
-                <Navigation />
                 <div className="h-20" />
 
                 {/* Hero Header */}

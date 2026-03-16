@@ -5,7 +5,6 @@ import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
-import { Navigation } from "@/components/navigation";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { EightSystemsAccordion } from "@/components/ui/interactive-image-accordion";
 import { ImproveLogo } from "@/components/ui/improve-logo";
@@ -44,9 +43,7 @@ export default function Home() {
         IMPROVE — The School of Excellence | All-In-One Self-Improvement & Productivity Operating System
       </h1>
 
-      <div className="fixed top-0 left-0 right-0 z-[100]">
-        <Navigation />
-      </div>
+
 
       <ScrollExpandMedia
         mediaType={mediaType}

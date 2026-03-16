@@ -129,12 +129,26 @@ function IdentityRadar({ values }: RadarProps) {
             {/* Data polygon */}
             <motion.polygon
                 points={dataPath}
-                fill="rgba(16,185,129,0.15)"
+                fill="rgba(16,185,129,0.1)"
                 stroke="#10b981"
                 strokeWidth={2}
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
+                style={{ transformOrigin: `${CX}px ${CY}px` }}
+            />
+            {/* Pulsing glow polygon */}
+            <motion.polygon
+                points={dataPath}
+                fill="none"
+                stroke="#10b981"
+                strokeWidth={4}
+                className="opacity-20"
+                animate={{ 
+                    scale: [1, 1.05, 1],
+                    opacity: [0.1, 0.3, 0.1]
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 style={{ transformOrigin: `${CX}px ${CY}px` }}
             />
             {/* Data points */}
@@ -207,8 +221,12 @@ function FuelHeatmap({ entries, staples }: HeatmapProps) {
         const result: Array<{ date: string; score: number | null }> = []
         const stapleNames = staples.map(s => s.name.toLowerCase())
 
+        // Use a fixed reference to ensure consistency regardless of local time execution
+        const now = new Date()
+        now.setHours(12, 0, 0, 0)
+
         for (let i = 29; i >= 0; i--) {
-            const d = new Date()
+            const d = new Date(now)
             d.setDate(d.getDate() - i)
             const dateStr = d.toISOString().split('T')[0]
 
@@ -218,14 +236,12 @@ function FuelHeatmap({ entries, staples }: HeatmapProps) {
                 continue
             }
 
-            // Grade from AI fuel grades
             const grades = dayEntries.map(e => extractFuelGrade(e.data['Notes'] || '')).filter((g): g is number => g !== null)
             if (grades.length > 0) {
                 result.push({ date: dateStr, score: (grades.reduce((a, b) => a + b, 0) / grades.length) * 10 })
                 continue
             }
 
-            // Fallback: staple match
             let total = 0, matched = 0
             for (const e of dayEntries) {
                 const pb: string = e.data['Plate Build'] || ''
@@ -242,36 +258,50 @@ function FuelHeatmap({ entries, staples }: HeatmapProps) {
 
     return (
         <div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
                 {days.map(({ date, score }) => {
-                    const day = new Date(date + 'T00:00:00').getDate()
+                    const day = date.split('-')[2] // Keep original string for visual zero if intended
                     return (
                         <div
                             key={date}
-                            className="relative group w-7 h-7 rounded-md flex items-center justify-center cursor-default"
-                            style={{ backgroundColor: fuelColor(score) }}
+                            className="relative group w-8 h-8 rounded border border-white/5 flex items-center justify-center cursor-pointer transition-all duration-300 hover:scale-110 hover:z-10 bg-white/[0.02] backdrop-blur-sm shadow-lg overflow-hidden"
+                            style={{ 
+                                backgroundColor: score !== null ? `${fuelColor(score)}44` : 'transparent',
+                                borderColor: score !== null ? `${fuelColor(score)}88` : 'rgba(255,255,255,0.05)'
+                            }}
                         >
-                            <span className="text-[8px] text-white/40">{day}</span>
+                            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundColor: fuelColor(score) }} />
+                            <span className="relative z-10 text-[9px] font-mono text-white/60 group-hover:text-white transition-colors">{day}</span>
+                            
+                            {/* Score Glow Effect */}
+                            {score !== null && (
+                                <div className="absolute inset-[-4px] blur-md opacity-0 group-hover:opacity-40 transition-opacity" style={{ backgroundColor: fuelColor(score) }} />
+                            )}
+
                             {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black border border-white/15 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none z-10">
-                                {date}: {score !== null ? `${Math.round(score)}%` : 'No log'}
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg text-[10px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 pointer-events-none z-20 shadow-2xl">
+                                <div className="font-semibold text-white/50 mb-0.5">{date}</div>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: fuelColor(score) }} />
+                                    {score !== null ? `${Math.round(score)}% Quality` : 'No Log Data'}
+                                </div>
                             </div>
                         </div>
                     )
                 })}
             </div>
             {/* Legend */}
-            <div className="flex items-center gap-3 mt-3 text-[9px] text-white/40">
+            <div className="flex items-center gap-4 mt-5 py-3 px-4 rounded-xl bg-white/[0.02] border border-white/[0.05] text-[9px] text-white/40">
                 {[
-                    { color: '#f87171', label: '<40%' },
-                    { color: '#f59e0b', label: '40-60%' },
-                    { color: '#84cc16', label: '60-80%' },
-                    { color: '#10b981', label: '80%+' },
-                    { color: '#ffffff0a', label: 'No log' },
+                    { color: '#f87171', label: 'CRITICAL' },
+                    { color: '#f59e0b', label: 'AVERAGE' },
+                    { color: '#84cc16', label: 'OPTIMAL' },
+                    { color: '#10b981', label: 'PEAK' },
+                    { color: '#ffffff0a', label: 'NULL' },
                 ].map(({ color, label }) => (
-                    <div key={label} className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded-sm border border-white/10" style={{ backgroundColor: color }} />
-                        <span>{label}</span>
+                    <div key={label} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-sm border border-white/10 shadow-[0_0_8px_rgba(255,255,255,0.05)]" style={{ backgroundColor: color }} />
+                        <span className="tracking-widest uppercase opacity-70 font-bebas">{label}</span>
                     </div>
                 ))}
             </div>
@@ -285,12 +315,12 @@ function FuelHeatmap({ entries, staples }: HeatmapProps) {
 function HorizBar({ label, value, max, color, unit }: { label: string; value: number; max: number; color: string; unit: string }) {
     const pct = Math.min(value / max, 1)
     return (
-        <div className="space-y-1.5">
-            <div className="flex justify-between text-xs">
-                <span className="text-white/50 uppercase tracking-[0.1em]">{label}</span>
-                <span className="text-white font-mono">{value.toFixed(2)} {unit}</span>
+        <div className="group space-y-2">
+            <div className="flex justify-between text-[11px]">
+                <span className="text-white/40 uppercase tracking-[0.2em] font-bebas group-hover:text-white/70 transition-colors">{label}</span>
+                <span className="text-white font-mono font-bold tracking-tighter" style={{ color }}>{value.toFixed(2)} {unit}</span>
             </div>
-            <div className="h-2 bg-white/8 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden relative border border-white/5">
                 <motion.div
                     className="h-full rounded-full"
                     style={{ backgroundColor: color }}
@@ -342,24 +372,36 @@ function IdentityHorizon({ identity, weightHistory }: HorizonProps) {
     return (
         <div className="space-y-5">
             {/* Goal composition progress */}
-            <div>
-                <div className="flex justify-between text-xs mb-2">
-                    <span className="text-white/50 uppercase tracking-[0.1em]">Identity Horizon</span>
-                    <span className="text-white font-mono">{(progress * 100).toFixed(0)}% to goal</span>
+            <div className="relative p-6 rounded-2xl bg-white/[0.02] border border-white/5 overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex justify-between text-[10px] mb-3 items-end">
+                    <div>
+                        <p className="text-white/30 uppercase tracking-[0.2em] font-bebas">Identity Horizon</p>
+                        <p className="text-lg font-bebas text-white tracking-widest leading-none mt-1">{(progress * 100).toFixed(0)}% PROGRESS</p>
+                    </div>
+                    <span className="text-emerald-400 font-mono text-xs font-bold bg-emerald-500/10 px-2 py-0.5 rounded">TARGET ACQUISITION</span>
                 </div>
-                <div className="h-3 bg-white/8 rounded-full overflow-hidden relative">
+                <div className="h-4 bg-white/5 rounded-full overflow-hidden relative border border-white/10 p-0.5">
                     <motion.div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-teal-300 relative shadow-[0_0_15px_rgba(16,185,129,0.4)]"
                         initial={{ width: 0 }}
                         animate={{ width: `${progress * 100}%` }}
-                        transition={{ duration: 1.2, ease: 'easeOut' }}
-                    />
+                        transition={{ duration: 1.5, ease: 'circOut' }}
+                    >
+                        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.3)_50%,transparent_100%)] animate-[scan_2s_linear_infinite]" />
+                    </motion.div>
                     {/* Target marker */}
-                    <div className="absolute top-0 right-0 h-full w-0.5 bg-white/20" />
+                    <div className="absolute top-0 right-0 h-full w-0.5 bg-white/20 z-10 shadow-[0_0_10px_white]" />
                 </div>
-                <div className="flex justify-between text-[10px] text-white/30 mt-1">
-                    <span>{startWeight} kg (start)</span>
-                    <span>{target} kg (target)</span>
+                <div className="flex justify-between text-[10px] text-white/20 mt-3 font-mono">
+                    <div className="flex flex-col">
+                        <span>INITIATION</span>
+                        <span className="text-white/40">{startWeight} KG</span>
+                    </div>
+                    <div className="flex flex-col text-right">
+                        <span>OBJECTIVE</span>
+                        <span className="text-white/40">{target} KG</span>
+                    </div>
                 </div>
             </div>
 
@@ -423,7 +465,7 @@ export function BodyAnalytics({ userId, dietEntries, recoveryEntries, macroTarge
     const today = new Date().toISOString().split('T')[0]
     const todayDiet = dietEntries.filter(e => e.createdAt.startsWith(today))
     const last7 = Array.from({ length: 7 }, (_, i) => {
-        const d = new Date(); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]
+        const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - i); return d.toISOString().split('T')[0]
     })
 
     const radarValues = useMemo((): number[] => {
@@ -478,59 +520,88 @@ export function BodyAnalytics({ userId, dietEntries, recoveryEntries, macroTarge
     const fuelColor = fuelScore >= 80 ? 'text-emerald-400' : fuelScore >= 60 ? 'text-lime-400' : fuelScore >= 40 ? 'text-amber-400' : 'text-rose-400'
 
     return (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-6 mt-8">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.6 }} className="space-y-8 mt-12 pb-12">
 
-            {/* ─── Section header ── */}
-            <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">{identity.goal_key === 'pro_basketball' ? '🏀' : identity.goal_key === 'weight_loss' ? '⚖️' : identity.goal_key === 'muscle_gain' ? '💪' : identity.goal_key === 'athletic_performance' ? '🏃' : '🌱'}</span>
+            {/* ─── Modern HUD Header ── */}
+            <div className="flex flex-col md:flex-row md:items-center gap-8 bg-white/[0.03] backdrop-blur-md border border-white/10 p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                
+                <div className="flex items-center gap-6 relative z-10">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                        {identity.goal_key === 'pro_basketball' ? '🏀' : identity.goal_key === 'weight_loss' ? '⚖️' : identity.goal_key === 'muscle_gain' ? '💪' : identity.goal_key === 'athletic_performance' ? '🏃' : '🌱'}
+                    </div>
                     <div>
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Current Identity</p>
-                        <p className="text-white font-semibold">{identity.goal_label}</p>
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-white/40 font-bebas">Primary Objective</p>
+                        <p className="text-3xl font-bebas text-white tracking-widest mt-1 group-hover:text-emerald-400 transition-colors duration-500">{identity.goal_label}</p>
                     </div>
                 </div>
-                <div className="h-px flex-1 bg-white/8" />
-                {/* Fuel Score badge */}
-                <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-yellow-400" />
-                    <span className="text-[10px] uppercase tracking-[0.15em] text-white/40">Fuel Score</span>
-                    <span className={`text-xl font-bold font-mono ${fuelColor}`}>{Math.round(fuelScore)}%</span>
+
+                <div className="hidden md:block h-12 w-px bg-white/10 mx-4" />
+
+                <div className="flex-1 space-y-2 relative z-10">
+                    <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/30 font-bebas">
+                        <span>Metabolism Integrity</span>
+                        <span className={`font-mono text-sm font-bold ${fuelColor}`}>{Math.round(fuelScore)}%</span>
+                    </div>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                        <motion.div 
+                            className="h-full bg-gradient-to-r from-transparent to-current"
+                            style={{ width: `${fuelScore}%`, color: fuelScore >= 80 ? '#10b981' : fuelScore >= 40 ? '#f59e0b' : '#f87171' }}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${fuelScore}%` }}
+                            transition={{ duration: 1.5, ease: 'circOut' }}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="text-right">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/30 font-bebas">Current Status</p>
+                        <p className="text-xl font-mono text-white font-bold leading-none mt-1 uppercase tracking-tighter">OPERATIONAL</p>
+                    </div>
+                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_15px_rgba(16,185,129,0.8)]" />
                 </div>
             </div>
 
-            {/* ─── Radar + Heatmap row ── */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            {/* ─── Functional Modules ── */}
+            <div className="grid lg:grid-cols-2 gap-8">
 
-                {/* Radar */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-5">Identity Radar</p>
-                    <div className="flex justify-center">
+                {/* Tactical Radar */}
+                <div className="rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 shadow-2xl relative group overflow-hidden">
+                    <div className="absolute top-4 right-8 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500/40" />
+                        <span className="text-[9px] uppercase tracking-[0.2em] text-white/20 font-bebas">Signal: Strong</span>
+                    </div>
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 font-bebas mb-8">Biometric Radar Profile</p>
+                    <div className="flex justify-center py-4 relative">
+                        {/* Circular glow background */}
+                        <div className="absolute inset-0 bg-emerald-500/5 rounded-full blur-[80px] scale-75" />
                         <IdentityRadar values={radarValues} />
                     </div>
-                    {/* Axis legend */}
-                    <div className="grid grid-cols-5 gap-1 mt-4">
+                    <div className="grid grid-cols-5 gap-4 mt-10 pt-8 border-t border-white/5">
                         {AXES.map((label, i) => (
-                            <div key={label} className="flex flex-col items-center">
-                                <span className="text-[8px] text-white/40 uppercase">{label}</span>
-                                <span className="text-xs font-mono text-emerald-400">{radarValues[i].toFixed(1)}</span>
+                            <div key={label} className="text-center group/item hover:scale-110 transition-transform cursor-default">
+                                <span className="text-[9px] text-white/30 uppercase font-bebas tracking-widest">{label}</span>
+                                <div className="text-lg font-mono font-bold text-emerald-400 tracking-tighter mt-1">{radarValues[i].toFixed(1)}</div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* Fuel Quality Heatmap */}
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-5">Fuel Quality Map · Last 30 Days</p>
+                {/* Metabolic History Map */}
+                <div className="rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 shadow-2xl relative overflow-hidden group">
+                    <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 font-bebas mb-8">Fuel Consumption Matrix · 30D</p>
                     <FuelHeatmap entries={dietEntries} staples={identity.staple_list} />
-                    {/* Staple list chips */}
+                    
+                    {/* Inventory chips */}
                     {identity.staple_list.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-white/8">
-                            <p className="text-[9px] uppercase tracking-[0.15em] text-white/30 mb-2">Your Staple List</p>
-                            <div className="flex flex-wrap gap-1.5">
-                                {identity.staple_list.slice(0, 10).map((s, i) => (
-                                    <span key={i} className={`text-[10px] px-2 py-0.5 rounded-full border
-                                        ${s.priority === 'high' ? 'border-emerald-500/30 text-emerald-400' : 'border-white/12 text-white/40'}`}>
-                                        {s.name}
+                        <div className="mt-8 pt-8 border-t border-white/5">
+                            <p className="text-[10px] uppercase tracking-[0.3em] text-white/30 font-bebas mb-4">Core Logistic Inventory (Staples)</p>
+                            <div className="flex flex-wrap gap-2">
+                                {identity.staple_list.slice(0, 8).map((s, i) => (
+                                    <span key={i} className={`text-[10px] font-mono px-3 py-1.5 rounded-lg border transition-all duration-300 cursor-default hover:bg-white/5
+                                        ${s.priority === 'high' ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.1)]' : 'border-white/10 text-white/40'}`}>
+                                        {s.name.toUpperCase()}
                                     </span>
                                 ))}
                             </div>
@@ -539,14 +610,22 @@ export function BodyAnalytics({ userId, dietEntries, recoveryEntries, macroTarge
                 </div>
             </div>
 
-            {/* ─── Identity Horizon ── */}
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <div className="flex items-center gap-2 mb-5">
-                    <TrendingUp className="w-4 h-4 text-teal-400" />
-                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Identity Horizon</p>
-                    <span className="text-[10px] text-white/30 ml-auto">
-                        {identity.current_weight_kg} kg · {identity.height_cm > 0 ? `${identity.height_cm} cm` : ''}
-                    </span>
+            {/* ─── Identity Expansion ── */}
+            <div className="rounded-[2rem] border border-white/10 bg-white/[0.02] backdrop-blur-xl p-8 shadow-2xl group relative overflow-hidden">
+                <div className="absolute bottom-0 right-0 w-64 h-64 bg-teal-500/5 blur-[100px] rounded-full translate-x-1/2 translate-y-1/2" />
+                
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="p-2.5 rounded-xl bg-teal-500/10 border border-teal-500/20">
+                        <TrendingUp className="w-5 h-5 text-teal-400" />
+                    </div>
+                    <div>
+                        <p className="text-[11px] uppercase tracking-[0.3em] text-white/40 font-bebas">Trajectory Perspective</p>
+                        <p className="text-lg text-white font-bebas tracking-widest mt-0.5 uppercase">Identity Horizon Scanner</p>
+                    </div>
+                    <div className="ml-auto text-right font-mono">
+                        <span className="text-xl font-bold text-white tracking-tighter">{identity.current_weight_kg}</span>
+                        <span className="text-[10px] text-white/40 ml-1 uppercase">KG CURRENT</span>
+                    </div>
                 </div>
                 <IdentityHorizon identity={identity} weightHistory={weightHistory} />
             </div>

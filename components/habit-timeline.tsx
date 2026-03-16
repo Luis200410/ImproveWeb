@@ -204,11 +204,25 @@ interface HabitTimelineProps {
 }
 
 export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onToggleStatus, onEdit, onSelect, onDelete, onFocusComplete, onProjectClick, viewMode, onChangeViewMode, onAdaptRoutine, hideControls }: HabitTimelineProps) {
+    const [mounted, setMounted] = useState(false)
     const [visibleDate, setVisibleDate] = useState(new Date())
 
-    // Derived date values
-    const todayKey = visibleDate.toISOString().split('T')[0]
-    const todayDayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][visibleDate.getDay()]
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+
+    const getLocalISO = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const targetDateKey = getLocalISO(visibleDate);
+    const todayKey = getLocalISO(new Date());
+    const targetDayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][visibleDate.getDay()]
+    const todayDayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date().getDay()]
     const isActualToday = new Date().toDateString() === visibleDate.toDateString()
 
     // Delete Modal State
@@ -218,6 +232,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     const [currentTime, setCurrentTime] = useState(new Date())
     const [currentTimePercent, setCurrentTimePercent] = useState(0)
     const [expandedLaw, setExpandedLaw] = useState<string | null>(null)
+    const [focusEntry, setFocusEntry] = useState<Entry | null>(null);
 
     // 48 half-hour slots (0, 0.5, 1, 1.5 ... 23.5)
     const TOTAL_SLOTS = 48
@@ -377,12 +392,18 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
             const category = entry.data['Category'] || 'General';
             const categoryToSystem: Record<string, string> = {
                 'Study': 'second-brain',
+                'Learning': 'second-brain',
+                'Knowledge': 'second-brain',
                 'Work': 'work',
                 'Health': 'body',
+                'Fitness': 'body',
                 'Creative': 'mind-emotions',
+                'Mindset': 'mind-emotions',
                 'Legacy': 'legacy-fun'
             };
-            if (categoryToSystem[category] !== systemFilter) return false;
+            const mappedSystem = categoryToSystem[category];
+            if (mappedSystem && mappedSystem !== systemFilter) return false;
+            // If it's General or not mapped, we let it through for all systems to ensure data is seen
         }
 
         // 1. Check Frequency
@@ -409,7 +430,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
     const yesterdayKey = yesterdayDate.toISOString().split('T')[0];
     const yesterdayDayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][yesterdayDate.getDay()];
 
-    const activeEntriesToday = entries.filter(e => isEntryActive(e, todayKey, todayDayKey));
+    const activeEntriesToday = entries.filter(e => isEntryActive(e, targetDateKey, targetDayKey));
     const activeEntriesYesterday = entries.filter(e => isEntryActive(e, yesterdayKey, yesterdayDayKey));
 
     // Sort entries by time and duration
@@ -467,7 +488,7 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         };
     };
 
-    const positionedToday = activeEntriesToday.map(entry => parseEntryToPosition(entry, todayKey, todayDayKey));
+    const positionedToday = activeEntriesToday.map(entry => parseEntryToPosition(entry, targetDateKey, targetDayKey));
 
     // Add overnight overflow block from yesterday's scheduled habits
     const positionedYesterday = activeEntriesYesterday.map(entry => parseEntryToPosition(entry, yesterdayKey, yesterdayDayKey));
@@ -621,11 +642,12 @@ export function HabitTimeline({ entries, linkedProjects = [], systemFilter, onTo
         return days
     }
 
-    const [focusEntry, setFocusEntry] = useState<Entry | null>(null);
 
     console.log("DEBUG: entries len=", entries.length);
     console.log("DEBUG: activeEntriesToday len=", activeEntriesToday.length);
     console.log("DEBUG: entriesWithLayout len=", entriesWithLayout.length);
+
+    if (!mounted) return null;
 
     return (
         <div className="space-y-8 relative">

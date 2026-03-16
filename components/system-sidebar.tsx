@@ -29,7 +29,7 @@ export function SystemSidebar({ systemId, className }: SystemSidebarProps) {
     if (!system) return null
 
     return (
-        <div className={cn("w-64 flex-shrink-0 border-r border-white/10 bg-black/40 backdrop-blur-xl h-screen sticky top-0 flex flex-col", className)}>
+        <div className={cn("w-64 flex-shrink-0 border-r border-white/10 bg-black/40 backdrop-blur-xl h-[calc(100vh-80px)] sticky top-20 flex flex-col", className)}>
             {/* Header */}
             <div className="p-6 border-b border-white/10">
                 <Link

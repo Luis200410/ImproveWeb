@@ -1,6 +1,5 @@
-
 export const checkMicroapps = async () => {
-    const { createClient } = require('@/utils/supabase/client');
+    const { createClient } = await import('@/utils/supabase/client');
     const supabase = createClient();
 
     // Get unique microapp_ids
@@ -10,6 +9,7 @@ export const checkMicroapps = async () => {
         .limit(100);
 
     if (error) { console.error(error); return; }
+    if (!data) return;
 
     // Group by microapp_id
     const counts: Record<string, number> = {};

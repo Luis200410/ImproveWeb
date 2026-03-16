@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Navigation } from '@/components/navigation'
 import { dataStore, Entry, System } from '@/lib/data-store'
 import { createClient } from '@/utils/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -135,8 +134,7 @@ export default function BodyPage() {
                 />
             )}
 
-            <Navigation />
-            <div className="h-16" />
+
 
             <div className="max-w-4xl mx-auto px-6 pb-14 relative z-10 space-y-10">
                 {/* Breadcrumb */}

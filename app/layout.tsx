@@ -8,6 +8,7 @@ import { ActiveSessionSidebar, MinimizedSessionWidget } from '@/components/produ
 import { Toaster } from 'sileo'
 import 'sileo/styles.css'
 import { HabitReminderProvider } from '@/components/habit-reminder-provider'
+import { Navigation } from '@/components/navigation'
 
 const bebas = Bebas_Neue({
   subsets: ["latin"],
@@ -184,10 +185,13 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSoftwareApp) }}
         />
       </head>
-      <body className={`${bebas.variable} ${ballet.variable} font-bebas antialiased bg-black text-white selection:bg-white selection:text-black`}>
+      <body suppressHydrationWarning className={`${bebas.variable} ${ballet.variable} font-bebas antialiased bg-black text-white selection:bg-white selection:text-black`}>
         <PomodoroProvider>
           <TimerProvider>
-            {children}
+            <Navigation />
+            <main className="pt-25">
+              {children}
+            </main>
             <GlobalTimerIndicator />
             <ActiveSessionSidebar />
             <MinimizedSessionWidget />

@@ -201,39 +201,202 @@ class DataStore {
         try {
             let patched = false
             const updated = stored.map(system => {
-                if (system.id !== 'productivity') return system
+                // Productivity patches
+                if (system.id === 'productivity') {
+                    let microapps = [...(system.microapps || [])]
 
-                let microapps = [...(system.microapps || [])]
+                    // 1. Add 'projection' microapp if missing
+                    if (!microapps.some(m => m.id === 'projection')) {
+                        microapps.push({
+                            id: 'projection',
+                            systemId: 'productivity',
+                            name: 'Projection & Reflexión',
+                            description: 'Annual goals, 4 Bigs, and monthly area reviews',
+                            icon: '🗺️',
+                            availableViews: ['list'],
+                            defaultView: 'list',
+                            fields: [],
+                            customPath: '/systems/productivity/projection'
+                        } as any)
+                        patched = true
+                    }
 
-                // 1. Add 'projection' microapp if missing
-                if (!microapps.some(m => m.id === 'projection')) {
-                    microapps.push({
-                        id: 'projection',
-                        systemId: 'productivity',
-                        name: 'Projection & Reflexión',
-                        description: 'Annual goals, 4 Bigs, and monthly area reviews',
-                        icon: '🗺️',
-                        availableViews: ['list'],
-                        defaultView: 'list',
-                        fields: [],
-                        customPath: '/systems/productivity/projection'
-                    } as any)
-                    patched = true
+                    // 2. Replace 'Category' field with 'Life Area' in atomic-habits
+                    microapps = microapps.map(m => {
+                        if (m.id !== 'atomic-habits') return m
+                        const hasLifeArea = m.fields?.some((f: any) => f.name === 'Life Area')
+                        if (hasLifeArea) return m
+                        patched = true
+                        const fields = (m.fields || [])
+                            .filter((f: any) => f.name !== 'Category')
+                            .concat([{ name: 'Life Area', type: 'select', options: LIFE_AREA_IDS, required: true, width: 'full' }])
+                        return { ...m, fields }
+                    })
+
+                    return { ...system, microapps }
                 }
 
-                // 2. Replace 'Category' field with 'Life Area' in atomic-habits
-                microapps = microapps.map(m => {
-                    if (m.id !== 'atomic-habits') return m
-                    const hasLifeArea = m.fields?.some((f: any) => f.name === 'Life Area')
-                    if (hasLifeArea) return m
-                    patched = true
-                    const fields = (m.fields || [])
-                        .filter((f: any) => f.name !== 'Category')
-                        .concat([{ name: 'Life Area', type: 'select', options: LIFE_AREA_IDS, required: true, width: 'full' }])
-                    return { ...m, fields }
-                })
+                // Relationships patches - add new microapps if missing
+                if (system.id === 'relationships') {
+                    const currentIds = (system.microapps || []).map((m: any) => m.id)
+                    const newMicroapps: any[] = []
 
-                return { ...system, microapps }
+                    // Contacts microapp (update fields)
+                    if (!currentIds.includes('contacts')) {
+                        newMicroapps.push({
+                            id: 'contacts',
+                            systemId: 'relationships',
+                            name: 'Contacts',
+                            description: 'Dynamic directory with relationship tiers and context vault',
+                            icon: '👥',
+                            availableViews: ['list', 'kanban'],
+                            defaultView: 'kanban',
+                            customPath: '/systems/relationships/contacts',
+                            fields: [
+                                { name: 'Name', type: 'text', required: true },
+                                { name: 'Relationship Tier', type: 'select', options: ['Immediate Family', 'Extended Family', 'Friends', 'Mentors', 'Colleagues', 'Acquaintances'], required: true },
+                                { name: 'Connection Cadence', type: 'select', options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Quarterly', 'As Needed'], required: true },
+                                { name: 'Last Interaction', type: 'date', required: false },
+                                { name: 'Email', type: 'email', required: false },
+                                { name: 'Phone', type: 'text', required: false },
+                                { name: 'Access Token', type: 'text', required: false },
+                                { name: 'How We Met', type: 'textarea', required: false },
+                                { name: 'Interests', type: 'textarea', required: false },
+                                { name: 'Gift Ideas', type: 'textarea', required: false },
+                                { name: 'Life Events', type: 'textarea', required: false },
+                                { name: 'Preferences', type: 'textarea', required: false },
+                                { name: 'Notes', type: 'textarea', required: false }
+                            ]
+                        })
+                    } else {
+                        // Update existing contacts with custom path
+                        const updated = (system.microapps || []).map((m: any) => {
+                            if (m.id === 'contacts' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/contacts' }
+                            }
+                            if (m.id === 'meetings' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/meetings' }
+                            }
+                            if (m.id === 'interactions' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/interactions' }
+                            }
+                            if (m.id === 'action-items' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/action-items' }
+                            }
+                            if (m.id === 'schedule-requests' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/schedule-requests' }
+                            }
+                            if (m.id === 'shared-spaces' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/shared-spaces' }
+                            }
+                            if (m.id === 'ledger' && !m.customPath) {
+                                return { ...m, customPath: '/systems/relationships/ledger' }
+                            }
+                            return m
+                        })
+                        return { ...system, microapps: updated }
+                    }
+
+                    // Other microapps
+                    const microappDefs = [
+                        { id: 'interactions', name: 'Interaction Log', icon: '💬', desc: 'Quick-entry system to log connections', customPath: '/systems/relationships/interactions', fields: [
+                            { name: 'Date', type: 'date', required: true },
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Call', 'Video', 'Text', 'In-Person', 'Email', 'Event'], required: true },
+                            { name: 'Summary', type: 'textarea', required: true },
+                            { name: 'Key Topics', type: 'textarea', required: false },
+                            { name: 'Follow Up Needed', type: 'select', options: ['Yes', 'No'], required: false }
+                        ]},
+                        { id: 'action-items', name: 'Action Items', icon: '✅', desc: 'Follow-up tasks and automated nudges', customPath: '/systems/relationships/action-items', fields: [
+                            { name: 'Task', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Due Date', type: 'date', required: true },
+                            { name: 'Type', type: 'select', options: ['Follow Up', 'Send Message', 'Schedule Meet', 'Send Article', 'Wish Birthday', 'Send Gift', 'Other'], required: true },
+                            { name: 'Notes', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['Pending', 'Done'], required: true },
+                            { name: 'Automated', type: 'select', options: ['Yes', 'No'], required: false }
+                        ]},
+                        { id: 'meetings', name: 'Meetings', icon: '📅', desc: 'Schedule and track your 1:1s and networking events', customPath: '/systems/relationships/meetings', fields: [
+                            { name: 'Title', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: false },
+                            { name: 'Date', type: 'date', required: true },
+                            { name: 'Time', type: 'text', required: false },
+                            { name: 'Duration', type: 'select', options: ['15 min', '30 min', '45 min', '1 hour', '2 hours'], required: false },
+                            { name: 'Type', type: 'select', options: ['Coffee', 'Meal', 'Call', 'Video', 'Networking Event', 'Date', 'Other'], required: true },
+                            { name: 'Location', type: 'text', required: false },
+                            { name: 'Notes', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['Scheduled', 'Completed', 'Cancelled'], required: true }
+                        ]},
+                        { id: 'schedule-requests', name: 'Schedule Requests', icon: '📬', desc: 'External intake form and internal triage dashboard', customPath: '/systems/relationships/schedule-requests', fields: [
+                            { name: 'Requester Name', type: 'text', required: true },
+                            { name: 'Requester Email', type: 'email', required: true },
+                            { name: 'Relationship Tier', type: 'text', required: false },
+                            { name: 'Access Token', type: 'text', required: false },
+                            { name: 'Request Type', type: 'select', options: ['Code Review', 'Advice', 'Meeting', 'Borrow Item', 'Collaboration', 'Other'], required: true },
+                            { name: 'Description', type: 'textarea', required: true },
+                            { name: 'Preferred Times', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['New', 'Accepted', 'Proposed New Time', 'Declined', 'Completed'], required: true },
+                            { name: 'Internal Notes', type: 'textarea', required: false },
+                            { name: 'Scheduled Meeting', type: 'text', required: false }
+                        ]},
+                        { id: 'shared-spaces', name: 'Shared Spaces', icon: '🤝', desc: 'Bilateral upload space for links, photos, and notes', fields: [
+                            { name: 'Space Name', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Memory Drop', 'Link', 'Photo', 'Note', 'Recommendation'], required: true },
+                            { name: 'Content', type: 'textarea', required: true },
+                            { name: 'Shared By', type: 'select', options: ['Me', 'Contact'], required: true },
+                            { name: 'Date', type: 'date', required: true }
+                        ]},
+                        { id: 'ledger', name: 'Ledger', icon: '📒', desc: 'Track shared recommendations, borrowed items, and IOUs', fields: [
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Borrowed Item', 'Shared Recommendation', 'IOU', 'Shared Expense', 'Other'], required: true },
+                            { name: 'Description', type: 'textarea', required: true },
+                            { name: 'Status', type: 'select', options: ['Outstanding', 'Returned', 'Settled'], required: true },
+                            { name: 'Date', type: 'date', required: true },
+                            { name: 'Resolved Date', type: 'date', required: false }
+                        ]},
+                        { id: 'availability', name: 'Availability', icon: '🗓️', desc: 'Dynamic availability settings per relationship tier', fields: [
+                            { name: 'Relationship Tier', type: 'select', options: ['Immediate Family', 'Extended Family', 'Friends', 'Mentors', 'Colleagues', 'Acquaintances'], required: true },
+                            { name: 'Available Days', type: 'text', required: false },
+                            { name: 'Time Window Start', type: 'text', required: false },
+                            { name: 'Time Window End', type: 'text', required: false },
+                            { name: 'Max Duration', type: 'select', options: ['15 min', '30 min', '45 min', '1 hour', '2 hours'], required: false },
+                            { name: 'Status', type: 'select', options: ['Active', 'Inactive'], required: true }
+                        ]},
+                        { id: 'status', name: 'Live Status', icon: '🔴', desc: 'Current capacity and availability status', fields: [
+                            { name: 'Status', type: 'select', options: ['Available', 'In Deep Work', 'In Meeting', 'Do Not Disturb', 'Away'], required: true },
+                            { name: 'Message', type: 'text', required: false },
+                            { name: 'Until', type: 'text', required: false },
+                            { name: 'Updated At', type: 'date', required: false }
+                        ]}
+                    ]
+
+                    for (const def of microappDefs) {
+                        if (!currentIds.includes(def.id)) {
+                            newMicroapps.push({
+                                id: def.id,
+                                systemId: 'relationships',
+                                name: def.name,
+                                description: def.desc,
+                                icon: def.icon,
+                                availableViews: ['list'],
+                                defaultView: 'list',
+                                customPath: def.customPath,
+                                fields: def.fields
+                            })
+                        }
+                    }
+
+                    if (newMicroapps.length > 0) {
+                        patched = true
+                        return {
+                            ...system,
+                            microapps: [...(system.microapps || []), ...newMicroapps]
+                        }
+                    }
+                }
+
+                return system
             })
 
             if (patched) {
@@ -820,16 +983,24 @@ class DataStore {
                     {
                         id: 'contacts',
                         systemId: 'relationships',
-                        name: 'Contact Manager',
-                        description: 'Manage important contacts',
+                        name: 'Contacts',
+                        description: 'Dynamic directory with relationship tiers and context vault',
                         icon: '👥',
-                        availableViews: ['list', 'table'],
-                        defaultView: 'list',
+                        availableViews: ['list', 'kanban'],
+                        defaultView: 'kanban',
                         fields: [
                             { name: 'Name', type: 'text', required: true },
-                            { name: 'Relationship', type: 'select', options: ['Family', 'Friend', 'Colleague', 'Mentor', 'Other'], required: true },
+                            { name: 'Relationship Tier', type: 'select', options: ['Immediate Family', 'Extended Family', 'Friends', 'Mentors', 'Colleagues', 'Acquaintances'], required: true },
+                            { name: 'Connection Cadence', type: 'select', options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Quarterly', 'As Needed'], required: true },
+                            { name: 'Last Interaction', type: 'date', required: false },
                             { name: 'Email', type: 'email', required: false },
                             { name: 'Phone', type: 'text', required: false },
+                            { name: 'Access Token', type: 'text', required: false },
+                            { name: 'How We Met', type: 'textarea', required: false },
+                            { name: 'Interests', type: 'textarea', required: false },
+                            { name: 'Gift Ideas', type: 'textarea', required: false },
+                            { name: 'Life Events', type: 'textarea', required: false },
+                            { name: 'Preferences', type: 'textarea', required: false },
                             { name: 'Notes', type: 'textarea', required: false }
                         ]
                     },
@@ -837,15 +1008,142 @@ class DataStore {
                         id: 'interactions',
                         systemId: 'relationships',
                         name: 'Interaction Log',
-                        description: 'Log meaningful interactions',
+                        description: 'Quick-entry system to log connections',
                         icon: '💬',
                         availableViews: ['list', 'timeline'],
                         defaultView: 'list',
                         fields: [
                             { name: 'Date', type: 'date', required: true },
-                            { name: 'Person', type: 'text', required: true },
-                            { name: 'Type', type: 'select', options: ['Call', 'Meeting', 'Message', 'Event', 'Other'], required: true },
-                            { name: 'Summary', type: 'textarea', required: true }
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Call', 'Video', 'Text', 'In-Person', 'Email', 'Event'], required: true },
+                            { name: 'Summary', type: 'textarea', required: true },
+                            { name: 'Key Topics', type: 'textarea', required: false },
+                            { name: 'Follow Up Needed', type: 'select', options: ['Yes', 'No'], required: false }
+                        ]
+                    },
+                    {
+                        id: 'action-items',
+                        systemId: 'relationships',
+                        name: 'Action Items',
+                        description: 'Follow-up tasks and automated nudges',
+                        icon: '✅',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Task', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Due Date', type: 'date', required: true },
+                            { name: 'Type', type: 'select', options: ['Follow Up', 'Send Message', 'Schedule Meet', 'Send Article', 'Wish Birthday', 'Send Gift', 'Other'], required: true },
+                            { name: 'Notes', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['Pending', 'Done'], required: true },
+                            { name: 'Automated', type: 'select', options: ['Yes', 'No'], required: false }
+                        ]
+                    },
+                    {
+                        id: 'meetings',
+                        systemId: 'relationships',
+                        name: 'Meetings',
+                        description: 'Schedule and track your 1:1s and networking events',
+                        icon: '📅',
+                        availableViews: ['list', 'calendar'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Title', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: false },
+                            { name: 'Date', type: 'date', required: true },
+                            { name: 'Time', type: 'text', required: false },
+                            { name: 'Duration', type: 'select', options: ['15 min', '30 min', '45 min', '1 hour', '2 hours'], required: false },
+                            { name: 'Type', type: 'select', options: ['Coffee', 'Meal', 'Call', 'Video', 'Networking Event', 'Date', 'Other'], required: true },
+                            { name: 'Location', type: 'text', required: false },
+                            { name: 'Notes', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['Scheduled', 'Completed', 'Cancelled'], required: true }
+                        ]
+                    },
+                    {
+                        id: 'schedule-requests',
+                        systemId: 'relationships',
+                        name: 'Schedule Requests',
+                        description: 'External intake form and internal triage dashboard',
+                        icon: '📬',
+                        availableViews: ['list', 'kanban'],
+                        defaultView: 'kanban',
+                        fields: [
+                            { name: 'Requester Name', type: 'text', required: true },
+                            { name: 'Requester Email', type: 'email', required: true },
+                            { name: 'Relationship Tier', type: 'text', required: false },
+                            { name: 'Access Token', type: 'text', required: false },
+                            { name: 'Request Type', type: 'select', options: ['Code Review', 'Advice', 'Meeting', 'Borrow Item', 'Collaboration', 'Other'], required: true },
+                            { name: 'Description', type: 'textarea', required: true },
+                            { name: 'Preferred Times', type: 'textarea', required: false },
+                            { name: 'Status', type: 'select', options: ['New', 'Accepted', 'Proposed New Time', 'Declined', 'Completed'], required: true },
+                            { name: 'Internal Notes', type: 'textarea', required: false },
+                            { name: 'Scheduled Meeting', type: 'text', required: false }
+                        ]
+                    },
+                    {
+                        id: 'shared-spaces',
+                        systemId: 'relationships',
+                        name: 'Shared Spaces',
+                        description: 'Bilateral upload space for links, photos, and notes',
+                        icon: '🤝',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Space Name', type: 'text', required: true },
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Memory Drop', 'Link', 'Photo', 'Note', 'Recommendation'], required: true },
+                            { name: 'Content', type: 'textarea', required: true },
+                            { name: 'Shared By', type: 'select', options: ['Me', 'Contact'], required: true },
+                            { name: 'Date', type: 'date', required: true }
+                        ]
+                    },
+                    {
+                        id: 'ledger',
+                        systemId: 'relationships',
+                        name: 'Ledger',
+                        description: 'Track shared recommendations, borrowed items, and IOUs',
+                        icon: '📒',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Contact', type: 'text', required: true },
+                            { name: 'Type', type: 'select', options: ['Borrowed Item', 'Shared Recommendation', 'IOU', 'Shared Expense', 'Other'], required: true },
+                            { name: 'Description', type: 'textarea', required: true },
+                            { name: 'Status', type: 'select', options: ['Outstanding', 'Returned', 'Settled'], required: true },
+                            { name: 'Date', type: 'date', required: true },
+                            { name: 'Resolved Date', type: 'date', required: false }
+                        ]
+                    },
+                    {
+                        id: 'availability',
+                        systemId: 'relationships',
+                        name: 'Availability',
+                        description: 'Dynamic availability settings per relationship tier',
+                        icon: '🗓️',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Relationship Tier', type: 'select', options: ['Immediate Family', 'Extended Family', 'Friends', 'Mentors', 'Colleagues', 'Acquaintances'], required: true },
+                            { name: 'Available Days', type: 'text', required: false },
+                            { name: 'Time Window Start', type: 'text', required: false },
+                            { name: 'Time Window End', type: 'text', required: false },
+                            { name: 'Max Duration', type: 'select', options: ['15 min', '30 min', '45 min', '1 hour', '2 hours'], required: false },
+                            { name: 'Status', type: 'select', options: ['Active', 'Inactive'], required: true }
+                        ]
+                    },
+                    {
+                        id: 'status',
+                        systemId: 'relationships',
+                        name: 'Live Status',
+                        description: 'Current capacity and availability status',
+                        icon: '🔴',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [
+                            { name: 'Status', type: 'select', options: ['Available', 'In Deep Work', 'In Meeting', 'Do Not Disturb', 'Away'], required: true },
+                            { name: 'Message', type: 'text', required: false },
+                            { name: 'Until', type: 'text', required: false },
+                            { name: 'Updated At', type: 'date', required: false }
                         ]
                     }
                 ]

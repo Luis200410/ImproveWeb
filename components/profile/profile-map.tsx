@@ -74,9 +74,12 @@ function WorldMapSvg() {
 
             {/* Simplified land masses (dots) */}
             <g className="fill-white/10 stroke-none">
-                {[...Array(50)].map((_, i) => (
-                    <circle key={i} cx={Math.random() * 900 + 50} cy={Math.random() * 400 + 50} r={Math.random() * 2 + 1} />
-                ))}
+                {[...Array(50)].map((_, i) => {
+                    const seedX = ((i * 12345) % 900) + 50;
+                    const seedY = ((i * 54321) % 400) + 50;
+                    const seedR = ((i * 98765) % 2) + 1;
+                    return <circle key={i} cx={seedX} cy={seedY} r={seedR} />;
+                })}
             </g>
         </svg>
     )

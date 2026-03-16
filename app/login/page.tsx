@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Navigation } from "@/components/navigation";
 import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { login } from './actions';
 
@@ -55,7 +54,6 @@ export default function LoginPage() {
 
             {/* Content */}
             <div className="relative z-10">
-                <Navigation />
                 <div className="h-20" />
 
                 <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12">

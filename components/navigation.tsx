@@ -181,7 +181,7 @@ export function Navigation() {
                                 className="font-bebas border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
                                 onClick={() => setIsMemberMenuOpen(prev => !prev)}
                             >
-                                Log In
+                                Member
                             </Button>
                             {isMemberMenuOpen && (
                                 <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50">
