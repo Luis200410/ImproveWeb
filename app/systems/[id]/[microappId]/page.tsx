@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { dataStore, Microapp, Entry, FieldDefinition } from '@/lib/data-store'
@@ -40,7 +40,7 @@ import { RecoveryDashboard } from '@/components/body/recovery-dashboard'
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
-export default function MicroappPage() {
+function MicroappContent() {
     const params = useParams()
     const router = useRouter();
     const searchParams = useSearchParams()
@@ -1111,4 +1111,16 @@ export default function MicroappPage() {
         </div>
     )
 
+}
+
+export default function MicroappPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black flex items-center justify-center">
+                <div className="text-white/20 uppercase tracking-[0.5em] text-xs">Loading...</div>
+            </div>
+        }>
+            <MicroappContent />
+        </Suspense>
+    )
 }

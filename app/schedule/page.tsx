@@ -15,7 +15,9 @@ import { ArrowRight, Heart, Clock, Calendar, CheckCircle, XCircle, Loader2, Send
 const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
-export default function SchedulePortalPage() {
+import { Suspense } from 'react'
+
+function SchedulePortalContent() {
     const searchParams = useSearchParams()
     const token = searchParams.get('token')
     
@@ -292,7 +294,7 @@ export default function SchedulePortalPage() {
                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                     Submitting...
                                 </>
-                            ) : (
+                             ) : (
                                 <>
                                     <Send className="w-4 h-4 mr-2" />
                                     Submit Request
@@ -305,3 +307,16 @@ export default function SchedulePortalPage() {
         </div>
     )
 }
+
+export default function SchedulePortalPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-black text-white flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-white/20" />
+            </div>
+        }>
+            <SchedulePortalContent />
+        </Suspense>
+    )
+}
+
