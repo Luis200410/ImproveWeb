@@ -31,7 +31,7 @@ export default function Home() {
   const currentMedia = {
     src: '/logo final.png',
     background: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop',
-    title: 'IMPROVE Excellence',
+    title: 'IMPROVE Integrity',
     date: 'EST. MMXXIV',
     scrollToExpand: 'SCROLL TO START'
   };
@@ -40,7 +40,7 @@ export default function Home() {
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {/* SEO Headline */}
       <h1 className="sr-only">
-        IMPROVE — The School of Excellence | All-In-One Self-Improvement & Productivity Operating System
+        IMPROVE — Complete Integrity | All-In-One Self-Improvement & Personal Mastery System
       </h1>
 
 
@@ -69,8 +69,11 @@ export default function Home() {
                   Why IMPROVE?
                 </h2>
                 <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto`}>
-                  Because excellence is not accidental—it's systematic
+                  Excellence is the byproduct of Complete Integrity. Manage every dimension of your human experience.
                 </p>
+                <div className="mt-4 text-white/20 text-[10px] uppercase tracking-[0.4em]">
+                  The Comprehensive "IMPROVE" Operating System
+                </div>
               </motion.div>
 
               <div className="grid md:grid-cols-2 gap-12">
@@ -135,7 +138,7 @@ export default function Home() {
                   Eight Systems.<br />One Life.
                 </h2>
                 <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
-                  Every dimension of human excellence, systematized
+                  Systematize your pursuit of Complete Integrity.
                 </p>
                 <Link href="/sales">
                   <Button variant="ghost" className="text-white/60 hover:text-white border border-white/20 hover:border-white/40">
@@ -192,7 +195,7 @@ export default function Home() {
                 </p>
 
                 <p className={`${bebas.className} text-2xl text-white mb-12 leading-relaxed font-medium`}>
-                  Or you can adopt a system designed to make excellence inevitable.
+                  Or you can adopt the operating system for Complete Integrity.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">

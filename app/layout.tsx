@@ -26,13 +26,15 @@ const siteUrl = "https://improve-club.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "IMPROVE — The School of Excellence | Productivity & Self-Improvement System",
-    template: "%s | IMPROVE — The School of Excellence",
+    default: "IMPROVE — Complete Integrity | Personal Mastery & Self-Improvement System",
+    template: "%s | IMPROVE — Complete Integrity",
   },
   description:
-    "IMPROVE is the all-in-one self-improvement operating system for ambitious people. Master your body, wealth, work, productivity, relationships, mind, and legacy with 8 powerful life systems.",
+    "IMPROVE is the premier operating system for those committed to Complete Integrity. Master your life with 8 integrated systems designed for total excellence.",
   keywords: [
+    "IMPROVE",
     "improve",
+    "complete integrity",
     "self improvement",
     "self-improvement app",
     "productivity system",
@@ -57,10 +59,12 @@ export const metadata: Metadata = {
     "improve body",
     "improve relationships",
     "IMPROVE app",
-    "school of excellence",
+    "Complete Integrity",
     "Improve Club",
     "improve club",
     "improve-club.com",
+    "excellence system",
+    "personal mastery",
   ],
   authors: [{ name: "IMPROVE", url: siteUrl }],
   creator: "IMPROVE",
@@ -84,24 +88,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "IMPROVE — The School of Excellence",
+    siteName: "IMPROVE — Complete Integrity",
     title: "IMPROVE — The All-In-One Self-Improvement System",
     description:
-      "Eight powerful life systems in one platform. Track habits, manage finances, build your second brain, master productivity, and pursue excellence across every dimension of life.",
+      "Integrated systems for Complete Integrity. Track habits, manage finances, build your second brain, and master your life through a unified platform.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "IMPROVE — The School of Excellence",
+        alt: "IMPROVE — Complete Integrity",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "IMPROVE — The School of Excellence",
+    title: "IMPROVE — Complete Integrity",
     description:
-      "Eight powerful life systems to master your body, wealth, work, productivity, relationships, mind, and legacy.",
+      "Complete Integrity in every dimension. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
     images: ["/og-image.png"],
     creator: "@improveclub",
     site: "@improveclub",
@@ -123,11 +127,11 @@ const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "IMPROVE",
-  alternateName: "IMPROVE — The School of Excellence",
+  alternateName: "IMPROVE — Complete Integrity",
   url: siteUrl,
   logo: `${siteUrl}/og-image.png`,
   description:
-    "IMPROVE is the all-in-one self-improvement operating system for ambitious people. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
+    "IMPROVE is the all-in-one operating system for Complete Integrity. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
   sameAs: [],
 };
 
@@ -137,7 +141,7 @@ const jsonLdWebSite = {
   name: "IMPROVE",
   url: siteUrl,
   description:
-    "Eight powerful life systems in one platform. Track habits, manage finances, build your second brain, master productivity, and pursue excellence across every dimension of life.",
+    "Systematized tools for Complete Integrity. Track habits, manage finances, build your second brain, and master every dimension of life.",
   potentialAction: {
     "@type": "SearchAction",
     target: {

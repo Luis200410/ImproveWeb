@@ -5,16 +5,16 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Our Manifesto — The Philosophy of Excellence",
+    title: "Our Manifesto — The Philosophy of Complete Integrity",
     description:
-        "Discover the philosophy behind IMPROVE. In an age of distraction, we stand for discipline. In an era of mediocrity, we champion excellence. Read our manifesto.",
+        "Discover the philosophy behind IMPROVE. In an age of distraction, we stand for discipline. In an era of mediocrity, we champion Complete Integrity. Read our manifesto.",
     keywords: [
         "improve manifesto",
-        "philosophy of excellence",
+        "philosophy of complete integrity",
         "self improvement philosophy",
         "discipline mindset",
         "personal development philosophy",
-        "school of excellence",
+        "complete integrity",
         "improve yourself",
         "Improve Club",
         "improve club",
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
     openGraph: {
         title: "The Manifesto — IMPROVE",
         description:
-            "In an age of distraction, we stand for discipline. In an era of mediocrity, we champion excellence. Discover the philosophy behind IMPROVE.",
+            "In an age of distraction, we stand for discipline. In an era of mediocrity, we champion Complete Integrity. Discover the philosophy behind IMPROVE.",
         url: "https://improve-club.com/about",
         images: [
             {
                 url: "/og-image.png",
                 width: 1200,
                 height: 630,
-                alt: "IMPROVE Manifesto — The School of Excellence",
+                alt: "IMPROVE Manifesto — Complete Integrity",
             },
         ],
     },

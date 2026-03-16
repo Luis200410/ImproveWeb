@@ -23,7 +23,7 @@ export function ImproveLogo({ className = "", small = false, hero = false }: Imp
             >
                 <Image
                     src="/logo final.png"
-                    alt="Improve Logo"
+                    alt="IMPROVE — Complete Integrity"
                     fill
                     className="object-contain"
                     priority

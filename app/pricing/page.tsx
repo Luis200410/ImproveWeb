@@ -50,7 +50,7 @@ export default function PricingPreview() {
                     <div className="text-center mb-24 space-y-6">
                         <div className="flex items-center justify-center gap-3 mb-4">
                             <div className="h-px w-12 bg-orange-500/30" />
-                            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/20">The School of Excellence</span>
+                            <span className="text-[10px] uppercase tracking-[0.6em] font-black text-white/20">Complete Integrity</span>
                             <div className="h-px w-12 bg-orange-500/30" />
                         </div>
                         <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white uppercase italic leading-[0.85]">
