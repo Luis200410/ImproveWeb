@@ -23,6 +23,8 @@ const improveWords = [
 ];
 
 import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
+import { SystemConvergenceAnimation } from "@/components/ui/system-convergence-animation";
+import { CompleteIntegritySection } from "@/components/ui/complete-integrity-section";
 
 export default function Home() {
   const [mediaType, setMediaType] = useState<'video' | 'image'>('image');
@@ -38,16 +40,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      <ScrollExpandMedia
-        mediaType={mediaType}
-        mediaSrc={currentMedia.src}
-        bgImageSrc={currentMedia.background}
-        title={currentMedia.title}
-        date={currentMedia.date}
-        scrollToExpand={currentMedia.scrollToExpand}
-        textBlend
-      >
-        <div className="relative z-20 bg-black pt-20">
+      {/* 1. Hero: System Convergence Animation */}
+      <section className="w-full px-6 py-12 md:py-20">
+        <div className="max-w-7xl mx-auto">
+          <SystemConvergenceAnimation />
+        </div>
+      </section>
+
+      <div className="relative z-20 bg-black">
           {/* Why IMPROVE Section */}
           <section id="why" className="relative py-32 px-6">
             <div className="max-w-7xl mx-auto">
@@ -59,25 +59,58 @@ export default function Home() {
                 className="text-center mb-20"
               >
                 <h1 className={`${bebas.className} text-6xl md:text-8xl font-bold mb-6 text-white uppercase tracking-tighter`}>
-                  The Ultimate All-in-One Life Operating System
+                  Stop Managing Tasks. Start Operating Your Life.
                 </h1>
-                <h2 className={`${bebas.className} text-3xl md:text-4xl text-white/40 mb-8 uppercase tracking-[0.2em]`}>
-                  Stop searching for tools. Start running a system.
+                <h2 className={`${bebas.className} text-xl md:text-2xl text-white/40 mb-8 uppercase tracking-[0.2em] max-w-4xl mx-auto leading-relaxed`}>
+                  Most productivity tools fail because they only track to-dos. IMPROVE is the definitive All-in-One Life Operating System and Second Brain designed to turn your daily chaos into a systematic journey toward excellence.
                 </h2>
-                <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto`}>
-                  IMPROVE is the technical framework that centralizes your entire life. Excellence is the byproduct of Complete Integrity. Manage every dimension of your human experience.
-                </p>
+                <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
+                  <Link href="/register">
+                    <Button size="lg" className="bg-white text-black hover:bg-white/90 font-bebas text-lg px-12 py-8 uppercase tracking-widest">
+                      Install Your Life OS
+                    </Button>
+                  </Link>
+                  <Link href="/sales">
+                    <Button variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 font-bebas text-lg px-12 py-8 uppercase tracking-widest">
+                      Watch the System in Action
+                    </Button>
+                  </Link>
+                </div>
                 <div className="mt-4 text-white/20 text-[10px] uppercase tracking-[0.4em]">
                   The Comprehensive "IMPROVE" Life Operating System
                 </div>
               </motion.div>
 
-              <div className="grid md:grid-cols-2 gap-12">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="flex flex-col gap-20 border-t border-white/10 pt-32 mb-32"
+              >
+                <div className="grid md:grid-cols-2 gap-20 items-center">
+                  <div className="space-y-6">
+                    <h2 className={`${bebas.className} text-5xl md:text-6xl font-bold text-white uppercase`}>
+                      One System. Zero Friction.
+                    </h2>
+                    <div className="h-1 w-20 bg-white" />
+                  </div>
+                  <p className={`${bebas.className} text-xl text-white/60 leading-relaxed`}>
+                    Why use five different apps when you can run your life on one operating system? IMPROVE replaces your scattered notes, habit trackers, and spreadsheets with a unified technical framework. We bridge the gap between information and action, converting your data into Practical Labs for continuous growth.
+                  </p>
+                </div>
+                
+                <div className="w-full">
+                  <CompleteIntegritySection />
+                </div>
+              </motion.div>
+
+                <div className="grid md:grid-cols-2 gap-12">
                 {[
                   {
-                    title: "One Life Operating System",
-                    desc: "Why use five apps when you can have one Operating System? From your Second Brain to your Physical Body, IMPROVE turns chaos into a Practical Lab for growth.",
-                    icon: "🎯"
+                    title: "Systematic Discipline",
+                    desc: "Replace willpower with architecture. Your environment and systems do the heavy lifting for you.",
+                    icon: "⚙️"
                   },
                   {
                     title: "Timeless Principles",
@@ -85,13 +118,13 @@ export default function Home() {
                     icon: "📚"
                   },
                   {
-                    title: "Measurable Progress",
-                    desc: "Track what matters with precision. What gets measured gets improved.",
-                    icon: "📊"
+                    title: "All-in-One Cortex",
+                    desc: "One central command for your body, bank account, and brain. Zero context switching.",
+                    icon: "🧠"
                   },
                   {
                     title: "Beautiful Design",
-                    desc: "Tools you actually want to use. Elegance and functionality in perfect harmony.",
+                    desc: "Tools you actually want to use. Industrial elegance meets high-performance functionality.",
                     icon: "✨"
                   }
                 ].map((feature, i) => (
@@ -131,10 +164,10 @@ export default function Home() {
                 className="text-center mb-20"
               >
                 <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
-                  Eight Systems.<br />One Framework.
+                  Eight Systems.<br />The Engines of Progress.
                 </h2>
                 <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
-                  Systematize your pursuit of Complete Integrity through optimized architecture.
+                  The infrastructure of your life, divided into eight optimized engines. This is the hardware for your potential.
                 </p>
                 <Link href="/sales">
                   <Button variant="ghost" className="text-white/60 hover:text-white border border-white/20 hover:border-white/40">
@@ -149,18 +182,32 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Social Proof / Stats */}
-          <section className="py-32 px-6 relative">
+          {/* Social Proof / Authority */}
+          <section className="py-32 px-6 relative border-t border-white/10">
             <div className="max-w-5xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.8 }}
-                className="relative bg-white/5 border border-white/10 p-16 text-center"
+                className="text-center mb-20"
+              >
+                <h2 className={`${bebas.className} text-5xl md:text-7xl font-bold text-white mb-6 uppercase tracking-tighter`}>
+                  Excellence is not an accident—it's a choice of System.
+                </h2>
+                <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto leading-relaxed`}>
+                  Built on timeless principles and modern software architecture, IMPROVE is for those who refuse to leave their potential to chance. Join the community of high-achievers who have moved beyond "trying" to systematic winning.
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="relative bg-white/5 border border-white/10 p-16 text-center overflow-hidden"
               >
                 <div className="absolute -inset-4 bg-gradient-to-r from-white/5 via-white/10 to-white/5 blur-2xl opacity-50" />
-
                 <div className="relative">
                   <p className={`${bebas.className} text-4xl md:text-5xl italic text-white/90 mb-8 leading-relaxed`}>
                     "The difference between who you are and who you want to be is what you do."
@@ -172,7 +219,6 @@ export default function Home() {
               </motion.div>
             </div>
           </section>
-
           {/* Final CTA */}
           <section className="py-16 px-6 relative border-t border-white/10">
             <div className="max-w-4xl mx-auto text-center">
@@ -183,15 +229,11 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
               >
                 <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-8 text-white`}>
-                  Your Move
+                  Ready to upgrade your life's hardware?
                 </h2>
 
-                <p className={`${bebas.className} text-2xl text-white/70 mb-6 leading-relaxed`}>
-                  You can continue as you are—hoping, wishing, trying.
-                </p>
-
-                <p className={`${bebas.className} text-2xl text-white mb-12 leading-relaxed font-medium`}>
-                  Or you can adopt the Life Operating System for Complete Integrity.
+                <p className={`${bebas.className} text-2xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed`}>
+                  Join IMPROVE today and get the tools, resources, and practical labs to master all 8 pillars of a well-lived life.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
@@ -204,7 +246,7 @@ export default function Home() {
                           whileHover={{ x: "100%" }}
                           transition={{ duration: 0.6 }}
                         />
-                        <span className="relative z-10">Start Your Journey</span>
+                        <span className="relative z-10">Start Your Journey to Excellence</span>
                       </Button>
                     </motion.div>
                   </Link>
@@ -233,7 +275,6 @@ export default function Home() {
             </div>
           </footer>
         </div>
-      </ScrollExpandMedia>
     </div>
   );
 }

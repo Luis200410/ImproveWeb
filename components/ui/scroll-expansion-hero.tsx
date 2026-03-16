@@ -163,8 +163,8 @@ const ScrollExpandMedia = ({
         return () => window.removeEventListener('resize', checkIfMobile);
     }, []);
 
-    const mediaWidth = 450 + scrollProgress * (isMobileState ? 650 : 1100);
-    const mediaHeight = 550 + scrollProgress * (isMobileState ? 200 : 250);
+    const mediaWidth = (isMobileState ? 550 : 800) + scrollProgress * (isMobileState ? 550 : 750);
+    const mediaHeight = (isMobileState ? 600 : 750) + scrollProgress * (isMobileState ? 150 : 100);
     const textTranslateX = scrollProgress * (isMobileState ? 100 : 80); // Adjusted for better exit
 
     const indicatorsOpacity = 1 - Math.min(scrollProgress * 4, 1);
@@ -291,13 +291,13 @@ const ScrollExpandMedia = ({
                                 style={{ opacity: titleOpacity }}
                             >
                                 <motion.h2
-                                    className={`${ballet.className} self-start ml-40 text-7xl md:text-9xl lg:text-[11rem] font-bold text-blue-200 tracking-tighter leading-none`}
+                                    className={`${ballet.className} self-start ml-40 text-5xl md:text-7xl lg:text-[7rem] font-bold text-blue-200 tracking-tighter leading-none`}
                                     style={{ transform: `translateX(-${textTranslateX}vw)` }}
                                 >
                                     Complete
                                 </motion.h2>
                                 <motion.h2
-                                    className={`${ballet.className} self-end mr-40 text-7xl md:text-9xl lg:text-[11rem] font-bold text-blue-200 tracking-tighter leading-none`}
+                                    className={`${ballet.className} self-end mr-40 text-5xl md:text-7xl lg:text-[7rem] font-bold text-blue-200 tracking-tighter leading-none`}
                                     style={{ transform: `translateX(${textTranslateX}vw)` }}
                                 >
                                     Integrity
