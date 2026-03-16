@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -33,7 +33,7 @@ const REQUEST_TYPES: Record<string, { icon: string; color: string }> = {
     'Other': { icon: '📝', color: 'text-gray-400' }
 }
 
-export default function ScheduleRequestsPage() {
+function ScheduleRequestsContent() {
     const params = useParams()
     const searchParams = useSearchParams()
     const [userId, setUserId] = useState<string>('defaultUser')
@@ -106,7 +106,7 @@ export default function ScheduleRequestsPage() {
 
             <div className="relative z-10">
                 {/* Header */}
-                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-20">
+                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-[100px] z-20">
                     <div className="max-w-7xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -333,5 +333,13 @@ export default function ScheduleRequestsPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export default function ScheduleRequestsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[0.5em] text-xs">Loading Requests...</div>}>
+            <ScheduleRequestsContent />
+        </Suspense>
     )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,7 +25,7 @@ const TIER_CONFIG: Record<string, { color: string; gradient: string; border: str
     'Acquaintances': { color: 'text-gray-400', gradient: 'from-gray-500/20', border: 'border-gray-500/30', bg: 'bg-gray-500/10', gradientFull: 'from-gray-500/30 to-transparent' }
 }
 
-export default function ContactsPage() {
+function ContactsContent() {
     const params = useParams()
     const searchParams = useSearchParams()
     const [userId, setUserId] = useState<string>('defaultUser')
@@ -129,7 +129,7 @@ export default function ContactsPage() {
 
             <div className="relative z-10">
                 {/* Header */}
-                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-20">
+                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-[100px] z-20">
                     <div className="max-w-7xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -409,6 +409,14 @@ export default function ContactsPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export default function ContactsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[0.5em] text-xs">Loading Relationships...</div>}>
+            <ContactsContent />
+        </Suspense>
     )
 }
 

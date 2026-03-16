@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -29,7 +29,7 @@ const MEETING_TYPES: Record<string, { icon: string; color: string; bg: string }>
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
-export default function MeetingsPage() {
+function MeetingsContent() {
     const params = useParams()
     const searchParams = useSearchParams()
     const [userId, setUserId] = useState<string>('defaultUser')
@@ -161,7 +161,7 @@ export default function MeetingsPage() {
 
             <div className="relative z-10">
                 {/* Header */}
-                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-20">
+                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-[100px] z-20">
                     <div className="max-w-7xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -402,6 +402,14 @@ export default function MeetingsPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export default function MeetingsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[0.5em] text-xs">Loading Meetings...</div>}>
+            <MeetingsContent />
+        </Suspense>
     )
 }
 

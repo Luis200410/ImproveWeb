@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,7 +24,7 @@ const SPACE_TYPES: Record<string, { icon: string; color: string; bg: string }> =
     'Recommendation': { icon: '⭐', color: 'text-green-400', bg: 'bg-green-500/20' }
 }
 
-export default function SharedSpacesPage() {
+function SharedSpacesContent() {
     const searchParams = useSearchParams()
     const [userId, setUserId] = useState<string>('defaultUser')
     const [entries, setEntries] = useState<Entry[]>([])
@@ -107,7 +107,7 @@ export default function SharedSpacesPage() {
 
             <div className="relative z-10">
                 {/* Header */}
-                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-0 z-20">
+                <div className="border-b border-white/10 bg-black/50 backdrop-blur-xl sticky top-[100px] z-20">
                     <div className="max-w-7xl mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
@@ -278,6 +278,14 @@ export default function SharedSpacesPage() {
                 )}
             </AnimatePresence>
         </div>
+    )
+}
+
+export default function SharedSpacesPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-black flex items-center justify-center text-white/20 uppercase tracking-[0.5em] text-xs">Loading Spaces...</div>}>
+            <SharedSpacesContent />
+        </Suspense>
     )
 }
 

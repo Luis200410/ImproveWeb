@@ -34,11 +34,11 @@ const systems = [
         name: "Body",
         tagline: "The Temple of Excellence",
         description: "Biological optimization and physiological surveillance of your physical vessel.",
-        coreFeature: "Tactical HUD & Biometric Radar",
-        coreDescription: "Real-time surveillance of your biological state. Deploy the Identity Radar to scan biometrics, track Fuel Quality Heatmaps, and monitor your physiological Identity Horizon.",
-        capabilities: ["Biometric Surveillance", "Fuel Quality Analysis", "Recovery Orchestration", "Macro Scanning"],
+        coreFeature: "Dynamic Routine Architect",
+        coreDescription: "Design industrial-grade training blocks with minimal friction. Map your biological evolution through Routine Builder, Recovery Surveillance, and meticulous Diet logging.",
+        capabilities: ["Program Mapping", "Macro Surveillance", "Recovery Orchestration", "Fuel Quality Logging"],
         outcome: "Total Physical Command",
-        stats: [{ label: "Efficiency", value: "+42%" }, { label: "Recovery", value: "Optimal" }],
+        stats: [{ label: "Capacity", value: "Peak" }, { label: "Readiness", value: "Optimal" }],
         features: ["HRV Tracking", "Metabolic Sync", "Neural Recovery", "Load Balancing"]
     },
     {
@@ -47,12 +47,12 @@ const systems = [
         name: "Money",
         tagline: "The Architecture of Wealth",
         description: "Architecture of abundance and institutional-grade liquidity intelligence.",
-        coreFeature: "Liquidity Intelligence Engine",
-        coreDescription: "A Plaid-integrated financial command center. Track net worth velocity, asset distribution, and cash flow momentum with institutional-grade precision.",
-        capabilities: ["Velocity Tracking", "Asset Distribution", "Flow Mapping", "Institutional Guardrails"],
+        coreFeature: "Liquidity Radar",
+        coreDescription: "A multi-layered financial command center. Track net worth velocity, asset distribution, and cash flow momentum across brokerage, savings, and expense modules.",
+        capabilities: ["Velocity Tracking", "Asset Distribution", "Net Worth Mapping", "Institutional Guardrails"],
         outcome: "Architectural Wealth",
         stats: [{ label: "Growth", value: "Exponential" }, { label: "Risk", value: "Minimized" }],
-        features: ["Liquidity Radar", "Velocity Scoring", "Yield Optimization", "Tax Shielding"]
+        features: ["Investment Tracking", "Budget Planning", "Income Velocity", "Subscription Shield"]
     },
     {
         id: "work",
@@ -61,11 +61,11 @@ const systems = [
         tagline: "The Craft of Mastery",
         description: "Mission-oriented career mastery and strategic output orchestration.",
         coreFeature: "Deep Work Orchestration",
-        coreDescription: "Align every project with long-term career legacy. Mission-critical task management designed for high-stakes deep work sessions.",
-        capabilities: ["Mission Alignment", "Deep Work Timers", "Legacy Tracking", "Strategic Output"],
+        coreDescription: "Align intensive projects with long-term legacy. Strategic task architecture and time-tracking infrastructure designed for world-class craftsmanship.",
+        capabilities: ["Mission Alignment", "Project Triage", "Legacy Tracking", "Strategic Output"],
         outcome: "Craftsman Mastery",
-        stats: [{ label: "Impact", value: "High" }, { label: "Focus", value: "Uninterrupted" }],
-        features: ["Deep Work Shield", "Cognitive Load Map", "Legacy Alignment", "Skill Compounding"]
+        stats: [{ label: "Impact", value: "High" }, { label: "Focus", value: "Maximum" }],
+        features: ["Project Deadlines", "Time Tracking", "Notebook Sync", "Task Compounding"]
     },
     {
         id: "productivity",
@@ -73,51 +73,51 @@ const systems = [
         name: "Productivity",
         tagline: "The Engine of Achievement",
         description: "Cognitive capture and momentum scaling for the high-performance mind.",
-        coreFeature: "Cognitive Capture Engine",
-        coreDescription: "GTD-powered task architecture that eliminates decision fatigue. Systematic offloading of every cognitive load into a frictionless momentum loop.",
-        capabilities: ["Atomic Habit Loops", "Decision Offloading", "Frictionless Capture", "Momentum Analysis"],
+        coreFeature: "Atomic Habit Loops",
+        coreDescription: "GTD-powered habit architecture that eliminates decision fatigue. Systematic momentum scaling through Atomic Habits, Pomodoro sessions, and Periodic Reviews.",
+        capabilities: ["Atomic Momentum", "Decision Offloading", "Frictionless Capture", "Performance Audits"],
         outcome: "Infinite Momentum",
         stats: [{ label: "Throughput", value: "3x" }, { label: "Clarity", value: "Absolute" }],
-        features: ["Inbox Zero Protocol", "Mental Offload", "Flow State Sync", "Decision Engines"]
+        features: ["Habit Tracker", "Pomodoro Engine", "GTD Reviews", "Projection Maps"]
     },
     {
         id: "relationships",
         icon: "🪐",
         name: "Relationships",
         tagline: "The Network of Influence",
-        description: "Social capital repository and intentional connection to leverage your network.",
+        description: "Social capital repository and intentional connection architecture.",
         coreFeature: "Social Capital Repository",
-        coreDescription: "Strategic networking and intentional relationship management. Monitor connection velocity and network health across all social tiers.",
+        coreDescription: "Strategic networking and intentional relationship management. Monitor connection velocity and network health through the Context Vault and Relationship Ledger.",
         capabilities: ["Connection Velocity", "Network Health", "Social Archiving", "Intentional Nudges"],
         outcome: "Strategic Influence",
         stats: [{ label: "Network", value: "Resilient" }, { label: "Depth", value: "Tier 1" }],
-        features: ["Alumni Mapping", "Connection Velocity", "Trust Architect", "Network Health"]
+        features: ["Contact Directory", "Interaction Logs", "Meeting Triage", "Trust Ledger"]
     },
     {
         id: "mind-emotions",
         icon: "🌑",
         name: "Mind & Emotions",
         tagline: "The Inner Citadel",
-        description: "The Inner Citadel and algorithmic emotional resilience against external entropy.",
-        coreFeature: "The Inner Citadel",
-        coreDescription: "Stoic reflection frameworks and emotional volatility mapping. Construct an unshakeable psychological fortress against external entropy.",
+        description: "Algorithmic emotional resilience and psychological entropy shielding.",
+        coreFeature: "Stoic Reflection Frameworks",
+        coreDescription: "Construct an unshakeable psychological fortress. Map emotional volatility and anchor your focus through Daily Journaling, Gratitude Logs, and Mood Surveillance.",
         capabilities: ["Volatility Mapping", "Stoic Reflection", "Entropy Shielding", "Clarity Audits"],
         outcome: "Unshakeable Peace",
         stats: [{ label: "Entropy", value: "-80%" }, { label: "Stability", value: "Maximum" }],
-        features: ["Stoic Reflection", "Mood Volatility Map", "Focus Sanctuary", "Thought Defrag"]
+        features: ["Daily Journal", "Gratitude Anchors", "Mood Tracking", "Focus Sanctuary"]
     },
     {
         id: "legacy-fun",
         icon: "🎪",
         name: "Legacy & Fun",
         tagline: "The Art of Living",
-        description: "Life experience engine and novelty scoring to engineering a life that echoes.",
+        description: "Life experience engine and novelty scoring to engineer a life that echoes.",
         coreFeature: "Life Experience Engine",
-        coreDescription: "Strategic adventure planning and novelty scoring to maximize memory formation. Engineering a life that echoes through time.",
+        coreDescription: "Strategic adventure planning and novelty scoring to maximize memory formation. Orchestrate high-impact experiences through Bucket Lists and Travel Architecture.",
         capabilities: ["Novelty Scoring", "Memory Formation", "Experience Design", "Legacy Mapping"],
         outcome: "Life Without Regret",
         stats: [{ label: "Richness", value: "Compounding" }, { label: "Novelty", value: "Continuous" }],
-        features: ["Novelty Scoring", "Adventure Planner", "Memory Anchoring", "Joy Optimization"]
+        features: ["Bucket List", "Travel Planner", "Memory Anchoring", "Joy Optimization"]
     },
     {
         id: "second-brain",
@@ -125,12 +125,12 @@ const systems = [
         name: "Second Brain",
         tagline: "The Library of Self",
         description: "Relational knowledge graph and externalized genius for non-linear insight.",
-        coreFeature: "Relational Knowledge Graph",
-        coreDescription: "A PARA-organized library of self. Non-linear insight generation from compounding notes and externalized intelligence.",
+        coreFeature: "PARA Knowledge Architecture",
+        coreDescription: "A multi-layered library of self. Generate non-linear insight from compounding notes, research materials, and relational task synthesis.",
         capabilities: ["PARA Architecture", "Non-linear Insights", "Compounding Wisdom", "Externalized Focus"],
         outcome: "Externalized Genius",
         stats: [{ label: "Retrieval", value: "<100ms" }, { label: "Wisdom", value: "Compounding" }],
-        features: ["PARA Infrastructure", "Zettelkasten Sync", "Compound Insight", "Archive Mining"]
+        features: ["Note Repository", "Task Synthesis", "Resource Archive", "Inbox Capture"]
     }
 ];
 
@@ -234,8 +234,8 @@ export default function SalesPage() {
                             <div className="w-20 h-1 bg-white mx-auto" />
                         </div>
 
-                        {/* Main System Navigation using the premium Menu component */}
-                        <div className="relative w-full flex justify-center z-40">
+                        {/* System Selection Menu - Sticky Navigation */}
+                        <div className="sticky top-[100px] w-full flex justify-center z-[90] py-6 px-4 bg-black/60 backdrop-blur-xl border-y border-white/5 shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
                             <Menu setActive={(item) => item && setActiveFunctionality(item)}>
                                 {systems.map((s) => (
                                     <MenuItem 
@@ -249,96 +249,119 @@ export default function SalesPage() {
                             </Menu>
                         </div>
 
-                            <div className="max-w-5xl mx-auto">
+                        <div className="max-w-5xl mx-auto pt-12 pb-24 relative z-10">
 
                                 {/* Right: The Animation Machine (User Pastes Here) */}
                                 <div className="min-h-[700px] flex flex-col justify-center gap-12">
                                     <AnimatePresence mode="wait">
                                         <motion.div
                                             key={activeFunctionality}
-                                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                            initial={{ opacity: 0, scale: 0.98, y: 30 }}
                                             animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                            exit={{ opacity: 0, scale: 0.98, y: 15 }}
                                             transition={{ duration: 0.4, ease: "easeOut" }}
-                                            className="w-full rounded-[2rem] bg-white text-black shadow-2xl shadow-white/5 overflow-hidden border border-white/20"
+                                            className="w-full rounded-[2.5rem] bg-white text-black shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden border border-white/20"
                                         >
                                             {(() => {
                                                 const s = systems.find(sys => sys.id === activeFunctionality) || systems[0];
                                                 return (
-                                                    <div className="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
-                                                        {/* Left Panel: Primary Focus */}
-                                                        <div className="md:col-span-5 p-10 bg-neutral-50 flex flex-col justify-between border-r border-neutral-200">
-                                                            <div>
-                                                                <div className="flex items-center gap-3 mb-8">
-                                                                    <span className="text-4xl">{s.icon}</span>
-                                                                    <span className="text-xs font-bold tracking-[0.3em] text-neutral-400 uppercase">System Intelligence</span>
+                                                    <div className="p-10 md:p-16 space-y-12">
+                                                        {/* Single Window Header */}
+                                                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                                                            <div className="space-y-6 max-w-2xl">
+                                                                <div className="flex items-center gap-4">
+                                                                    <span className="text-6xl drop-shadow-md">{s.icon}</span>
+                                                                    <div className="h-1 w-12 bg-orange-500 rounded-full" />
+                                                                    <span className="text-xs font-bold tracking-[0.4em] text-neutral-400 uppercase">System Active</span>
                                                                 </div>
-                                                                <h2 className={`${playfair.className} text-5xl font-bold mb-6 leading-tight`}>
+                                                                <h2 className={`${playfair.className} text-6xl md:text-8xl font-black tracking-tighter leading-none`}>
                                                                     {s.name}
                                                                 </h2>
-                                                                <p className="text-xl text-neutral-600 leading-relaxed font-light">
+                                                                <p className="text-2xl text-neutral-500 leading-relaxed font-light">
                                                                     {s.description}
                                                                 </p>
                                                             </div>
-
-                                                            <div className="mt-12 space-y-6">
-                                                                <div className="p-6 bg-white rounded-2xl border border-neutral-200 shadow-sm">
-                                                                    <p className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase mb-2">Core Feature</p>
-                                                                    <p className="text-lg font-bold text-neutral-900">{(s as any).coreFeature}</p>
-                                                                </div>
-                                                                <div className="flex gap-4">
-                                                                    {((s as any).stats || []).map((stat: any, i: number) => (
-                                                                        <div key={i} className="flex-1 p-4 bg-black text-white rounded-2xl">
-                                                                            <p className="text-[10px] uppercase tracking-tighter opacity-50">{stat.label}</p>
-                                                                            <p className="text-xl font-bold font-mono">{stat.value}</p>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
+                                                            <div className="flex gap-4">
+                                                                {(s.stats || []).map((stat: any, i: number) => (
+                                                                    <div key={i} className="px-8 py-6 bg-neutral-900 text-white rounded-3xl min-w-[140px] text-center shadow-xl">
+                                                                        <p className="text-[10px] uppercase tracking-[0.2em] opacity-40 mb-1">{stat.label}</p>
+                                                                        <p className="text-2xl font-black font-mono tracking-tighter">{stat.value}</p>
+                                                                    </div>
+                                                                ))}
                                                             </div>
                                                         </div>
 
-                                                        {/* Right Panel: Capabilities & Impact */}
-                                                        <div className="md:col-span-7 p-12 bg-white flex flex-col justify-between">
-                                                            <div>
-                                                                <div className="flex items-center gap-2 mb-8">
-                                                                    <div className="h-0.5 w-6 bg-orange-500" />
-                                                                    <span className="text-xs font-bold tracking-widest uppercase">System Capabilities</span>
-                                                                </div>
-                                                                
-                                                                <div className="grid grid-cols-1 gap-8">
-                                                                    <div>
-                                                                        <p className="text-sm font-medium text-neutral-400 mb-4">Functional Deployment</p>
-                                                                        <p className="text-lg text-neutral-800 leading-relaxed italic border-l-4 border-orange-500 pl-6 py-2 bg-orange-50/30">
-                                                                            "{(s as any).coreDescription}"
-                                                                        </p>
+                                                        {/* Core Feature Highlight */}
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
+                                                            <div className="space-y-8">
+                                                                <div className="p-8 bg-neutral-50 rounded-[2rem] border border-neutral-100 shadow-inner group hover:border-orange-200 transition-colors">
+                                                                    <div className="flex items-center gap-3 mb-4">
+                                                                        <Zap className="w-5 h-5 text-orange-500" />
+                                                                        <p className="text-xs font-bold tracking-widest text-neutral-400 uppercase">Core Architecture</p>
                                                                     </div>
+                                                                    <h3 className="text-2xl font-bold text-neutral-900 mb-4">{s.coreFeature}</h3>
+                                                                    <p className="text-lg text-neutral-600 leading-relaxed">
+                                                                        {s.coreDescription}
+                                                                    </p>
+                                                                </div>
 
-                                                                    <div className="grid grid-cols-2 gap-4">
-                                                                        {((s as any).capabilities || []).map((cap: string, i: number) => (
-                                                                            <div key={i} className="flex items-center gap-3 text-neutral-700">
-                                                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                                                                                <span className="text-sm font-medium">{cap}</span>
+                                                                <div className="flex items-center gap-6 p-4">
+                                                                    <div className="flex -space-x-4">
+                                                                        {[1, 2, 3, 4].map(i => (
+                                                                            <div key={i} className="w-12 h-12 rounded-full bg-neutral-200 border-4 border-white flex items-center justify-center text-[10px] font-bold">U{i}</div>
+                                                                        ))}
+                                                                    </div>
+                                                                    <p className="text-sm font-medium text-neutral-500 tracking-tight">
+                                                                        <span className="text-black font-bold">1,240+</span> machines active in this sector
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-8">
+                                                                <div className="space-y-4">
+                                                                    <p className="text-xs font-bold tracking-widest text-neutral-400 uppercase">Technical Capabilities</p>
+                                                                    <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                                                                        {(s.capabilities || []).map((cap: string, i: number) => (
+                                                                            <div key={i} className="flex items-center gap-3 text-neutral-800 group cursor-default">
+                                                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500 group-hover:scale-150 transition-transform" />
+                                                                                <span className="text-sm font-bold tracking-tight">{cap}</span>
                                                                             </div>
                                                                         ))}
                                                                     </div>
                                                                 </div>
-                                                            </div>
 
-                                                            <div className="mt-12 pt-8 border-t border-neutral-100 flex items-end justify-between">
-                                                                <div>
-                                                                    <p className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase mb-1">Mission Outcome</p>
-                                                                    <p className={`${playfair.className} text-3xl font-bold text-black uppercase tracking-tighter`}>
-                                                                        {s.outcome}
-                                                                    </p>
+                                                                <div className="pt-8 border-t border-neutral-100 space-y-4">
+                                                                    <p className="text-xs font-bold tracking-widest text-neutral-400 uppercase">Current Deployment</p>
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {(s.features || []).map((f: string, i: number) => (
+                                                                            <span key={i} className="px-4 py-2 bg-neutral-100 rounded-full text-[10px] font-black uppercase tracking-widest text-neutral-600 hover:bg-neutral-900 hover:text-white transition-colors cursor-pointer">
+                                                                                {f}
+                                                                            </span>
+                                                                        ))}
+                                                                    </div>
                                                                 </div>
-                                                                <motion.button
-                                                                    whileHover={{ scale: 1.05 }}
-                                                                    whileTap={{ scale: 0.95 }}
-                                                                    className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-sm tracking-wider hover:bg-orange-600 transition-colors shadow-lg shadow-orange-500/20"
-                                                                >
-                                                                    INITIALIZE
-                                                                </motion.button>
                                                             </div>
+                                                        </div>
+
+                                                        {/* Footer Action */}
+                                                        <div className="pt-12 border-t border-neutral-100 flex flex-col md:flex-row items-center justify-between gap-8">
+                                                            <div className="text-center md:text-left">
+                                                                <p className="text-[10px] font-bold tracking-[0.3em] text-neutral-400 uppercase mb-2">Final Objective</p>
+                                                                <div className="flex items-center gap-4">
+                                                                    <span className={`${playfair.className} text-4xl md:text-5xl font-black text-black uppercase tracking-tighter`}>
+                                                                        {s.outcome}
+                                                                    </span>
+                                                                    <div className="hidden md:block h-px w-24 bg-neutral-200" />
+                                                                </div>
+                                                            </div>
+                                                            <motion.button
+                                                                whileHover={{ scale: 1.02, x: 5 }}
+                                                                whileTap={{ scale: 0.98 }}
+                                                                className="group flex items-center gap-6 px-10 py-6 bg-black text-white rounded-full font-black text-xs tracking-[0.4em] uppercase transition-all shadow-2xl hover:bg-neutral-800"
+                                                            >
+                                                                Initialize System
+                                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                                                            </motion.button>
                                                         </div>
                                                     </div>
                                                 );

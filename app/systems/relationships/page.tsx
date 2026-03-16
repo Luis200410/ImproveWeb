@@ -152,7 +152,7 @@ export default function RelationshipsPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 pb-14 relative z-10 space-y-10">
+            <div className="max-w-7xl mx-auto px-6 pt-12 pb-14 relative z-10 space-y-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

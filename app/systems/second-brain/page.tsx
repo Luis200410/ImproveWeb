@@ -166,7 +166,11 @@ export default function SecondBrainPage() {
                         >
                             <RefreshCw className="w-5 h-5" />
                         </motion.button>
-                        <StatsHeader counts={counts} productivity={productivityScore} />
+                        <StatsHeader 
+                            productivity={productivityScore} 
+                            taskMetrics={taskMetrics} 
+                            projectMetrics={projectMetrics} 
+                        />
                     </div>
                 </div>
 
