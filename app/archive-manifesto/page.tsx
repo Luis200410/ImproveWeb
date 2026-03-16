@@ -101,7 +101,7 @@ export default function AboutPage() {
                             className={`${inter.className} text-xl text-white/60 max-w-3xl mx-auto leading-relaxed`}
                         >
                             In an age of distraction, we stand for discipline.<br />
-                            In an era of mediocrity, we champion excellence.
+                            In an era of mediocrity, we champion Complete Integrity.
                         </motion.p>
                     </motion.div>
                 </motion.header>
@@ -228,7 +228,7 @@ export default function AboutPage() {
                             </p>
 
                             <p className={`${inter.className} text-xl text-white max-w-3xl mx-auto mb-12 leading-relaxed font-medium`}>
-                                The question is not whether you're capable of excellence.<br />
+                                The question is not whether you're capable of Complete Integrity.<br />
                                 The question is whether you're willing to commit to the systems that make it inevitable.
                             </p>
 

@@ -17,7 +17,7 @@ interface NavLink {
 }
 
 const publicLinks: NavLink[] = [
-    { href: '/about', label: 'Manifesto' },
+    { href: '/blog', label: 'The Blog' },
     { href: '/pricing', label: 'Membership' },
     { href: '/sales', label: 'The System' },
 ]

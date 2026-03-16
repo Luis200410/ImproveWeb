@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
     return [
       {
         // Apply security + SEO headers to all public routes
-        source: "/(about|pricing|sales|register|login)?",
+        source: "/(blog|pricing|sales|register|login)?",
         headers: [
           {
             key: "X-Robots-Tag",

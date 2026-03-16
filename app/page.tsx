@@ -38,13 +38,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
-      {/* SEO Headline */}
-      <h1 className="sr-only">
-        IMPROVE — Complete Integrity | All-In-One Self-Improvement & Personal Mastery System
-      </h1>
-
-
-
       <ScrollExpandMedia
         mediaType={mediaType}
         mediaSrc={currentMedia.src}
@@ -56,8 +49,8 @@ export default function Home() {
       >
         <div className="relative z-20 bg-black pt-20">
           {/* Why IMPROVE Section */}
-          <section className="py-32 px-6 relative">
-            <div className="max-w-6xl mx-auto">
+          <section id="why" className="relative py-32 px-6">
+            <div className="max-w-7xl mx-auto">
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -65,22 +58,25 @@ export default function Home() {
                 transition={{ duration: 0.8 }}
                 className="text-center mb-20"
               >
-                <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
-                  Why IMPROVE?
+                <h1 className={`${bebas.className} text-6xl md:text-8xl font-bold mb-6 text-white uppercase tracking-tighter`}>
+                  The Ultimate All-in-One Life Operating System
+                </h1>
+                <h2 className={`${bebas.className} text-3xl md:text-4xl text-white/40 mb-8 uppercase tracking-[0.2em]`}>
+                  Stop searching for tools. Start running a system.
                 </h2>
                 <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto`}>
-                  Excellence is the byproduct of Complete Integrity. Manage every dimension of your human experience.
+                  IMPROVE is the technical framework that centralizes your entire life. Excellence is the byproduct of Complete Integrity. Manage every dimension of your human experience.
                 </p>
                 <div className="mt-4 text-white/20 text-[10px] uppercase tracking-[0.4em]">
-                  The Comprehensive "IMPROVE" Operating System
+                  The Comprehensive "IMPROVE" Life Operating System
                 </div>
               </motion.div>
 
               <div className="grid md:grid-cols-2 gap-12">
                 {[
                   {
-                    title: "Holistic Integration",
-                    desc: "Most productivity systems focus on one area. IMPROVE covers all eight pillars of a well-lived life.",
+                    title: "One Life Operating System",
+                    desc: "Why use five apps when you can have one Operating System? From your Second Brain to your Physical Body, IMPROVE turns chaos into a Practical Lab for growth.",
                     icon: "🎯"
                   },
                   {
@@ -135,10 +131,10 @@ export default function Home() {
                 className="text-center mb-20"
               >
                 <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
-                  Eight Systems.<br />One Life.
+                  Eight Systems.<br />One Framework.
                 </h2>
                 <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
-                  Systematize your pursuit of Complete Integrity.
+                  Systematize your pursuit of Complete Integrity through optimized architecture.
                 </p>
                 <Link href="/sales">
                   <Button variant="ghost" className="text-white/60 hover:text-white border border-white/20 hover:border-white/40">
@@ -195,7 +191,7 @@ export default function Home() {
                 </p>
 
                 <p className={`${bebas.className} text-2xl text-white mb-12 leading-relaxed font-medium`}>
-                  Or you can adopt the operating system for Complete Integrity.
+                  Or you can adopt the Life Operating System for Complete Integrity.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">

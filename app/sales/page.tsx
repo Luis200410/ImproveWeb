@@ -31,7 +31,7 @@ const systems = [
     {
         id: "body",
         icon: "🧬",
-        name: "Body",
+        name: "Body Optimization",
         tagline: "The Temple of Excellence",
         description: "Biological optimization and physiological surveillance of your physical vessel.",
         coreFeature: "Dynamic Routine Architect",
@@ -44,7 +44,7 @@ const systems = [
     {
         id: "money",
         icon: "📈",
-        name: "Money",
+        name: "Money & Wealth System",
         tagline: "The Architecture of Wealth",
         description: "Architecture of abundance and institutional-grade liquidity intelligence.",
         coreFeature: "Liquidity Radar",
@@ -57,7 +57,7 @@ const systems = [
     {
         id: "work",
         icon: "⚔️",
-        name: "Work",
+        name: "Professional Work Mastery",
         tagline: "The Craft of Mastery",
         description: "Mission-oriented career mastery and strategic output orchestration.",
         coreFeature: "Deep Work Orchestration",
@@ -70,7 +70,7 @@ const systems = [
     {
         id: "productivity",
         icon: "⚡",
-        name: "Productivity",
+        name: "Execution & Productivity",
         tagline: "The Engine of Achievement",
         description: "Cognitive capture and momentum scaling for the high-performance mind.",
         coreFeature: "Atomic Habit Loops",
@@ -83,7 +83,7 @@ const systems = [
     {
         id: "relationships",
         icon: "🪐",
-        name: "Relationships",
+        name: "Relationships & Social Capital",
         tagline: "The Network of Influence",
         description: "Social capital repository and intentional connection architecture.",
         coreFeature: "Social Capital Repository",
@@ -96,7 +96,7 @@ const systems = [
     {
         id: "mind-emotions",
         icon: "🌑",
-        name: "Mind & Emotions",
+        name: "Mind, Emotions & Clarity",
         tagline: "The Inner Citadel",
         description: "Algorithmic emotional resilience and psychological entropy shielding.",
         coreFeature: "Stoic Reflection Frameworks",
@@ -109,7 +109,7 @@ const systems = [
     {
         id: "legacy-fun",
         icon: "🎪",
-        name: "Legacy & Fun",
+        name: "Legacy & Strategic Fun",
         tagline: "The Art of Living",
         description: "Life experience engine and novelty scoring to engineer a life that echoes.",
         coreFeature: "Life Experience Engine",
@@ -122,7 +122,7 @@ const systems = [
     {
         id: "second-brain",
         icon: "🧠",
-        name: "Second Brain",
+        name: "Second Brain & Knowledge",
         tagline: "The Library of Self",
         description: "Relational knowledge graph and externalized genius for non-linear insight.",
         coreFeature: "PARA Knowledge Architecture",

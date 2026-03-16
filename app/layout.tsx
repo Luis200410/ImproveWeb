@@ -26,45 +26,28 @@ const siteUrl = "https://improve-club.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "IMPROVE — Complete Integrity | Personal Mastery & Self-Improvement System",
+    default: "The Ultimate All-in-One Life Operating System | IMPROVE — Complete Integrity",
     template: "%s | IMPROVE — Complete Integrity",
   },
   description:
-    "IMPROVE is the premier operating system for those committed to Complete Integrity. Master your life with 8 integrated systems designed for total excellence.",
+    "Looking for the best Second Brain or Life Operating System? IMPROVE is the all-in-one productivity framework for mastering your Body, Money, Work, and Mind.",
   keywords: [
+    "All-in-one Life Operating System",
+    "Second Brain Software",
+    "Personal Productivity System",
     "IMPROVE",
-    "improve",
     "complete integrity",
-    "self improvement",
-    "self-improvement app",
-    "productivity system",
-    "personal development",
-    "habit tracker",
-    "life operating system",
+    "self improvement system",
+    "productivity framework",
+    "habit tracker system",
+    "life optimization",
     "excellence",
     "goal tracking",
-    "second brain",
-    "body fitness tracker",
-    "money management",
-    "time management",
-    "mind improvement",
-    "personal growth",
-    "performance system",
-    "improve life",
-    "improve yourself",
-    "improve productivity",
-    "improve habits",
-    "improve mindset",
-    "improve finances",
-    "improve body",
-    "improve relationships",
-    "IMPROVE app",
-    "Complete Integrity",
-    "Improve Club",
-    "improve club",
-    "improve-club.com",
-    "excellence system",
-    "personal mastery",
+    "body optimization system",
+    "money wealth system",
+    "professional work mastery",
+    "mind clarity tools",
+    "personal growth framework",
   ],
   authors: [{ name: "IMPROVE", url: siteUrl }],
   creator: "IMPROVE",
@@ -89,9 +72,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "IMPROVE — Complete Integrity",
-    title: "IMPROVE — The All-In-One Self-Improvement System",
+    title: "IMPROVE — All-in-One Life Operating System",
     description:
-      "Integrated systems for Complete Integrity. Track habits, manage finances, build your second brain, and master your life through a unified platform.",
+      "Looking for the best Second Brain or Life Operating System? The all-in-one productivity framework for mastering your Body, Money, Work, and Mind.",
     images: [
       {
         url: "/og-image.png",
@@ -103,9 +86,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "IMPROVE — Complete Integrity",
+    title: "IMPROVE — All-in-One Life Operating System",
     description:
-      "Complete Integrity in every dimension. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
+      "The ultimate technical framework for Complete Integrity. Master every dimension of your life.",
     images: ["/og-image.png"],
     creator: "@improveclub",
     site: "@improveclub",
@@ -131,7 +114,7 @@ const jsonLdOrganization = {
   url: siteUrl,
   logo: `${siteUrl}/og-image.png`,
   description:
-    "IMPROVE is the all-in-one operating system for Complete Integrity. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
+    "IMPROVE is the ultimate all-in-one Life Operating System. Master your body, wealth, work, productivity, relationships, mind, and legacy within a single Framework.",
   sameAs: [],
 };
 
@@ -141,7 +124,7 @@ const jsonLdWebSite = {
   name: "IMPROVE",
   url: siteUrl,
   description:
-    "Systematized tools for Complete Integrity. Track habits, manage finances, build your second brain, and master every dimension of life.",
+    "The all-in-one Life Operating System and Second Brain Software for Complete Integrity.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -157,14 +140,14 @@ const jsonLdSoftwareApp = {
   "@type": "SoftwareApplication",
   name: "IMPROVE",
   operatingSystem: "Web",
-  applicationCategory: "LifestyleApplication",
+  applicationCategory: "BusinessApplication",
   offers: {
     "@type": "Offer",
     price: "10.00",
     priceCurrency: "USD",
   },
   description:
-    "IMPROVE is the all-in-one self-improvement operating system. Eight systems covering body, money, work, productivity, relationships, mind, legacy, and knowledge — all in one beautiful platform.",
+    "The ultimate all-in-one Life Operating System. Eight Systems covering body, money, work, productivity, relationships, mind, legacy, and knowledge.",
   url: siteUrl,
 };
 
