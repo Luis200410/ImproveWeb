@@ -90,6 +90,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             audioRef.current.muted = false;
             
             try {
+                audioRef.current.load();
                 await audioRef.current.play();
                 
                 // After the 1150ms sync delay, reset to start and make it audible
@@ -605,12 +606,13 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             {/* Hidden audio element for browser compliance */}
             <audio
                 ref={audioRef}
-                src="/Landing.mp3"
                 preload="auto"
                 className="hidden"
                 aria-hidden="true"
                 playsInline
-            />
+            >
+                <source src="/Landing.mp3" type="audio/mpeg" />
+            </audio>
         </div>
     );
 }
