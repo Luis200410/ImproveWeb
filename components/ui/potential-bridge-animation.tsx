@@ -90,7 +90,7 @@ export function PotentialBridgeAnimation() {
                             ))}
 
                             {/* The Label */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-12 z-30">
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-16 md:-translate-y-20 z-30">
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={isInView ? { opacity: 1, scale: 1 } : {}}

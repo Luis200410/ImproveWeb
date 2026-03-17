@@ -63,7 +63,12 @@ const improveSystems = [
     { id: 'relationships', title: 'RELATIONSHIPS', icon: Heart, color: '#ffffff' },
 ];
 
-export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => void }) {
+interface SystemConvergenceAnimationProps {
+    onComplete?: () => void;
+    onTimeUpdate?: (time: number) => void;
+}
+
+export function SystemConvergenceAnimation({ onComplete, onTimeUpdate }: SystemConvergenceAnimationProps) {
     const [stage, setStage] = useState<'converging' | 'dashboard'>('converging');
     const [currentTime, setCurrentTime] = useState(0);
     const [hasHydrated, setHasHydrated] = useState(false);
@@ -132,7 +137,23 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
         }
     }, [hasStarted, onComplete]);
 
-    // Stage & Subtitle Management
+    // Master Clock: Survives stage transitions to power the whole landing page sequence
+    useEffect(() => {
+        if (!hasStarted) return;
+        
+        const interval = setInterval(() => {
+            setCurrentTime(prev => prev + 0.1);
+        }, 100);
+
+        return () => clearInterval(interval);
+    }, [hasStarted]);
+
+    // Sync currentTime to parent prop safely after render
+    useEffect(() => {
+        onTimeUpdate?.(currentTime);
+    }, [currentTime, onTimeUpdate]);
+
+    // Stage Management
     useEffect(() => {
         if (hasStarted && stage === 'converging') {
             // Reveal the dashboard view (icons) at 26.5s
@@ -140,14 +161,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                 setStage('dashboard');
             }, 26500);
 
-            const interval = setInterval(() => {
-                setCurrentTime(prev => prev + 0.1);
-            }, 100);
-
-            return () => {
-                clearTimeout(revealTimer);
-                clearInterval(interval);
-            };
+            return () => clearTimeout(revealTimer);
         }
     }, [hasStarted, stage]);
 
@@ -179,7 +193,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
         { time: 3.5, text: "THEY OPERATE BETTER.", strategy: 'impactSlam', color: '#ffffff' },
         { time: 5.5, text: "You aren't", strategy: 'typewriter', color: '#ffffff' },
         { time: 6.8, text: "DISORGANIZED.", strategy: 'scramble', color: '#ef4444' },
-        { time: 8.5, text: "operating without a system.", strategy: 'blurSlam', color: '#ffffff' },
+        { time: 8.5, text: "OPERATING WITHOUT\nA SYSTEM.", strategy: 'blurSlam', color: '#ffffff' },
         { time: 10.2, text: "the digital noise", strategy: 'noise', color: '#3b82f6' },
         { time: 11.5, text: "scattered notes", strategy: 'splitReveal', color: '#ffffff' },
         { time: 12.8, text: "leaking potential...", strategy: 'fadeUp', color: '#ef4444' },
@@ -188,7 +202,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
         { time: 17.5, text: "Tools don't build", strategy: 'splitReveal', color: '#ffffff' },
         { time: 19.0, text: "EXCELLENCE.", strategy: 'goldReveal', color: '#fbbf24' },
         { time: 20.5, text: "SYSTEMS DO.", strategy: 'impactSlam', color: '#3b82f6' }
-    ], []);
+    ], [screenSize.isMobile]);
 
     const activeSubtitle = useMemo(() => {
         return script.slice().reverse().find(s => currentTime >= s.time);
@@ -246,10 +260,10 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                 )}
             </AnimatePresence>
 
-            {/* Kinetic Studio Subtitles (Ultra-Creative & Safe) */}
+            {/* Kinetic Studio Subtitles (Ultra-Creative & Responsive) */}
             <motion.div
                 style={{ opacity: textOpacity }}
-                className="absolute top-12 left-0 right-0 h-[30%] px-6 z-[100] flex flex-col items-center justify-start pointer-events-none"
+                className="absolute top-12 left-0 right-0 h-[40%] px-6 z-[100] flex flex-col items-center justify-start pointer-events-none"
             >
                 <AnimatePresence mode="popLayout">
                     {hasStarted && currentTime > 0 && currentTime < 24 && activeSubtitle && (
@@ -272,7 +286,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                         initial={{ opacity: 0 }}
                                                         animate={{ opacity: 1 }}
                                                         transition={{ delay: i * 0.04 }}
-                                                        className={`${bebas.className} text-4xl md:text-7xl font-bold tracking-tight`}
+                                                        className={`${bebas.className} text-3xl md:text-7xl font-bold tracking-tight`}
                                                         style={{ color: activeSubtitle.color }}
                                                     >
                                                         {c === " " ? "\u00A0" : c}
@@ -282,34 +296,37 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                         );
                                     case 'blurSlam':
                                         return (
-                                            <motion.h2
-                                                initial={{ filter: 'blur(20px)', scale: 1.5, opacity: 0 }}
-                                                animate={{ filter: 'blur(0px)', scale: 1, opacity: 1 }}
-                                                className={`${bebas.className} text-5xl md:text-8xl font-bold tracking-tight italic whitespace-nowrap`}
-                                                style={{ color: activeSubtitle.color }}
-                                            >
-                                                {activeSubtitle.text}
-                                            </motion.h2>
+                                            <div className="flex flex-col items-center">
+                                                {activeSubtitle.text.split('\n').map((line, idx) => (
+                                                    <motion.h2
+                                                        key={idx}
+                                                        initial={{ filter: 'blur(20px)', scale: 1.5, opacity: 0 }}
+                                                        animate={{ filter: 'blur(0px)', scale: 1, opacity: 1 }}
+                                                        transition={{ duration: 0.4, type: 'spring', damping: 10, delay: idx * 0.1 }}
+                                                         className={`${bebas.className} text-4xl md:text-8xl font-bold tracking-tight italic text-center leading-[0.9] md:leading-[0.85] w-full`}
+                                                        style={{ color: activeSubtitle.color }}
+                                                    >
+                                                        {line}
+                                                    </motion.h2>
+                                                ))}
+                                            </div>
                                         );
                                     case 'impactSlam':
                                         return (
-                                            <div className="flex flex-col items-center">
-                                                <motion.h2
-                                                    initial={{ scale: 3, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    transition={{ type: 'spring', damping: 10 }}
-                                                    className={`${bebas.className} text-6xl md:text-9xl leading-none font-black tracking-tight`}
-                                                    style={{ color: activeSubtitle.color }}
-                                                >
-                                                    {activeSubtitle.text}
-                                                </motion.h2>
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: "100%" }}
-                                                    className="h-2 md:h-4 mt-2"
-                                                    style={{ backgroundColor: activeSubtitle.color }}
-                                                />
-                                            </div>
+                                            <motion.h2
+                                                initial={{ scale: 3, opacity: 0, filter: 'blur(10px)' }}
+                                                animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                                                transition={{ duration: 0.3, ease: 'easeOut' }}
+                                                className={`${bebas.className} font-black tracking-tighter text-center leading-[0.85]`}
+                                                style={{
+                                                    color: activeSubtitle.color,
+                                                    fontSize: screenSize.isMobile ? (activeSubtitle.text.includes('\n') ? '4rem' : '5rem') : '10rem'
+                                                }}
+                                            >
+                                                {activeSubtitle.text.includes('\n')
+                                                    ? activeSubtitle.text.split('\n').map((l, i) => <div key={i}>{l}</div>)
+                                                    : activeSubtitle.text}
+                                            </motion.h2>
                                         );
                                     case 'splitReveal':
                                         return (
@@ -319,7 +336,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                         key={`${activeSubtitle.text}-${word}-${i}`}
                                                         initial={{ x: i % 2 === 0 ? -200 : 200, opacity: 0 }}
                                                         animate={{ x: 0, opacity: 1 }}
-                                                        className={`${bebas.className} text-5xl md:text-8xl font-bold uppercase tracking-tight`}
+                                                        className={`${bebas.className} text-3xl md:text-7xl font-bold uppercase tracking-tight`}
                                                         style={{ color: activeSubtitle.color }}
                                                     >
                                                         {word}
@@ -330,7 +347,6 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                     case 'noise':
                                         return (
                                             <div className="relative flex flex-col items-center">
-                                                {/* Chromatic Aberration Layers */}
                                                 <div className="relative">
                                                     <motion.h2
                                                         animate={{
@@ -338,7 +354,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                             opacity: [1, 0.8, 1, 0.5, 1],
                                                         }}
                                                         transition={{ repeat: Infinity, duration: 0.12 }}
-                                                        className={`${bebas.className} text-5xl md:text-8xl font-bold tracking-tight italic text-[#ff0000] mix-blend-screen absolute inset-0`}
+                                                        className={`${bebas.className} text-3xl md:text-7xl font-bold tracking-tight italic text-[#ff0000] mix-blend-screen absolute inset-0`}
                                                     >
                                                         {activeSubtitle.text}
                                                     </motion.h2>
@@ -348,7 +364,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                             opacity: [1, 0.5, 1, 0.8, 1],
                                                         }}
                                                         transition={{ repeat: Infinity, duration: 0.1 }}
-                                                        className={`${bebas.className} text-5xl md:text-8xl font-bold tracking-tight italic text-[#00ffff] mix-blend-screen absolute inset-0`}
+                                                        className={`${bebas.className} text-3xl md:text-7xl font-bold tracking-tight italic text-[#00ffff] mix-blend-screen absolute inset-0`}
                                                     >
                                                         {activeSubtitle.text}
                                                     </motion.h2>
@@ -357,32 +373,32 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                             y: [-1, 1, -2, 0],
                                                         }}
                                                         transition={{ repeat: Infinity, duration: 0.15 }}
-                                                        className={`${bebas.className} text-5xl md:text-8xl font-bold tracking-tight italic text-white relative z-10`}
+                                                        className={`${bebas.className} text-3xl md:text-7xl font-bold tracking-tight italic text-white relative z-10`}
                                                     >
                                                         {activeSubtitle.text}
                                                     </motion.h2>
                                                 </div>
-
-                                                {/* Glitch Data Blocks */}
-                                                {[...Array(12)].map((_, i) => (
-                                                    <motion.div
-                                                        key={`block-${i}`}
-                                                        initial={{ opacity: 0 }}
-                                                        animate={{
-                                                            opacity: [0, 0.8, 0, 0.4, 0],
-                                                            x: (Math.random() - 0.5) * 600,
-                                                            y: (Math.random() - 0.5) * 200,
-                                                            width: Math.random() * 100 + 20,
-                                                            height: Math.random() * 4 + 1,
-                                                        }}
-                                                        transition={{
-                                                            repeat: Infinity,
-                                                            duration: Math.random() * 0.5 + 0.2,
-                                                            delay: Math.random() * 1
-                                                        }}
-                                                        className="absolute bg-white/30 backdrop-blur-sm pointer-events-none"
-                                                    />
-                                                ))}
+                                                <div className="mt-4 flex gap-2">
+                                                    {[...Array(screenSize.isMobile ? 6 : 12)].map((_, i) => (
+                                                        <motion.div
+                                                            key={`block-${i}`}
+                                                            initial={{ opacity: 0 }}
+                                                            animate={{
+                                                                opacity: [0, 0.8, 0, 0.4, 0],
+                                                                x: (Math.random() - 0.5) * 600,
+                                                                y: (Math.random() - 0.5) * 200,
+                                                                width: Math.random() * 100 + 20,
+                                                                height: Math.random() * 4 + 1,
+                                                            }}
+                                                            transition={{
+                                                                repeat: Infinity,
+                                                                duration: Math.random() * 0.5 + 0.2,
+                                                                delay: Math.random() * 1
+                                                            }}
+                                                            className="absolute bg-white/30 backdrop-blur-sm pointer-events-none"
+                                                        />
+                                                    ))}
+                                                </div>
                                             </div>
                                         );
                                     case 'goldReveal':
@@ -396,7 +412,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                     textShadow: "0 0 40px #fbbf24"
                                                 }}
                                                 transition={{ duration: 0.8, ease: "easeOut" }}
-                                                className={`${bebas.className} text-7xl md:text-[11rem] leading-none font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-yellow-500 to-yellow-900 tracking-tight`}
+                                                className={`${bebas.className} text-4xl md:text-[9rem] leading-none font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-100 via-yellow-500 to-yellow-900 tracking-tight`}
                                             >
                                                 {activeSubtitle.text}
                                             </motion.h2>
@@ -425,7 +441,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                                             damping: 12,
                                                             delay: i * 0.03
                                                         }}
-                                                        className={`${bebas.className} text-6xl md:text-9xl font-black tracking-tight`}
+                                                        className={`${bebas.className} text-3xl md:text-8xl font-black tracking-tight`}
                                                         style={{ color: activeSubtitle.color }}
                                                     >
                                                         {c === " " ? "\u00A0" : c}
@@ -439,7 +455,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                             <motion.h2
                                                 initial={{ y: 50, opacity: 0 }}
                                                 animate={{ y: 0, opacity: 1 }}
-                                                className={`${bebas.className} text-4xl md:text-7xl font-bold tracking-widest uppercase opacity-80`}
+                                                className={`${bebas.className} text-2xl md:text-6xl font-bold tracking-widest uppercase opacity-80`}
                                                 style={{ color: activeSubtitle.color }}
                                             >
                                                 {activeSubtitle.text}
@@ -455,7 +471,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none transition-all duration-1000">
                 <motion.div
                     animate={{
-                        scale: stage === 'converging' ? 0.6 : 0.75,
+                        scale: stage === 'converging' ? 0.5 : 0.65,
                         opacity: 1,
                     }}
                     transition={{ duration: 1.5, ease: "circOut" }}
@@ -514,7 +530,11 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                     >
                         {/* App Icon Streams */}
                         <div className="absolute inset-0 overflow-hidden">
-                            {hasHydrated && otherApps.map((app, i) => (
+                            {hasHydrated && otherApps.map((app, i) => {
+                                const scale = screenSize.isMobile ? 0.6 : 0.85;
+                                const baseSize = 300 * scale;
+                                const fontSize = screenSize.isMobile ? "text-3xl" : "text-4xl";
+                                return (
                                 <motion.div
                                     key={`converge-${i}`}
                                     initial={{
@@ -541,7 +561,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                                         <app.icon size={screenSize.isMobile ? 24 : 32} />
                                     </div>
                                 </motion.div>
-                            ))}
+                            )})}
                         </div>
                     </motion.div>
                 ) : (
