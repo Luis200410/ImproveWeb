@@ -25,13 +25,26 @@ const improveWords = [
 import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 import { SystemConvergenceAnimation } from "@/components/ui/system-convergence-animation";
 import { CompleteIntegritySection } from "@/components/ui/complete-integrity-section";
+import { PotentialBridgeAnimation } from "@/components/ui/potential-bridge-animation";
 
 export default function Home() {
   const [mediaType, setMediaType] = useState<'video' | 'image'>('image');
+  const bridgeRef = useRef<HTMLElement>(null);
+  const systemsRef = useRef<HTMLElement>(null);
+
+  const scrollToBridge = () => {
+    if (bridgeRef.current) {
+      const targetPosition = bridgeRef.current.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Asset URLs
   const currentMedia = {
-    src: '/logo final.png',
+    src: '/logo_final.png',
     background: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop',
     title: 'IMPROVE Integrity',
     date: 'EST. MMXXIV',
@@ -41,9 +54,40 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
       {/* 1. Hero: System Convergence Animation */}
-      <section className="w-full px-6 py-12 md:py-20">
+      <section className="w-full px-6 pt-12 md:pt-20 pb-0 min-h-screen flex items-center justify-center">
+        <div className="max-w-7xl mx-auto w-full">
+          <SystemConvergenceAnimation onComplete={scrollToBridge} />
+        </div>
+      </section>
+
+      {/* 2. The Bridge Animation (Second 34 sequence) */}
+      <section ref={bridgeRef} className="w-full px-6 pb-20 pt-20 min-h-screen flex items-center justify-center border-t border-white/5">
+        <div className="max-w-4xl mx-auto w-full">
+          <PotentialBridgeAnimation />
+        </div>
+      </section>
+
+      {/* 3. The Eight Systems Preview (Moved Up) */}
+      <section ref={systemsRef} className="py-32 px-6 relative border-t border-white/10">
         <div className="max-w-7xl mx-auto">
-          <SystemConvergenceAnimation />
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-20"
+          >
+            <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
+              Eight Systems.<br />The Engines of Progress.
+            </h2>
+            <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
+              The infrastructure of your life, divided into eight optimized engines. This is the hardware for your potential.
+            </p>
+          </motion.div>
+
+          <div className="mt-8">
+            <EightSystemsAccordion />
+          </div>
         </div>
       </section>
 
@@ -153,34 +197,6 @@ export default function Home() {
             </div>
           </section>
 
-          {/* The Eight Systems Preview */}
-          <section className="py-32 px-6 relative border-t border-white/10">
-            <div className="max-w-7xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="text-center mb-20"
-              >
-                <h2 className={`${bebas.className} text-6xl md:text-7xl font-bold mb-6 text-white`}>
-                  Eight Systems.<br />The Engines of Progress.
-                </h2>
-                <p className={`${bebas.className} text-xl text-white/60 max-w-3xl mx-auto mb-8`}>
-                  The infrastructure of your life, divided into eight optimized engines. This is the hardware for your potential.
-                </p>
-                <Link href="/sales">
-                  <Button variant="ghost" className="text-white/60 hover:text-white border border-white/20 hover:border-white/40">
-                    Explore The Complete System →
-                  </Button>
-                </Link>
-              </motion.div>
-
-              <div className="mt-8">
-                <EightSystemsAccordion />
-              </div>
-            </div>
-          </section>
 
           {/* Social Proof / Authority */}
           <section className="py-32 px-6 relative border-t border-white/10">

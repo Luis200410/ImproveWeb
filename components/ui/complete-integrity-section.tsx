@@ -27,7 +27,7 @@ export function CompleteIntegritySection() {
           {/* Central Logo with slanted line */}
           <div className="absolute z-10 scale-75 md:scale-100">
              <Image 
-                src="/logo final.png" 
+                src="/logo_final.png" 
                 alt="IMPROVE Logo" 
                 width={400} 
                 height={400} 

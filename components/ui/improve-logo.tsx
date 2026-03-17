@@ -22,7 +22,7 @@ export function ImproveLogo({ className = "", small = false, hero = false }: Imp
                 className={`relative ${small ? 'w-32 h-16' : hero ? 'w-[1000px] h-[500px]' : 'w-[400px] h-[200px]'}`}
             >
                 <Image
-                    src="/logo final.png"
+                    src="/logo_final.png"
                     alt="IMPROVE — Complete Integrity"
                     fill
                     className="object-contain"
