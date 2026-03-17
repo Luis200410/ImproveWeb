@@ -55,6 +55,7 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.endsWith('.xml') &&
         !request.nextUrl.pathname.endsWith('.txt') &&
         !request.nextUrl.pathname.endsWith('.json') &&
+        !request.nextUrl.pathname.match(/\.(mp3|wav|ogg|mp4|webm|png|jpg|jpeg|gif|svg|ico)$/) &&
         request.nextUrl.pathname !== '/'
     ) {
         // no user, potentially redirect to login

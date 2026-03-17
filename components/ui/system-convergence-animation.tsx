@@ -88,11 +88,11 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             // to satisfy User Activation policies, but keeping it silent for the sync delay.
             audioRef.current.volume = 0;
             audioRef.current.muted = false;
-            
+
             try {
                 audioRef.current.load();
                 await audioRef.current.play();
-                
+
                 // After the 1150ms sync delay, reset to start and make it audible
                 setTimeout(() => {
                     if (audioRef.current) {
@@ -247,7 +247,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             </AnimatePresence>
 
             {/* Kinetic Studio Subtitles (Ultra-Creative & Safe) */}
-            <motion.div 
+            <motion.div
                 style={{ opacity: textOpacity }}
                 className="absolute top-12 left-0 right-0 h-[30%] px-6 z-[100] flex flex-col items-center justify-start pointer-events-none"
             >
@@ -611,7 +611,7 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
                 aria-hidden="true"
                 playsInline
             >
-                <source src="/Landing.mp3" type="audio/mpeg" />
+                <source src="./Landing.mp3" type="audio/mpeg" />
             </audio>
         </div>
     );
