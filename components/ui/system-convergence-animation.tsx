@@ -605,14 +605,12 @@ export function SystemConvergenceAnimation({ onComplete }: { onComplete?: () => 
             {/* Hidden audio element for browser compliance */}
             <audio
                 ref={audioRef}
+                src="/Landing.mp3"
                 preload="auto"
                 className="hidden"
                 aria-hidden="true"
                 playsInline
-                crossOrigin="anonymous"
-            >
-                <source src="/Landing.mp3" type="audio/mpeg" />
-            </audio>
+            />
         </div>
     );
 }
