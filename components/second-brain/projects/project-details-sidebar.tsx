@@ -3,10 +3,11 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { X, ChevronDown, Check, FileText, Link as LinkIcon, Download, Plus, Trash2, Lock, AlertTriangle, AlertOctagon, Activity, Square, Calendar } from 'lucide-react'
+import { Sparkles, X, ChevronDown, Check, FileText, Link as LinkIcon, Download, Plus, Trash2, Lock, AlertTriangle, AlertOctagon, Activity, Square, Calendar } from 'lucide-react'
 import { ProjectEntry, calculateProgress } from './project-utils'
 import { Bebas_Neue } from '@/lib/font-shim'
-import { Entry } from '@/lib/data-store'
+import { Entry, dataStore } from '@/lib/data-store'
+import { cn } from '@/lib/utils'
 import { ProjectAnalyticsModule } from './project-analytics-module'
 import { generateAnalytics } from './project-analytics'
 import { ProjectCalendar } from './project-calendar'
@@ -99,13 +100,18 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                         {getDeadlineText()}
                                     </span>
                                 </div>
-                                <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
+                                <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden border border-white/[0.03]">
                                     <div
-                                        className={`h-full transition-all duration-500 ${project.data.ragStatus === 'Red' ? 'bg-rose-500' :
-                                            project.data.ragStatus === 'Amber' ? 'bg-amber-500' : 'bg-emerald-500'
-                                            }`}
+                                        className={cn(
+                                            "h-full transition-all duration-1000 ease-out relative overflow-hidden",
+                                            progress > 0 
+                                                ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]" 
+                                                : "bg-white/10"
+                                        )}
                                         style={{ width: `${progress}%` }}
-                                    />
+                                    >
+                                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -146,7 +152,63 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                 </CollapsibleSection>
 
                                 <CollapsibleSection title="Linked Tasks" count={linkedTasks.length} defaultOpen>
-                                    <div className="space-y-2">
+                                    <div className="space-y-3">
+                                        {/* AI Architect Trigger for Empty Projects */}
+                                        {linkedTasks.length === 0 && (
+                                            <button
+                                                onClick={async () => {
+                                                    const { sileo } = await import('sileo')
+                                                    const { generateProjectPlan } = await import('@/app/actions/project-architect')
+                                                    const { dataStore } = await import('@/lib/data-store')
+                                                    
+                                                    try {
+                                                        sileo.info({ description: 'Architecting your neural roadmap...' })
+                                                        const habit = habits.find(h => h.id === project.data.Habit)
+                                                        const habitName = habit?.data['Habit Name'] || 'General Deep Work'
+                                                        
+                                                        const aiTasks = await generateProjectPlan(
+                                                            getProjectTitle(project),
+                                                            project.data.description || getProjectTitle(project),
+                                                            habitName,
+                                                            project.data.startDate || new Date().toISOString(),
+                                                            project.data.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+                                                        )
+
+                                                        for (const task of aiTasks) {
+                                                            if (onCreateTask) {
+                                                                onCreateTask({
+                                                                    id: crypto.randomUUID(),
+                                                                    microappId: 'tasks-sb',
+                                                                    data: {
+                                                                        Title: task.title,
+                                                                        Status: 'backlog',
+                                                                        Project: project.id,
+                                                                        Habit: project.data.Habit,
+                                                                        DueDate: task.data.scheduled_date,
+                                                                        Duration: task.data.duration_mins,
+                                                                        Priority: task.data.is_essential ? 'High' : 'Medium',
+                                                                        Notes: `${task.data.description}\n\nAI Tip: ${task.data.professional_tip}`
+                                                                    }
+                                                                })
+                                                            }
+                                                        }
+                                                        sileo.success({ description: `Project architecture complete: ${aiTasks.length} tasks committed.` })
+                                                    } catch (e: any) {
+                                                        sileo.error({ description: 'Neural Architect Offline: ' + e.message })
+                                                    }
+                                                }}
+                                                className="w-full p-6 border-2 border-dashed border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 rounded-xl transition-all group flex flex-col items-center gap-3 text-center"
+                                            >
+                                                <div className="p-3 bg-amber-500/20 rounded-full text-amber-500 group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                                                    <Sparkles className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-white uppercase tracking-widest group-hover:text-amber-500 transition-colors">Neural Roadmap Engine</div>
+                                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-wider">Generate AI task structure based on project goals</p>
+                                                </div>
+                                            </button>
+                                        )}
+
                                         {/* Display Actual Linked Tasks */}
                                         {linkedTasks.map((task) => (
                                             <TaskDetailsSheet
@@ -159,12 +221,12 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                                             onClick={(e) => {
                                                                 e.stopPropagation() // Prevent sheet opening
                                                                 if (onUpdateTask) {
-                                                                    const isDone = task.data.Status === true || task.data.Status === 'Done'
-                                                                    onUpdateTask(task, { Status: isDone ? 'backlog' : true })
+                                                                    const isDone = task.data.Status === true || task.data.Status === 'Done' || task.data.Status === 'done'
+                                                                    onUpdateTask(task, { Status: isDone ? 'backlog' : 'done' })
                                                                 }
                                                             }}
                                                         >
-                                                            {task.data.Status === true || task.data.Status === 'Done' ? (
+                                                            {task.data.Status === true || task.data.Status === 'Done' || task.data.Status === 'done' ? (
                                                                 <div className="w-4 h-4 bg-emerald-500 rounded flex items-center justify-center text-black hover:bg-emerald-400 transition-colors">
                                                                     <Check className="w-3 h-3" />
                                                                 </div>
@@ -173,7 +235,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                                             )}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
-                                                            <div className={`text-sm font-medium truncate ${task.data.Status === true || task.data.Status === 'Done' ? 'text-white/30 line-through' : 'text-white/90'}`}>
+                                                            <div className={`text-sm font-medium truncate ${task.data.Status === true || task.data.Status === 'Done' || task.data.Status === 'done' ? 'text-white/30 line-through' : 'text-white/90'}`}>
                                                                 {getTaskTitle(task)}
                                                             </div>
                                                             <div className="flex items-center gap-2 mt-1">
@@ -193,12 +255,12 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                         ))}
 
                                         <button
-                                            className="w-full py-2 flex items-center justify-center gap-2 text-xs uppercase tracking-wider border border-dashed border-white/10 rounded-lg text-white/30 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all"
+                                            className="w-full py-2 flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] border border-dashed border-white/10 rounded-lg text-white/30 hover:text-white hover:border-white/30 hover:bg-white/5 transition-all font-bold"
                                             onClick={() => {
                                                 if (onCreateTask && project) {
                                                     onCreateTask({
                                                         id: crypto.randomUUID(),
-                                                        microappId: 'tasks',
+                                                        microappId: 'tasks-sb',
                                                         data: {
                                                             Title: 'New Project Task',
                                                             Status: 'backlog',
@@ -209,7 +271,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                                 }
                                             }}
                                         >
-                                            <Plus className="w-3 h-3" /> Create Linked Task
+                                            <Plus className="w-3 h-3" /> Create Manual Task
                                         </button>
                                     </div>
                                 </CollapsibleSection>

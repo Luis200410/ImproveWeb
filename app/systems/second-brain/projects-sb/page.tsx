@@ -66,6 +66,7 @@ export default function ProjectsPage() {
             setProjects(sorted)
             setTasks(allTasks) // Set the tasks state
             setAreas(areasData)
+            setHabits(habitsData)
 
             // Default to first area if configured
             if (areasData.length > 0 && !selectedAreaId) {
@@ -125,11 +126,18 @@ export default function ProjectsPage() {
     const selectedProject = projects.find(p => p.id === selectedId)
     const constraints = projects.filter(p => p.data.ragStatus === 'Red' || p.data.blockedBy)
 
-    // Filter projects by selected Area
-    // If selectedAreaId is 'unassigned', show projects with no area
+    // Filter projects by selected Area and only show non-archived ones in the main view
     const filteredProjects = selectedAreaId === 'unassigned'
-        ? projects.filter(p => !p.data.Area || p.data.Area === 'unassigned') // Double safety
-        : projects.filter(p => p.data.Area === selectedAreaId)
+        ? projects.filter(p => (!p.data.Area || p.data.Area === 'unassigned') && !(p.data as any).archived)
+        : projects.filter(p => p.data.Area === selectedAreaId && !(p.data as any).archived)
+
+    // Calculate archived count for the current area
+    const archivedCount = projects.filter(p => {
+        const matchesArea = selectedAreaId === 'unassigned'
+            ? (!p.data.Area || p.data.Area === 'unassigned')
+            : p.data.Area === selectedAreaId
+        return matchesArea && (p.data as any).archived
+    }).length
 
     return (
         <div className="min-h-screen bg-[#050505] text-white p-6 pb-32">
@@ -157,8 +165,8 @@ export default function ProjectsPage() {
                             <div className="tracking-wider">COMPLETED</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-amber-500 font-bold text-lg leading-none">{stats?.ragDistribution.Red || 0}</div>
-                            <div className="tracking-wider">CRITICAL</div>
+                            <div className="text-amber-500 font-bold text-lg leading-none">{archivedCount}</div>
+                            <div className="tracking-wider">ARCHIVED</div>
                         </div>
                         <div className="text-center">
                             <div className="text-blue-500 font-bold text-lg leading-none">{stats?.overallProgress || 0}%</div>
@@ -201,7 +209,7 @@ export default function ProjectsPage() {
                             projects={filteredProjects as any}
                             tasks={tasks}
                             areas={areas}
-                            statusOptions={['Active', 'On Hold', 'Completed']}
+                            statusOptions={['Inbox', 'Active', 'Done']}
                             onUpdateProject={async (id: string, updates: any) => {
                                 const project = projects.find(p => p.id === id)
                                 if (project) handleUpdateProject(project, updates)

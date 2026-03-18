@@ -49,11 +49,8 @@ export default function ArchiveSystem() {
         const allAreas = a as unknown as AreaEntry[]
         const allTasks = [...t1]
 
-        // IDENTIFY ARCHIVED ITEMS
-        // Projects: status === 'completed' OR explicitly 'archived' if we support it. 
-        // User said: "when a project hit archive... status property"
-        // Usually 'completed' IS the archive state in this system.
-        const archivedProjects = allProjects.filter(p => p.data.status === 'completed' || (p.data as any).archived === true)
+        // Projects: status === 'done' OR explicitly 'archived' if we support it. 
+        const archivedProjects = allProjects.filter(p => p.data.status === 'done' || (p.data as any).archived === true)
 
         // Areas: User said "if an area is archive". We don't have an archive status yet.
         // Let's assume we filter by a new property 'archived' or 'ragStatus' === 'Red' (unlikely).
@@ -71,6 +68,25 @@ export default function ArchiveSystem() {
             projects: allProjects // Needed to find projects for an Area
         })
         setLoading(false)
+    }
+    const handleUnarchive = async (type: 'project' | 'area', id: string) => {
+        const storeName = type === 'project' ? 'projects-sb' : 'areas-sb'
+        const entry = type === 'project' 
+            ? archivedData.projects.find(p => p.id === id) 
+            : archivedData.areas.find(a => a.id === id)
+            
+        if (entry) {
+            // Update the entry to set archived to false
+            const newData = { archived: false }
+            // updateEntry merges the provided data with existing data
+            await dataStore.updateEntry(id, newData)
+            await loadData()
+            
+            // If we are viewing the thing we just unarchived, clear selection
+            if (selection?.id === id) {
+                setSelection(null)
+            }
+        }
     }
 
     useEffect(() => {
@@ -187,7 +203,16 @@ export default function ArchiveSystem() {
                                 <ChevronRight className="w-3 h-3" />
                                 <span className="text-white">{content.title}</span>
                             </div>
-                            <h2 className={`${playfair.className} text-5xl text-white mb-4`}>{content.title}</h2>
+                            <div className="flex items-center justify-between gap-4 mb-4">
+                                <h2 className={`${playfair.className} text-5xl text-white`}>{content.title}</h2>
+                                <button 
+                                    onClick={() => handleUnarchive(selection!.type, selection!.id)}
+                                    className="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 flex items-center gap-3 transition-all group"
+                                >
+                                    <CornerUpLeft className="w-4 h-4 text-white/40 group-hover:text-white group-hover:-translate-x-1 transition-all" />
+                                    <span className="text-sm font-bold tracking-widest uppercase">Unarchive</span>
+                                </button>
+                            </div>
                         </header>
 
                         {/* If Area View: Show Projects */}

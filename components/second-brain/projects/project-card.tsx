@@ -35,7 +35,7 @@ export function ProjectCard({ project, onClick, linkedTasks = [] }: ProjectCardP
     const priority = data.priority || 'Low'
     const ragStatus = data.ragStatus || 'Green'
     const blockedBy = data.blockedBy
-    const complexity = data.complexity || 'M'
+    const complexity = data.complexity || '3'
     const deadline = getProjectDeadline(project)
     const subtasks = data.subtasks || []
 

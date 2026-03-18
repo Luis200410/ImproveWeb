@@ -47,9 +47,9 @@ export function ProjectForge({ project, onUpdate, onDelete }: ProjectForgeProps)
                 </label>
                 <div className="grid grid-cols-3 gap-1">
                     {[
-                        { id: 'backlog', label: 'Inbox', color: 'border-white/20 text-white/50 hover:bg-white/5' },
-                        { id: 'active', label: 'Review', color: 'border-amber-500 text-amber-500 bg-amber-500/10' },
-                        { id: 'completed', label: 'Done', color: 'border-emerald-500 text-emerald-500 bg-emerald-500/10' }
+                        { id: 'inbox', label: 'Inbox', color: 'border-white/20 text-white/50 hover:bg-white/5' },
+                        { id: 'active', label: 'Active', color: 'border-blue-500 text-blue-500 bg-blue-500/10 shadow-[0_0_10px_rgba(59,130,246,0.2)]' },
+                        { id: 'done', label: 'Done', color: 'border-emerald-500 text-emerald-500 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.2)]' }
                     ].map(status => (
                         <button
                             key={status.id}
@@ -91,14 +91,14 @@ export function ProjectForge({ project, onUpdate, onDelete }: ProjectForgeProps)
                     <label className="text-[9px] text-white/30 uppercase tracking-widest flex items-center gap-2">
                         <Layers className="w-3 h-3" /> Complexity
                     </label>
-                    <div className="grid grid-cols-3 gap-1">
-                        {['S', 'M', 'L'].map(c => (
+                    <div className="grid grid-cols-5 gap-1">
+                        {['1', '2', '3', '4', '5'].map(c => (
                             <button
                                 key={c}
                                 onClick={() => updateField('complexity', c)}
                                 className={`
                                     py-1.5 text-[10px] font-mono border rounded transition-all
-                                    ${data.complexity === c ? 'bg-white/10 border-white text-white' : 'border-white/10 text-white/30 hover:border-white/30'}
+                                    ${data.complexity === c ? 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'border-white/10 text-white/30 hover:border-white/30'}
                                 `}
                             >
                                 {c}
@@ -108,22 +108,19 @@ export function ProjectForge({ project, onUpdate, onDelete }: ProjectForgeProps)
                 </div>
             </div>
 
-            {/* Data Management */}
-            {(data.status === 'completed' || onDelete) && (
                 <div className="pt-4 mt-6 border-t border-white/5 space-y-2">
                     <label className="text-[9px] text-white/30 uppercase tracking-widest flex items-center gap-2">
                         <Activity className="w-3 h-3" /> Data Management
                     </label>
                     <div className="flex gap-2">
-                        {data.status === 'completed' && !(data as any).archived && (
+                        {!(data as any).archived ? (
                             <button
                                 onClick={() => updateField('archived' as any, true)}
                                 className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white/50 hover:bg-white/5 hover:text-white rounded transition-all"
                             >
                                 Archive Project
                             </button>
-                        )}
-                        {(data as any).archived && (
+                        ) : (
                             <button
                                 onClick={() => updateField('archived' as any, false)}
                                 className="flex-1 py-2 text-[10px] font-bold uppercase tracking-wider border border-white/10 text-white/50 hover:bg-white/5 hover:text-white rounded transition-all"
@@ -142,7 +139,6 @@ export function ProjectForge({ project, onUpdate, onDelete }: ProjectForgeProps)
                         )}
                     </div>
                 </div>
-            )}
         </div>
     )
 }

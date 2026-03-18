@@ -19,7 +19,7 @@ export interface ProjectData {
     deadline: string;  // ISO Date
 
     // Complexity (Scope)
-    complexity: 'XS' | 'S' | 'M' | 'L' | 'XL';
+    complexity: '1' | '2' | '3' | '4' | '5';
 
     // ROI Priority
     priority: 'High' | 'Medium' | 'Low';
@@ -28,7 +28,7 @@ export interface ProjectData {
     blockedBy?: string; // Optional text description of blocker
 
     // Status (Kanban)
-    status: 'backlog' | 'active' | 'completed';
+    status: 'inbox' | 'active' | 'done';
 
     // Extended Details (Sidebar)
     notes?: { id: string, title: string, content: string, createdAt: string }[];
@@ -39,9 +39,14 @@ export type ProjectEntry = Entry & { data: ProjectData };
 
 // 2. Logic & Computed Values
 
-export const calculateProgress = (subtasks: { completed: boolean }[] = []): number => {
+export const calculateProgress = (subtasks: any[] = []): number => {
     if (!subtasks || subtasks.length === 0) return 0;
-    const completed = subtasks.filter(t => t.completed).length;
+    // Handle both {completed: boolean} and Entry objects with data.status
+    const completed = subtasks.filter(t => {
+        if (typeof t.completed === 'boolean') return t.completed;
+        const status = t.data?.status || t.data?.Status;
+        return status === 'done' || status === 'Done' || status === 'completed';
+    }).length;
     return Math.round((completed / subtasks.length) * 100);
 };
 
@@ -88,8 +93,8 @@ export interface ProjectStats {
 export const calculateProjectStats = (projects: ProjectEntry[]): ProjectStats => {
     const totalProjects = projects.length;
     const activeProjects = projects.filter(p => p.data.status === 'active');
-    const completedProjects = projects.filter(p => p.data.status === 'completed');
-    const backlogProjects = projects.filter(p => p.data.status === 'backlog');
+    const completedProjects = projects.filter(p => p.data.status === 'done');
+    const inboxProjects = projects.filter(p => p.data.status === 'inbox');
 
     // Overall Progress (Average of active projects only)
     const totalActiveProgress = activeProjects.reduce((sum, p) => sum + calculateProgress(p.data.subtasks), 0);
@@ -112,7 +117,7 @@ export const calculateProjectStats = (projects: ProjectEntry[]): ProjectStats =>
         totalProjects,
         activeCount: activeProjects.length,
         completedCount: completedProjects.length,
-        backlogCount: backlogProjects.length,
+        backlogCount: inboxProjects.length,
         overallProgress,
         roiDistribution,
         ragDistribution

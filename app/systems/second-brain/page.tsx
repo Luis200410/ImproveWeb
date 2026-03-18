@@ -51,7 +51,7 @@ export default function SecondBrainPage() {
     // Load Data
     const loadData = async () => {
         if (!userId || userId === 'defaultUser') return
-        
+
         try {
             // Tasks
             const tasksRaw = await dataStore.getEntries('tasks-sb', userId)
@@ -139,39 +139,13 @@ export default function SecondBrainPage() {
                     <span className="uppercase tracking-[0.3em] text-xs">Second Brain</span>
                 </div>
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8">
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl">
-                                {system.icon}
-                            </div>
-                            <div>
-                                <h1 className={`${playfair.className} text-5xl md:text-6xl font-bold tracking-tight text-white`}>
-                                    {system.name}
-                                </h1>
-                                <p className="text-white/40 text-xs md:text-sm uppercase tracking-[0.3em] font-light mt-1">
-                                    Strategic Cognitive Architecture
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <motion.button
-                            whileHover={{ rotate: 180 }}
-                            transition={{ duration: 0.5 }}
-                            onClick={() => loadData()}
-                            className="p-3 rounded-full bg-white/5 border border-white/10 text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-                        >
-                            <RefreshCw className="w-5 h-5" />
-                        </motion.button>
-                        <StatsHeader 
-                            productivity={productivityScore} 
-                            taskMetrics={taskMetrics} 
-                            projectMetrics={projectMetrics} 
-                        />
-                    </div>
+                {/* Header Section: Integrated Stats only */}
+                <div className="flex justify-end mb-16">
+                    <StatsHeader 
+                        productivity={productivityScore} 
+                        taskMetrics={taskMetrics} 
+                        projectMetrics={projectMetrics} 
+                    />
                 </div>
 
                 {/* Main Grid Layout */}
@@ -180,14 +154,14 @@ export default function SecondBrainPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="lg:col-span-12 relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden min-h-[500px] flex items-center justify-center p-8 group"
+                        className="lg:col-span-12 relative bg-white/[0.02] border border-white/5 rounded-3xl overflow-hidden min-h-[850px] flex items-center justify-center p-8 group shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]"
                     >
                         <div className="absolute top-8 left-8 flex items-center gap-2 z-10">
                             <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                            <span className="text-xs font-mono uppercase tracking-widest text-white/50">Core Map</span>
+                            <span className="text-xs font-mono uppercase tracking-widest text-white/50 font-bold">Neural Architecture Map</span>
                         </div>
 
-                        <div className="scale-75 md:scale-90 lg:scale-100 transition-transform">
+                        <div className="w-full h-full flex items-center justify-center">
                             <KnowledgeHub
                                 counts={counts}
                                 taskMetrics={taskMetrics}
@@ -195,8 +169,6 @@ export default function SecondBrainPage() {
                                 productivity={productivityScore}
                             />
                         </div>
-
-
                     </motion.div>
                 </div>
 

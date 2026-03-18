@@ -12,8 +12,8 @@ const playfair = Playfair_Display({ subsets: ['latin'] })
 const inter = Inter({ subsets: ['latin'] })
 
 interface ProjectsDashboardProps {
-    projects: Entry[]
-    tasks: Entry[] // Needed for progress calculation
+    projects: any[]
+    tasks: any[] // Needed for progress calculation
     areas: Entry[] // Needed for area mapping
     onUpdateProject: (projectId: string, updates: Record<string, any>) => void
     onEditProject: (project: Entry) => void
@@ -40,13 +40,16 @@ export function ProjectsDashboard({
     // Helper: Calculate progress for a project
     const getProjectProgress = (projectId: string) => {
         const projectTasks = tasks.filter(t => {
-            const projectRel = t.data['Project']
+            const projectRel = t.data.Project || t.data.projectId || t.data.project
             const relId = typeof projectRel === 'object' ? projectRel?.id : projectRel
             return relId === projectId
         })
-
+        
         if (projectTasks.length === 0) return 0
-        const completed = projectTasks.filter(t => t.data['Status'] === 'Done').length
+        const completed = projectTasks.filter(t => {
+            const s = t.data.status || t.data.Status
+            return s === 'done' || s === 'Done' || s === 'completed'
+        }).length
         return Math.round((completed / projectTasks.length) * 100)
     }
 
@@ -54,22 +57,32 @@ export function ProjectsDashboard({
     const getAreaName = (areaRel: any) => {
         if (!areaRel) return null
         const areaId = typeof areaRel === 'object' ? areaRel.id : areaRel
+        // If areaId is already a name and doesn't match a uuid, fallback
         const area = areas.find(a => a.id === areaId)
-        return area?.data['Area Name'] || area?.data['Name'] || 'Unassigned Area'
+        if (area) return area.data['Area Name'] || area.data['Name']
+        return areaId // It might be the name itself (historical data)
     }
 
     // Group projects by status
     const columns = useMemo(() => {
-        const cols: Record<string, Entry[]> = {}
+        const cols: Record<string, any[]> = {}
         columnsToUse.forEach(s => cols[s] = [])
         projects.forEach(p => {
-            const status = p.data['Status']
-            if (status && cols[status]) {
-                cols[status].push(p)
-            } else {
-                // Fallback to the first column if status is unrecognized or missing
-                cols[columnsToUse[0]].push(p)
+            // Map internal 'status' to column label
+            const rawStatus = p.data.status || 'inbox'
+            
+            // Map common internal status keys to column names
+            const statusMap: Record<string, string> = {
+                'active': 'Active',
+                'inbox': 'Inbox',
+                'done': 'Done'
             }
+
+            const mappedStatus = statusMap[rawStatus.toLowerCase()] || rawStatus
+            
+            // Find the column that matches the mapped status
+            const finalCol = columnsToUse.find(c => c.toLowerCase() === mappedStatus.toLowerCase()) || columnsToUse[0]
+            cols[finalCol].push(p)
         })
         return cols
     }, [projects, columnsToUse])
@@ -94,7 +107,14 @@ export function ProjectsDashboard({
         setDragOverColumn(null)
         const projectId = e.dataTransfer.getData('text/plain')
         if (projectId) {
-            onUpdateProject(projectId, { 'Status': status })
+            // Map column label back to internal status ID
+            const statusMap: Record<string, string> = {
+                'Inbox': 'inbox',
+                'Active': 'active',
+                'Done': 'done'
+            }
+            const internalStatus = statusMap[status] || status.toLowerCase()
+            onUpdateProject(projectId, { status: internalStatus })
         }
         setDraggedProject(null)
     }
@@ -141,9 +161,12 @@ export function ProjectsDashboard({
                             <AnimatePresence mode="popLayout">
                                 {columns[col].map((project) => {
                                     const progress = getProjectProgress(project.id)
-                                    const areaName = getAreaName(project.data['Area'])
-                                    const coverImage = project.data['Cover Image']
-
+                                    const areaName = getAreaName(project.data.Area || project.data['Area'])
+                                    const coverImage = project.data.coverImage || project.data['Cover Image']
+                                    const title = project.data.title || project.data['Project Name'] || project.data.Title || 'Untitled Project'
+                                    const description = project.data.description || project.data['Description']
+                                    const priority = project.data.priority || project.data['Priority']
+                                    const deadline = project.data.deadline || project.data['Deadline']
                                     return (
                                         <motion.div
                                             key={project.id}
@@ -166,7 +189,7 @@ export function ProjectsDashboard({
                                                 <div className="relative w-full h-32 overflow-hidden">
                                                     <Image
                                                         src={coverImage}
-                                                        alt={project.data['Project Name'] || ''}
+                                                        alt={title}
                                                         fill
                                                         className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                                                     />
@@ -193,53 +216,70 @@ export function ProjectsDashboard({
                                                 </div>
 
                                                 <h4 className={`${playfair.className} text-xl font-bold text-white mb-3 leading-[1.2] group-hover:text-blue-400 transition-colors`}>
-                                                    {project.data['Project Name'] || 'Untitled Project'}
+                                                    {title}
                                                 </h4>
 
-                                                {project.data['Description'] && (
+                                                {description && (
                                                     <p className="text-white/40 text-sm line-clamp-2 mb-6 font-light leading-relaxed">
-                                                        {project.data['Description']}
+                                                        {description}
                                                     </p>
                                                 )}
 
                                                 {/* Progress Section */}
-                                                <div className="space-y-3">
+                                                <div className="space-y-4">
                                                     <div className="flex justify-between items-center text-[10px] uppercase tracking-widest font-semibold">
                                                         <span className="text-white/30">Completion</span>
                                                         <span className={cn(
-                                                            "transition-colors duration-300",
-                                                            progress === 100 ? "text-emerald-400" : "text-white/60"
+                                                            "transition-colors duration-300 font-mono",
+                                                            progress > 0 ? "text-emerald-400" : "text-white/60"
                                                         )}>{progress}%</span>
                                                     </div>
-                                                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/[0.03]">
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${progress}%` }}
-                                                            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                                                            className={cn(
-                                                                "h-full rounded-full relative overflow-hidden",
-                                                                progress === 100
-                                                                    ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                                                                    : "bg-gradient-to-r from-blue-500 to-indigo-400 shadow-[0_0_10px_rgba(59,130,246,0.3)]"
-                                                            )}
+                                                    
+                                                    {progress === 0 && tasks.filter(t => {
+                                                        const pRel = t.data.Project || t.data.projectId || t.data.project
+                                                        return (typeof pRel === 'object' ? pRel?.id : pRel) === project.id
+                                                    }).length === 0 ? (
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                onEditProject(project)
+                                                            }}
+                                                            className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-all flex items-center justify-center gap-2 group"
                                                         >
-                                                            <div className="absolute inset-0 bg-white/20 animate-pulse" />
-                                                        </motion.div>
-                                                    </div>
+                                                            <Plus className="w-3 h-3 group-hover:rotate-90 transition-transform" />
+                                                            ADD PROJECT TASK
+                                                        </button>
+                                                    ) : (
+                                                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/[0.03]">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${progress}%` }}
+                                                                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                                                                className={cn(
+                                                                    "h-full rounded-full relative overflow-hidden",
+                                                                    progress > 0
+                                                                        ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+                                                                        : "bg-white/10"
+                                                                )}
+                                                            >
+                                                                <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                                            </motion.div>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Meta Info */}
                                                 <div className="flex items-center justify-between gap-3 pt-6 mt-6 border-t border-white/5">
                                                     <div className="flex items-center gap-4">
-                                                        {project.data['Deadline'] && (
+                                                        {deadline && (
                                                             <div className="flex items-center gap-1.5 text-[10px] text-white/30 font-medium">
                                                                 <Calendar className="w-3 h-3" />
-                                                                <span>{new Date(project.data['Deadline']).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                                                <span>{new Date(deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                                                             </div>
                                                         )}
-                                                        {project.data['Priority'] && (
+                                                        {priority && (
                                                             <div className="text-[10px] text-white/30 font-medium px-2 py-0.5 rounded border border-white/5 bg-white/[0.02]">
-                                                                {project.data['Priority']}
+                                                                {priority}
                                                             </div>
                                                         )}
                                                     </div>
