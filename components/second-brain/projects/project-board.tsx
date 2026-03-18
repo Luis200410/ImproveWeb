@@ -24,23 +24,23 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
 
     // Internal state for optimistic updates
     const [columns, setColumns] = useState<{ [key: string]: ProjectEntry[] }>({
-        backlog: [],
+        inbox: [],
         active: [],
-        completed: []
+        done: []
     })
 
     useEffect(() => {
         // Group by status
-        // Default to 'backlog' if status is missing or unknown
-        const backlog = projects.filter(p => !p.data.status || p.data.status === 'backlog')
+        // Default to 'inbox' if status is missing or unknown
+        const inbox = projects.filter(p => !p.data.status || p.data.status === 'inbox')
         const active = projects.filter(p => p.data.status === 'active')
-        const completed = projects.filter(p => p.data.status === 'completed')
+        const done = projects.filter(p => p.data.status === 'done' || (p.data.status as string) === 'completed')
 
-        setColumns({ backlog, active, completed })
+        setColumns({ inbox, active, done })
     }, [projects])
 
     const handleDragEnd = (result: DropResult) => {
-        const { source, destination, draggableId } = result
+        const { source, destination } = result
         if (!destination) return
 
         if (source.droppableId === destination.droppableId && source.index === destination.index) return
@@ -65,7 +65,7 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
                 [destColId]: destList
             })
             // Update Data Store
-            onUpdateProject(movedProject, { status: destColId as 'backlog' | 'active' | 'completed' })
+            onUpdateProject(movedProject, { status: destColId as 'inbox' | 'active' | 'done' })
         }
     }
 
@@ -73,10 +73,10 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
         <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex h-full gap-6 overflow-x-auto pb-4">
                 <BoardColumn
-                    id="backlog"
+                    id="inbox"
                     title="/INBOX"
-                    count={columns.backlog.length}
-                    projects={columns.backlog}
+                    count={columns.inbox.length}
+                    projects={columns.inbox}
                     onProjectClick={onProjectClick}
                     accentColor="text-white/50"
                     tasks={tasks}
@@ -91,10 +91,10 @@ export function ProjectBoard({ projects, onUpdateProject, onProjectClick, tasks 
                     tasks={tasks}
                 />
                 <BoardColumn
-                    id="completed"
+                    id="done"
                     title="/DONE"
-                    count={columns.completed.length}
-                    projects={columns.completed}
+                    count={columns.done.length}
+                    projects={columns.done}
                     onProjectClick={onProjectClick}
                     accentColor="text-emerald-500"
                     tasks={tasks}
