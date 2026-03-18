@@ -41,7 +41,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
         complexity: '3',
         priority: 'Medium',
         ragStatus: 'Green',
-        status: 'backlog',
+        status: 'inbox',
         subtasks: [],
         blockedBy: '',
         Area: defaultAreaId
@@ -127,7 +127,7 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
             complexity: form.complexity || '3',
             priority: form.priority || 'Medium',
             blockedBy: form.blockedBy,
-            status: form.status || 'backlog',
+            status: form.status || 'inbox',
             Area: form.Area,
             Habit: selectedHabitId || undefined
         } as ProjectData
