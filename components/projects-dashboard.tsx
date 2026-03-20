@@ -13,6 +13,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 import { ProjectCard } from '@/components/second-brain/projects/project-card'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
+import { getProjectTitle } from './second-brain/utils'
 
 interface ProjectsDashboardProps {
     projects: ProjectEntry[]
@@ -45,8 +46,8 @@ export function ProjectsDashboard({
         const cols: Record<string, any[]> = {}
         columnsToUse.forEach(s => cols[s] = [])
         projects.forEach(p => {
-            // Map internal 'status' to column label
-            const rawStatus = p.data.status || 'inbox'
+            // Map internal 'status' to column label (handle both lowercase and uppercase variations)
+            const rawStatus = p.data.status || (p.data as any).Status || 'inbox'
             
             // Map common internal status keys to column names
             const statusMap: Record<string, string> = {
@@ -157,10 +158,10 @@ export function ProjectsDashboard({
                                         <ProjectCard
                                             project={project}
                                             onClick={() => onEditProject(project)}
-                                            linkedTasks={tasks.filter(t => {
+                                            linkedTasks={tasks?.filter(t => {
                                                 const pRel = t.data.Project || t.data.projectId || t.data.project
                                                 const relId = typeof pRel === 'object' ? pRel?.id : pRel
-                                                return relId === project.id
+                                                return relId === project.id || relId === getProjectTitle(project)
                                             })}
                                         />
                                     </motion.div>

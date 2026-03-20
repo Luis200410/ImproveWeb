@@ -25,6 +25,7 @@ import { HabitDetailsSidebar } from '@/components/second-brain/habits/habit-deta
 import { UnexpectedEventsSheet } from '@/components/second-brain/habits/unexpected-events-sheet'
 import { ChangeHabitsSheet } from '@/components/second-brain/habits/change-habits-sheet'
 import { DietDetailsSidebar } from '@/components/body/diet-details-sidebar'
+import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
 
 import { MicroappHeader } from '@/components/microapp-header'
 import { ProjectsDashboard } from '@/components/projects-dashboard'
@@ -605,12 +606,12 @@ function MicroappContent() {
                             </AnimatePresence>
                             <div className="max-w-7xl mx-auto px-8 py-12">
                                 <ProjectsDashboard
-                                    projects={entries}
+                                    projects={entries as unknown as ProjectEntry[]}
                                     tasks={tasks}
                                     areas={areas}
                                     statusOptions={microapp.fields.find(f => f.name === 'Status')?.options}
                                     onUpdateProject={handleUpdateProject}
-                                    onEditProject={handleEditEntry}
+                                    onEditProject={handleEditEntry as any}
                                     onCreateProject={handleCreateProject}
                                 />
                             </div>
