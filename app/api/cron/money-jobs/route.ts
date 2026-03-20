@@ -152,7 +152,7 @@ async function runSubscriptionVerificationJob() {
     if (!pendingCancellations) return;
 
     // Filter down to the targeted ones via JSON checking
-    const targetSubs = pendingCancellations.filter: any(entry => 
+    const targetSubs = pendingCancellations.filter((entry: any) => 
         entry.data.type === 'subscription' && 
         entry.data.action === 'edit' && 
         entry.data.editValue === 'Cancel' 
