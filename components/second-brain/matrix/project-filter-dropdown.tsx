@@ -28,36 +28,61 @@ export function ProjectFilterDropdown({ projects, selectedProjectId, onSelectPro
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-white/70 rounded px-3 py-1.5 transition-colors focus:outline-none focus:border-amber-500/50 group">
+                <button className="flex items-center gap-3 bg-[#050505] border border-white/10 hover:border-white/20 px-5 py-2 rounded-lg transition-all focus:outline-none group">
                     <Folder className="w-3 h-3 text-white/40 group-hover:text-amber-500 transition-colors" />
-                    <span className="max-w-[150px] truncate">
+                    <span className="text-[10px] uppercase font-mono font-bold tracking-[0.2em] text-white/70 group-hover:text-white max-w-[150px] truncate">
                         {selectedProject ? (selectedProject.data.title || 'Untitled Project') : 'ALL PROJECTS'}
                     </span>
-                    <ChevronDown className="w-3 h-3 text-white/30" />
+                    <ChevronDown className="w-3 h-3 text-white/20 group-hover:text-white/40 transition-colors" />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 bg-[#0A0A0A] border-white/10 text-white/70" align="end">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-white/30 font-mono">
+            <DropdownMenuContent 
+                className="w-[280px] bg-[#0A0A0A]/95 backdrop-blur-xl border-white/10 p-2 rounded-xl" 
+                align="end"
+                sideOffset={8}
+            >
+                <DropdownMenuLabel className="px-3 py-2 text-[9px] font-mono uppercase tracking-[0.3em] text-white/30">
                     Filter View
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-white/10" />
-                <DropdownMenuRadioGroup value={selectedProjectId || ''} onValueChange={(val) => onSelectProject(val || null)}>
-                    <DropdownMenuRadioItem
-                        value=""
-                        className="text-xs focus:bg-white/10 focus:text-white cursor-pointer"
+                
+                <DropdownMenuSeparator className="bg-white/5 mx-1" />
+                
+                <div className="space-y-1 mt-1">
+                    <DropdownMenuItem
+                        onClick={() => onSelectProject(null)}
+                        className={`
+                            relative flex items-center px-4 py-3 rounded-lg text-[11px] font-bold tracking-widest uppercase cursor-pointer transition-all
+                            ${!selectedProjectId
+                                ? 'bg-white/5 text-white'
+                                : 'text-white/40 hover:bg-white/[0.03] hover:text-white'
+                            }
+                        `}
                     >
-                        ALL PROJECTS
-                    </DropdownMenuRadioItem>
+                        {!selectedProjectId && (
+                            <div className="absolute left-1.5 w-1 h-1 rounded-full bg-emerald-500" />
+                        )}
+                        <span className="pl-1">ALL PROJECTS</span>
+                    </DropdownMenuItem>
+
                     {projects.map(p => (
-                        <DropdownMenuRadioItem
+                        <DropdownMenuItem
                             key={p.id}
-                            value={p.id}
-                            className="text-xs focus:bg-white/10 focus:text-white cursor-pointer"
+                            onClick={() => onSelectProject(p.id)}
+                            className={`
+                                relative flex items-center px-4 py-3 rounded-lg text-[11px] font-bold tracking-widest uppercase cursor-pointer transition-all
+                                ${selectedProjectId === p.id
+                                    ? 'bg-white/5 text-white'
+                                    : 'text-white/40 hover:bg-white/[0.03] hover:text-white'
+                                }
+                            `}
                         >
-                            {p.data.title || 'Untitled Project'}
-                        </DropdownMenuRadioItem>
+                            {selectedProjectId === p.id && (
+                                <div className="absolute left-1.5 w-1 h-1 rounded-full bg-emerald-500" />
+                            )}
+                            <span className="pl-1 truncate">{p.data.title || 'Untitled Project'}</span>
+                        </DropdownMenuItem>
                     ))}
-                </DropdownMenuRadioGroup>
+                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     )

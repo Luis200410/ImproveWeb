@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react'
 import { Extension } from '@tiptap/core'
 import Suggestion from '@tiptap/suggestion'
 import { Editor, Range } from '@tiptap/react'
@@ -30,58 +30,45 @@ interface CommandItemProps {
     command: (props: { editor: Editor; range: Range }) => void
 }
 
-const CommandList = ({
-    items,
-    command,
-    editor,
-    range,
-}: {
+const CommandList = forwardRef((props: {
     items: CommandItemProps[]
     command: any
     editor: any
     range: any
-}) => {
+}, ref) => {
+    const { items, command, editor, range } = props
     const [selectedIndex, setSelectedIndex] = useState(0)
-
-    const selectItem = useCallback(
-        (index: number) => {
-            const item = items[index]
-            if (item) {
-                command(item)
-            }
-        },
-        [command, items]
-    )
-
+    
+    // Reset selection when items change
     useEffect(() => {
-        const navigationHandler = () => {
-            return {
-                onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-                    if (event.key === 'ArrowUp') {
-                        setSelectedIndex((selectedIndex + items.length - 1) % items.length)
-                        return true
-                    }
-                    if (event.key === 'ArrowDown') {
-                        setSelectedIndex((selectedIndex + 1) % items.length)
-                        return true
-                    }
-                    if (event.key === 'Enter') {
-                        selectItem(selectedIndex)
-                        return true
-                    }
-                    return false
-                },
+        setSelectedIndex(0)
+    }, [items])
+
+    const selectItem = (index: number) => {
+        const item = items[index]
+        if (item) {
+            command(item)
+        }
+    }
+
+    useImperativeHandle(ref, () => ({
+        onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+            if (event.key === 'ArrowUp') {
+                setSelectedIndex((selectedIndex + items.length - 1) % items.length)
+                return true
             }
-        }
-        // This is a bit of a hack to expose the handler to the tiptap render function
-        // In a real plugin, we'd pass this via props or context properly, 
-        // but tiptap suggestion render is imperative.
-        // We'll attach it to the DOM element for now or just rely on the ref passed to the renderer.
-        (window as any)._slashCommandKeyHandler = navigationHandler().onKeyDown
-        return () => {
-            delete (window as any)._slashCommandKeyHandler
-        }
-    }, [items, selectedIndex, selectItem])
+            if (event.key === 'ArrowDown') {
+                setSelectedIndex((selectedIndex + 1) % items.length)
+                return true
+            }
+            if (event.key === 'Enter') {
+                selectItem(selectedIndex)
+                return true
+            }
+            return false
+        },
+    }), [items, selectedIndex, command]) // important dependencies
+
 
     // We need to listen to keydown events from the editor to drive the menu
     // The `suggestion` plugin handles this by calling `onKeyDown` in its renderer options.
@@ -91,31 +78,39 @@ const CommandList = ({
     // and we can pass a `ref` to it to call methods.
 
     return (
-        <div className="bg-[#1A1A1A] border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[300px] p-1">
-            <div className="px-2 py-1.5 text-[10px] uppercase tracking-widest text-white/30 font-mono border-b border-white/5 mb-1">
-                Neural Commands
+        <div className="bg-[#0A0A0A]/95 border border-white/10 rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-xl min-w-[280px] p-2 animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-3 py-2 text-[9px] uppercase tracking-[0.2em] text-white/30 font-mono border-b border-white/5 mb-2 flex items-center justify-between">
+                <span>Neural_Matrix_Commands</span>
+                <span className="bg-amber-500/10 text-amber-500/50 px-1.5 py-0.5 rounded">INTEL_DRIVEN</span>
             </div>
-            {items.map((item, index) => (
-                <button
-                    key={index}
-                    className={`flex items-center gap-3 w-full p-2 rounded text-left transition-colors ${index === selectedIndex ? 'bg-amber-500/10 text-amber-500' : 'hover:bg-white/5 text-white/60'
+            <div className="max-h-[300px] overflow-y-auto pr-1 custom-scrollbar space-y-0.5">
+                {items.map((item, index) => (
+                    <button
+                        key={index}
+                        className={`flex items-center gap-3 w-full p-2.5 rounded-lg text-left transition-all duration-200 group/item ${
+                            index === selectedIndex ? 'bg-amber-500/10 shadow-[inset_0_0_10px_rgba(245,158,11,0.1)]' : 'hover:bg-white/[0.03]'
                         }`}
-                    onClick={() => selectItem(index)}
-                >
-                    <div className={`p-1 rounded ${index === selectedIndex ? 'bg-amber-500/20' : 'bg-white/5'}`}>
-                        <item.icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                        <div className={`text-sm font-medium ${index === selectedIndex ? 'text-white' : ''}`}>
-                            {item.title}
+                        onClick={() => selectItem(index)}
+                    >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                            index === selectedIndex ? 'bg-amber-500/20 text-amber-500' : 'bg-white/5 text-white/40 group-hover/item:text-white/60'
+                        }`}>
+                            <item.icon className="w-4 h-4" />
                         </div>
-                        <div className="text-xs opacity-50">{item.description}</div>
-                    </div>
-                </button>
-            ))}
+                        <div className="flex-1 min-w-0">
+                            <div className={`text-[11px] font-bold uppercase tracking-wider ${index === selectedIndex ? 'text-white' : 'text-white/70'}`}>
+                                {item.title}
+                            </div>
+                            <div className="text-[9px] uppercase tracking-wide opacity-40 font-mono line-clamp-1">{item.description}</div>
+                        </div>
+                    </button>
+                ))}
+            </div>
         </div>
     )
-}
+})
+
+CommandList.displayName = 'CommandList'
 
 // --- Command Suggestions Definition ---
 
@@ -195,13 +190,10 @@ const getSuggestionItems = ({ query }: { query: string }) => {
         },
         {
             title: 'Todo List',
-            description: 'Track tasks with a todo list.',
+            description: 'Track tasks with a checklist.',
             icon: CheckSquare,
             command: ({ editor, range }: { editor: Editor; range: Range }) => {
-                // Requires TaskList extension if not already present
-                editor.chain().focus().deleteRange(range).toggleTaskList?.().run?.()
-                // Fallback if TaskList is not installed is tricky, but starter-kit usually doesn't create it.
-                // We'll stick to what we have or add it. Let's assume standard lists for now if it fails.
+                editor.chain().focus().deleteRange(range).toggleTaskList().run()
             },
         },
         {
@@ -225,13 +217,15 @@ const getSuggestionItems = ({ query }: { query: string }) => {
             description: 'Embed an image from a URL.',
             icon: ImageIcon,
             command: ({ editor, range }: { editor: Editor; range: Range }) => {
-                const url = window.prompt('Image URL')
-                if (url) {
-                    editor.chain().focus().deleteRange(range).setImage({ src: url }).run()
-                }
+                editor.chain().focus().deleteRange(range).run()
+                window.dispatchEvent(new CustomEvent('neural-editor-add-image', { detail: { editor } }))
             },
         },
-    ].filter((item) => item.title.toLowerCase().startsWith(query.toLowerCase()))
+    ].filter((item) => {
+        if (!query) return true
+        return item.title.toLowerCase().includes(query.toLowerCase()) || 
+               item.description.toLowerCase().includes(query.toLowerCase())
+    })
 }
 
 // --- Render Logic ---
@@ -276,17 +270,12 @@ const renderSuggestion = () => {
         },
 
         onKeyDown(props: any) {
-            // Forward key events to the React component
-            if ((window as any)._slashCommandKeyHandler) {
-                return (window as any)._slashCommandKeyHandler(props)
-            }
-
-            // Fallback navigation if ref approach failed (or use ref ref.current.onKeyDown)
             if (props.event.key === 'Escape') {
                 popup?.[0].hide()
                 return true
             }
-            return false
+
+            return (component?.ref as any)?.onKeyDown(props)
         },
 
         onExit() {

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowRight, Hash, Database } from 'lucide-react'
+import { ArrowRight, Hash, Rocket } from 'lucide-react'
 import { Entry } from '@/lib/data-store'
 
 interface NoteCardProps {
@@ -22,7 +22,6 @@ export function NoteCard({ note, isSelected, onClick, projectMap, areaMap, taskM
     const time = new Date(note.data.Date || note.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
     const projectName = note.data.Project ? projectMap[note.data.Project] : null
-    const areaName = note.data.Area ? areaMap[note.data.Area] : null
     const taskName = note.data.Task ? taskMap[note.data.Task] : null
 
     return (
@@ -43,13 +42,9 @@ export function NoteCard({ note, isSelected, onClick, projectMap, areaMap, taskM
             <div className="flex justify-between items-start mb-4 opacity-50 text-[10px] font-mono">
                 <div className="flex gap-2">
                     {projectName && (
-                        <span className="border border-blue-500/30 text-blue-400 px-1.5 py-0.5 rounded bg-blue-500/5">
-                            PRJ: {projectName.toUpperCase().slice(0, 10)}
-                        </span>
-                    )}
-                    {areaName && (
-                        <span className="border border-purple-500/30 text-purple-400 px-1.5 py-0.5 rounded bg-purple-500/5">
-                            AREA: {areaName.toUpperCase().slice(0, 10)}
+                        <span className="border border-blue-500/30 text-blue-400 px-1.5 py-0.5 rounded bg-blue-500/5 flex items-center gap-1">
+                            <Hash className="w-2.5 h-2.5" />
+                            {projectName.toUpperCase().slice(0, 10)}
                         </span>
                     )}
                 </div>
@@ -58,11 +53,10 @@ export function NoteCard({ note, isSelected, onClick, projectMap, areaMap, taskM
                 </div>
             </div>
 
-            {/* Task Badge (if exists) */}
             {taskName && (
                 <div className="mb-3 inline-flex items-center gap-2 px-2 py-1 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[9px] font-mono uppercase tracking-wider">
-                    <Database className="w-3 h-3" />
-                    TSK: {taskName.slice(0, 20)}
+                    <Rocket className="w-3 h-3" />
+                    {taskName.slice(0, 20)}
                 </div>
             )}
 

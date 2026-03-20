@@ -60,7 +60,7 @@ export function SystemSidebar({ systemId, className }: SystemSidebarProps) {
                     )}
                 >
                     <LayoutGrid className="w-4 h-4 opacity-70" />
-                    <span>Overview</span>
+                    <span>System Status</span>
                     {pathname === `/systems/${systemId}` && (
                         <motion.div
                             layoutId="active-nav"

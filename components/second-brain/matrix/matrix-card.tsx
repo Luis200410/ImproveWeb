@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Gem, Database, Rocket, Play, Pause, Check } from 'lucide-react'
+import { Gem, ListTodo, Rocket, Play, Pause, Check, Diamond, FileText, ArrowRight } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Entry } from '@/lib/data-store'
 import { TaskDetailsSheet } from '../task-details-sheet'
@@ -10,12 +11,40 @@ import { getTaskTitle } from '../utils'
 interface MatrixCardProps {
     task: Entry
     onAction?: (action: 'done' | 'wait' | 'exec') => void
+    onUpdate?: (updates: Partial<Entry['data']>) => void
+    onDelete?: () => void
 }
 
-export function MatrixCard({ task, onAction }: MatrixCardProps) {
-    const isDone = task.data?.Status === true
-    const isActive = task.data?.Status === 'active' // Assuming 'active' string for now or derived logic
+export function MatrixCard({ task, onAction, onUpdate, onDelete }: MatrixCardProps) {
+    const isDone = task.data?.Status === true || task.data?.Status === 'Done'
+    const isActive = task.data?.Status === 'active'
     const priority = task.data?.Priority || 'Medium'
+    const complexity = task.data?.Complexity || 'M'
+    const taskId = task.id.slice(0, 4).toUpperCase()
+    const router = useRouter()
+
+    const getComplexityLevel = () => {
+        switch (complexity) {
+            case 'L': return 3
+            case 'XL': return 3
+            case 'S': return 1
+            case 'M':
+            default: return 2
+        }
+    }
+
+    const getPriorityBars = () => {
+        switch (priority) {
+            case 'High': return 5
+            case 'Urgent': return 5
+            case 'Low': return 1
+            case 'Medium':
+            default: return 3
+        }
+    }
+
+    const complexityLevel = getComplexityLevel()
+    const priorityBars = getPriorityBars()
 
     // Status visual mapping
     const statusColor = isDone ? 'border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.1)]' :
@@ -25,6 +54,8 @@ export function MatrixCard({ task, onAction }: MatrixCardProps) {
     return (
         <TaskDetailsSheet
             task={task}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
             trigger={
                 <div className={cn(
                     "relative w-full bg-[#080808] rounded-xl p-5 border transition-all group hover:border-white/20 cursor-pointer text-left",
@@ -37,66 +68,65 @@ export function MatrixCard({ task, onAction }: MatrixCardProps) {
 
                     {/* Header: Icon + Metrics */}
                     <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             <div className={cn(
-                                "p-2 rounded-lg bg-white/5 border border-white/10",
-                                isDone ? "text-emerald-500" : "text-white/60"
+                                "w-12 h-12 rounded-xl flex items-center justify-center bg-white/5 border border-white/10 text-white/40 group-hover:text-amber-500 transition-colors"
                             )}>
-                                {priority === 'High' ? <Rocket className="w-4 h-4" /> :
-                                    priority === 'Low' ? <Database className="w-4 h-4" /> :
-                                        <Gem className="w-4 h-4" />}
+                                <ListTodo className="w-6 h-6" />
                             </div>
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="text-[10px] font-bold text-white/40 tracking-wider">P_LEVEL:</span>
-                                    <div className="flex gap-0.5">
-                                        <Gem className="w-3 h-3 text-amber-500 fill-amber-500" />
-                                        <Gem className="w-3 h-3 text-amber-500 fill-amber-500" />
-                                        <Gem className="w-3 h-3 text-white/10" />
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3].map((level) => (
+                                            <Diamond
+                                                key={level}
+                                                className={cn(
+                                                    "w-3 h-3",
+                                                    level <= complexityLevel ? "text-orange-500 fill-orange-500" : "text-white/10"
+                                                )}
+                                            />
+                                        ))}
                                     </div>
                                 </div>
-                                <div className="text-[9px] font-mono text-white/30">ID: SB-X-{task.id.slice(0, 4).toUpperCase()}</div>
+                                <div className="text-[9px] font-mono text-white/20 tracking-wider">ID: SB-X-{taskId}</div>
                             </div>
                         </div>
-                        {/* Waveform graphic placeholder */}
-                        <div className="w-12 h-6 flex items-end gap-0.5 opacity-30">
-                            {[4, 8, 3, 6, 2, 7, 5].map((h, i) => (
-                                <div key={i} className="w-1 bg-white" style={{ height: `${h * 10}%` }} />
+
+                        {/* Priority Bars */}
+                        <div className="flex items-end gap-1 h-8">
+                            {[1, 2, 3, 4, 5].map((bar) => (
+                                <div
+                                    key={bar}
+                                    className={cn(
+                                        "w-1.5 rounded-t-sm transition-all duration-300",
+                                        bar <= priorityBars ? "bg-white/40" : "bg-white/5"
+                                    )}
+                                    style={{
+                                        height: `${20 + (bar * 16)}%`,
+                                        opacity: bar <= priorityBars ? 1 : 0.3
+                                    }}
+                                />
                             ))}
                         </div>
                     </div>
 
                     {/* Content */}
-                    <h3 className="text-sm font-bold text-white mb-2 line-clamp-2 leading-snug">
+                    <h3 className="text-sm font-bold text-white mb-4 line-clamp-2 uppercase tracking-wide">
                         {getTaskTitle(task)}
                     </h3>
-                    <p className="text-xs text-white/50 mb-6 leading-relaxed line-clamp-3">
-                        {task.data?.Description || 'Manual execution of recursive cross-indexing between local vault nodes and master matrix index.'}
-                    </p>
-
-                    {/* Actions Footer */}
-                    <div className="grid grid-cols-3 gap-2">
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onAction?.('done') }}
-                            className={cn("py-2 rounded border text-[9px] font-bold tracking-wider uppercase transition-all",
-                                isDone ? "bg-emerald-500 text-black border-emerald-500" : "bg-white/5 border-white/10 text-white/30 hover:bg-white/10 hover:text-white"
-                            )}
+                    
+                    <div className="pt-4 border-t border-white/5">
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/systems/second-brain/notes-sb?taskId=${task.id}`);
+                            }}
+                            className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 hover:text-amber-500 transition-colors group/link"
                         >
-                            Done
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onAction?.('wait') }}
-                            className="py-2 rounded border border-white/10 bg-white/5 text-white/30 text-[9px] font-bold tracking-wider uppercase hover:bg-white/10 hover:text-white transition-all"
-                        >
-                            Wait
-                        </button>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onAction?.('exec') }}
-                            className={cn("py-2 rounded border text-[9px] font-bold tracking-wider uppercase transition-all",
-                                isActive ? "bg-blue-600 text-white border-blue-500 shadow-[0_0_15px_rgba(37,99,235,0.4)]" : "bg-white/5 border-white/10 text-white/30 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/50"
-                            )}
-                        >
-                            Exec
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>View task notes</span>
+                            <ArrowRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all ml-1" />
                         </button>
                     </div>
                 </div>

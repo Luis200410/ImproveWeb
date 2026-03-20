@@ -6,11 +6,14 @@ import { ProjectEntry, calculateProgress, getDaysRemaining } from './project-uti
 import { Playfair_Display } from '@/lib/font-shim'
 import { Entry } from '@/lib/data-store'
 import { getProjectTitle, getProjectDeadline } from '../utils'
+import { cn } from '@/lib/utils'
+
+const playfair = Playfair_Display({ subsets: ['latin'] })
 
 interface ProjectCardProps {
     project: ProjectEntry
     onClick?: () => void
-    linkedTasks?: Entry[] // Added prop
+    linkedTasks?: Entry[]
 }
 
 export function ProjectCard({ project, onClick, linkedTasks = [] }: ProjectCardProps) {
@@ -23,167 +26,128 @@ export function ProjectCard({ project, onClick, linkedTasks = [] }: ProjectCardP
 
     if (linkedTasks.length > 0) {
         totalTasks = linkedTasks.length;
-        completedTasks = linkedTasks.filter(t => t.data.Status === 'Done' || t.data.Status === true).length;
+        completedTasks = linkedTasks.filter(t => {
+            const s = t.data.Status || t.data.status;
+            return s === 'Done' || s === 'done' || s === 'Completed' || s === 'completed' || s === true;
+        }).length;
         progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     } else {
-        progress = calculateProgress(data.subtasks);
-        totalTasks = data.subtasks?.length || 0;
-        completedTasks = data.subtasks?.filter(t => t.completed)?.length || 0;
+        const subtasks = data.subtasks || [];
+        totalTasks = subtasks.length;
+        completedTasks = subtasks.filter(t => t.completed).length;
+        progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     }
 
     const title = getProjectTitle(project)
-    const priority = data.priority || 'Low'
+    const priority = data.priority || 'Medium'
     const ragStatus = data.ragStatus || 'Green'
-    const blockedBy = data.blockedBy
     const complexity = data.complexity || '3'
     const deadline = getProjectDeadline(project)
-    const subtasks = data.subtasks || []
+    
+    // Days remaining logic
+    const daysRemaining = deadline ? getDaysRemaining(deadline) : null
+    const isOverdue = daysRemaining !== null && daysRemaining < 0
 
-    const daysRemaining = deadline ? getDaysRemaining(deadline) : 0
-    const isOverdue = deadline ? daysRemaining < 0 : false
-
-    // Visual Mappings
+    // Visual Mappings for Health (RAG)
     const ragConfig = {
-        'Red': { border: 'border-rose-500', text: 'text-rose-500', bg: 'bg-rose-500', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.2)]' },
-        'Amber': { border: 'border-amber-500', text: 'text-amber-500', bg: 'bg-amber-500', glow: 'shadow-[0_0_20px_rgba(245,158,11,0.2)]' },
-        'Green': { border: 'border-emerald-500', text: 'text-emerald-500', bg: 'bg-emerald-500', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.2)]' }
+        'Red': { border: 'border-rose-500/50', text: 'text-rose-500', bg: 'bg-rose-500/10', glow: 'shadow-[0_0_20px_rgba(244,63,94,0.1)]' },
+        'Amber': { border: 'border-amber-500/50', text: 'text-amber-500', bg: 'bg-amber-500/10', glow: 'shadow-[0_0_20px_rgba(245,158,11,0.1)]' },
+        'Green': { border: 'border-emerald-500/50', text: 'text-emerald-500', bg: 'bg-emerald-500/10', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.1)]' }
     }
-    const theme = ragConfig[ragStatus] || ragConfig['Green']
-
-    // Neural Activity Grid Logic (Data-Driven)
-    // Map subtasks to grid cells. If not enough subtasks, fill with 'pending'
-    // Completed -> Green, Next -> Yellow, Pending -> Grey
-    const generateActivity = () => {
-        // Create a fixed grid of 12 cells (3 rows x 4 cols)
-        const totalCells = 12
-        const cells = []
-
-        let foundNext = false
-
-        for (let i = 0; i < totalCells; i++) {
-            const task = subtasks[i]
-            let color = 'bg-white/5' // Default Pending (Grey)
-            let opacity = 0.1
-
-            if (task) {
-                if (task.completed) {
-                    color = 'bg-emerald-500' // Done
-                    opacity = 1
-                } else if (!foundNext) {
-                    color = 'bg-amber-500' // Working on (Next)
-                    opacity = 1
-                    foundNext = true
-                } else {
-                    color = 'bg-white/20' // Pending but exists
-                    opacity = 0.5
-                }
-            }
-
-            cells.push({ color, opacity })
-        }
-
-        return cells
-    }
-    const activityGrid = generateActivity()
-
-    // Circular Progress Params
-    const radius = 28
-    const circumference = 2 * Math.PI * radius
-    const strokeDashoffset = circumference - (progress / 100) * circumference
+    const theme = ragConfig[ragStatus as keyof typeof ragConfig] || ragConfig['Green']
 
     return (
         <motion.div
             layout
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ y: -4, scale: 1.01 }}
             onClick={onClick}
-            className={`group relative bg-[#080808] border-l-4 ${theme.border} rounded-r-xl p-6 cursor-pointer overflow-hidden transition-all hover:bg-[#0A0A0A]`}
+            className={`
+                group relative bg-[#0A0A0A] border border-white/5 rounded-2xl p-5 cursor-pointer overflow-hidden transition-all 
+                hover:border-white/10 hover:bg-[#0C0C0C] hover:shadow-2xl hover:shadow-black/50
+            `}
         >
-            {/* Drag Handle (Visible on Hover) - Keeping specific style requested */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="p-1 rounded hover:bg-white/10 cursor-grab active:cursor-grabbing">
-                    <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white/20">
-                        <circle cx="2" cy="2" r="1.5" fill="currentColor" />
-                        <circle cx="2" cy="8" r="1.5" fill="currentColor" />
-                        <circle cx="2" cy="14" r="1.5" fill="currentColor" />
-                        <circle cx="8" cy="2" r="1.5" fill="currentColor" />
-                        <circle cx="8" cy="8" r="1.5" fill="currentColor" />
-                        <circle cx="8" cy="14" r="1.5" fill="currentColor" />
-                    </svg>
+            {/* Status Indicator Bar */}
+            <div className={`absolute top-0 left-0 right-0 h-1 ${theme.bg} opacity-50 group-hover:opacity-100 transition-opacity`} />
+            
+            {/* Drag Handle */}
+            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-40 transition-opacity p-1">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-white">
+                    <circle cx="4" cy="2" r="1" fill="currentColor" />
+                    <circle cx="4" cy="6" r="1" fill="currentColor" />
+                    <circle cx="4" cy="10" r="1" fill="currentColor" />
+                    <circle cx="8" cy="2" r="1" fill="currentColor" />
+                    <circle cx="8" cy="6" r="1" fill="currentColor" />
+                    <circle cx="8" cy="10" r="1" fill="currentColor" />
+                </svg>
+            </div>
+
+            {/* Header: Title & Deadline */}
+            <div className="flex justify-between items-start mb-6">
+                <div className="flex-1 pr-6">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className={`w-1.5 h-1.5 rounded-full ${theme.bg} ${theme.glow}`} />
+                        <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Neural Node</span>
+                    </div>
+                    <h3 className={`${playfair.className} text-xl text-white group-hover:text-emerald-400 transition-colors leading-tight`}>
+                        {title}
+                    </h3>
+                </div>
+                {daysRemaining !== null && (
+                    <div className="text-right shrink-0">
+                        <div className={`text-[10px] font-black font-mono tracking-tighter ${isOverdue ? 'text-rose-500' : 'text-white/40'}`}>
+                            {isOverdue ? 'CRITICAL' : `${daysRemaining}D`}
+                        </div>
+                        <div className="text-[8px] text-white/20 uppercase tracking-widest font-black -mt-1">TTL</div>
+                    </div>
+                )}
+            </div>
+
+            {/* Middle: Stats Row */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-white/[0.03] rounded-lg p-2 border border-white/5">
+                    <div className="text-[7px] text-white/20 uppercase tracking-[0.3em] mb-1">Complexity</div>
+                    <div className="text-xs font-mono text-white/60">LVL_{complexity}</div>
+                </div>
+                <div className="bg-white/[0.03] rounded-lg p-2 border border-white/5">
+                    <div className="text-[7px] text-white/20 uppercase tracking-[0.3em] mb-1">ROI/Priority</div>
+                    <div className="text-xs font-mono text-white/60">{priority.toUpperCase()}</div>
                 </div>
             </div>
 
-            {/* Top Row: Title & Days */}
-            <div className="flex justify-between items-start mb-6 w-full">
-                <div className="flex-1 pr-8">
-                    <h3 className="font-serif text-xl text-white mb-2 leading-none truncate">{title}</h3>
-                    <div className="flex gap-2">
-                        <span className="px-2 py-0.5 text-[9px] font-mono border border-white/10 rounded text-white/40 uppercase">
-                            ROI: {priority}
-                        </span>
-                        <span className="px-2 py-0.5 text-[9px] font-mono border border-white/10 rounded text-white/40 uppercase">
-                            SIZE: {complexity}
-                        </span>
+            {/* Progress Section (SaaS Style) */}
+            <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-white/50">{progress}%</span>
+                        <span className="text-[8px] text-white/20 uppercase tracking-widest font-bold">Lattice Completion</span>
                     </div>
+                    <span className="text-[9px] text-white/30 font-mono">
+                        {completedTasks}/{totalTasks} UNITs
+                    </span>
                 </div>
-                <div className="text-right shrink-0">
-                    <div className="text-[9px] text-white/30 uppercase tracking-widest mb-1">Temporal</div>
-                    <div className={`text-xs font-bold font-mono ${isOverdue ? 'text-rose-500' : theme.text}`}>
-                        {isOverdue ? 'OVERDUE' : `${daysRemaining} DAYS`}
-                    </div>
-                    {!isOverdue && <div className="text-[9px] text-white/30 tracking-wider">REMAINING</div>}
-                </div>
-            </div>
-
-            {/* Middle Row: Activity Grid & Progress Ring */}
-            <div className="flex items-center justify-between">
-
-                {/* Neural Activity Grid (The "GitHub part") */}
-                <div className="space-y-2">
-                    <div className="text-[9px] text-white/30 uppercase tracking-widest">Neural Activity Grid</div>
-                    {/* 3 rows x 4 cols grid */}
-                    <div className="grid grid-cols-4 gap-1">
-                        {activityGrid.map((cell, i) => (
-                            <div
-                                key={i}
-                                className={`w-3 h-3 rounded-sm ${cell.color}`}
-                                style={{ opacity: cell.opacity }}
-                            />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Circular Progress */}
-                <div className="relative flex items-center justify-center">
-                    <svg className="w-20 h-20 -rotate-90">
-                        {/* Track */}
-                        <circle
-                            cx="40" cy="40" r={radius}
-                            className="stroke-white/5"
-                            strokeWidth="6"
-                            fill="transparent"
-                        />
-                        {/* Indicator */}
-                        <circle
-                            cx="40" cy="40" r={radius}
-                            className={`${theme.text}`}
-                            strokeWidth="6"
-                            fill="transparent"
-                            strokeDasharray={circumference}
-                            strokeDashoffset={strokeDashoffset}
-                            strokeLinecap="round"
-                        />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white font-mono">
-                        {progress}%
-                    </div>
+                
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 1.5, ease: "circOut" }}
+                        className={cn(
+                            "h-full rounded-full transition-all duration-700",
+                            progress === 100 ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" : 
+                            progress > 60 ? "bg-emerald-500/70" :
+                            progress > 30 ? "bg-amber-500/70" : "bg-blue-500/50"
+                        )}
+                    />
                 </div>
             </div>
 
-            {/* Blocked Warning Overlay or Footer */}
-            {blockedBy && (
-                <div className="mt-4 pt-3 border-t border-dashed border-white/10 flex items-center gap-2 text-rose-500">
-                    <AlertOctagon className="w-3 h-3" />
-                    <span className="text-[10px] uppercase tracking-wider font-bold">Hard Blocker: {blockedBy}</span>
+            {/* Footer Overlay for Blocked status */}
+            {data.blockedBy && (
+                <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2">
+                    <AlertOctagon className="w-3 h-3 text-rose-500" />
+                    <span className="text-[9px] text-rose-500/70 uppercase tracking-tighter font-bold truncate">
+                        Lattice Blocked: {data.blockedBy}
+                    </span>
                 </div>
             )}
         </motion.div>

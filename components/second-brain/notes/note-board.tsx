@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
-import { Plus, Database } from 'lucide-react'
+import { Plus, ListTodo } from 'lucide-react'
 import { Entry } from '@/lib/data-store'
 import { NoteDetailView } from './note-detail-view'
 import { NoteCard } from './note-card'
@@ -22,7 +22,7 @@ interface NoteBoardProps {
 
 export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote, projectMap, areaMap, taskMap }: NoteBoardProps) {
     const [columns, setColumns] = useState<Record<string, Entry[]>>({})
-    const [unassignedNotes, setUnassignedNotes] = useState<Entry[]>([])
+    const [inboxNotes, setInboxNotes] = useState<Entry[]>([])
 
     useEffect(() => {
         // Group notes by Task ID
@@ -45,7 +45,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
         })
 
         setColumns(cols)
-        setUnassignedNotes(unassigned)
+        setInboxNotes(unassigned)
     }, [notes, tasks])
 
     const handleDragEnd = (result: DropResult) => {
@@ -58,7 +58,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
         const destId = destination.droppableId
 
         // Helper to get list by ID (handles 'unassigned' special case)
-        const getList = (id: string) => id === 'unassigned' ? unassignedNotes : columns[id]
+        const getList = (id: string) => id === 'unassigned' ? inboxNotes : columns[id]
 
         const sourceList = [...getList(sourceId)]
         const destList = sourceId === destId ? sourceList : [...getList(destId)]
@@ -69,7 +69,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
         if (sourceId === destId) {
             sourceList.splice(destination.index, 0, movedNote)
             if (sourceId === 'unassigned') {
-                setUnassignedNotes(sourceList)
+                setInboxNotes(sourceList)
             } else {
                 setColumns({ ...columns, [sourceId]: sourceList })
             }
@@ -81,8 +81,8 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
             if (destId !== 'unassigned') newColumns[destId] = destList
 
             setColumns(newColumns)
-            if (sourceId === 'unassigned') setUnassignedNotes(sourceList)
-            if (destId === 'unassigned') setUnassignedNotes(destList)
+            if (sourceId === 'unassigned') setInboxNotes(sourceList)
+            if (destId === 'unassigned') setInboxNotes(destList)
 
             // Trigger actual update
             // If destId is 'unassigned', we clear the task. Otherwise set it.
@@ -97,9 +97,9 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
                 {/* Unassigned Column */}
                 <BoardColumn
                     id="unassigned"
-                    title="/UNASSIGNED"
-                    count={unassignedNotes.length}
-                    notes={unassignedNotes}
+                    title="/INBOX"
+                    count={inboxNotes.length}
+                    notes={inboxNotes}
                     onNoteClick={onNoteClick}
                     onCreateNote={() => onCreateNote()}
                     accentColor="text-white/30"
@@ -107,6 +107,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
                     areaMap={areaMap}
                     taskMap={taskMap}
                     isTask={false}
+                    isInbox={true}
                 />
 
                 {/* Task Columns */}
@@ -114,7 +115,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
                     <BoardColumn
                         key={task.id}
                         id={task.id}
-                        title={`/TASK: ${getTaskTitle(task)}`}
+                        title={getTaskTitle(task)}
                         count={columns[task.id]?.length || 0}
                         notes={columns[task.id] || []}
                         onNoteClick={onNoteClick}
@@ -131,7 +132,7 @@ export function NoteBoard({ notes, tasks, onNoteMoved, onNoteClick, onCreateNote
     )
 }
 
-function BoardColumn({ id, title, count, notes, onNoteClick, onCreateNote, accentColor, projectMap, areaMap, taskMap, isTask }: {
+function BoardColumn({ id, title, count, notes, onNoteClick, onCreateNote, accentColor, projectMap, areaMap, taskMap, isTask, isInbox }: {
     id: string,
     title: string,
     count: number,
@@ -142,13 +143,14 @@ function BoardColumn({ id, title, count, notes, onNoteClick, onCreateNote, accen
     projectMap: Record<string, string>,
     areaMap: Record<string, string>,
     taskMap: Record<string, string>,
-    isTask: boolean
+    isTask: boolean,
+    isInbox?: boolean
 }) {
     return (
-        <div className="flex-1 min-w-[320px] max-w-[320px] flex flex-col h-full bg-[#050505]/50 border-r border-white/5 last:border-r-0 pr-6">
+        <div className={`flex-1 min-w-[300px] max-w-[320px] flex flex-col h-full ${isInbox ? 'bg-[#0A0A0A]/30' : 'bg-[#050505]/50'} border-r border-white/5 last:border-r-0 px-4`}>
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-white/5 group">
                 <div className="flex items-center gap-3 overflow-hidden">
-                    {isTask && <Database className="w-4 h-4 text-emerald-500 shrink-0" />}
+                    {isTask && <ListTodo className="w-4 h-4 text-emerald-500 shrink-0" />}
                     <h3 className={`text-xs font-bold tracking-[0.1em] truncate ${accentColor}`} title={title}>{title}</h3>
                     <span className="bg-white/5 px-2 py-0.5 rounded text-[10px] font-mono text-white/50 shrink-0">{count}</span>
                 </div>
@@ -165,7 +167,7 @@ function BoardColumn({ id, title, count, notes, onNoteClick, onCreateNote, accen
                     <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
-                        className={`flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar rounded-xl transition-colors ${snapshot.isDraggingOver ? 'bg-white/[0.02]' : ''}`}
+                        className={`flex-1 min-h-[500px] overflow-y-auto space-y-4 py-2 custom-scrollbar rounded-xl transition-all duration-300 ${snapshot.isDraggingOver ? (isInbox ? 'bg-amber-500/5 ring-1 ring-amber-500/20' : 'bg-white/[0.05]') : ''}`}
                     >
                         {notes.map((note, index) => (
                             <Draggable key={note.id} draggableId={note.id} index={index}>

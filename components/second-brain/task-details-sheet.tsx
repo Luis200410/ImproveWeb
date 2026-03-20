@@ -14,7 +14,7 @@ import {
 import { Entry } from '@/lib/data-store'
 import {
     Maximize2, Link as LinkIcon, Calendar, Activity,
-    Hash, Terminal, CheckCircle2, Trash2, Save, Timer, Play, ChevronDown, Sparkles, NotebookPen, ExternalLink, Plus, Minimize2
+    Hash, Terminal, CheckCircle2, Trash2, Save, Timer, Play, ChevronDown, Sparkles, NotebookPen, ExternalLink, Plus, Minimize2, Rocket, LayoutGrid, ListTodo
 } from 'lucide-react'
 import { Bebas_Neue } from '@/lib/font-shim'
 import { usePomodoro } from '@/components/productivity/pomodoro/pomodoro-context'
@@ -32,17 +32,19 @@ interface TaskDetailsSheetProps {
     task: Entry
     trigger: React.ReactNode
     onUpdate?: (updates: Partial<Entry['data']>) => void
+    onDelete?: () => void
 }
 
 interface TaskDetailsInnerProps {
     task: Entry
     onUpdate?: (updates: Partial<Entry['data']>) => void
+    onDelete?: () => void
     isPopup: boolean
     onTogglePopup: () => void
     onClose: () => void
 }
 
-function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: TaskDetailsInnerProps) {
+function TaskDetailsInner({ task, onUpdate, onDelete, isPopup, onTogglePopup, onClose }: TaskDetailsInnerProps) {
     const { startSession } = usePomodoro()
     const [status] = useState(task.data.Status || false)
     const [localTitle, setLocalTitle] = useState(getTaskTitle(task, ''))
@@ -221,14 +223,12 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
     })
 
     return (
-        <div className="flex flex-col h-full bg-[#050505] text-white">
+        <div className="bg-[#050505] text-white h-full overflow-y-auto custom-scrollbar flex flex-col">
             {/* Header Section */}
-            <div className="p-8 pb-4 border-b border-white/5 space-y-6 shrink-0">
+            <div className="p-8 pb-4 border-b border-white/5 space-y-6 flex-none">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-blue-400 font-mono">
-                        <span>{areaMap[task.data.Area || ''] || 'AREA_NULL'}</span>
-                        <span className="text-white/20">›</span>
-                        <span>{projectMap[task.data.Project || ''] || 'PROJECT_NULL'}</span>
+                        <span>{projectMap[task.data.Project || ''] || 'NO_PROJECT'}</span>
                     </div>
                 </div>
 
@@ -254,8 +254,8 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
                             const { dataStore } = await import('@/lib/data-store')
                             await dataStore.deleteEntry(task.id)
                             sileo.success({ description: 'Neural Fragment Erased' })
+                            if (onDelete) onDelete()
                             onClose()
-                            setTimeout(() => window.location.reload(), 1500)
                         }}
                     />
                 </div>
@@ -286,108 +286,86 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
             </div>
 
             {/* Linked Relations Dashboard */}
-            <div className="p-6 border-b border-white/10 bg-white/[0.01] shrink-0">
-                <div className="flex justify-between items-end mb-4">
-                    <span className="text-[9px] uppercase tracking-widest text-white/30 font-mono">Linked Relations</span>
-                    <span className="text-[9px] uppercase tracking-widest text-amber-500 font-mono animate-pulse">Active_Link</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* Area Dropdown */}
-                    <div className="bg-[#0F0F0F] border border-white/10 rounded p-1">
-                        <div className="text-[8px] uppercase tracking-widest text-purple-400 mb-1 px-2 pt-1">Area</div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="w-full flex items-center justify-between bg-transparent border-none text-white/80 p-2 rounded text-xs font-mono focus:outline-none focus:ring-1 focus:ring-purple-500/50 hover:bg-white/5 transition-colors group">
-                                    <span className="truncate">{task.data.Area ? (areaMap[task.data.Area] || 'Untitled Area') : 'NO_AREA'}</span>
-                                    <ChevronDown className="w-3 h-3 text-white/30 group-hover:text-amber-500 transition-colors shrink-0 ml-2" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] bg-[#0A0A0A] border-white/10 text-white/70 max-h-[300px] overflow-y-auto custom-scrollbar z-[300]" align="start">
-                                <DropdownMenuRadioGroup value={task.data.Area || ''} onValueChange={(val) => handleUpdateTask({ Area: val || null })}>
-                                    <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
-                                        NO_AREA
-                                    </DropdownMenuRadioItem>
-                                    {areas.map(a => (
-                                        <DropdownMenuRadioItem key={a.id} value={a.id} className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
-                                            {a.data['Area Name'] || a.data.title || a.data.name || 'Untitled Area'}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                    <div className="bg-[#0F0F0F] border border-white/10 rounded p-1">
-                        <div className="text-[8px] uppercase tracking-widest text-blue-400 mb-1 px-2 pt-1">Project</div>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="w-full flex items-center justify-between bg-transparent border-none text-white/80 p-2 rounded text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500/50 hover:bg-white/5 transition-colors group">
-                                    <span className="truncate">{task.data.Project ? (projectMap[task.data.Project] || 'Untitled Project') : 'NO_PROJECT'}</span>
-                                    <ChevronDown className="w-3 h-3 text-white/30 group-hover:text-amber-500 transition-colors shrink-0 ml-2" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] bg-[#0A0A0A] border-white/10 text-white/70 max-h-[300px] overflow-y-auto custom-scrollbar z-[300]" align="start">
-                                <DropdownMenuRadioGroup value={task.data.Project || ''} onValueChange={(val) => handleUpdateTask({ Project: val || null })}>
-                                    <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
-                                        NO_PROJECT
-                                    </DropdownMenuRadioItem>
-                                    {filteredProjects.map(p => (
-                                        <DropdownMenuRadioItem key={p.id} value={p.id} className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
-                                            {p.data['Project Name'] || p.data.title || 'Untitled Project'}
-                                        </DropdownMenuRadioItem>
-                                    ))}
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
-            </div>
-
-            {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
-                {/* Notes Link Integration */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-emerald-400">
-                        <NotebookPen className="w-4 h-4" />
-                        <h3 className="text-sm font-bold uppercase tracking-wider text-white/90">Signal Log / Neural Note</h3>
-                    </div>
-
-                    {linkedNote ? (
-                        <div className="bg-[#0A0A0A] border border-emerald-500/30 rounded-lg p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group hover:border-emerald-500/60 transition-colors">
-                            <div>
-                                <h4 className="text-white font-bebas text-lg leading-none mb-2">{linkedNote.data.Title || 'Untitled Sequence'}</h4>
-                                <p className="text-xs text-white/40 font-mono">Last edited: {new Date(linkedNote.createdAt).toLocaleDateString()}</p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Project & Note Combined Context */}
+                    <div className="flex-1 bg-[#0F0F0F] border border-white/10 rounded-xl p-3 flex items-center justify-between gap-4">
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-blue-400 font-bold">
+                                <Rocket className="w-3 h-3" /> Project_Context
                             </div>
-                            <Button
-                                onClick={() => setShowNotePopup(true)}
-                                className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 font-bold tracking-widest uppercase text-[10px]"
-                            >
-                                <ExternalLink className="w-3 h-3 mr-2" />
-                                Open Node
-                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="flex items-center justify-between bg-transparent border-none text-white/80 py-1 rounded text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-500/50 hover:bg-white/5 transition-colors group text-left w-full">
+                                        <span className="truncate">{task.data.Project ? (projectMap[task.data.Project] || 'Untitled Project') : 'NO_PROJECT_LINK'}</span>
+                                        <ChevronDown className="w-3 h-3 text-white/30 group-hover:text-amber-500 transition-colors shrink-0 ml-2" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[200px] bg-[#0A0A0A] border-white/10 text-white/70 max-h-[300px] overflow-y-auto custom-scrollbar z-[300]" align="start">
+                                    <DropdownMenuRadioGroup 
+                                        value={task.data.Project || ''} 
+                                        onValueChange={(val) => {
+                                            const selectedProject = projects.find(p => p.id === val)
+                                            handleUpdateTask({ 
+                                                Project: val || null,
+                                                Area: selectedProject?.data?.Area || null
+                                            })
+                                        }}
+                                    >
+                                        <DropdownMenuRadioItem value="" className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
+                                            NO_PROJECT
+                                        </DropdownMenuRadioItem>
+                                        {filteredProjects.map(p => (
+                                            <DropdownMenuRadioItem key={p.id} value={p.id} className="text-xs focus:bg-white/10 focus:text-white cursor-pointer pl-6">
+                                                {p.data['Project Name'] || p.data.title || 'Untitled Project'}
+                                            </DropdownMenuRadioItem>
+                                        ))}
+                                    </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                    ) : (
-                        <div className="bg-[#0A0A0A] border border-white/10 border-dashed rounded-lg p-6 flex flex-col items-center justify-center gap-4 text-center">
-                            <div className="text-white/40">
-                                <NotebookPen className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                                <p className="text-xs">No active notes linked to this task.</p>
+
+                        <div className="w-[1px] h-8 bg-white/10 hidden sm:block" />
+
+                        <div className="flex flex-col gap-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-emerald-400 font-bold">
+                                <NotebookPen className="w-3 h-3" /> Neural_Note
                             </div>
-                            <Button
-                                onClick={() => setShowForge(true)}
-                                className="bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold tracking-widest uppercase text-[10px]"
-                            >
-                                <Plus className="w-3 h-3 mr-2 text-amber-500" />
-                                Create Attached Note
-                            </Button>
+                            {linkedNote ? (
+                                <div className="flex items-center justify-between gap-2 py-1">
+                                    <span className="text-xs font-serif text-white/90 truncate flex-1">{linkedNote.data.Title || 'Untitled Node'}</span>
+                                    <Button
+                                        onClick={() => setShowNotePopup(true)}
+                                        size="sm"
+                                        className="h-6 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 font-bold tracking-widest uppercase text-[8px] px-2 shrink-0"
+                                    >
+                                        <ExternalLink className="w-2.5 h-2.5 mr-1" />
+                                        SYNC
+                                    </Button>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={() => setShowForge(true)}
+                                    className="flex items-center justify-between bg-transparent border-none text-white/20 py-1 rounded text-[10px] font-mono hover:bg-white/5 transition-colors group italic w-full"
+                                >
+                                    <span>No active link</span>
+                                    <Plus className="w-3 h-3 text-amber-500/50 group-hover:text-amber-500" />
+                                </button>
+                            )}
                         </div>
-                    )}
+                    </div>
                 </div>
+
+            {/* Body */}
+            <div className="p-8 pb-12 space-y-12 flex-1">
+                {/* Checkpoint Banner for large logic if needed, else directly the Sub-tasks */}
+                {/* Sub-tasks / Checklist with AI - Expanded space */}
 
                 {/* Sub-tasks / Checklist with AI */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-blue-400">
-                            <Hash className="w-4 h-4" />
-                            <h3 className="text-sm font-bold uppercase tracking-wider text-white/90">Sub-tasks</h3>
+                        <div className="flex items-center gap-2 text-blue-400 mb-2">
+                            <Activity className="w-4 h-4" />
+                            <h3 className="text-lg font-bold uppercase tracking-widest text-white/90">Micro-Task Protocol</h3>
                         </div>
                         <Button
                             onClick={handleReverseEngineer}
@@ -400,50 +378,52 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
                         </Button>
                     </div>
 
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
                             <input
                                 value={newSubtask}
                                 onChange={(e) => setNewSubtask(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddSubtask()}
-                                placeholder="Add new subtask..."
-                                className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+                                placeholder="Add new actionable sub-signal..."
+                                className="flex-1 bg-white/[0.03] border border-white/10 rounded px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-white/10"
                             />
-                            <Button onClick={handleAddSubtask} size="icon" className="bg-white/10 hover:bg-white/20 text-white shrink-0">
-                                <Plus className="w-4 h-4" />
+                            <Button onClick={handleAddSubtask} size="icon" className="h-11 w-11 bg-white/10 hover:bg-white/20 text-white shrink-0 border border-white/10">
+                                <Plus className="w-5 h-5" />
                             </Button>
                         </div>
 
                         {subtasks.length === 0 && !isGenerating && (
-                            <p className="text-xs text-white/30 italic py-2 font-mono">No subtasks defined.</p>
+                            <p className="text-[10px] text-white/20 italic py-4 font-mono text-center border border-dashed border-white/5 rounded-lg uppercase tracking-widest">No active sub-signals defined.</p>
                         )}
 
-                        {subtasks.map((item, i) => (
-                            <div key={i} className="flex items-start gap-3 group bg-[#0A0A0A] p-3 rounded-lg border border-white/5">
-                                <input
-                                    type="checkbox"
-                                    id={`st-${i}`}
-                                    checked={item.completed}
-                                    onChange={() => handleToggleSubtask(i)}
-                                    className="appearance-none w-5 h-5 rounded border border-white/20 checked:bg-blue-500 checked:border-blue-500 transition-colors cursor-pointer mt-0.5"
-                                />
-                                <label
-                                    htmlFor={`st-${i}`}
-                                    className={`text-sm flex-1 cursor-pointer transition-colors ${item.completed ? 'text-white/30 line-through' : 'text-white/80 group-hover:text-white'}`}
-                                >
-                                    {item.title}
-                                </label>
-                                <button onClick={() => handleDeleteSubtask(i)} className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-rose-500 transition-colors p-1">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                        ))}
+                        <div className="space-y-3 mt-4">
+                            {subtasks.map((item, i) => (
+                                <div key={i} className="flex items-start gap-4 group bg-white/[0.02] p-4 rounded-xl border border-white/5 hover:border-white/10 hover:bg-white/[0.04] transition-all">
+                                    <input
+                                        type="checkbox"
+                                        id={`st-${i}`}
+                                        checked={item.completed}
+                                        onChange={() => handleToggleSubtask(i)}
+                                        className="appearance-none w-5 h-5 rounded border border-white/20 checked:bg-blue-500 checked:border-blue-500 transition-all cursor-pointer mt-0.5 shadow-inner"
+                                    />
+                                    <label
+                                        htmlFor={`st-${i}`}
+                                        className={`text-sm flex-1 cursor-pointer transition-colors leading-relaxed ${item.completed ? 'text-white/20 line-through' : 'text-white/80 group-hover:text-white'}`}
+                                    >
+                                        {item.title}
+                                    </label>
+                                    <button onClick={() => handleDeleteSubtask(i)} className="opacity-0 group-hover:opacity-100 text-white/20 hover:text-rose-500 transition-all p-1">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Footer Actions */}
-            <div className="p-6 border-t border-white/10 bg-[#0A0A0A] flex justify-between items-center shrink-0">
+            <div className="p-6 mt-auto border-t border-white/10 bg-[#0A0A0A] flex justify-between items-center flex-none">
                 <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                     <span className="text-[10px] uppercase tracking-widest text-white/30 font-medium">System Ready</span>
@@ -506,7 +486,7 @@ function TaskDetailsInner({ task, onUpdate, isPopup, onTogglePopup, onClose }: T
     )
 }
 
-export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetProps) {
+export function TaskDetailsSheet({ task, trigger, onUpdate, onDelete }: TaskDetailsSheetProps) {
     const [open, setOpen] = useState(false)
     const [isPopup, setIsPopup] = useState(false)
 
@@ -528,6 +508,7 @@ export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetPr
                         <TaskDetailsInner
                             task={task}
                             onUpdate={onUpdate}
+                            onDelete={onDelete}
                             isPopup={false}
                             onTogglePopup={() => setIsPopup(true)}
                             onClose={() => setOpen(false)}
@@ -550,6 +531,7 @@ export function TaskDetailsSheet({ task, trigger, onUpdate }: TaskDetailsSheetPr
                             <TaskDetailsInner
                                 task={task}
                                 onUpdate={onUpdate}
+                                onDelete={onDelete}
                                 isPopup={true}
                                 onTogglePopup={() => setIsPopup(false)}
                                 onClose={() => {

@@ -17,7 +17,7 @@ interface ResourceBoardProps {
 
 export function ResourceBoard({ notes, resources, onResourceMoved, onResourceClick, onCreateResource }: ResourceBoardProps) {
     const [columns, setColumns] = useState<Record<string, Entry[]>>({})
-    const [unassignedResources, setUnassignedResources] = useState<Entry[]>([])
+    const [inboxResources, setInboxResources] = useState<Entry[]>([])
 
     useEffect(() => {
         const cols: Record<string, Entry[]> = {}
@@ -39,7 +39,7 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
         })
 
         setColumns(cols)
-        setUnassignedResources(unassigned)
+        setInboxResources(unassigned)
     }, [notes, resources])
 
     const handleDragEnd = (result: DropResult) => {
@@ -51,7 +51,7 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
         const sourceId = source.droppableId
         const destId = destination.droppableId
 
-        const getList = (id: string) => id === 'unassigned' ? unassignedResources : columns[id]
+        const getList = (id: string) => id === 'unassigned' ? inboxResources : columns[id]
 
         const sourceList = [...getList(sourceId)]
         const destList = sourceId === destId ? sourceList : [...getList(destId)]
@@ -61,7 +61,7 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
         // Optimistic Update
         if (sourceId === destId) {
             sourceList.splice(destination.index, 0, movedResource)
-            if (sourceId === 'unassigned') setUnassignedResources(sourceList)
+            if (sourceId === 'unassigned') setInboxResources(sourceList)
             else setColumns({ ...columns, [sourceId]: sourceList })
         } else {
             destList.splice(destination.index, 0, movedResource)
@@ -70,8 +70,8 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
             if (destId !== 'unassigned') newColumns[destId] = destList
 
             setColumns(newColumns)
-            if (sourceId === 'unassigned') setUnassignedResources(sourceList)
-            if (destId === 'unassigned') setUnassignedResources(destList)
+            if (sourceId === 'unassigned') setInboxResources(sourceList)
+            if (destId === 'unassigned') setInboxResources(destList)
 
             const targetNoteId = destId === 'unassigned' ? '' : destId
             onResourceMoved(movedResource, targetNoteId)
@@ -81,12 +81,12 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
     return (
         <DragDropContext onDragEnd={handleDragEnd}>
             <div className="flex h-full gap-6 overflow-x-auto pb-4 custom-scrollbar">
-                {/* Unassigned Column */}
+                {/* Inbox Column */}
                 <BoardColumn
                     id="unassigned"
-                    title="/UNASSIGNED"
-                    count={unassignedResources.length}
-                    resources={unassignedResources}
+                    title="/INBOX"
+                    count={inboxResources.length}
+                    resources={inboxResources}
                     onResourceClick={onResourceClick}
                     onCreateResource={() => onCreateResource()}
                     accentColor="text-white/30"
@@ -98,7 +98,7 @@ export function ResourceBoard({ notes, resources, onResourceMoved, onResourceCli
                     <BoardColumn
                         key={note.id}
                         id={note.id}
-                        title={`/NOTE: ${note.data.Title}`}
+                        title={note.data.Title || 'Untitled Note'}
                         count={columns[note.id]?.length || 0}
                         resources={columns[note.id] || []}
                         onResourceClick={onResourceClick}

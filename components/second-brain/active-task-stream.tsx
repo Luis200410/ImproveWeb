@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, Reorder } from 'framer-motion'
-import { Check, Clock, Zap, ArrowRight, Play, Plus } from 'lucide-react'
+import { Check, Clock, Zap, ArrowRight, Play, Plus, Diamond, Rocket, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useState, useEffect } from 'react'
 import { Entry } from '@/lib/data-store'
@@ -14,9 +14,11 @@ interface ActiveTaskStreamProps {
     tasks: Entry[]
     onToggleStatus: (task: Entry) => void
     onUpdateLane: (task: Entry, lane: string) => void
+    onUpdateTask?: (task: Entry, updates: Partial<Entry['data']>) => void
+    onDeleteTask?: (taskId: string) => void
 }
 
-export function ActiveTaskStream({ tasks, onToggleStatus, onUpdateLane }: ActiveTaskStreamProps) {
+export function ActiveTaskStream({ tasks, onToggleStatus, onUpdateLane, onUpdateTask, onDeleteTask }: ActiveTaskStreamProps) {
     const [items, setItems] = useState(tasks)
     const router = useRouter()
 
@@ -47,7 +49,12 @@ export function ActiveTaskStream({ tasks, onToggleStatus, onUpdateLane }: Active
 
                 {items.map((task) => (
                     <Reorder.Item key={task.id} value={task} className="shrink-0">
-                        <StreamCard task={task} onToggleStatus={onToggleStatus} />
+                        <StreamCard 
+                            task={task} 
+                            onToggleStatus={onToggleStatus} 
+                            onUpdate={(updates) => onUpdateTask?.(task, updates)}
+                            onDelete={() => onDeleteTask?.(task.id)}
+                        />
                     </Reorder.Item>
                 ))}
             </Reorder.Group>
@@ -55,53 +62,112 @@ export function ActiveTaskStream({ tasks, onToggleStatus, onUpdateLane }: Active
     )
 }
 
-function StreamCard({ task, onToggleStatus }: { task: Entry, onToggleStatus: (task: Entry) => void }) {
-    const isDone = task.data?.Status === true
+function StreamCard({ task, onToggleStatus, onUpdate, onDelete }: { task: Entry, onToggleStatus: (task: Entry) => void, onUpdate?: (updates: Partial<Entry['data']>) => void, onDelete?: () => void }) {
+    const isDone = task.data?.Status === 'Done'
     const priority = task.data?.Priority || 'Medium'
-    const statusColor = isDone ? 'text-emerald-500' : 'text-blue-500' // blue for active stream aesthetic
+    const complexity = task.data?.Complexity || 'M'
+    const taskId = task.id.slice(0, 4).toUpperCase()
+    const router = useRouter()
+
+    const getComplexityLevel = () => {
+        switch (complexity) {
+            case 'L': return 3
+            case 'XL': return 3
+            case 'S': return 1
+            case 'M':
+            default: return 2
+        }
+    }
+
+    const getPriorityBars = () => {
+        switch (priority) {
+            case 'High': return 5
+            case 'Urgent': return 5
+            case 'Low': return 1
+            case 'Medium':
+            default: return 3
+        }
+    }
+
+    const complexityLevel = getComplexityLevel()
+    const priorityBars = getPriorityBars()
 
     return (
         <TaskDetailsSheet
             task={task}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
             trigger={
                 <div className="w-[320px] bg-[#0A0A0A] border border-white/10 rounded-2xl p-5 hover:border-white/20 transition-all cursor-grab active:cursor-grabbing relative overflow-hidden group text-left">
-                    {/* Accent Line */}
-                    <div className={cn("absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b", isDone ? "from-emerald-500 to-transparent" : "from-blue-500 to-transparent")} />
+                    {/* Hover Glow */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-                    <div className="pl-2">
-                        <div className="flex justify-between items-start mb-2">
-                            <h4 className="text-sm font-medium text-white line-clamp-1">{getTaskTitle(task)}</h4>
-                            <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border border-white/10 bg-white/5", isDone ? "text-emerald-500" : "text-blue-400")}>
-                                {isDone ? 'DONE' : 'ACTIVE'}
-                            </span>
+                    <div className="relative z-10 space-y-4">
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                {/* Task Logo */}
+                                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 text-white/40 group-hover:text-blue-400 transition-colors">
+                                    <Rocket className="w-5 h-5" />
+                                </div>
+
+                                <div className="space-y-0.5">
+                                    {/* P-Level Diamonds */}
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-[8px] uppercase tracking-[0.2em] text-white/30 font-bold">P_LEVEL:</span>
+                                        <div className="flex gap-0.5">
+                                            {[1, 2, 3].map((level) => (
+                                                <Diamond
+                                                    key={level}
+                                                    className={cn(
+                                                        "w-2.5 h-2.5",
+                                                        level <= complexityLevel ? "text-blue-500 fill-blue-500" : "text-white/10"
+                                                    )}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-[9px] font-mono tracking-widest text-white/20">
+                                        ID: SB-X-{taskId}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Priority Bars */}
+                            <div className="flex items-end gap-0.5 h-6">
+                                {[1, 2, 3, 4, 5].map((bar) => (
+                                    <div
+                                        key={bar}
+                                        className={cn(
+                                            "w-1 rounded-t-sm transition-all duration-300",
+                                            bar <= priorityBars ? "bg-blue-400" : "bg-white/5"
+                                        )}
+                                        style={{
+                                            height: `${20 + (bar * 16)}%`,
+                                            opacity: bar <= priorityBars ? 1 : 0.3
+                                        }}
+                                    />
+                                ))}
+                            </div>
                         </div>
 
-                        <p className="text-[10px] uppercase tracking-wider text-white/40 mb-4">
-                            {task.data?.Project ? 'Linked Project' : 'Solo Agent'}
-                        </p>
+                        {/* Title & Stats */}
+                        <div className="space-y-3">
+                            <h4 className="text-sm font-medium text-white tracking-wide uppercase line-clamp-1">{getTaskTitle(task)}</h4>
+                            
+                            <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                                <div className="flex items-center gap-2 text-[9px] uppercase tracking-widest text-white/40 group-hover:text-blue-400 transition-colors">
+                                    <FileText className="w-3 h-3" />
+                                    <span>Notes Attached</span>
+                                </div>
 
-                        {/* Action Grid */}
-                        <div className="grid grid-cols-3 gap-2 mt-4">
-                            <button onClick={() => onToggleStatus(task)} className={cn(
-                                "flex flex-col items-center justify-center gap-1 py-2 rounded border transition-colors",
-                                isDone ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500" : "border-white/10 bg-white/5 text-white/20 hover:text-emerald-500 hover:border-emerald-500/30"
-                            )}>
-                                <Check className="w-3 h-3" />
-                                <span className="text-[8px] font-bold uppercase tracking-wider">Done</span>
-                            </button>
-
-                            <button className="flex flex-col items-center justify-center gap-1 py-2 rounded border border-white/10 bg-white/5 text-white/20 hover:text-amber-500 hover:border-amber-500/30 transition-colors">
-                                <Clock className="w-3 h-3" />
-                                <span className="text-[8px] font-bold uppercase tracking-wider">Wait</span>
-                            </button>
-
-                            <button onClick={() => !isDone && console.log("Already active")} className={cn(
-                                "flex flex-col items-center justify-center gap-1 py-2 rounded border transition-colors",
-                                !isDone ? "border-blue-500/30 bg-blue-500/10 text-blue-500" : "border-white/10 bg-white/5 text-white/20 hover:text-blue-500 hover:border-blue-500/30"
-                            )}>
-                                <Zap className="w-3 h-3" />
-                                <span className="text-[8px] font-bold uppercase tracking-wider">Active</span>
-                            </button>
+                                <span className={cn(
+                                    "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border border-white/10 bg-white/5",
+                                    isDone ? "text-emerald-500 border-emerald-500/20" : "text-blue-400 border-blue-500/20"
+                                )}>
+                                    {isDone ? 'DONE' : 'ACTIVE'}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

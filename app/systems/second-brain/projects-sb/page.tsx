@@ -15,6 +15,7 @@ import { GlobalConstraintsSheet } from '@/components/second-brain/projects/globa
 import { ProjectEntry, sortProjects, calculateProjectStats, ProjectStats } from '@/components/second-brain/projects/project-utils'
 import { Entry } from '@/lib/data-store'
 import { AreasList } from '@/components/second-brain/projects/areas-list'
+import { AreaFilterDropdown } from '@/components/second-brain/projects/area-filter-dropdown'
 
 import { ProjectsDashboard } from '@/components/projects-dashboard'
 
@@ -29,6 +30,8 @@ export default function ProjectsPage() {
     const [userId, setUserId] = useState<string>('defaultUser') // Add userId state
     const [stats, setStats] = useState<ProjectStats | null>(null)
     const [showGlobalConstraints, setShowGlobalConstraints] = useState(false)
+    const [isCreationSheetOpen, setIsCreationSheetOpen] = useState(false)
+    const [defaultStatusForCreation, setDefaultStatusForCreation] = useState<string | undefined>(undefined)
 
     const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null)
 
@@ -73,7 +76,7 @@ export default function ProjectsPage() {
                 setSelectedAreaId(areasData[0].id)
             }
 
-            setStats(calculateProjectStats(sorted))
+            setStats(calculateProjectStats(sorted, allTasks))
         } catch (error) {
             console.error('Failed to load project data:', error)
         } finally {
@@ -85,7 +88,7 @@ export default function ProjectsPage() {
         const updatedProject = { ...project, data: { ...project.data, ...updates } }
         const newProjects = projects.map(p => p.id === project.id ? updatedProject : p)
         setProjects(newProjects)
-        setStats(calculateProjectStats(newProjects))
+        setStats(calculateProjectStats(newProjects, tasks))
 
         await dataStore.updateEntry(project.id, updatedProject.data)
     }
@@ -102,7 +105,6 @@ export default function ProjectsPage() {
         setTasks(prev => prev.map(t => t.id === task.id ? updatedTask : t))
 
         // Update projects state to reflect task changes in subtasks if needed
-        // (This might be expensive to re-map all projects, but accurate)
         setProjects(prev => prev.map(p => ({
             ...p,
             data: {
@@ -112,6 +114,22 @@ export default function ProjectsPage() {
         })))
 
         await dataStore.updateEntry(task.id, updates)
+    }
+
+    const handleDeleteTask = (taskId: string) => {
+        setTasks(prev => prev.filter(t => t.id !== taskId))
+        setProjects(prev => prev.map(p => ({
+            ...p,
+            data: {
+                ...p.data,
+                subtasks: p.data.subtasks.filter(t => t.id !== taskId) as any
+            }
+        })))
+    }
+
+    const handleDeleteProject = (projectId: string) => {
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+        if (selectedId === projectId) setSelectedId(null)
     }
 
     useEffect(() => {
@@ -127,14 +145,14 @@ export default function ProjectsPage() {
     const constraints = projects.filter(p => p.data.ragStatus === 'Red' || p.data.blockedBy)
 
     // Filter projects by selected Area and only show non-archived ones in the main view
-    const filteredProjects = selectedAreaId === 'unassigned'
-        ? projects.filter(p => (!p.data.Area || p.data.Area === 'unassigned') && !(p.data as any).archived)
+    const filteredProjects = (!selectedAreaId || selectedAreaId === 'unassigned')
+        ? projects.filter(p => (!p.data.Area || p.data.Area === 'unassigned' || p.data.Area === '') && !(p.data as any).archived)
         : projects.filter(p => p.data.Area === selectedAreaId && !(p.data as any).archived)
 
     // Calculate archived count for the current area
     const archivedCount = projects.filter(p => {
-        const matchesArea = selectedAreaId === 'unassigned'
-            ? (!p.data.Area || p.data.Area === 'unassigned')
+        const matchesArea = (!selectedAreaId || selectedAreaId === 'unassigned')
+            ? (!p.data.Area || p.data.Area === 'unassigned' || p.data.Area === '')
             : p.data.Area === selectedAreaId
         return matchesArea && (p.data as any).archived
     }).length
@@ -143,15 +161,20 @@ export default function ProjectsPage() {
         <div className="min-h-screen bg-[#050505] text-white p-6 pb-32">
 
             {/* Top Bar / HUD */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-6 border-b border-white/10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 pb-8 border-b border-white/5 relative">
+                {/* Decorative scanning line */}
+                <div className="absolute bottom-0 left-0 w-32 h-[1px] bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                
                 <div className="space-y-1">
-                    <div className="flex items-center gap-2 text-emerald-500 mb-2">
-                        <Activity className="w-4 h-4" />
-                        <span className="text-[10px] uppercase tracking-[0.2em] font-bold">Activity Control</span>
+                    <div className="flex items-center gap-2 text-emerald-500/60 mb-3">
+                        <Activity className="w-3 h-3 animate-pulse" />
+                        <span className="text-[10px] uppercase tracking-[0.4em] font-mono font-bold">Activity Control</span>
                     </div>
                     <div className="flex items-baseline gap-4">
-                        <h1 className={`${playfair.className} text-3xl text-white`}>Project Neural Net</h1>
-                        <span className="text-xs font-mono text-white/30">v5.0.2</span>
+                        <h1 className={`${playfair.className} text-5xl text-white tracking-widest uppercase`}>Project Neural Net</h1>
+                        <div className="flex items-center gap-2 px-2 py-0.5 bg-white/5 rounded border border-white/10">
+                            <span className="text-[10px] font-mono text-emerald-500/80 font-bold tracking-widest">v5.0.2</span>
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -170,7 +193,7 @@ export default function ProjectsPage() {
                         </div>
                         <div className="text-center">
                             <div className="text-blue-500 font-bold text-lg leading-none">{stats?.overallProgress || 0}%</div>
-                            <div className="tracking-wider">VELOCITY</div>
+                            <div className="tracking-wider">LATTICE COMPLETION</div>
                         </div>
                         {/* Global Constraint Toggle */}
                         <div
@@ -182,20 +205,30 @@ export default function ProjectsPage() {
                         </div>
                     </div>
                     <ProjectCreationSheet
-                        onProjectCreated={loadProjects}
+                        open={isCreationSheetOpen}
+                        onOpenChange={setIsCreationSheetOpen}
+                        onProjectCreated={(id) => {
+                            setIsCreationSheetOpen(false)
+                            loadProjects().then(() => {
+                                if (id) setSelectedId(id)
+                            })
+                        }}
                         areas={areas}
                         defaultAreaId={selectedAreaId || undefined}
+                        defaultStatus={defaultStatusForCreation}
                     />
                 </div>
             </div>
 
-            {/* Area Tabs */}
-            <AreasList
-                areas={areas}
-                selectedAreaId={selectedAreaId}
-                onSelectArea={setSelectedAreaId}
-                onReorderAreas={(newAreas) => setAreas(newAreas)}
-            />
+            {/* Area Filter Dropdown */}
+            <div className="mb-8 flex items-center gap-4">
+                <AreaFilterDropdown
+                    areas={areas}
+                    selectedAreaId={selectedAreaId}
+                    onSelectArea={setSelectedAreaId}
+                />
+                <div className="h-[1px] flex-1 bg-white/5" />
+            </div>
 
 
 
@@ -215,7 +248,10 @@ export default function ProjectsPage() {
                                 if (project) handleUpdateProject(project, updates)
                             }}
                             onEditProject={(project: Entry) => setSelectedId(project.id)}
-                            onCreateProject={() => { }}
+                            onCreateProject={(status?: string) => { 
+                                setDefaultStatusForCreation(status?.toLowerCase())
+                                setIsCreationSheetOpen(true)
+                            }}
                         />
                     </div>
                 )}
@@ -226,9 +262,11 @@ export default function ProjectsPage() {
                 project={selectedProject || null}
                 onClose={() => setSelectedId(null)}
                 onUpdate={handleUpdateProject}
+                onDelete={handleDeleteProject}
                 linkedTasks={tasks.filter(t => t.data.Project === selectedId || t.data.projectId === selectedId)}
                 onCreateTask={handleCreateTask}
                 onUpdateTask={handleUpdateTask}
+                onDeleteLinkedTask={handleDeleteTask}
                 areas={areas}
                 habits={habits}
             />

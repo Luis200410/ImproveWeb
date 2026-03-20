@@ -396,6 +396,20 @@ class DataStore {
                     }
                 }
 
+                // Money system patch
+                if (system.id === 'money') {
+                    const allDefaults = this.getDefaultSystems();
+                    const moneyDefaults = allDefaults.find(d => d.id === 'money');
+                    // Always ensure money system has the latest hardcoded microapps (plaid refurbishment)
+                    if (moneyDefaults && system.microapps?.length !== moneyDefaults.microapps.length) {
+                        patched = true;
+                        return { ...system, microapps: moneyDefaults.microapps };
+                    } else if (moneyDefaults && system.microapps?.[0]?.id !== moneyDefaults.microapps[0].id) {
+                        patched = true;
+                        return { ...system, microapps: moneyDefaults.microapps };
+                    }
+                }
+
                 return system
             })
 
@@ -551,6 +565,76 @@ class DataStore {
             console.error('Error deleting entry:', error)
         }
     }
+
+    // Money System Decisions Storage
+    async saveMoneyDecision(userId: string, decision: any): Promise<void> {
+        // We persist decisions in the 'entries' table, utilizing its generic JSON state capabilities.
+        await this.addEntry(userId, 'money-decisions', {
+            ...decision,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    async getMoneyDecisions(userId: string, filterDateStr?: string): Promise<any[]> {
+        const rawEntries = await this.getEntries('money-decisions', userId);
+        
+        // Return structured data, optionally filtering by date (e.g. "2024-03-15")
+        return rawEntries
+            .filter(e => filterDateStr ? e.createdAt.startsWith(filterDateStr) : true)
+            .map(e => ({
+                entryId: e.id,
+                ...e.data,
+                createdAt: e.createdAt
+            }));
+    }
+
+    // Rate Limit / Plaid API Caching
+    async getPlaidCache(userId: string, endpointKey: string, maxAgeMinutes = 15): Promise<any | null> {
+        const rawEntries = await this.getEntries(`plaid-cache-${endpointKey}`, userId);
+        if (rawEntries.length === 0) return null;
+        
+        const sorted = rawEntries.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const latest = sorted[0];
+        
+        const now = new Date();
+        const cacheTime = new Date(latest.createdAt);
+        const ageMinutes = (now.getTime() - cacheTime.getTime()) / (1000 * 60);
+        
+        if (ageMinutes <= maxAgeMinutes) {
+            return latest.data;
+        }
+        return null;
+    }
+
+    async setPlaidCache(userId: string, endpointKey: string, data: any): Promise<void> {
+        const entries = await this.getEntries(`plaid-cache-${endpointKey}`, userId);
+        for(const entry of entries) {
+            await this.deleteEntry(entry.id);
+        }
+        await this.addEntry(userId, `plaid-cache-${endpointKey}`, data);
+    }
+
+    // Money Daily Decisions Action Queue API
+    async queueMoneyAction(userId: string, item: any): Promise<void> {
+        const existing = await this.getEntries('money-queue', userId);
+        if (!existing.some(e => e.data.id === item.id)) {
+            await this.addEntry(userId, 'money-queue', item);
+        }
+    }
+
+    async getMoneyQueue(userId: string): Promise<any[]> {
+        const entries = await this.getEntries('money-queue', userId);
+        return entries.map(e => ({ entryId: e.id, ...e.data }));
+    }
+
+    async removeMoneyQueueItem(userId: string, decisionId: string): Promise<void> {
+        const entries = await this.getEntries('money-queue', userId);
+        const target = entries.find(e => e.data.id === decisionId);
+        if (target) {
+            await this.deleteEntry(target.id);
+        }
+    }
+
 
     // Pomodoro Sessions
     async savePomodoroSession(session: Omit<PomodoroSession, 'id' | 'completedAt'>): Promise<void> {
@@ -724,113 +808,70 @@ class DataStore {
                 description: 'Financial management and wealth building',
                 microapps: [
                     {
-                        id: 'budget',
+                        id: 'today',
                         systemId: 'money',
-                        name: 'Budget Planner',
-                        description: 'Plan and track monthly budgets',
-                        icon: '📊',
-                        availableViews: ['table', 'chart'],
-                        defaultView: 'table',
-                        fields: [
-                            { name: 'Month', type: 'text', required: true },
-                            { name: 'Category', type: 'select', options: ['Housing', 'Food', 'Transport', 'Entertainment', 'Savings', 'Other'], required: true },
-                            { name: 'Budgeted Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Actual Amount', type: 'number', required: false, min: 0 }
-                        ]
+                        name: 'Today (Queue)',
+                        description: 'Decision queue',
+                        icon: '⚡',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [],
+                        customPath: '/systems/money/today'
                     },
                     {
-                        id: 'expenses',
+                        id: 'cash-flow',
                         systemId: 'money',
-                        name: 'Expense Tracker',
-                        description: 'Track daily expenses',
-                        icon: '💸',
-                        availableViews: ['list', 'table', 'chart'],
+                        name: 'Cash Flow',
+                        description: 'Horizon line chart',
+                        icon: '📈',
+                        availableViews: ['list'],
                         defaultView: 'list',
-                        fields: [
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Category', type: 'select', options: ['Housing', 'Food', 'Transport', 'Entertainment', 'Health', 'Other'], required: true },
-                            { name: 'Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Description', type: 'text', required: true },
-                            { name: 'Payment Method', type: 'select', options: ['Cash', 'Credit Card', 'Debit Card', 'Digital Wallet'], required: false }
-                        ]
+                        fields: [],
+                        customPath: '/systems/money/cash-flow'
+                    },
+                    {
+                        id: 'envelopes',
+                        systemId: 'money',
+                        name: 'Envelopes',
+                        description: 'Behavioral spending zones',
+                        icon: '🗂️',
+                        availableViews: ['list'],
+                        defaultView: 'list',
+                        fields: [],
+                        customPath: '/systems/money/envelopes'
                     },
                     {
                         id: 'income',
                         systemId: 'money',
-                        name: 'Income Tracker',
-                        description: 'Track income sources',
+                        name: 'Income',
+                        description: 'Irregular income classification',
                         icon: '💵',
-                        availableViews: ['list', 'table', 'chart'],
+                        availableViews: ['list'],
                         defaultView: 'list',
-                        fields: [
-                            { name: 'Date', type: 'date', required: true },
-                            { name: 'Source', type: 'text', required: true },
-                            { name: 'Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Type', type: 'select', options: ['Salary', 'Freelance', 'Investment', 'Gift', 'Other'], required: true },
-                            { name: 'Notes', type: 'textarea', required: false }
-                        ]
+                        fields: [],
+                        customPath: '/systems/money/income'
                     },
                     {
                         id: 'subscriptions',
                         systemId: 'money',
                         name: 'Subscriptions',
-                        description: 'Recurring charges to monitor',
+                        description: 'Total structural outflow',
                         icon: '🔁',
-                        availableViews: ['list', 'table'],
+                        availableViews: ['list'],
                         defaultView: 'list',
-                        fields: [
-                            { name: 'Name', type: 'text', required: true },
-                            { name: 'Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Billing Cycle', type: 'select', options: ['Weekly', 'Monthly', 'Quarterly', 'Yearly'], required: true },
-                            { name: 'Next Charge', type: 'date', required: true },
-                            { name: 'Category', type: 'select', options: ['Productivity', 'Entertainment', 'Utilities', 'Finance', 'Other'], required: false }
-                        ]
+                        fields: [],
+                        customPath: '/systems/money/subscriptions'
                     },
                     {
-                        id: 'savings-goals',
+                        id: 'simulator',
                         systemId: 'money',
-                        name: 'Savings Goals',
-                        description: 'Targets and progress',
+                        name: 'Target Simulator',
+                        description: 'Trade-off analysis',
                         icon: '🎯',
-                        availableViews: ['list', 'table'],
+                        availableViews: ['list'],
                         defaultView: 'list',
-                        fields: [
-                            { name: 'Goal Name', type: 'text', required: true },
-                            { name: 'Target Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Current Amount', type: 'number', required: true, min: 0 },
-                            { name: 'Due Date', type: 'date', required: false },
-                            { name: 'Category', type: 'select', options: ['Emergency', 'Vacation', 'Investment', 'Purchase', 'Other'], required: false }
-                        ]
-                    },
-                    {
-                        id: 'investment-hub',
-                        systemId: 'money',
-                        name: 'Investment Hub',
-                        description: 'Real-time tracking of brokerage assets',
-                        icon: '📈',
-                        availableViews: ['list', 'table', 'chart'],
-                        defaultView: 'chart',
-                        fields: [
-                            { name: 'Asset Name', type: 'text', required: true },
-                            { name: 'Ticker', type: 'text', required: false },
-                            { name: 'Amount', type: 'number', required: true },
-                            { name: 'Type', type: 'select', options: ['Stock', 'Crypto', 'ETFs', 'Mutual Funds', 'Other'], required: true }
-                        ]
-                    },
-                    {
-                        id: 'net-worth-radar',
-                        systemId: 'money',
-                        name: 'Net Worth Radar',
-                        description: 'Asset vs Liability tracking',
-                        icon: '📡',
-                        availableViews: ['list', 'table', 'chart'],
-                        defaultView: 'chart',
-                        fields: [
-                            { name: 'Item', type: 'text', required: true },
-                            { name: 'Category', type: 'select', options: ['Cash & Bank', 'Investments', 'Real Estate', 'Cars', 'Personal Items', 'Credit Cards', 'Loans', 'Mortgages', 'Other'], required: true },
-                            { name: 'Value', type: 'number', required: true },
-                            { name: 'Is Liability', type: 'checkbox', required: false }
-                        ]
+                        fields: [],
+                        customPath: '/systems/money/simulator'
                     }
                 ]
             },
@@ -1346,6 +1387,7 @@ class DataStore {
                         fields: [
                             { name: 'Note', type: 'textarea', required: true },
                             { name: 'Date', type: 'date', required: true },
+                            { name: 'Deadline', type: 'date', required: false },
                             { name: 'Processed', type: 'checkbox', required: false }
                         ]
                     },

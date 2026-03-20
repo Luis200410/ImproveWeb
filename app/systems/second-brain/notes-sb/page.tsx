@@ -11,6 +11,7 @@ import { NoteDetailView } from '@/components/second-brain/notes/note-detail-view
 import { NoteForge } from '@/components/second-brain/notes/note-forge'
 import { NoteBoard } from '@/components/second-brain/notes/note-board'
 import { ProjectEntry } from '@/components/second-brain/projects/project-utils'
+import { ProjectFilterDropdown } from '@/components/second-brain/matrix/project-filter-dropdown'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
@@ -123,10 +124,18 @@ export default function NotesSystem() {
     }
 
     const handleUpdateNote = async (id: string, updates: any) => {
-        await dataStore.updateEntry(id, updates)
-
         // Optimistic update
         setNotes(prev => prev.map(n => n.id === id ? { ...n, data: { ...n.data, ...updates } } : n))
+        
+        await dataStore.updateEntry(id, updates)
+    }
+
+    const handleDeleteNote = async (id: string) => {
+        // Optimistic delete
+        setNotes(prev => prev.filter(n => n.id !== id))
+        setSelectedNoteId(null)
+        
+        await dataStore.deleteEntry(id)
     }
 
     const handleMoveNote = async (note: Entry, targetTaskId: string) => {
@@ -167,71 +176,54 @@ export default function NotesSystem() {
             <div className={`flex-1 flex flex-col min-w-0 ${selectedNoteId ? 'hidden lg:flex' : 'flex'}`}>
                 {/* Header */}
                 <div className="p-8 pb-0 border-b border-white/10 shrink-0">
-                    <div className="flex justify-between items-end mb-6">
-                        <div>
-                            <div className="text-[10px] uppercase tracking-[0.3em] font-bold text-white/40 mb-1">Second Brain OS</div>
-                            <h1 className={`${playfair.className} text-4xl leading-none`}>
-                                Neural <i className="text-amber-500">Matrix</i>
-                            </h1>
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-1 h-6 bg-amber-500" />
+                                <h1 className={`${playfair.className} text-2xl leading-none uppercase tracking-widest`}>
+                                    Neural <i className="text-amber-500 font-bold italic lowercase">Matrix</i>
+                                </h1>
+                            </div>
+                            
+                            <div className="h-4 w-[1px] bg-white/10 hidden sm:block" />
+
+                            <ProjectFilterDropdown
+                                projects={projects as any[]}
+                                selectedProjectId={selectedProjectId}
+                                onSelectProject={(id) => setSelectedProjectId(id)}
+                            />
                         </div>
                         <div className="flex items-center gap-4">
+                            <div className="relative group/search max-w-[240px] flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20 group-focus-within/search:text-amber-500/50 transition-colors" />
+                                <input
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    placeholder="LOOK_UP_MATRIX..."
+                                    className="bg-[#0A0A0A] border border-white/10 rounded-lg px-3 pl-8 py-1.5 text-[10px] font-mono text-white/70 focus:outline-none focus:border-amber-500/50 transition-colors placeholder:text-white/10 w-48 uppercase tracking-widest"
+                                />
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-white/20 font-mono pointer-events-none group-focus-within/search:text-amber-500/50 transition-colors uppercase">
+                                    CMD_K
+                                </div>
+                            </div>
+                            {selectedProjectId && (
+                                <div className="hidden lg:flex items-center gap-2 text-[10px] font-mono text-amber-500/70 uppercase border-l border-white/10 pl-4 h-4">
+                                    <Cpu className="w-3 h-3 animate-pulse" />
+                                    <span>Active_Context: {activeProject?.data.title || 'ALIGNED'}</span>
+                                </div>
+                            )}
                             <button
                                 onClick={() => handleOpenForge()}
-                                className="bg-[#0A0A0A] border border-white/10 hover:bg-white/5 text-white px-4 py-2 rounded-sm flex items-center gap-2 transition-colors uppercase tracking-wider text-xs font-bold"
+                                className="bg-amber-500 text-black px-4 py-1.5 rounded-lg flex items-center gap-2 transition-all hover:bg-amber-400 font-bold uppercase tracking-wider text-[10px] shadow-[0_0_20px_rgba(245,158,11,0.2)]"
                             >
-                                <Plus className="w-4 h-4 text-amber-500" /> New Entry
+                                <Plus className="w-4 h-4" /> New Note
                             </button>
                         </div>
                     </div>
-
-                    {/* Project Tabs */}
-                    <div className="flex items-center gap-1 overflow-x-auto pb-0 custom-scrollbar hide-scrollbar">
-                        <button
-                            onClick={() => setSelectedProjectId(null)}
-                            className={`
-                                px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap
-                                ${!selectedProjectId ? 'border-amber-500 text-white' : 'border-transparent text-white/30 hover:text-white'}
-                            `}
-                        >
-                            All / Unfiltered
-                        </button>
-                        {filteredProjects.map(project => (
-                            <button
-                                key={project.id}
-                                onClick={() => setSelectedProjectId(project.id)}
-                                className={`
-                                    px-4 py-2 text-xs font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap
-                                    ${selectedProjectId === project.id ? 'border-amber-500 text-white' : 'border-transparent text-white/30 hover:text-white'}
-                                `}
-                            >
-                                {project.data.title}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Toolbar */}
-                <div className="px-8 py-4 border-b border-white/10 flex items-center gap-4 shrink-0 bg-[#0A0A0A]">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
-                        <input
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="SEARCH MATRIX..."
-                            className="w-full bg-white/5 border border-white/10 rounded-sm py-1.5 pl-8 pr-4 text-[10px] font-mono text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 uppercase tracking-wider"
-                        />
-                    </div>
-                    {/* Display current context */}
-                    {selectedProjectId && (
-                        <div className="flex items-center gap-2 text-[10px] font-mono text-amber-500 uppercase">
-                            <Cpu className="w-3 h-3" />
-                            <span>Context: {activeProject?.data.title}</span>
-                        </div>
-                    )}
                 </div>
 
                 {/* Board Content */}
-                <div className="flex-1 overflow-hidden p-8">
+                <div className="flex-1 overflow-hidden p-8 pt-4">
                     {selectedProjectId ? (
                         <div className="h-full">
                             <NoteBoard
@@ -265,15 +257,28 @@ export default function NotesSystem() {
             </div>
 
             {/* Note Detail Overlay (Right Sidebar or Full Modal) */}
-            {isPopupMode ? (
+            <AnimatePresence>
+                {selectedNoteId && !isPopupMode && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedNoteId(null)}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45]"
+                    />
+                )}
+            </AnimatePresence>
+
+            {selectedNoteId && isPopupMode ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedNoteId(null)} />
                     <div className="relative z-10 w-full max-w-5xl h-[90vh] rounded-lg overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] border border-white/10">
-                        {selectedNoteId && activeNote && (
+                        {activeNote && (
                             <NoteDetailView
                                 note={activeNote}
                                 onClose={() => setSelectedNoteId(null)}
                                 onUpdate={handleUpdateNote}
+                                onDelete={handleDeleteNote}
                                 projectMap={projectMap}
                                 areaMap={areaMap}
                                 taskMap={taskMap}
@@ -286,16 +291,19 @@ export default function NotesSystem() {
                         )}
                     </div>
                 </div>
-            ) : (
+            ) : null}
+
+            {!isPopupMode && (
                 <div className={`
                     fixed inset-y-0 right-0 w-full lg:w-[600px] bg-[#080808] border-l border-white/10 transform transition-transform duration-300 z-50
-                    ${selectedNoteId ? 'translate-x-0' : 'translate-x-full'}
+                    ${selectedNoteId ? 'translate-x-0 shadow-[-20px_0_50px_rgba(0,0,0,0.5)]' : 'translate-x-full'}
                 `}>
                     {selectedNoteId && activeNote && (
                         <NoteDetailView
                             note={activeNote}
                             onClose={() => setSelectedNoteId(null)}
                             onUpdate={handleUpdateNote}
+                            onDelete={handleDeleteNote}
                             projectMap={projectMap}
                             areaMap={areaMap}
                             taskMap={taskMap}

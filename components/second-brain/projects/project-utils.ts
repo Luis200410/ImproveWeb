@@ -28,7 +28,7 @@ export interface ProjectData {
     blockedBy?: string; // Optional text description of blocker
 
     // Status (Kanban)
-    status: 'inbox' | 'active' | 'done';
+    status: 'inbox' | 'active' | 'done' | 'backlog';
 
     // Extended Details (Sidebar)
     notes?: { id: string, title: string, content: string, createdAt: string }[];
@@ -39,14 +39,21 @@ export type ProjectEntry = Entry & { data: ProjectData };
 
 // 2. Logic & Computed Values
 
-export const calculateProgress = (subtasks: any[] = []): number => {
-    if (!subtasks || subtasks.length === 0) return 0;
-    // Handle both {completed: boolean} and Entry objects with data.status
-    const completed = subtasks.filter(t => {
-        if (typeof t.completed === 'boolean') return t.completed;
-        const status = t.data?.status || t.data?.Status;
-        return status === 'done' || status === 'Done' || status === 'completed';
-    }).length;
+export const calculateProgress = (project: ProjectEntry, linkedTasks: Entry[] = []): number => {
+    // 1. If we have real linked tasks, use them as the source of truth
+    if (linkedTasks.length > 0) {
+        const completed = linkedTasks.filter(t => {
+            const status = t.data?.Status || t.data?.status;
+            return status === 'done' || status === 'Done' || status === 'Completed' || status === true;
+        }).length;
+        return Math.round((completed / linkedTasks.length) * 100);
+    }
+
+    // 2. Fallback to embedded subtasks
+    const subtasks = project.data.subtasks || [];
+    if (subtasks.length === 0) return 0;
+    
+    const completed = subtasks.filter(t => t.completed).length;
     return Math.round((completed / subtasks.length) * 100);
 };
 
@@ -90,31 +97,56 @@ export interface ProjectStats {
     };
 }
 
-export const calculateProjectStats = (projects: ProjectEntry[]): ProjectStats => {
-    const totalProjects = projects.length;
-    const activeProjects = projects.filter(p => p.data.status === 'active');
-    const completedProjects = projects.filter(p => p.data.status === 'done');
-    const inboxProjects = projects.filter(p => p.data.status === 'inbox');
+export const calculateProjectStats = (projects: ProjectEntry[], allTasks: Entry[] = []): ProjectStats => {
+    const activeProjects = projects.filter(p => p.data.status === 'active' && !(p.data as any).archived);
+    const completedProjects = projects.filter(p => p.data.status === 'done' && !(p.data as any).archived);
+    const inboxProjects = projects.filter(p => p.data.status === 'inbox' && !(p.data as any).archived);
 
-    // Overall Progress (Average of active projects only)
-    const totalActiveProgress = activeProjects.reduce((sum, p) => sum + calculateProgress(p.data.subtasks), 0);
-    const overallProgress = activeProjects.length > 0 ? Math.round(totalActiveProgress / activeProjects.length) : 0;
-
-    const roiDistribution = {
-        High: projects.filter(p => p.data.priority === 'High').length,
-        Medium: projects.filter(p => p.data.priority === 'Medium').length,
-        Low: projects.filter(p => p.data.priority === 'Low').length,
+    // Helper to get linked tasks for a project
+    const getTasksForProject = (projectId: string) => {
+        return allTasks.filter(t => {
+            const pRel = t.data.Project || t.data.projectId || t.data.project;
+            const relId = typeof pRel === 'object' ? pRel?.id : pRel;
+            return relId === projectId;
+        });
     };
 
-    // RAG Distribution (Active only usually matters, but let's do all for now)
+    // Overall Progress (Total completed tasks / Total tasks across active projects)
+    let totalTasksCount = 0;
+    let completedTasksCount = 0;
+
+    activeProjects.forEach(p => {
+        const pTasks = getTasksForProject(p.id);
+        const subtasks = p.data.subtasks || [];
+        
+        if (pTasks.length > 0) {
+            totalTasksCount += pTasks.length;
+            completedTasksCount += pTasks.filter(t => {
+                const s = t.data?.Status || t.data?.status;
+                return s === 'Done' || s === 'done' || s === 'Completed' || s === 'completed' || s === true;
+            }).length;
+        } else if (subtasks.length > 0) {
+            totalTasksCount += subtasks.length;
+            completedTasksCount += subtasks.filter(t => t.completed).length;
+        }
+    });
+    
+    const overallProgress = totalTasksCount > 0 ? Math.round((completedTasksCount / totalTasksCount) * 100) : 0;
+
+    const roiDistribution = {
+        High: projects.filter(p => p.data.priority === 'High' && !(p.data as any).archived).length,
+        Medium: projects.filter(p => p.data.priority === 'Medium' && !(p.data as any).archived).length,
+        Low: projects.filter(p => p.data.priority === 'Low' && !(p.data as any).archived).length,
+    };
+
     const ragDistribution = {
-        Red: projects.filter(p => p.data.ragStatus === 'Red').length,
-        Amber: projects.filter(p => p.data.ragStatus === 'Amber').length,
-        Green: projects.filter(p => p.data.ragStatus === 'Green').length,
+        Red: projects.filter(p => p.data.ragStatus === 'Red' && !(p.data as any).archived).length,
+        Amber: projects.filter(p => p.data.ragStatus === 'Amber' && !(p.data as any).archived).length,
+        Green: projects.filter(p => p.data.ragStatus === 'Green' && !(p.data as any).archived).length,
     };
 
     return {
-        totalProjects,
+        totalProjects: projects.filter(p => !(p.data as any).archived).length,
         activeCount: activeProjects.length,
         completedCount: completedProjects.length,
         backlogCount: inboxProjects.length,

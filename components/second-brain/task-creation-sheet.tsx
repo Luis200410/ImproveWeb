@@ -18,7 +18,7 @@ const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 type Option = { value: string; label: string }
 
-export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
+export function TaskCreationSheet({ trigger, onTaskCreated }: { trigger?: React.ReactNode, onTaskCreated?: () => void }) {
     const router = useRouter()
     const [open, setOpen] = useState(false)
     const [userId, setUserId] = useState<string>('defaultUser')
@@ -26,7 +26,7 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
     const [saving, setSaving] = useState(false)
 
     // Data for relations
-    const [projects, setProjects] = useState<Option[]>([])
+    const [projects, setProjects] = useState<(Option & { area?: string })[]>([])
     const [notes, setNotes] = useState<Option[]>([])
 
     // Form State
@@ -69,7 +69,11 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
         const projEntries = await dataStore.getEntries('projects-sb', uid)
         const noteEntries = await dataStore.getEntries('notes-sb', uid)
 
-        setProjects(projEntries.map(p => ({ value: p.id, label: p.data['Project Name'] || 'Untitled' })))
+        setProjects(projEntries.map(p => ({ 
+            value: p.id, 
+            label: p.data['Project Name'] || 'Untitled',
+            area: p.data.Area
+        })))
         setNotes(noteEntries.map(n => ({ value: n.id, label: n.data['Title'] || 'Untitled' })))
     }
 
@@ -132,7 +136,8 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                 'Assignee': '', 'Status': false, 'Lane': 'pending'
             })
             // Force refresh if needed, or let optimistic UI handle it (but this is global add, so usually needs manual refresh or SWR)
-            setTimeout(() => window.location.reload(), 1500) // Simple brute force for now to ensure all views update, wait briefly for toast
+            if (onTaskCreated) onTaskCreated()
+            // setTimeout(() => window.location.reload(), 1500) // Gone
         } catch (e) {
             console.error(e)
             sileo.error({ description: 'Failed to initialize Neural Fragment' })
@@ -237,7 +242,11 @@ export function TaskCreationSheet({ trigger }: { trigger?: React.ReactNode }) {
                                             <CustomSelect
                                                 options={projects}
                                                 value={form.Project}
-                                                onChange={v => setField('Project', v)}
+                                                onChange={v => {
+                                                    setField('Project', v)
+                                                    const proj = projects.find(p => p.value === v)
+                                                    if (proj?.area) setField('Area', proj.area)
+                                                }}
                                                 placeholder="Select active project..."
                                             />
                                         ) : (

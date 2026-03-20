@@ -14,6 +14,7 @@ import { PotentialBridgeAnimation } from "@/components/ui/potential-bridge-anima
 import { PassiveDataAnimation } from "@/components/ui/passive-data-animation";
 import { PracticalLabAnimation } from "@/components/ui/practical-lab-animation";
 import { EvolutionCtaAnimation } from '@/components/ui/evolution-cta-animation';
+import { TheSystemSection } from '@/components/landing/the-system-section';
 
 
 const bebas = Bebas_Neue({ subsets: ["latin"] });
@@ -153,7 +154,10 @@ export default function Home() {
         <PracticalLabAnimation />
       </section>
 
-      {/* 6. Evolution CTA (Final sequence) */}
+      {/* 6. The System section */}
+      <TheSystemSection />
+
+      {/* 7. Evolution CTA (Final sequence) */}
       <section ref={evolutionRef}>
         <EvolutionCtaAnimation activeTime={currentTime} />
       </section>

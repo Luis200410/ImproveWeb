@@ -17,13 +17,27 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })
 
-export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], defaultAreaId }: {
+export function ProjectCreationSheet({ 
+    trigger, 
+    onProjectCreated, 
+    areas = [], 
+    defaultAreaId,
+    open: externalOpen,
+    onOpenChange: externalOnOpenChange,
+    defaultStatus
+}: {
     trigger?: React.ReactNode,
-    onProjectCreated?: () => void,
+    onProjectCreated?: (id: string) => void,
     areas?: Entry[],
-    defaultAreaId?: string
+    defaultAreaId?: string,
+    open?: boolean,
+    onOpenChange?: (open: boolean) => void,
+    defaultStatus?: string
 }) {
-    const [open, setOpen] = useState(false)
+    const [internalOpen, setInternalOpen] = useState(false)
+    const open = externalOpen !== undefined ? externalOpen : internalOpen
+    const setOpen = externalOnOpenChange || setInternalOpen
+
     const [step, setStep] = useState(0) // 0 = Mode Selection
     const [saving, setSaving] = useState(false)
     const [generating, setGenerating] = useState(false)
@@ -47,12 +61,16 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
         Area: defaultAreaId
     })
 
-    // Update form when defaultAreaId changes or sheet opens
+    // Update form when defaultAreaId or defaultStatus changes or sheet opens
     useEffect(() => {
-        if (open && defaultAreaId) {
-            setForm(prev => ({ ...prev, Area: defaultAreaId === 'unassigned' ? undefined : defaultAreaId }))
+        if (open) {
+            setForm(prev => ({ 
+                ...prev, 
+                Area: defaultAreaId === 'unassigned' ? undefined : (defaultAreaId || prev.Area),
+                status: (defaultStatus as any) || prev.status || 'inbox'
+            }))
         }
-    }, [open, defaultAreaId])
+    }, [open, defaultAreaId, defaultStatus])
 
     const setField = (key: keyof ProjectData, value: any) => setForm(prev => ({ ...prev, [key]: value }))
 
@@ -171,14 +189,14 @@ export function ProjectCreationSheet({ trigger, onProjectCreated, areas = [], de
 
         setSaving(false)
         setOpen(false)
-        if (onProjectCreated) onProjectCreated()
+        if (onProjectCreated) onProjectCreated(projectId)
 
         // Reset
         setForm({ title: '', complexity: '3', priority: 'Medium', ragStatus: 'Green', subtasks: [], blockedBy: '' })
         setStep(0)
         setMode('manual')
         setGeneratedTasks([])
-        window.location.reload()
+        // window.location.reload()
     }
 
     return (

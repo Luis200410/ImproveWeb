@@ -24,15 +24,16 @@ interface ProjectDetailsSidebarProps {
     project: ProjectEntry | null
     onClose: () => void
     onUpdate: (project: ProjectEntry, updates: Partial<ProjectEntry['data']>) => void
+    onDelete?: (projectId: string) => void
     linkedTasks?: Entry[]
     onCreateTask?: (taskData: any) => void
     onUpdateTask?: (task: Entry, updates: Partial<Entry['data']>) => void
-    onDeleteLinkedTask?: (taskId: string) => Promise<void>
+    onDeleteLinkedTask?: (taskId: string) => void
     areas?: Entry[]
     habits?: Entry[]
 }
 
-export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks = [], onCreateTask, onUpdateTask, onDeleteLinkedTask, areas = [], habits = [] }: ProjectDetailsSidebarProps) {
+export function ProjectDetailsSidebar({ project, onClose, onUpdate, onDelete, linkedTasks = [], onCreateTask, onUpdateTask, onDeleteLinkedTask, areas = [], habits = [] }: ProjectDetailsSidebarProps) {
     const [showCleanupModal, setShowCleanupModal] = useState(false)
     const deadline = getProjectDeadline(project)
     // Helper to calculate time remaining
@@ -42,7 +43,7 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
         return days < 0 ? `${Math.abs(days)}d Overdue` : `${days}d Remaining`
     }
 
-    const progress = project ? calculateProgress(project.data.subtasks) : 0
+    const progress = project ? calculateProgress(project, linkedTasks) : 0
 
     return (
         <>
@@ -214,6 +215,8 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                                             <TaskDetailsSheet
                                                 key={task.id}
                                                 task={task}
+                                                onUpdate={(updates) => onUpdateTask && onUpdateTask(task, updates)}
+                                                onDelete={() => onDeleteLinkedTask && onDeleteLinkedTask(task.id)}
                                                 trigger={
                                                     <div className="flex items-start gap-3 p-3 bg-white/5 rounded border border-white/5 hover:border-white/20 transition-all group cursor-pointer text-left">
                                                         <div
@@ -414,8 +417,8 @@ export function ProjectDetailsSidebar({ project, onClose, onUpdate, linkedTasks 
                             await dataStore.deleteEntry(project.id)
                             sileo.success({ description: 'Project dissolved. Items redistributed.' })
                             setShowCleanupModal(false)
+                            if (onDelete) onDelete(project.id)
                             onClose()
-                            setTimeout(() => window.location.reload(), 1500)
                         }}
                     />
                 )

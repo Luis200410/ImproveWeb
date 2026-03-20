@@ -14,6 +14,7 @@ function TasksMatrixContent() {
     const [tasks, setTasks] = useState<Entry[]>([])
     const [projects, setProjects] = useState<Entry[]>([])
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+    const [searchQuery, setSearchQuery] = useState('')
     const [userId, setUserId] = useState<string>('defaultUser')
     const searchParams = useSearchParams()
     const highlightTaskId = searchParams.get('task')
@@ -108,6 +109,12 @@ function TasksMatrixContent() {
         ? tasks.filter(t => t.data.Project === selectedProjectId || t.data.projectId === selectedProjectId)
         : tasks
 
+    const handleDeleteTask = async (taskId: string) => {
+        // Optimistic delete
+        setTasks(prev => prev.filter(t => t.id !== taskId))
+        // Persist has handled in the sheet already, but we could do it here too if we moved logic
+    }
+
     return (
         <div className="min-h-screen bg-[#020202] text-white font-sans overflow-hidden flex flex-col">
             <Navigation />
@@ -115,20 +122,30 @@ function TasksMatrixContent() {
             <DragDropContext onDragEnd={handleDragEnd}>
                 <div className="flex-1 flex pt-20 h-screen overflow-hidden">
                     {/* Left Sidebar: Neural Calendar (Inbox) */}
-                    <NeuralCalendar tasks={filteredTasks} />
+                    <NeuralCalendar 
+                        tasks={filteredTasks} 
+                        selectedProjectId={selectedProjectId} 
+                        searchQuery={searchQuery}
+                        onUpdateTask={handleUpdateTask}
+                        onDeleteTask={handleDeleteTask}
+                        onTaskCreated={() => loadData(userId)}
+                    />
 
                     {/* Main Content: Logical Task Matrix */}
-                    <main className="flex-1 relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/10 via-[#050505] to-[#050505]">
+                    <main className="flex-1 relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/5 via-[#050505] to-[#050505]">
                         {/* Background Grid Accent */}
                         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px] pointer-events-none" />
 
                         <TaskMatrix
                             tasks={filteredTasks}
                             onUpdateTask={handleUpdateTask}
+                            onDeleteTask={handleDeleteTask}
                             projects={projects}
                             selectedProjectId={selectedProjectId}
                             onSelectProject={setSelectedProjectId}
                             highlightTaskId={highlightTaskId ?? undefined}
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
                         />
                     </main>
                 </div>
