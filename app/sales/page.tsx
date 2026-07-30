@@ -27,6 +27,12 @@ import {
     BookOpenCheck,
     Inbox,
     Archive,
+    Lock,
+    Eye,
+    Server,
+    Cloud,
+    FileDown,
+    Mail,
 } from "lucide-react";
 import { ImproveLogo } from "@/components/ui/improve-logo";
 import { Menu, MenuItem } from "@/components/ui/navbar-menu";
@@ -475,6 +481,270 @@ export default function SalesPage() {
                                                         </div>
                                                     </div>
                                                 </div>
+
+                                                {/* ═══ PRIVACY POLICY SECTION ═══ */}
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 40 }}
+                                                    whileInView={{ opacity: 1, y: 0 }}
+                                                    viewport={{ once: true }}
+                                                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                                                    className="mt-12 md:mt-20"
+                                                >
+                                                    {/* Privacy Policy Header */}
+                                                    <div className="text-center mb-10 md:mb-16">
+                                                        <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
+                                                            <Shield className="w-4 h-4 text-amber-400" />
+                                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Privacy Infrastructure</span>
+                                                        </div>
+                                                        <h3 className={`${bebas.className} text-4xl md:text-6xl lg:text-7xl text-white leading-none tracking-tight mb-4`}>
+                                                            Privacy Policy
+                                                        </h3>
+                                                        <p className="text-xs md:text-sm text-white/30 font-mono tracking-wider">
+                                                            Effective Date: March 25, 2026
+                                                        </p>
+                                                        <p className="text-sm md:text-base text-white/50 mt-6 max-w-2xl mx-auto leading-relaxed font-light">
+                                                            At Second Brain, we believe your thoughts, goals, and life data belong to you—and only you. Our &ldquo;Mobile-Native Life OS&rdquo; is built on a <span className="text-amber-400 font-semibold">Privacy-First, Local-First</span> architecture. This policy explains how we handle your information across our three tiers of intelligence and local storage.
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Policy Sections Container */}
+                                                    <div className="space-y-6 md:space-y-8">
+
+                                                        {/* Section 1: The Local-First Guarantee */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            whileInView={{ opacity: 1, x: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5 }}
+                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-emerald-500/20 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-shadow">
+                                                                    <Lock className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/50">Section 01</span>
+                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>The Local-First Guarantee</h4>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
+                                                                Unlike traditional cloud-based productivity tools, Second Brain is built to live on your device.
+                                                            </p>
+                                                            <div className="space-y-4">
+                                                                {[
+                                                                    { label: 'Device Storage', desc: 'By default, your notes, tasks, areas, and projects are stored in a local database on your encrypted device.' },
+                                                                    { label: 'Offline Functionality', desc: 'Core features, including searching and organizing your Second Brain, do not require an internet connection or account.' },
+                                                                    { label: 'Data Ownership', desc: 'You can export your entire database in open formats (Markdown, JSON, CSV) at any time.' },
+                                                                ].map((item, idx) => (
+                                                                    <div key={idx} className="flex gap-3">
+                                                                        <div className="w-1 shrink-0 rounded-full bg-emerald-500/30 mt-1" />
+                                                                        <div>
+                                                                            <span className="text-xs font-bold text-emerald-400 block mb-1">{item.label}</span>
+                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+
+                                                        {/* Section 2: Three-Tier AI Architecture */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            whileInView={{ opacity: 1, x: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5, delay: 0.1 }}
+                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-indigo-500/20 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(99,102,241,0.2)] transition-shadow">
+                                                                    <Server className="w-5 h-5 md:w-6 md:h-6 text-indigo-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500/50">Section 02</span>
+                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Our Three-Tier AI Architecture</h4>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
+                                                                To provide an intelligent &ldquo;Second Brain&rdquo; experience while maintaining privacy, we route data through three distinct tiers:
+                                                            </p>
+                                                            {/* AI Tier Table */}
+                                                            <div className="overflow-x-auto rounded-xl border border-white/5">
+                                                                <table className="w-full text-left">
+                                                                    <thead>
+                                                                        <tr className="border-b border-white/10 bg-white/[0.02]">
+                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Tier</th>
+                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Function</th>
+                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Privacy Detail</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <tr className="border-b border-white/5 hover:bg-emerald-500/[0.02] transition-colors">
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="text-xs font-bold text-emerald-400">Tier 1: OS-Native</span>
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-xs text-white/40">OCR, Entity Tagging, Search</td>
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
+                                                                                    <Lock className="w-3 h-3" /> 100% On-Device
+                                                                                </span>
+                                                                                <p className="text-[10px] text-white/20 mt-1.5">Uses Apple/Android system frameworks. No data leaves the device.</p>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr className="border-b border-white/5 hover:bg-amber-500/[0.02] transition-colors">
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="text-xs font-bold text-amber-400">Tier 2: Local LLM</span>
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-xs text-white/40">Transcription, Summaries, Triage</td>
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400">
+                                                                                    <Lock className="w-3 h-3" /> 100% On-Device
+                                                                                </span>
+                                                                                <p className="text-[10px] text-white/20 mt-1.5">Uses a private model downloaded to your phone. No data leaves the device.</p>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr className="hover:bg-indigo-500/[0.02] transition-colors">
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="text-xs font-bold text-indigo-400">Tier 3: Cloud AI</span>
+                                                                            </td>
+                                                                            <td className="px-4 py-4 text-xs text-white/40">Complex Reverse Engineering</td>
+                                                                            <td className="px-4 py-4">
+                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400">
+                                                                                    <Eye className="w-3 h-3" /> Opt-In Only
+                                                                                </span>
+                                                                                <p className="text-[10px] text-white/20 mt-1.5">Only triggered for complex tasks with your consent. Data is sent to Anthropic (Claude) via encrypted API and is not used to train models.</p>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </motion.div>
+
+                                                        {/* Section 3: Integrations */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            whileInView={{ opacity: 1, x: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5, delay: 0.15 }}
+                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-purple-500/20 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] transition-shadow">
+                                                                    <Eye className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-500/50">Section 03</span>
+                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Integrations (Read-Only by Default)</h4>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
+                                                                When you connect third-party tools (e.g., Notion, Jira, Gmail), the Second Brain acts as a &ldquo;view&rdquo; into those services.
+                                                            </p>
+                                                            <div className="space-y-4">
+                                                                {[
+                                                                    { label: 'Credentials', desc: 'OAuth tokens are stored exclusively in your device\'s secure Keychain (iOS) or EncryptedSharedPreferences (Android).' },
+                                                                    { label: 'Passive Capture', desc: 'We perform delta syncs to bring your data into your local Inbox. This data remains on your device unless you enable Cloud Sync.' },
+                                                                ].map((item, idx) => (
+                                                                    <div key={idx} className="flex gap-3">
+                                                                        <div className="w-1 shrink-0 rounded-full bg-purple-500/30 mt-1" />
+                                                                        <div>
+                                                                            <span className="text-xs font-bold text-purple-400 block mb-1">{item.label}</span>
+                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+
+                                                        {/* Section 4: Cloud Sync & Backup */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, x: 20 }}
+                                                            whileInView={{ opacity: 1, x: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5, delay: 0.2 }}
+                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-cyan-500/20 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-shadow">
+                                                                    <Cloud className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50">Section 04</span>
+                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Cloud Sync &amp; Backup</h4>
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
+                                                                If you choose a paid plan (Storage + AI), we provide encrypted sync to keep your Second Brain updated across devices.
+                                                            </p>
+                                                            <div className="space-y-4">
+                                                                {[
+                                                                    { label: 'End-to-End Logic', desc: 'We prioritize local writing. Syncing only happens after data is safely committed to your device.' },
+                                                                    { label: 'User-Controlled Mirror', desc: 'You may opt to backup a mirror of your data to your personal iCloud or Google Drive account. We do not control these backups; you do.' },
+                                                                ].map((item, idx) => (
+                                                                    <div key={idx} className="flex gap-3">
+                                                                        <div className="w-1 shrink-0 rounded-full bg-cyan-500/30 mt-1" />
+                                                                        <div>
+                                                                            <span className="text-xs font-bold text-cyan-400 block mb-1">{item.label}</span>
+                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+
+                                                        {/* Section 5: Your Rights & Data Portability */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            whileInView={{ opacity: 1, x: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5, delay: 0.25 }}
+                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-rose-500/20 transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3 mb-6">
+                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(244,63,94,0.2)] transition-shadow">
+                                                                    <FileDown className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-rose-500/50">Section 05</span>
+                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Your Rights &amp; Data Portability</h4>
+                                                                </div>
+                                                            </div>
+                                                            <div className="space-y-4">
+                                                                {[
+                                                                    { label: 'Delete Everything', desc: 'Hard-deleting your account or app data wipes your local database. We provide a 30-day recovery window for archived items before permanent erasure.' },
+                                                                    { label: 'No Selling', desc: 'We do not, and will never, sell your data to third parties. Our business model is based on subscriptions, not your personal information.' },
+                                                                ].map((item, idx) => (
+                                                                    <div key={idx} className="flex gap-3">
+                                                                        <div className="w-1 shrink-0 rounded-full bg-rose-500/30 mt-1" />
+                                                                        <div>
+                                                                            <span className="text-xs font-bold text-rose-400 block mb-1">{item.label}</span>
+                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </motion.div>
+
+                                                        {/* Contact Us Footer */}
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: 20 }}
+                                                            whileInView={{ opacity: 1, y: 0 }}
+                                                            viewport={{ once: true }}
+                                                            transition={{ duration: 0.5, delay: 0.3 }}
+                                                            className="p-6 md:p-8 bg-white/[0.02] border border-white/5 rounded-2xl md:rounded-[2rem] text-center"
+                                                        >
+                                                            <div className="flex items-center justify-center gap-2 mb-3">
+                                                                <Mail className="w-4 h-4 text-amber-400" />
+                                                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Contact Us</span>
+                                                            </div>
+                                                            <p className="text-sm text-white/40 leading-relaxed max-w-lg mx-auto">
+                                                                If you have questions about how your Second Brain handles your data, please contact us at:
+                                                            </p>
+                                                            <a href="mailto:support@secondbrain.com" className="inline-block mt-4 text-amber-400 text-sm font-bold hover:text-amber-300 transition-colors tracking-wide">
+                                                                support@secondbrain.com
+                                                            </a>
+                                                        </motion.div>
+                                                    </div>
+                                                </motion.div>
                                             </>
                                         ) : (
                                             /* ═══ DEFAULT SYSTEM LAYOUT ═══ */
