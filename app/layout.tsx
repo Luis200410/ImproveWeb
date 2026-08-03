@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Ballet } from "@/lib/font-shim";
 import "./globals.css";
-import { TimerProvider } from '@/contexts/timer-context'
-import { GlobalTimerIndicator } from '@/components/global-timer-indicator'
-import { PomodoroProvider } from '@/components/productivity/pomodoro/pomodoro-context'
-import { ActiveSessionSidebar, MinimizedSessionWidget } from '@/components/productivity/pomodoro/active-session-sidebar'
 import { Toaster } from '@/components/ui/sonner'
 import 'sileo/styles.css'
-import { HabitReminderProvider } from '@/components/habit-reminder-provider'
-import { Navigation } from '@/components/navigation'
 
 const bebas = Bebas_Neue({
   subsets: ["latin"],
@@ -173,19 +167,8 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className={`${bebas.variable} ${ballet.variable} font-bebas antialiased bg-black text-white selection:bg-white selection:text-black`}>
-        <PomodoroProvider>
-          <TimerProvider>
-            <Navigation />
-            <main className="pt-25">
-              {children}
-            </main>
-            <GlobalTimerIndicator />
-            <ActiveSessionSidebar />
-            <MinimizedSessionWidget />
-            <HabitReminderProvider />
-            <Toaster />
-          </TimerProvider>
-        </PomodoroProvider>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

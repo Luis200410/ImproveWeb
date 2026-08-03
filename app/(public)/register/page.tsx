@@ -6,7 +6,7 @@ import { Bebas_Neue } from "@/lib/font-shim";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { User, Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
-import { signup } from '@/app/login/actions';
+import { signup } from '@/app/(public)/login/actions';
 
 const bebas = Bebas_Neue({ subsets: ["latin"] });
 

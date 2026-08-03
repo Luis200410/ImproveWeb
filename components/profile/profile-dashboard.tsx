@@ -9,7 +9,7 @@ import { ProfileMap } from '@/components/profile/profile-map'
 import { Navigation } from '@/components/navigation'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
-import { updateProfile } from '@/app/profile/actions'
+import { updateProfile } from '@/app/(app)/profile/actions'
 import { User, Shield, Zap, Globe, Cpu, Radio } from 'lucide-react'
 
 const playfair = Playfair_Display({ subsets: ['latin'] })

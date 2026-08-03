@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     console.log('Middleware: Path:', request.nextUrl.pathname)
     console.log('Middleware: User found?', !!user)
 
+    // Unauthenticated user attempting to access protected routes -> redirect to login
     if (
         !user &&
         !request.nextUrl.pathname.startsWith('/login') &&
@@ -51,6 +52,7 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.startsWith('/blog') &&
         !request.nextUrl.pathname.startsWith('/sales') &&
         !request.nextUrl.pathname.startsWith('/pricing') &&
+        !request.nextUrl.pathname.startsWith('/archive-manifesto') &&
         !request.nextUrl.pathname.startsWith('/api') &&
         !request.nextUrl.pathname.endsWith('.xml') &&
         !request.nextUrl.pathname.endsWith('.txt') &&
@@ -58,9 +60,15 @@ export async function updateSession(request: NextRequest) {
         !request.nextUrl.pathname.match(/\.(mp3|wav|ogg|mp4|webm|png|jpg|jpeg|gif|svg|ico)$/) &&
         request.nextUrl.pathname !== '/'
     ) {
-        // no user, potentially redirect to login
         const url = request.nextUrl.clone()
         url.pathname = '/login'
+        return NextResponse.redirect(url)
+    }
+
+    // Authenticated user attempting to access auth/firewall pages -> redirect to app dashboard
+    if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register'))) {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
         return NextResponse.redirect(url)
     }
 
