@@ -55,7 +55,7 @@ export function Envelopes({ isDemo }: { isDemo?: boolean }) {
             if (user) {
                 try {
                     const response = await fetch(`/api/plaid/envelopes-data?userId=${user.id}`);
-                    const data = await response.json();
+                    const data = response.ok ? await response.json().catch(() => ({})) : {};
                     if (data.envelopes) setEnvelopes(data.envelopes);
                 } catch (err) {
                     console.error("Error fetching envelopes:", err);

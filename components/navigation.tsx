@@ -159,15 +159,12 @@ export function Navigation() {
                         </Link>
                     ))}
                     {showMemberMenu && (
-                        <Link
-                            href="/dashboard"
-                            className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard'
-                                ? 'text-white border-b border-white pb-1'
-                                : 'text-white/60 hover:text-white'
-                                }`}
+                        <a
+                            href={process.env.NEXT_PUBLIC_APP_URL || '#'}
+                            className="text-xs font-medium uppercase tracking-[0.2em] transition-colors text-white/60 hover:text-white"
                         >
-                            Dashboard
-                        </Link>
+                            Open App
+                        </a>
                     )}
 
                     {showMemberMenu ? (
@@ -191,16 +188,16 @@ export function Navigation() {
                                         )}
                                         {showMemberMenu && (
                                             <>
-                                                <Link
-                                                    href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                                <a
+                                                    href={membershipActive ? (process.env.NEXT_PUBLIC_APP_URL || '/pricing') : '/pricing?reason=subscribe'}
                                                     className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10 flex items-center justify-between"
                                                     onClick={() => setIsMemberMenuOpen(false)}
                                                 >
-                                                    {membershipActive ? 'Go to Dashboard' : 'View Membership'}
+                                                    {membershipActive ? 'Open App' : 'View Membership'}
                                                     <span className="text-[11px] border border-white/40 px-2 py-1 ml-2">
                                                         {membershipActive ? 'Active' : 'Upgrade'}
                                                     </span>
-                                                </Link>
+                                                </a>
                                                 <Link
                                                     href="/profile"
                                                     className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white hover:bg-white/10"
@@ -277,13 +274,13 @@ export function Navigation() {
                             </Link>
                         ))}
                         {showMemberMenu && (
-                            <Link
-                                href="/dashboard"
+                            <a
+                                href={process.env.NEXT_PUBLIC_APP_URL || '#'}
                                 onClick={() => setIsMenuOpen(false)}
-                                className={`block text-lg font-medium uppercase tracking-[0.2em] transition-colors ${pathname === '/dashboard' ? 'text-white' : 'text-white/60 hover:text-white'}`}
+                                className="block text-lg font-medium uppercase tracking-[0.2em] transition-colors text-white/60 hover:text-white"
                             >
-                                Dashboard
-                            </Link>
+                                Open App
+                            </a>
                         )}
                         {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
@@ -294,13 +291,13 @@ export function Navigation() {
                         )}
                         {showMemberMenu && (
                             <div className="pt-6 border-t border-white/10 space-y-4">
-                                <Link
-                                    href={membershipActive ? '/dashboard' : '/pricing?reason=subscribe'}
+                                <a
+                                    href={membershipActive ? (process.env.NEXT_PUBLIC_APP_URL || '/pricing') : '/pricing?reason=subscribe'}
                                     onClick={() => setIsMenuOpen(false)}
                                     className="block text-sm font-medium uppercase tracking-[0.2em] text-white/80 hover:text-white"
                                 >
-                                    {membershipActive ? 'Go to Dashboard' : 'View Membership'}
-                                </Link>
+                                    {membershipActive ? 'Open App' : 'View Membership'}
+                                </a>
                                 <Link
                                     href="/profile"
                                     onClick={() => setIsMenuOpen(false)}

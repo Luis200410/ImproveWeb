@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
-import { usePlaidLink } from 'react-plaid-link'
 import { Button } from '@/components/ui/button'
 
 type ConnectionStatus = 'synced' | 'stale' | 'disconnected'
@@ -151,10 +150,8 @@ export function MoneyOverview() {
     }
   }, [userId, fetchAccounts])
 
-  const { open, ready } = usePlaidLink({
-    token: linkToken,
-    onSuccess,
-  })
+  const open = () => {}
+  const ready = false
 
   const handleDeleteAccount = async (itemId: string, rowId: string) => {
     if (!confirm("Are you sure you want to disconnect this bank? This will remove all associated transaction data.")) return

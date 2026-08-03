@@ -38,7 +38,7 @@ export function TodayScreen({ isDemo }: { isDemo?: boolean }) {
                         dataStore.getMoneyQueue(user.id)
                     ]);
                     
-                    const data = await response.json();
+                    const data = response.ok ? await response.json().catch(() => ({ status: 'error' })) : { status: 'error' };
                     
                     // Analytics from DB
                     const currentMonth = new Date().toISOString().substring(0, 7)

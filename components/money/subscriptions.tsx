@@ -46,7 +46,7 @@ export function Subscriptions({ isDemo }: { isDemo?: boolean }) {
                         dataStore.getMoneyQueue(user.id)
                     ])
                     
-                    const data = await res.json();
+                    const data = res.ok ? await res.json().catch(() => ({})) : {};
                     
                     if (data.subscriptions) {
                         const merged = data.subscriptions.map((s: Subscription) => {

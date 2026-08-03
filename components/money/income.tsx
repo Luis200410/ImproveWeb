@@ -76,7 +76,7 @@ export function IncomeManager({ isDemo }: { isDemo?: boolean }) {
                         dataStore.getEntries('classified-income', user.id)
                     ]);
                     
-                    const data = await res.json();
+                    const data = res.ok ? await res.json().catch(() => ({})) : {};
                     
                     if (data.deposits && data.classified) {
                         let finalDeposits = [...data.deposits]

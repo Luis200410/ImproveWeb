@@ -37,7 +37,7 @@ export function CashFlowChart({ isDemo }: { isDemo?: boolean }) {
                 if (user) {
                     try {
                         const response = await fetch(`/api/plaid/cashflow-data?userId=${user.id}`);
-                        const data = await response.json();
+                        const data = response.ok ? await response.json().catch(() => ({})) : {};
                         if (data.chartData) setChartData(data.chartData);
                         if (data.stats) setStats(data.stats);
                     } catch (err) {
