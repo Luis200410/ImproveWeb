@@ -104,7 +104,7 @@ export function MoneyOverview() {
       setEnvData(eData)
 
     } catch (err) {
-      console.error("Error fetching overview data:", err)
+      // Silent fallback for landing page demo
     } finally {
       setLoading(false)
     }

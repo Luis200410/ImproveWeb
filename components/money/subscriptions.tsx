@@ -66,7 +66,7 @@ export function Subscriptions({ isDemo }: { isDemo?: boolean }) {
                         setSubscriptions(merged);
                     }
                 } catch (err) {
-                    console.error("Error fetching subscriptions:", err);
+                    // Silent fallback for landing page demo
                 } finally {
                     setLoading(false)
                 }

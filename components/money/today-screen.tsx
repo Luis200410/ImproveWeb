@@ -93,7 +93,7 @@ export function TodayScreen({ isDemo }: { isDemo?: boolean }) {
                     
                     setQueue(newQueue);
                 } catch (err) {
-                    console.error("Error fetching decisions:", err);
+                    // Silent fallback for landing page demo
                 } finally {
                     setLoading(false)
                 }

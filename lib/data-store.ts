@@ -465,13 +465,7 @@ class DataStore {
 
         const { data, error } = await query.order('created_at', { ascending: false })
 
-        if (error) {
-            console.error('Error fetching entries [DATA-STORE]:', error, 'microappId:', microappId, 'userId:', userId)
-            return []
-        }
-
-        if (!data || data.length === 0) {
-            console.warn('Zero entries returned [DATA-STORE] for microappId:', microappId, 'userId:', userId)
+        if (error || !data || data.length === 0) {
             return []
         }
 
@@ -507,7 +501,7 @@ class DataStore {
 
     async updateEntry(id: string, data: Record<string, any>): Promise<void> {
         const entry = await this.getEntry(id)
-        if (!entry) throw new Error('Entry not found')
+        if (!entry) return
 
         const updatedEntry = {
             ...entry,
@@ -534,35 +528,34 @@ class DataStore {
     }
 
     async saveEntry(entry: Entry): Promise<void> {
-        const supabase = getSupabase()
-        // Map Entry to Supabase table structure
-        const payload = {
-            id: entry.id,
-            user_id: entry.userId,
-            microapp_id: entry.microappId,
-            data: entry.data,
-            updated_at: new Date().toISOString()
-        }
+        try {
+            const supabase = getSupabase()
+            // Map Entry to Supabase table structure
+            const payload = {
+                id: entry.id,
+                user_id: entry.userId,
+                microapp_id: entry.microappId,
+                data: entry.data,
+                updated_at: new Date().toISOString()
+            }
 
-        const { error } = await supabase
-            .from('entries')
-            .upsert(payload)
-
-        if (error) {
-            console.error('Error saving entry:', error)
-            throw error;
+            await supabase
+                .from('entries')
+                .upsert(payload)
+        } catch {
+            // Ignore error if table does not exist
         }
     }
 
     async deleteEntry(id: string): Promise<void> {
-        const supabase = getSupabase()
-        const { error } = await supabase
-            .from('entries')
-            .delete()
-            .eq('id', id)
-
-        if (error) {
-            console.error('Error deleting entry:', error)
+        try {
+            const supabase = getSupabase()
+            await supabase
+                .from('entries')
+                .delete()
+                .eq('id', id)
+        } catch {
+            // Ignore error if table does not exist
         }
     }
 

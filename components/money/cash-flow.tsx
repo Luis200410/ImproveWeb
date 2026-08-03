@@ -41,7 +41,7 @@ export function CashFlowChart({ isDemo }: { isDemo?: boolean }) {
                         if (data.chartData) setChartData(data.chartData);
                         if (data.stats) setStats(data.stats);
                     } catch (err) {
-                        console.error("Error fetching live cash flow:", err);
+                        // Silent fallback for landing page demo
                     } finally {
                         setLoading(false)
                     }

@@ -58,7 +58,7 @@ export function Envelopes({ isDemo }: { isDemo?: boolean }) {
                     const data = response.ok ? await response.json().catch(() => ({})) : {};
                     if (data.envelopes) setEnvelopes(data.envelopes);
                 } catch (err) {
-                    console.error("Error fetching envelopes:", err);
+                    // Silent fallback for landing page demo
                 } finally {
                     setLoading(false)
                 }

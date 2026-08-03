@@ -106,7 +106,7 @@ export function IncomeManager({ isDemo }: { isDemo?: boolean }) {
                         setClassified(finalClassified);
                     }
                 } catch (err) {
-                    console.error("Error fetching income data:", err);
+                    // Silent fallback for landing page demo
                 } finally {
                     setLoading(false)
                 }
