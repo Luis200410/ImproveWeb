@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bebas_Neue } from '@/lib/font-shim'
 import { Button } from '@/components/ui/button'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { ImproveLogo } from '@/components/ui/improve-logo'
+import { APPS_DATA } from '@/lib/apps-data'
+import { ChevronDown, Sparkles, Activity, Brain, Wallet, Briefcase, CheckCircle2, Users, Compass, Crown } from 'lucide-react'
 
 const bebas = Bebas_Neue({ subsets: ['latin'] })
 
@@ -22,10 +24,22 @@ const publicLinks: NavLink[] = [
     { href: '/sales', label: 'The System' },
 ]
 
+const iconMap: Record<string, any> = {
+    Activity,
+    Brain,
+    Wallet,
+    Briefcase,
+    CheckCircle2,
+    Users,
+    Compass,
+    Crown
+}
+
 export function Navigation() {
     const pathname = usePathname()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
+    const [isAppsMenuOpen, setIsAppsMenuOpen] = useState(false)
     const [sessionUser, setSessionUser] = useState<any>(null)
     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
     const [checkedAuth, setCheckedAuth] = useState(false)
@@ -66,7 +80,6 @@ export function Navigation() {
                 const payload = await res.json()
                 if (!active) return
                 const authedUser = payload.user || null
-                console.debug('Navigation /api/auth/me', { hasUser: Boolean(authedUser), status: payload.subscriptionStatus })
                 setSessionUser(authedUser)
                 setSubscriptionStatus(payload.subscriptionStatus || null)
                 setCheckedAuth(true)
@@ -75,13 +88,11 @@ export function Navigation() {
                 }
             } catch (err) {
                 console.warn('Navigation /api/auth/me failed, falling back to client session', err)
-                // Fallback to client-side session check to avoid hiding menu if server fetch fails
                 const supabase = createClient()
                 const { data, error } = await supabase.auth.getSession()
                 if (error) console.warn('Navigation getSession error', error)
                 if (!active) return
                 const user = data.session?.user?.id ? data.session.user : null
-                console.debug('Navigation getSession fallback', { hasUser: Boolean(user) })
                 setSessionUser(user)
                 setCheckedAuth(true)
                 loadUserAndStatus(user?.id)
@@ -92,7 +103,6 @@ export function Navigation() {
 
         const supabase = createClient()
         const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            console.debug('Navigation auth state change', { event, hasUser: Boolean(session?.user) })
             const user = session?.user?.id ? session.user : null
             setSessionUser(user)
             setCheckedAuth(true)
@@ -105,29 +115,13 @@ export function Navigation() {
         }
     }, [])
 
-    const effectiveAuthenticated = Boolean(sessionUser?.id)
-    // Only show the dropdown once we have a confirmed logged-in user
     const showMemberMenu = checkedAuth && Boolean(sessionUser?.id)
-    // Always show public links; dropdown handles member actions
     const links = publicLinks
-
-    useEffect(() => {
-        console.debug('Navigation state', {
-            pathname,
-            checkedAuth,
-            hasUser: Boolean(sessionUser?.id),
-            showMemberMenu,
-            subscriptionStatus,
-        })
-    }, [pathname, checkedAuth, sessionUser?.id, showMemberMenu, subscriptionStatus])
     const membershipActive = subscriptionStatus === 'active' || subscriptionStatus === 'trialing' || sessionUser?.user_metadata?.subscribed || sessionUser?.user_metadata?.is_subscribed || sessionUser?.user_metadata?.couponUnlocked
 
     async function handleLogout() {
         setSigningOut(true)
         setIsMemberMenuOpen(false)
-        // Navigate directly to the server-side signout route.
-        // It clears all auth cookies AND redirects to / in ONE response.
-        // This avoids any race condition between clearing cookies and redirecting.
         window.location.href = '/api/auth/signout'
     }
 
@@ -136,9 +130,9 @@ export function Navigation() {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="fixed top-0 left-0 right-0 z-[100] bg-black/80 backdrop-blur-md border-b border-white/10"
+            className="fixed top-0 left-0 right-0 z-[100] bg-black/85 backdrop-blur-md border-b border-white/10"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-6 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-5 flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
                     <ImproveLogo small />
@@ -146,18 +140,92 @@ export function Navigation() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
+                    {/* The 8 Apps Dropdown Menu */}
+                    <div
+                        className="relative"
+                        onMouseEnter={() => setIsAppsMenuOpen(true)}
+                        onMouseLeave={() => setIsAppsMenuOpen(false)}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => setIsAppsMenuOpen((prev) => !prev)}
+                            className={`flex items-center gap-1.5 text-xs font-medium uppercase tracking-[0.2em] transition-colors py-2 ${
+                                pathname.startsWith('/apps') ? 'text-amber-400 border-b border-amber-400' : 'text-white/80 hover:text-white'
+                            }`}
+                        >
+                            <span>The 8 Apps</span>
+                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isAppsMenuOpen ? 'rotate-180 text-amber-400' : 'text-white/50'}`} />
+                        </button>
+
+                        <AnimatePresence>
+                            {isAppsMenuOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-[680px] bg-neutral-950/95 backdrop-blur-2xl border border-white/15 shadow-2xl rounded-2xl p-4 z-50 grid grid-cols-2 gap-2"
+                                >
+                                    <div className="col-span-2 px-3 py-2 border-b border-white/10 flex items-center justify-between mb-1">
+                                        <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 flex items-center gap-1.5">
+                                            <Sparkles className="w-3 h-3" /> The 8 Core Integrity Systems
+                                        </span>
+                                        <span className="text-[10px] font-mono text-neutral-500">Dedicated App Suites</span>
+                                    </div>
+
+                                    {APPS_DATA.map((app) => {
+                                        const IconComponent = iconMap[app.iconName] || Sparkles
+                                        const isActive = pathname === `/apps/${app.slug}`
+
+                                        return (
+                                            <Link
+                                                key={app.id}
+                                                href={`/apps/${app.slug}`}
+                                                onClick={() => setIsAppsMenuOpen(false)}
+                                                className={`group relative p-3 rounded-xl transition-all duration-200 flex items-start gap-3 border ${
+                                                    isActive
+                                                        ? 'bg-white/10 border-amber-500/50'
+                                                        : 'bg-white/[0.02] border-white/5 hover:bg-white/10 hover:border-white/20'
+                                                }`}
+                                            >
+                                                <div className={`p-2 rounded-lg bg-black/60 border ${app.borderColor} text-white group-hover:scale-105 transition-transform`}>
+                                                    <IconComponent className="w-4 h-4 text-amber-400" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-xs font-bold text-white uppercase tracking-wider truncate group-hover:text-amber-300 transition-colors">
+                                                            {app.name}
+                                                        </span>
+                                                        <span className="text-[10px] font-mono text-neutral-500 ml-1">
+                                                            {app.number}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] text-neutral-400 line-clamp-1 mt-0.5 font-light">
+                                                        {app.tagline}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        )
+                                    })}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+
                     {links.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${pathname === link.href
-                                ? 'text-white border-b border-white pb-1'
-                                : 'text-white/60 hover:text-white'
-                                }`}
+                            className={`text-xs font-medium uppercase tracking-[0.2em] transition-colors ${
+                                pathname === link.href
+                                    ? 'text-white border-b border-white pb-1'
+                                    : 'text-white/60 hover:text-white'
+                            }`}
                         >
                             {link.label}
                         </Link>
                     ))}
+
                     {showMemberMenu && (
                         <a
                             href={process.env.NEXT_PUBLIC_APP_URL || '#'}
@@ -176,13 +244,13 @@ export function Navigation() {
                             <Button
                                 variant="outline"
                                 className="font-bebas border-white text-white hover:bg-white hover:text-black transition-all bg-transparent"
-                                onClick={() => setIsMemberMenuOpen(prev => !prev)}
+                                onClick={() => setIsMemberMenuOpen((prev) => !prev)}
                             >
                                 Member
                             </Button>
                             {isMemberMenuOpen && (
-                                <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50">
-                                    <div className="flex flex-col divide-y divide-white/10" onMouseEnter={() => setIsMemberMenuOpen(true)} onMouseLeave={() => setIsMemberMenuOpen(false)}>
+                                <div className="absolute right-0 mt-1 w-64 bg-black border border-white/15 shadow-2xl z-50 rounded-xl overflow-hidden">
+                                    <div className="flex flex-col divide-y divide-white/10">
                                         {!checkedAuth && (
                                             <div className="px-4 py-3 text-sm uppercase tracking-[0.15em] text-white/70">Loading...</div>
                                         )}
@@ -231,7 +299,7 @@ export function Navigation() {
                 {/* Mobile Menu Button */}
                 <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="md:hidden text-white"
+                    className="md:hidden text-white p-2"
                     aria-label="Toggle menu"
                 >
                     <svg
@@ -259,29 +327,44 @@ export function Navigation() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="md:hidden absolute top-full left-0 right-0 border-t border-white/10 bg-black/95 backdrop-blur-xl z-40 overflow-hidden"
+                    className="md:hidden absolute top-full left-0 right-0 border-t border-white/10 bg-black/95 backdrop-blur-xl z-40 overflow-y-auto max-h-[85vh]"
                 >
-                    <div className="px-6 py-8 space-y-6">
-                        {links.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onClick={() => setIsMenuOpen(false)}
-                                className={`block text-lg font-medium uppercase tracking-[0.2em] transition-colors ${pathname === link.href ? 'text-white' : 'text-white/60 hover:text-white'
+                    <div className="px-6 py-6 space-y-6">
+                        {/* Mobile Apps Section */}
+                        <div className="space-y-3">
+                            <span className="text-xs font-mono uppercase tracking-widest text-amber-400 block border-b border-white/10 pb-2">
+                                The 8 App Suites
+                            </span>
+                            <div className="grid grid-cols-1 gap-2 pt-1">
+                                {APPS_DATA.map((app) => (
+                                    <Link
+                                        key={app.id}
+                                        href={`/apps/${app.slug}`}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10"
+                                    >
+                                        <span className="text-sm font-semibold uppercase">{app.name}</span>
+                                        <span className="text-xs font-mono text-amber-400">{app.number}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="border-t border-white/10 pt-4 space-y-4">
+                            {links.map((link) => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className={`block text-lg font-medium uppercase tracking-[0.2em] transition-colors ${
+                                        pathname === link.href ? 'text-white' : 'text-white/60 hover:text-white'
                                     }`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                        {showMemberMenu && (
-                            <a
-                                href={process.env.NEXT_PUBLIC_APP_URL || '#'}
-                                onClick={() => setIsMenuOpen(false)}
-                                className="block text-lg font-medium uppercase tracking-[0.2em] transition-colors text-white/60 hover:text-white"
-                            >
-                                Open App
-                            </a>
-                        )}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
+                        </div>
+
                         {!showMemberMenu && (
                             <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                                 <Button className="w-full bg-white text-black hover:bg-white/90 font-bebas text-base uppercase tracking-widest py-6">
@@ -290,7 +373,7 @@ export function Navigation() {
                             </Link>
                         )}
                         {showMemberMenu && (
-                            <div className="pt-6 border-t border-white/10 space-y-4">
+                            <div className="pt-4 border-t border-white/10 space-y-4">
                                 <a
                                     href={membershipActive ? (process.env.NEXT_PUBLIC_APP_URL || '/pricing') : '/pricing?reason=subscribe'}
                                     onClick={() => setIsMenuOpen(false)}

@@ -33,12 +33,20 @@ import {
     Cloud,
     FileDown,
     Mail,
+    Clock,
+    Calendar,
+    Sparkles,
+    CheckCircle2,
+    BarChart3,
+    RefreshCw,
+    Smartphone
 } from "lucide-react";
 import { ImproveLogo } from "@/components/ui/improve-logo";
 import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import { BodySaaSAnimation } from "@/components/ui/body-saas-animation";
 import { SecondBrainSaaSAnimation } from "@/components/ui/second-brain-saas-animation";
 import { TheSystemSection } from "@/components/landing/the-system-section";
+import { SecondBrainProductivitySuite } from "@/components/landing/second-brain-productivity-suite";
 
 const bebas = Bebas_Neue({ subsets: ["latin"] });
 
@@ -103,14 +111,14 @@ const systems = [
         id: "productivity",
         icon: Zap,
         name: "Productivity",
-        tagline: "The Engine of Achievement",
-        description: "Cognitive capture and momentum scaling for the high-performance mind.",
-        coreFeature: "Atomic Habit Loops",
-        coreDescription: "GTD-powered habit architecture that eliminates decision fatigue. Systematic momentum scaling through Atomic Habits, Pomodoro sessions, and Periodic Reviews.",
-        capabilities: ["Atomic Momentum", "Decision Offloading", "Frictionless Capture", "Performance Audits"],
+        tagline: "Execution Engine & Screen-Time Shield",
+        description: "The execution side: yearly Four Bigs goals, daily habit routines on a real timeline, focus sessions with a timer, and a Screen-Time shield that blocks distracting apps automatically.",
+        coreFeature: "Screen-Time Shield & Habit Timelines",
+        coreDescription: "Choose which apps a habit blocks, and they're blocked automatically at that habit's scheduled time on active days. The focus timer and app-blocker coordinate seamlessly while checking off steps writes straight back to Second Brain.",
+        capabilities: ["Per-Habit Auto App Blocking", "Focus Timer with Recovery", "Yearly Four Bigs Tracking", "Timeline Day & Week Routine", "On-Device Flow & Chronotype", "Live Step Checklist Write-Back"],
         outcome: "Infinite Momentum",
-        stats: [{ label: "Throughput", value: "3x" }, { label: "Clarity", value: "Absolute" }],
-        features: ["Habit Tracker", "Pomodoro Engine", "GTD Reviews", "Projection Maps"],
+        stats: [{ label: "Shield Blocking", value: "Per-Habit Auto" }, { label: "Screen Time", value: "Family Controls" }, { label: "Sync", value: "Zero-Lag Write-Back" }],
+        features: ["Focus Timer", "Habits & Routines", "Yearly Goals", "App Blocker Shield", "Flow / Chronotype", "Weekly Review"],
         color: "#ffffff"
     },
     {
@@ -145,14 +153,14 @@ const systems = [
         id: "second-brain",
         icon: Brain,
         name: "Second Brain",
-        tagline: "The Unified Digital Cortex",
-        description: "A complete intellectual operating system. Seven specialized micro-apps that capture, process, and secure the entirety of your cognitive capital.",
-        coreFeature: "Seven-Module Cognitive Architecture",
-        coreDescription: "Eliminate mental drag by integrating Areas, Projects, Tasks, Notes, Resources, Inbox, and Archive into one unified cortex. AI reverse-engineers your goals into granular milestones and distills resources into actionable intelligence.",
-        capabilities: ["AI Goal Reverse-Engineering", "Micro-Task Decomposition", "Resource-to-Notes AI Distillation", "Zero-Friction Capture", "Persistent Domain Anchoring", "Velocity-Tracked Execution", "Secured Mission Archiving"],
+        tagline: "The Cognitive Cortex & Day Planner",
+        description: "A calm, organized home for everything on your mind — captured fast, sorted into life areas and projects, broken into doable steps, and scheduled onto your real Apple Calendar by an on-device planner.",
+        coreFeature: "On-Device AI Day Planning & Calendar Bridge",
+        coreDescription: "Your habits are recurring blocks on your real Apple Calendar. Tasks ride underneath a habit, and the on-device planner schedules what to work on inside each block. Anything that doesn't fit lands back in your Inbox.",
+        capabilities: ["Frictionless Voice & OCR Capture", "On-Device Smart Triage", "AI Micro-Task Decomposition", "Rolling Horizon Day Planner", "Native Apple Calendar Bridge", "Private SwiftData + iCloud Sync"],
         outcome: "Total Cognitive\nMastery",
-        stats: [{ label: "Micro-Apps", value: "7" }, { label: "Mental Drag", value: "Eliminated" }, { label: "Architecture", value: "PARA+" }],
-        features: ["Areas", "Projects", "Tasks", "Notes", "Resources", "Inbox", "Archive"],
+        stats: [{ label: "Intelligence", value: "On-Device AI" }, { label: "Data Store", value: "Private iCloud" }, { label: "Calendar", value: "EventKit Native" }],
+        features: ["Capture & Inbox", "Areas & Projects", "Tasks & Steps", "Rich Notes", "Semantic Search", "Plan My Day", "Apple Calendar"],
         color: "#ffffff"
     }
 ];
@@ -388,19 +396,19 @@ export default function SalesPage() {
                                         animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                                         exit={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
                                         transition={{ duration: 0.5, ease: "circOut" }}
-                                        className={`w-full ${activeSystemId === 'second-brain' ? 'flex flex-col gap-12' : 'grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center'}`}
+                                        className={`w-full ${['second-brain', 'productivity'].includes(activeSystemId) ? 'flex flex-col gap-12' : 'grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-24 items-center'}`}
                                     >
                                         {activeSystemId === 'second-brain' ? (
                                             /* ═══ CUSTOM SECOND BRAIN LAYOUT ═══ */
                                             <>
-                                                {/* Top: Icon + Title Block (Centered Vertical Stack) */}
+                                                {/* Top: Icon + Title Block */}
                                                 <div className="flex flex-col items-center text-center space-y-6">
                                                     <div className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-[2rem] shadow-2xl relative group">
-                                                        <div className="absolute inset-0 bg-amber-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                        <div className="absolute inset-0 bg-indigo-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
                                                         <Brain size={isMobile ? 48 : 64} className="text-white relative z-10" />
                                                     </div>
                                                     <div className="space-y-3">
-                                                        <p className="text-amber-500 font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs">
+                                                        <p className="text-indigo-400 font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs">
                                                             {activeSystem.tagline}
                                                         </p>
                                                         <h3 className={`${bebas.className} text-6xl md:text-[7rem] font-black leading-none tracking-tighter`}>
@@ -414,7 +422,7 @@ export default function SalesPage() {
                                                         whileHover={{ scale: 1.05 }}
                                                         whileTap={{ scale: 0.95 }}
                                                         onClick={() => setShowDemo(true)}
-                                                        className="inline-flex items-center gap-3 bg-amber-500 text-black px-8 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-amber-400 transition-all shadow-[0_0_40px_rgba(245,158,11,0.3)]"
+                                                        className="inline-flex items-center gap-3 bg-indigo-500 text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:bg-indigo-400 transition-all shadow-[0_0_40px_rgba(99,102,241,0.3)]"
                                                     >
                                                         <Play className="w-4 h-4" />
                                                         Watch the Cortex in Action
@@ -449,7 +457,93 @@ export default function SalesPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* Bottom: Core Architecture + Outcome */}
+                                                {/* Core Architecture + Outcome */}
+                                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                                                    {/* Core Architecture Box */}
+                                                    <div className="lg:col-span-2 p-6 md:p-10 bg-white text-black rounded-[2rem] md:rounded-[2.5rem] space-y-4 md:space-y-5 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
+                                                        <div className="flex items-center gap-3">
+                                                            <Zap className="w-5 h-5 text-indigo-600" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400">Core Architecture</span>
+                                                        </div>
+                                                        <h4 className="text-xl md:text-3xl font-bold">{activeSystem.coreFeature}</h4>
+                                                        <p className="text-sm md:text-lg text-neutral-600 leading-relaxed italic font-serif">
+                                                            "{activeSystem.coreDescription}"
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Outcome Panel */}
+                                                    <div className="p-6 md:p-10 bg-[#0A0A0A] border border-white/10 rounded-[2rem] md:rounded-[2.5rem] flex flex-col justify-between gap-6">
+                                                        <div className="space-y-4">
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Outcome</p>
+                                                            <p className={`${bebas.className} text-3xl md:text-5xl text-indigo-400 leading-none`}>
+                                                                Total Cognitive<br />Mastery
+                                                            </p>
+                                                        </div>
+                                                        <div className="pt-4 md:pt-6 border-t border-white/5 space-y-3">
+                                                            {activeSystem.stats.map((stat, idx) => (
+                                                                <div key={idx} className="flex justify-between items-center text-[10px] font-bold group">
+                                                                    <span className="text-white/20 uppercase tracking-widest group-hover:text-white/40 transition-colors">{stat.label}</span>
+                                                                    <span className="text-white font-mono">{stat.value}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* ═══ INTERACTIVE SPECIFICATION & TABS SUITE ═══ */}
+                                                <div className="mt-8">
+                                                    <SecondBrainProductivitySuite initialTab="second-brain" />
+                                                </div>
+                                            </>
+                                        ) : activeSystemId === 'productivity' ? (
+                                            /* ═══ CUSTOM PRODUCTIVITY LAYOUT ═══ */
+                                            <>
+                                                {/* Top: Icon + Title Block */}
+                                                <div className="flex flex-col items-center text-center space-y-6">
+                                                    <div className="p-6 md:p-8 bg-white/5 border border-white/10 rounded-[2rem] shadow-2xl relative group">
+                                                        <div className="absolute inset-0 bg-amber-500/10 blur-3xl rounded-full opacity-50 group-hover:opacity-100 transition-opacity" />
+                                                        <Zap size={isMobile ? 48 : 64} className="text-amber-400 relative z-10" />
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        <p className="text-amber-400 font-bold tracking-[0.5em] uppercase text-[10px] md:text-xs">
+                                                            {activeSystem.tagline}
+                                                        </p>
+                                                        <h3 className={`${bebas.className} text-6xl md:text-[7rem] font-black leading-none tracking-tighter`}>
+                                                            {activeSystem.name}
+                                                        </h3>
+                                                    </div>
+                                                    <p className="text-base md:text-xl text-white/40 leading-relaxed max-w-2xl font-light">
+                                                        {activeSystem.description}
+                                                    </p>
+                                                </div>
+
+                                                {/* Middle: 5 Core Module Cards */}
+                                                <div className="space-y-6">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-white/20 text-center">Five Core Functional Tabs</p>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                                                        {[
+                                                            { name: 'Dashboard', icon: BarChart3, color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20', role: 'Real-time habit telemetry and focus launcher' },
+                                                            { name: 'Focus Sessions', icon: Clock, color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', role: 'Background-resilient timer with live step checklist' },
+                                                            { name: 'Plan & Goals', icon: Target, color: 'text-indigo-400', bg: 'bg-indigo-500/10', border: 'border-indigo-500/20', role: 'Yearly Four Bigs + 7-Day Apple Calendar timeline' },
+                                                            { name: 'Screen Shield', icon: Shield, color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', role: 'Per-habit automated app-blocking via Family Controls' },
+                                                            { name: 'Flow Insights', icon: Brain, color: 'text-cyan-400', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', role: 'On-device chronotype mapping and weekly review' },
+                                                        ].map((app, idx) => (
+                                                            <motion.div
+                                                                key={app.name}
+                                                                initial={{ opacity: 0, y: 20 }}
+                                                                animate={{ opacity: 1, y: 0 }}
+                                                                transition={{ delay: idx * 0.06 }}
+                                                                className={`p-4 md:p-5 rounded-2xl border ${app.border} ${app.bg} flex flex-col items-center text-center gap-2 md:gap-3 group hover:scale-[1.03] transition-all cursor-default`}
+                                                            >
+                                                                <app.icon className={`w-6 h-6 md:w-7 md:h-7 ${app.color}`} />
+                                                                <span className={`${bebas.className} text-base md:text-xl text-white tracking-tight`}>{app.name}</span>
+                                                                <p className="text-[9px] text-white/30 leading-relaxed font-medium">{app.role}</p>
+                                                            </motion.div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Core Architecture + Outcome */}
                                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                                                     {/* Core Architecture Box */}
                                                     <div className="lg:col-span-2 p-6 md:p-10 bg-white text-black rounded-[2rem] md:rounded-[2.5rem] space-y-4 md:space-y-5 shadow-[0_50px_100px_rgba(0,0,0,0.5)]">
@@ -468,7 +562,7 @@ export default function SalesPage() {
                                                         <div className="space-y-4">
                                                             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Outcome</p>
                                                             <p className={`${bebas.className} text-3xl md:text-5xl text-amber-400 leading-none`}>
-                                                                Total Cognitive<br />Mastery
+                                                                Infinite<br />Momentum
                                                             </p>
                                                         </div>
                                                         <div className="pt-4 md:pt-6 border-t border-white/5 space-y-3">
@@ -482,269 +576,10 @@ export default function SalesPage() {
                                                     </div>
                                                 </div>
 
-                                                {/* ═══ PRIVACY POLICY SECTION ═══ */}
-                                                <motion.div
-                                                    initial={{ opacity: 0, y: 40 }}
-                                                    whileInView={{ opacity: 1, y: 0 }}
-                                                    viewport={{ once: true }}
-                                                    transition={{ duration: 0.8, ease: 'easeOut' }}
-                                                    className="mt-12 md:mt-20"
-                                                >
-                                                    {/* Privacy Policy Header */}
-                                                    <div className="text-center mb-10 md:mb-16">
-                                                        <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-amber-500/10 border border-amber-500/20 mb-6">
-                                                            <Shield className="w-4 h-4 text-amber-400" />
-                                                            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Privacy Infrastructure</span>
-                                                        </div>
-                                                        <h3 className={`${bebas.className} text-4xl md:text-6xl lg:text-7xl text-white leading-none tracking-tight mb-4`}>
-                                                            Privacy Policy
-                                                        </h3>
-                                                        <p className="text-xs md:text-sm text-white/30 font-mono tracking-wider">
-                                                            Effective Date: March 25, 2026
-                                                        </p>
-                                                        <p className="text-sm md:text-base text-white/50 mt-6 max-w-2xl mx-auto leading-relaxed font-light">
-                                                            At Second Brain, we believe your thoughts, goals, and life data belong to you—and only you. Our &ldquo;Mobile-Native Life OS&rdquo; is built on a <span className="text-amber-400 font-semibold">Privacy-First, Local-First</span> architecture. This policy explains how we handle your information across our three tiers of intelligence and local storage.
-                                                        </p>
-                                                    </div>
-
-                                                    {/* Policy Sections Container */}
-                                                    <div className="space-y-6 md:space-y-8">
-
-                                                        {/* Section 1: The Local-First Guarantee */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            whileInView={{ opacity: 1, x: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5 }}
-                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-emerald-500/20 transition-colors group"
-                                                        >
-                                                            <div className="flex items-center gap-3 mb-6">
-                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] transition-shadow">
-                                                                    <Lock className="w-5 h-5 md:w-6 md:h-6 text-emerald-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500/50">Section 01</span>
-                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>The Local-First Guarantee</h4>
-                                                                </div>
-                                                            </div>
-                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
-                                                                Unlike traditional cloud-based productivity tools, Second Brain is built to live on your device.
-                                                            </p>
-                                                            <div className="space-y-4">
-                                                                {[
-                                                                    { label: 'Device Storage', desc: 'By default, your notes, tasks, areas, and projects are stored in a local database on your encrypted device.' },
-                                                                    { label: 'Offline Functionality', desc: 'Core features, including searching and organizing your Second Brain, do not require an internet connection or account.' },
-                                                                    { label: 'Data Ownership', desc: 'You can export your entire database in open formats (Markdown, JSON, CSV) at any time.' },
-                                                                ].map((item, idx) => (
-                                                                    <div key={idx} className="flex gap-3">
-                                                                        <div className="w-1 shrink-0 rounded-full bg-emerald-500/30 mt-1" />
-                                                                        <div>
-                                                                            <span className="text-xs font-bold text-emerald-400 block mb-1">{item.label}</span>
-                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </motion.div>
-
-                                                        {/* Section 2: Three-Tier AI Architecture */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            whileInView={{ opacity: 1, x: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5, delay: 0.1 }}
-                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-indigo-500/20 transition-colors group"
-                                                        >
-                                                            <div className="flex items-center gap-3 mb-6">
-                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(99,102,241,0.2)] transition-shadow">
-                                                                    <Server className="w-5 h-5 md:w-6 md:h-6 text-indigo-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500/50">Section 02</span>
-                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Our Three-Tier AI Architecture</h4>
-                                                                </div>
-                                                            </div>
-                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
-                                                                To provide an intelligent &ldquo;Second Brain&rdquo; experience while maintaining privacy, we route data through three distinct tiers:
-                                                            </p>
-                                                            {/* AI Tier Table */}
-                                                            <div className="overflow-x-auto rounded-xl border border-white/5">
-                                                                <table className="w-full text-left">
-                                                                    <thead>
-                                                                        <tr className="border-b border-white/10 bg-white/[0.02]">
-                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Tier</th>
-                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Function</th>
-                                                                            <th className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-white/30">Privacy Detail</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <tr className="border-b border-white/5 hover:bg-emerald-500/[0.02] transition-colors">
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="text-xs font-bold text-emerald-400">Tier 1: OS-Native</span>
-                                                                            </td>
-                                                                            <td className="px-4 py-4 text-xs text-white/40">OCR, Entity Tagging, Search</td>
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-bold text-emerald-400">
-                                                                                    <Lock className="w-3 h-3" /> 100% On-Device
-                                                                                </span>
-                                                                                <p className="text-[10px] text-white/20 mt-1.5">Uses Apple/Android system frameworks. No data leaves the device.</p>
-                                                                            </td>
-                                                                        </tr>
-                                                                        <tr className="border-b border-white/5 hover:bg-amber-500/[0.02] transition-colors">
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="text-xs font-bold text-amber-400">Tier 2: Local LLM</span>
-                                                                            </td>
-                                                                            <td className="px-4 py-4 text-xs text-white/40">Transcription, Summaries, Triage</td>
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-[10px] font-bold text-amber-400">
-                                                                                    <Lock className="w-3 h-3" /> 100% On-Device
-                                                                                </span>
-                                                                                <p className="text-[10px] text-white/20 mt-1.5">Uses a private model downloaded to your phone. No data leaves the device.</p>
-                                                                            </td>
-                                                                        </tr>
-                                                                        <tr className="hover:bg-indigo-500/[0.02] transition-colors">
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="text-xs font-bold text-indigo-400">Tier 3: Cloud AI</span>
-                                                                            </td>
-                                                                            <td className="px-4 py-4 text-xs text-white/40">Complex Reverse Engineering</td>
-                                                                            <td className="px-4 py-4">
-                                                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-bold text-indigo-400">
-                                                                                    <Eye className="w-3 h-3" /> Opt-In Only
-                                                                                </span>
-                                                                                <p className="text-[10px] text-white/20 mt-1.5">Only triggered for complex tasks with your consent. Data is sent to Anthropic (Claude) via encrypted API and is not used to train models.</p>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </motion.div>
-
-                                                        {/* Section 3: Integrations */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            whileInView={{ opacity: 1, x: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5, delay: 0.15 }}
-                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-purple-500/20 transition-colors group"
-                                                        >
-                                                            <div className="flex items-center gap-3 mb-6">
-                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] transition-shadow">
-                                                                    <Eye className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-500/50">Section 03</span>
-                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Integrations (Read-Only by Default)</h4>
-                                                                </div>
-                                                            </div>
-                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
-                                                                When you connect third-party tools (e.g., Notion, Jira, Gmail), the Second Brain acts as a &ldquo;view&rdquo; into those services.
-                                                            </p>
-                                                            <div className="space-y-4">
-                                                                {[
-                                                                    { label: 'Credentials', desc: 'OAuth tokens are stored exclusively in your device\'s secure Keychain (iOS) or EncryptedSharedPreferences (Android).' },
-                                                                    { label: 'Passive Capture', desc: 'We perform delta syncs to bring your data into your local Inbox. This data remains on your device unless you enable Cloud Sync.' },
-                                                                ].map((item, idx) => (
-                                                                    <div key={idx} className="flex gap-3">
-                                                                        <div className="w-1 shrink-0 rounded-full bg-purple-500/30 mt-1" />
-                                                                        <div>
-                                                                            <span className="text-xs font-bold text-purple-400 block mb-1">{item.label}</span>
-                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </motion.div>
-
-                                                        {/* Section 4: Cloud Sync & Backup */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: 20 }}
-                                                            whileInView={{ opacity: 1, x: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5, delay: 0.2 }}
-                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-cyan-500/20 transition-colors group"
-                                                        >
-                                                            <div className="flex items-center gap-3 mb-6">
-                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-shadow">
-                                                                    <Cloud className="w-5 h-5 md:w-6 md:h-6 text-cyan-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-cyan-500/50">Section 04</span>
-                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Cloud Sync &amp; Backup</h4>
-                                                                </div>
-                                                            </div>
-                                                            <p className="text-sm text-white/40 leading-relaxed mb-6 font-light">
-                                                                If you choose a paid plan (Storage + AI), we provide encrypted sync to keep your Second Brain updated across devices.
-                                                            </p>
-                                                            <div className="space-y-4">
-                                                                {[
-                                                                    { label: 'End-to-End Logic', desc: 'We prioritize local writing. Syncing only happens after data is safely committed to your device.' },
-                                                                    { label: 'User-Controlled Mirror', desc: 'You may opt to backup a mirror of your data to your personal iCloud or Google Drive account. We do not control these backups; you do.' },
-                                                                ].map((item, idx) => (
-                                                                    <div key={idx} className="flex gap-3">
-                                                                        <div className="w-1 shrink-0 rounded-full bg-cyan-500/30 mt-1" />
-                                                                        <div>
-                                                                            <span className="text-xs font-bold text-cyan-400 block mb-1">{item.label}</span>
-                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </motion.div>
-
-                                                        {/* Section 5: Your Rights & Data Portability */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, x: -20 }}
-                                                            whileInView={{ opacity: 1, x: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5, delay: 0.25 }}
-                                                            className="p-6 md:p-10 bg-[#0A0A0A] border border-white/5 rounded-2xl md:rounded-[2rem] hover:border-rose-500/20 transition-colors group"
-                                                        >
-                                                            <div className="flex items-center gap-3 mb-6">
-                                                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center group-hover:shadow-[0_0_20px_rgba(244,63,94,0.2)] transition-shadow">
-                                                                    <FileDown className="w-5 h-5 md:w-6 md:h-6 text-rose-400" />
-                                                                </div>
-                                                                <div>
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-rose-500/50">Section 05</span>
-                                                                    <h4 className={`${bebas.className} text-2xl md:text-3xl text-white`}>Your Rights &amp; Data Portability</h4>
-                                                                </div>
-                                                            </div>
-                                                            <div className="space-y-4">
-                                                                {[
-                                                                    { label: 'Delete Everything', desc: 'Hard-deleting your account or app data wipes your local database. We provide a 30-day recovery window for archived items before permanent erasure.' },
-                                                                    { label: 'No Selling', desc: 'We do not, and will never, sell your data to third parties. Our business model is based on subscriptions, not your personal information.' },
-                                                                ].map((item, idx) => (
-                                                                    <div key={idx} className="flex gap-3">
-                                                                        <div className="w-1 shrink-0 rounded-full bg-rose-500/30 mt-1" />
-                                                                        <div>
-                                                                            <span className="text-xs font-bold text-rose-400 block mb-1">{item.label}</span>
-                                                                            <p className="text-xs md:text-sm text-white/30 leading-relaxed">{item.desc}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </motion.div>
-
-                                                        {/* Contact Us Footer */}
-                                                        <motion.div
-                                                            initial={{ opacity: 0, y: 20 }}
-                                                            whileInView={{ opacity: 1, y: 0 }}
-                                                            viewport={{ once: true }}
-                                                            transition={{ duration: 0.5, delay: 0.3 }}
-                                                            className="p-6 md:p-8 bg-white/[0.02] border border-white/5 rounded-2xl md:rounded-[2rem] text-center"
-                                                        >
-                                                            <div className="flex items-center justify-center gap-2 mb-3">
-                                                                <Mail className="w-4 h-4 text-amber-400" />
-                                                                <span className="text-[10px] font-black uppercase tracking-widest text-white/30">Contact Us</span>
-                                                            </div>
-                                                            <p className="text-sm text-white/40 leading-relaxed max-w-lg mx-auto">
-                                                                If you have questions about how your Second Brain handles your data, please contact us at:
-                                                            </p>
-                                                            <a href="mailto:support@secondbrain.com" className="inline-block mt-4 text-amber-400 text-sm font-bold hover:text-amber-300 transition-colors tracking-wide">
-                                                                support@secondbrain.com
-                                                            </a>
-                                                        </motion.div>
-                                                    </div>
-                                                </motion.div>
+                                                {/* ═══ INTERACTIVE SPECIFICATION & TABS SUITE ═══ */}
+                                                <div className="mt-8">
+                                                    <SecondBrainProductivitySuite initialTab="productivity" />
+                                                </div>
                                             </>
                                         ) : (
                                             /* ═══ DEFAULT SYSTEM LAYOUT ═══ */
