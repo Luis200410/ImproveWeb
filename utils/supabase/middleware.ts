@@ -14,6 +14,15 @@ export async function updateSession(request: NextRequest) {
         return supabaseResponse
     }
 
+    const allCookies = request.cookies.getAll()
+    const hasAuthCookie = allCookies.some(c => c.name.startsWith('sb-') || c.name.includes('auth-token'))
+
+    // If there are no auth cookies and user is not visiting /login or /register, skip network auth call completely
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register')
+    if (!hasAuthCookie && !isAuthRoute) {
+        return supabaseResponse
+    }
+
     const supabase = createServerClient(
         supabaseUrl,
         supabaseAnonKey,
@@ -39,17 +48,18 @@ export async function updateSession(request: NextRequest) {
 
     let user = null
     try {
-        const { data } = await supabase.auth.getUser()
+        const userPromise = supabase.auth.getUser()
+        const timeoutPromise = new Promise<{ data: { user: null }; error: any }>((resolve) =>
+            setTimeout(() => resolve({ data: { user: null }, error: new Error('Auth timeout') }), 600)
+        )
+        const { data } = await Promise.race([userPromise, timeoutPromise])
         user = data?.user ?? null
-    } catch (e) {
-        console.error('Middleware Supabase auth error:', e)
+    } catch {
+        // Fail silently without blocking route navigation
     }
 
-    console.log('Middleware: Path:', request.nextUrl.pathname)
-    console.log('Middleware: User found?', !!user)
-
     // Authenticated user attempting to access auth pages -> redirect to app or home
-    if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register'))) {
+    if (user && isAuthRoute) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL
         if (appUrl && !appUrl.startsWith(request.nextUrl.origin)) {
             return NextResponse.redirect(appUrl)

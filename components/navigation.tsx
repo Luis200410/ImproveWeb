@@ -53,29 +53,40 @@ export function Navigation() {
                 setSubscriptionStatus(null)
                 return
             }
-            const supabase = createClient()
-            const { data: entry } = await supabase
-                .from('entries')
-                .select('data')
-                .eq('microapp_id', 'subscription-status')
-                .eq('user_id', userId)
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .maybeSingle()
+            try {
+                const supabase = createClient()
+                const { data: entry } = await supabase
+                    .from('entries')
+                    .select('data')
+                    .eq('microapp_id', 'subscription-status')
+                    .eq('user_id', userId)
+                    .order('updated_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
 
-            const raw = entry?.data
-            const parsed = typeof raw === 'string' ? (() => {
-                try { return JSON.parse(raw) } catch { return null }
-            })() : raw
-            const status = (parsed?.status as string | undefined)?.toLowerCase() || null
-            if (active) {
-                setSubscriptionStatus(status)
+                const raw = entry?.data
+                const parsed = typeof raw === 'string' ? (() => {
+                    try { return JSON.parse(raw) } catch { return null }
+                })() : raw
+                const status = (parsed?.status as string | undefined)?.toLowerCase() || null
+                if (active) {
+                    setSubscriptionStatus(status)
+                }
+            } catch {
+                // Ignore failure
             }
         }
 
         async function hydrateFromServer() {
+            const controller = new AbortController()
+            const timer = setTimeout(() => controller.abort(), 1200)
+
             try {
-                const res = await fetch('/api/auth/me', { credentials: 'include' })
+                const res = await fetch('/api/auth/me', { 
+                    credentials: 'include',
+                    signal: controller.signal
+                })
+                clearTimeout(timer)
                 if (!res.ok) throw new Error('auth fetch failed')
                 const payload = await res.json()
                 if (!active) return
@@ -84,34 +95,38 @@ export function Navigation() {
                 setSubscriptionStatus(payload.subscriptionStatus || null)
                 setCheckedAuth(true)
                 if (authedUser?.id && !payload.subscriptionStatus) {
-                    loadUserAndStatus(payload.user.id)
+                    loadUserAndStatus(authedUser.id)
                 }
-            } catch (err) {
-                console.warn('Navigation /api/auth/me failed, falling back to client session', err)
-                const supabase = createClient()
-                const { data, error } = await supabase.auth.getSession()
-                if (error) console.warn('Navigation getSession error', error)
+            } catch {
+                clearTimeout(timer)
                 if (!active) return
-                const user = data.session?.user?.id ? data.session.user : null
-                setSessionUser(user)
                 setCheckedAuth(true)
-                loadUserAndStatus(user?.id)
             }
         }
 
         hydrateFromServer()
 
-        const supabase = createClient()
-        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            const user = session?.user?.id ? session.user : null
-            setSessionUser(user)
-            setCheckedAuth(true)
-            loadUserAndStatus(user?.id)
-        })
+        try {
+            const supabase = createClient()
+            const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+                if (!active) return
+                const user = session?.user?.id ? session.user : null
+                setSessionUser(user)
+                setCheckedAuth(true)
+                if (user?.id) {
+                    loadUserAndStatus(user.id)
+                }
+            })
 
-        return () => {
-            active = false
-            listener?.subscription.unsubscribe()
+            return () => {
+                active = false
+                listener?.subscription?.unsubscribe()
+            }
+        } catch {
+            setCheckedAuth(true)
+            return () => {
+                active = false
+            }
         }
     }, [])
 

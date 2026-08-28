@@ -6,14 +6,19 @@ import { createClient } from '@/utils/supabase/server'
 export async function GET() {
     try {
         const supabase = await createClient()
-        const { data, error } = await supabase.auth.getUser()
+        
+        const userPromise = supabase.auth.getUser()
+        const timeoutPromise = new Promise<{ data: { user: null }; error: any }>((resolve) => 
+            setTimeout(() => resolve({ data: { user: null }, error: new Error('Auth timeout') }), 800)
+        )
+        const { data, error } = await Promise.race([userPromise, timeoutPromise])
         const user = data?.user ?? null
 
         if (error || !user) {
             return NextResponse.json({ user: null, subscriptionStatus: null }, { status: 200 })
         }
 
-        const { data: subscriptionEntry } = await supabase
+        const entryPromise = supabase
             .from('entries')
             .select('data')
             .eq('user_id', user.id)
@@ -21,6 +26,11 @@ export async function GET() {
             .order('updated_at', { ascending: false })
             .limit(1)
             .maybeSingle()
+        
+        const { data: subscriptionEntry } = await Promise.race([
+            entryPromise,
+            new Promise<any>((resolve) => setTimeout(() => resolve({ data: null }), 800))
+        ])
 
         const rawData = subscriptionEntry?.data
         const parsedData = typeof rawData === 'string' ? (() => {
@@ -33,7 +43,6 @@ export async function GET() {
             subscriptionStatus: status
         })
     } catch (e) {
-        console.error('/api/auth/me error:', e)
         return NextResponse.json({ user: null, subscriptionStatus: null }, { status: 200 })
     }
 }
