@@ -166,7 +166,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSoftwareApp) }}
         />
       </head>
-      <body suppressHydrationWarning className={`${bebas.variable} ${ballet.variable} font-bebas antialiased bg-black text-white selection:bg-white selection:text-black`}>
+      <body suppressHydrationWarning className="antialiased bg-[var(--bg)] text-[var(--label)] selection:bg-[var(--indigo)] selection:text-white">
         {children}
         <Toaster />
       </body>

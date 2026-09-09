@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bebas_Neue } from '@/lib/font-shim'
 import {
   Brain,
   Zap,
@@ -41,8 +40,6 @@ import {
   Key,
   Target
 } from 'lucide-react'
-
-const bebas = Bebas_Neue({ subsets: ['latin'] })
 
 export type SuiteTab = 
   | 'overview' 
@@ -88,7 +85,7 @@ export function SecondBrainProductivitySuite({ initialTab = 'overview', classNam
               Two Apps · One Shared Brain
             </span>
           </div>
-          <h2 className={`${bebas.className} text-4xl sm:text-6xl text-white tracking-tight leading-none`}>
+          <h2 className="type-large-title text-3xl sm:text-5xl text-[var(--label)] tracking-tight leading-none">
             Second Brain <span className="text-amber-400">×</span> Productivity
           </h2>
           <p className="text-neutral-400 text-xs sm:text-sm max-w-xl font-light mt-1">
@@ -183,7 +180,7 @@ function OverviewTabContent({ onNavigate }: { onNavigate: (tab: SuiteTab) => voi
           <div className="inline-flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
             <span>00</span> · Core Architectural Concept
           </div>
-          <h3 className={`${bebas.className} text-4xl sm:text-5xl text-white tracking-tight`}>
+          <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
             Two focused apps that share one brain.
           </h3>
           <p className="text-neutral-300 text-sm sm:text-base leading-relaxed font-light">
@@ -239,7 +236,7 @@ function OverviewTabContent({ onNavigate }: { onNavigate: (tab: SuiteTab) => voi
                 APP ONE · PLANNING
               </span>
             </div>
-            <h4 className={`${bebas.className} text-3xl sm:text-4xl text-white tracking-tight`}>
+            <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
               Second Brain
             </h4>
             <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
@@ -286,7 +283,7 @@ function OverviewTabContent({ onNavigate }: { onNavigate: (tab: SuiteTab) => voi
                 APP TWO · EXECUTION
               </span>
             </div>
-            <h4 className={`${bebas.className} text-3xl sm:text-4xl text-white tracking-tight`}>
+            <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
               Productivity
             </h4>
             <p className="text-xs sm:text-sm text-neutral-400 font-light leading-relaxed">
@@ -470,7 +467,7 @@ function SecondBrainTabContent() {
           <div className="flex items-center gap-2 text-xs font-mono text-indigo-400 uppercase tracking-widest">
             <Brain className="w-4 h-4" /> 01 · Second Brain Specification
           </div>
-          <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+          <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
             Second Brain — Feature by Feature
           </h3>
           <p className="text-neutral-300 text-xs sm:text-sm font-light max-w-2xl leading-relaxed">
@@ -494,7 +491,7 @@ function SecondBrainTabContent() {
                   <div className="p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
                     <Icon className="w-4 h-4" />
                   </div>
-                  <h4 className={`${bebas.className} text-2xl sm:text-3xl text-white tracking-wide`}>
+                  <h4 className="type-headline text-xl sm:text-2xl text-[var(--label)] tracking-tight font-bold">
                     {cat.title}
                   </h4>
                 </div>
@@ -662,7 +659,7 @@ function ProductivityTabContent() {
           <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
             <Zap className="w-4 h-4" /> 02 · Productivity Specification
           </div>
-          <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+          <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
             Productivity — Feature by Feature
           </h3>
           <p className="text-neutral-300 text-xs sm:text-sm font-light max-w-2xl leading-relaxed">
@@ -686,7 +683,7 @@ function ProductivityTabContent() {
                   <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
                     <Icon className="w-4 h-4" />
                   </div>
-                  <h4 className={`${bebas.className} text-2xl sm:text-3xl text-white tracking-wide`}>
+                  <h4 className="type-headline text-xl sm:text-2xl text-[var(--label)] tracking-tight font-bold">
                     {sec.title}
                   </h4>
                 </div>
@@ -793,7 +790,7 @@ function InterlockTabContent() {
         <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
           <span>03</span> · Synergistic Architecture
         </div>
-        <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+        <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
           How the Two Apps Interlock
         </h3>
         <p className="text-neutral-300 text-sm sm:text-base leading-relaxed font-light max-w-3xl">
@@ -865,7 +862,7 @@ function DataAiTabContent() {
         <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
           <span>04</span> · Data Model &amp; On-Device Intelligence
         </div>
-        <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+        <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
           Transparent Architecture — What We Store &amp; How AI Works
         </h3>
         <p className="text-neutral-300 text-sm leading-relaxed font-light max-w-3xl">
@@ -909,7 +906,7 @@ function DataAiTabContent() {
       {/* Object Storage Table */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className={`${bebas.className} text-2xl sm:text-3xl text-white tracking-wide`}>
+          <h4 className="type-headline text-xl sm:text-2xl text-[var(--label)] tracking-tight font-bold">
             Data Object Map
           </h4>
           <span className="text-xs font-mono text-neutral-400">SwiftData Local Store</span>
@@ -976,7 +973,7 @@ function PrivacyTabContent() {
         <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 uppercase tracking-widest">
           <Shield className="w-4 h-4" /> 05 · Privacy &amp; Permissions Fact Sheet
         </div>
-        <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+        <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
           Where Your Data Lives &amp; Permissions We Request
         </h3>
         <p className="text-neutral-300 text-sm leading-relaxed font-light max-w-3xl">
@@ -1021,7 +1018,7 @@ function PrivacyTabContent() {
 
       {/* Permissions Matrix */}
       <div className="space-y-4">
-        <h4 className={`${bebas.className} text-2xl sm:text-3xl text-white tracking-wide`}>
+        <h4 className="type-headline text-xl sm:text-2xl text-[var(--label)] tracking-tight font-bold">
           Permissions Requested &amp; Reason for Access
         </h4>
 
@@ -1072,7 +1069,7 @@ function PricingTabContent() {
         <div className="flex items-center gap-2 text-xs font-mono text-amber-400 uppercase tracking-widest">
           <Tag className="w-4 h-4" /> 06 · Suite Subscription Model
         </div>
-        <h3 className={`${bebas.className} text-3xl sm:text-5xl text-white tracking-tight`}>
+        <h3 className="type-title text-3xl sm:text-4xl text-[var(--label)] tracking-tight font-bold">
           Subscribe Once. Unlock the Whole Improve Suite.
         </h3>
         <p className="text-neutral-300 text-sm leading-relaxed font-light max-w-3xl">
@@ -1089,7 +1086,7 @@ function PricingTabContent() {
               <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Core Access</span>
               <span className="px-2.5 py-1 rounded bg-white/5 text-[10px] font-mono text-white">Free Forever</span>
             </div>
-            <h4 className={`${bebas.className} text-3xl sm:text-4xl text-white tracking-tight`}>
+            <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
               Free Core Tier
             </h4>
             <p className="text-xs text-neutral-400 leading-relaxed font-light">
@@ -1127,7 +1124,7 @@ function PricingTabContent() {
               <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">Full Suite Power</span>
               <span className="px-2.5 py-1 rounded bg-amber-500/20 text-[10px] font-mono text-amber-300">Performer Tier</span>
             </div>
-            <h4 className={`${bebas.className} text-3xl sm:text-4xl text-white tracking-tight`}>
+            <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
               The Performer Suite
             </h4>
             <p className="text-xs text-neutral-300 leading-relaxed font-light">
