@@ -203,49 +203,133 @@
 }
 
 /* === TYPOGRAPHY SCALE UTILITIES === */
-.type-large-title {
-  font-size: 1.75rem; /* 28px */
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
+@layer utilities {
+  .title-huge {
+    font-size: clamp(2.5rem, 5.5vw, 5.75rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+  }
 
-.type-title {
-  font-size: 1.5rem; /* 24px */
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.015em;
-}
+  .title-hero {
+    font-size: clamp(3rem, 7vw, 7.5rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+  }
 
-.type-headline {
-  font-size: 1.0625rem; /* 17px */
-  font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
+  .type-large-title {
+    font-size: clamp(2rem, 3.5vw, 3.25rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+  }
 
-.type-body {
-  font-size: 0.9375rem; /* 15px */
-  font-weight: 400;
-  line-height: 1.45;
-}
+  .type-title {
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
 
-.type-callout {
-  font-size: 0.875rem; /* 14px */
-  font-weight: 500;
-  line-height: 1.4;
-}
+  .type-headline {
+    font-size: 1.0625rem; /* 17px */
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
 
-.type-caption {
-  font-size: 0.8125rem; /* 13px */
-  font-weight: 400;
-  line-height: 1.35;
-}
+  .type-body {
+    font-size: 0.9375rem; /* 15px */
+    font-weight: 400;
+    line-height: 1.45;
+  }
 
-.type-subcaption {
-  font-size: 0.75rem; /* 12px */
-  font-weight: 500;
-  line-height: 1.3;
+  .type-callout {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .type-caption {
+    font-size: 0.8125rem; /* 13px */
+    font-weight: 400;
+    line-height: 1.35;
+  }
+
+  .type-subcaption {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  /* === LIQUID GLASS SYSTEM === */
+  .liquid-glass {
+    background: rgba(18, 18, 24, 0.65);
+    backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(105%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35),
+      0 20px 50px -10px rgba(0, 0, 0, 0.75);
+  }
+
+  .liquid-glass-nav {
+    background: rgba(10, 10, 14, 0.65);
+    backdrop-filter: blur(32px) saturate(200%) contrast(105%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%) contrast(105%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.05),
+      0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  }
+
+  .liquid-glass-dropdown {
+    background: rgba(16, 16, 22, 0.78);
+    backdrop-filter: blur(40px) saturate(210%) contrast(105%);
+    -webkit-backdrop-filter: blur(40px) saturate(210%) contrast(105%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+      inset 0 0 20px 0 rgba(255, 255, 255, 0.02),
+      0 30px 70px -15px rgba(0, 0, 0, 0.9),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+  }
+
+  .liquid-glass-card {
+    background: rgba(20, 20, 26, 0.60);
+    backdrop-filter: blur(28px) saturate(190%);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.22),
+      0 20px 50px -12px rgba(0, 0, 0, 0.75);
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .liquid-glass-card:hover {
+    background: rgba(26, 26, 34, 0.72);
+    border-color: rgba(255, 255, 255, 0.22);
+    box-shadow: 
+      inset 0 1px 2px 0 rgba(255, 255, 255, 0.35),
+      0 30px 60px -15px rgba(0, 0, 0, 0.85);
+  }
+
+  .liquid-glass-pill {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.28),
+      0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 9999px;
+  }
 }
 
 .type-micro {

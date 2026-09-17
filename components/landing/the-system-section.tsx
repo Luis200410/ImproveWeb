@@ -66,7 +66,7 @@ function SystemChapter({ chapter, index }: { chapter: any, index: number }) {
                 </p>
             </div>
 
-            <div className="card-ios relative w-full aspect-[4/3] bg-[var(--card)] border border-[var(--separator)] p-6 overflow-hidden">
+            <div className="liquid-glass-card relative w-full aspect-[4/3] p-6 overflow-hidden shadow-2xl">
                 <div className="w-full h-full flex flex-col justify-center">
                     {index === 0 && <DemoDailyDecisions />}
                     {index === 1 && <DemoCashFlow />}

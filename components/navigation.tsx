@@ -145,9 +145,9 @@ export function Navigation() {
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="fixed top-0 left-0 right-0 z-[200] bg-[var(--card)]/85 backdrop-blur-md border-b border-[var(--separator)] text-[var(--label)]"
+            className="fixed top-0 left-0 right-0 z-[200] liquid-glass-nav text-[var(--label)] transition-all duration-300"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-5 flex justify-between items-center">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4 flex justify-between items-center">
                 {/* Logo */}
                 <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
                     <ImproveLogo small />
@@ -179,13 +179,13 @@ export function Navigation() {
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                     exit={{ opacity: 0, y: 6, scale: 0.98 }}
                                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                                    className="absolute left-1/2 -translate-x-1/2 mt-2 w-[680px] bg-[var(--card)] backdrop-blur-2xl border border-[var(--separator)] shadow-2xl rounded-[20px] p-4 z-50 grid grid-cols-2 gap-2"
+                                    className="absolute left-1/2 -translate-x-1/2 mt-3 w-[720px] liquid-glass-dropdown p-4 z-50 grid grid-cols-2 gap-2.5"
                                 >
-                                    <div className="col-span-2 px-3 py-2 border-b border-[var(--separator)] flex items-center justify-between mb-1">
-                                        <span className="type-kicker flex items-center gap-1.5 text-[var(--indigo)]">
-                                            <Sparkles className="w-3 h-3 text-[var(--indigo)]" /> The 8 Core Integrity Systems
+                                    <div className="col-span-2 px-3 py-2 border-b border-white/10 flex items-center justify-between mb-1">
+                                        <span className="type-kicker flex items-center gap-1.5 text-[var(--indigo)] font-bold">
+                                            <Sparkles className="w-3.5 h-3.5 text-[var(--indigo)]" /> The 8 Core Integrity Systems
                                         </span>
-                                        <span className="type-subcaption text-[var(--label-3)]">Dedicated App Suites</span>
+                                        <span className="type-subcaption text-[var(--label-3)]">Apple Native Frameworks</span>
                                     </div>
 
                                     {APPS_DATA.map((app) => {
@@ -197,10 +197,10 @@ export function Navigation() {
                                                 key={app.id}
                                                 href={`/apps/${app.slug}`}
                                                 onClick={() => setIsAppsMenuOpen(false)}
-                                                className={`group relative p-3 rounded-[14px] transition-all duration-200 flex items-start gap-3 border ${
+                                                className={`group relative p-3 rounded-[16px] transition-all duration-200 flex items-start gap-3 border ${
                                                     isActive
-                                                        ? 'bg-[var(--card-inset)] border-[var(--indigo)]'
-                                                        : 'bg-[var(--card-inset)]/40 border-[var(--separator)] hover:bg-[var(--card-inset)]'
+                                                        ? 'bg-white/15 border-[var(--indigo)] shadow-lg'
+                                                        : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.08] hover:border-white/20'
                                                 }`}
                                             >
                                                 <div className="icon-box-tint group-hover:scale-105 transition-transform">
@@ -257,14 +257,14 @@ export function Navigation() {
                             onMouseLeave={() => setIsMemberMenuOpen(false)}
                         >
                             <Button
-                                className="btn-secondary rounded-full text-xs px-4 py-2"
+                                className="liquid-glass-pill rounded-full text-xs px-4 py-2 text-white hover:bg-white/15 transition-all"
                                 onClick={() => setIsMemberMenuOpen((prev) => !prev)}
                             >
                                 Member
                             </Button>
                             {isMemberMenuOpen && (
-                                <div className="absolute right-0 mt-1 w-64 bg-[var(--card)] border border-[var(--separator)] shadow-2xl z-50 rounded-[20px] overflow-hidden p-1">
-                                    <div className="flex flex-col divide-y divide-[var(--separator)]">
+                                <div className="absolute right-0 mt-2 w-64 liquid-glass-dropdown z-50 rounded-[20px] overflow-hidden p-1.5 shadow-2xl">
+                                    <div className="flex flex-col divide-y divide-white/10">
                                         {!checkedAuth && (
                                             <div className="px-4 py-3 text-xs uppercase tracking-wider text-[var(--label-2)]">Loading...</div>
                                         )}
@@ -272,7 +272,7 @@ export function Navigation() {
                                             <>
                                                 <a
                                                     href={membershipActive ? (process.env.NEXT_PUBLIC_APP_URL || '/pricing') : '/pricing?reason=subscribe'}
-                                                    className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-[var(--fill)] flex items-center justify-between rounded-[14px]"
+                                                    className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-white/10 flex items-center justify-between rounded-[14px] transition-colors"
                                                     onClick={() => setIsMemberMenuOpen(false)}
                                                 >
                                                     {membershipActive ? 'Open App' : 'View Membership'}
@@ -282,7 +282,7 @@ export function Navigation() {
                                                 </a>
                                                 <Link
                                                     href="/profile"
-                                                    className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-[var(--fill)] rounded-[14px]"
+                                                    className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-white/10 rounded-[14px] transition-colors"
                                                     onClick={() => setIsMemberMenuOpen(false)}
                                                 >
                                                     Profile
@@ -290,7 +290,7 @@ export function Navigation() {
                                                 <button
                                                     type="button"
                                                     onClick={handleLogout}
-                                                    className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-[var(--fill)] rounded-[14px] disabled:opacity-60"
+                                                    className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-[var(--label)] hover:bg-white/10 rounded-[14px] disabled:opacity-60 transition-colors"
                                                     disabled={signingOut}
                                                 >
                                                     {signingOut ? 'Logging out...' : 'Log Out'}
@@ -303,7 +303,7 @@ export function Navigation() {
                         </div>
                     ) : (
                         <Link href="/login">
-                            <Button className="btn-primary rounded-full text-xs px-4 py-2">
+                            <Button className="btn-primary rounded-full text-xs px-5 py-2.5 shadow-[0_0_20px_rgba(94,92,230,0.4)] hover:shadow-[0_0_30px_rgba(94,92,230,0.6)] transition-all">
                                 Member Login
                             </Button>
                         </Link>
@@ -341,7 +341,7 @@ export function Navigation() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="md:hidden absolute top-full left-0 right-0 border-t border-white/10 bg-black/95 backdrop-blur-xl z-40 overflow-y-auto max-h-[85vh]"
+                    className="md:hidden absolute top-full left-0 right-0 border-t border-white/15 liquid-glass-dropdown rounded-none border-x-0 border-b-0 backdrop-blur-3xl z-40 overflow-y-auto max-h-[85vh]"
                 >
                     <div className="px-6 py-6 space-y-6">
                         {/* Mobile Apps Section */}
