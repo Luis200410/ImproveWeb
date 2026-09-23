@@ -6,6 +6,7 @@ import { ArrowRight, Sparkles, CheckCircle2, TrendingUp, Shield, Cpu, Activity, 
 import { SecondBrainProductivitySuite } from '@/components/landing/second-brain-productivity-suite'
 import { ProductivityShowcase } from '@/components/apps/productivity-showcase'
 import { AppHeroShowcase } from '@/components/apps/app-hero-showcase'
+import { OtherDedicatedAppsDock } from '@/components/apps/other-dedicated-apps-dock'
 
 
 
@@ -106,40 +107,8 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         </section>
       )}
 
-      {/* 4. Switch Between Other Apps */}
-      <section className="py-16 px-6 border-t border-[var(--separator)]">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex justify-between items-end">
-            <div>
-              <p className="kicker text-[var(--indigo)]">Explore The Integrity Network</p>
-              <h4 className="type-title text-2xl sm:text-3xl uppercase tracking-tight text-[var(--label)] mt-1">
-                Other Dedicated Apps
-              </h4>
-            </div>
-            <Link href="/apps" className="type-callout text-[var(--label-2)] hover:text-[var(--label)] flex items-center gap-1">
-              View All 8 Apps <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {APPS_DATA.filter((item) => item.slug !== app.slug).slice(0, 4).map((other) => (
-              <Link
-                key={other.id}
-                href={`/apps/${other.slug}`}
-                className="card-ios p-4 border border-[var(--separator)] hover:border-[var(--indigo)] transition-all group"
-              >
-                <div className="font-rounded text-[10px] text-[var(--indigo)]">{other.number}</div>
-                <div className="type-headline text-sm font-bold text-[var(--label)] group-hover:text-[var(--indigo)] transition-colors mt-1 line-clamp-1">
-                  {other.name}
-                </div>
-                <div className="type-caption text-[var(--label-2)] line-clamp-1 mt-1">
-                  {other.tagline}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 4. Switch Between Other Apps via Apple-Style Dock */}
+      <OtherDedicatedAppsDock currentSlug={app.slug} />
     </div>
   )
 }

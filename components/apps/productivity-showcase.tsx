@@ -16,6 +16,8 @@ import { ShieldMotionExhibit } from './exhibits/shield-motion-exhibit'
 import { TimelineSnapExhibit } from './exhibits/timeline-snap-exhibit'
 import { UltradianWaveExhibit } from './exhibits/ultradian-wave-exhibit'
 import { FourBigsFlameExhibit } from './exhibits/four-bigs-flame-exhibit'
+import CTAWithVerticalMarquee from '@/components/ui/cta-with-text-marquee'
+import { CollectionSurfer } from '@/components/ui/collection-surfer'
 
 interface PillarSection {
   number: string
@@ -199,57 +201,53 @@ function PillarCardRow({ pillar, idx }: { pillar: PillarSection; idx: number }) 
 
 export function ProductivityShowcase() {
   return (
-    <section className="w-full py-20 sm:py-28 lg:py-36 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)] overflow-hidden">
-      <div className="w-full max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto space-y-28 sm:space-y-36 lg:space-y-44">
-        
-        {/* Main Section Header */}
-        <div className="text-center max-w-4xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--fill)] border border-[var(--separator)]">
-            <Sparkles className="w-4 h-4 text-[var(--indigo)]" />
-            <span className="kicker text-[var(--indigo)] text-xs sm:text-sm">THE SCIENCE OF REAL FOCUS</span>
-          </div>
+    <div className="w-full bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)]">
+      {/* Upper Science Pillars Section */}
+      <section className="w-full py-20 sm:py-28 lg:py-36 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden">
+        <div className="w-full max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto space-y-28 sm:space-y-36 lg:space-y-44">
           
-          <h2 className="title-huge text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black uppercase tracking-tight text-[var(--label)] leading-[0.88]">
-            BUILT ON BRAIN SCIENCE.
-          </h2>
-          
-          <p className="type-body text-base sm:text-xl lg:text-2xl text-[var(--label-2)] max-w-2xl mx-auto leading-relaxed">
-            No productivity hacks. No endless to-do lists. Just proven human neuroscience turned into simple software that protects your time.
-          </p>
-        </div>
-
-        {/* The 4 Science Pillars with 3D Zoom Camera Dive & Component Exhibits */}
-        <div className="space-y-24 sm:space-y-32 lg:space-y-40">
-          {PILLARS.map((pillar, idx) => (
-            <PillarCardRow 
-              key={pillar.number} 
-              pillar={pillar} 
-              idx={idx} 
-            />
-          ))}
-        </div>
-
-        {/* Bottom CTA Block */}
-        <div className="card-ios p-8 sm:p-14 lg:p-20 text-center max-w-4xl mx-auto space-y-6 sm:space-y-8 border border-[var(--separator)]">
-          <p className="kicker text-[var(--indigo)] text-xs sm:text-sm">START YOUR SYSTEM</p>
-          <h3 className="title-huge text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[var(--label)] leading-[0.90]">
-            READY TO TAKE YOUR TIME BACK?
-          </h3>
-          <p className="type-body text-base sm:text-lg lg:text-xl text-[var(--label-2)] max-w-xl mx-auto leading-relaxed">
-            Stop losing hours to phone distractions. Turn your calendar and your biological rhythm into one focused system.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
-            <Link href="/register" className="btn-primary text-xs sm:text-sm uppercase px-8 sm:px-10 py-4 sm:py-5">
-              <span>Get Improve Productivity</span>
-              <ArrowRight className="w-4 h-4 ml-1 inline" />
-            </Link>
-            <Link href="/pricing" className="btn-secondary text-xs sm:text-sm uppercase px-8 sm:px-10 py-4 sm:py-5">
-              <span>View Membership</span>
-            </Link>
+          {/* Main Section Header */}
+          <div className="text-center max-w-5xl mx-auto space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FF02E8]/15 border border-[#FF02E8]/40 shadow-lg shadow-[#FF02E8]/20">
+              <Sparkles className="w-4 h-4 text-[#FF02E8]" />
+              <span className="kicker text-[#FF02E8] text-xs sm:text-sm font-bold tracking-wide">THE SCIENCE OF REAL FOCUS</span>
+            </div>
+            
+            <h2 className="title-huge text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[var(--label)] leading-[0.92]">
+              ENGINEERED FOR PEAK DEEP WORK
+            </h2>
+            
+            <p className="type-body text-base sm:text-xl lg:text-2xl text-[var(--label-2)] max-w-3xl mx-auto leading-relaxed pt-2">
+              No productivity hacks. No endless to-do lists. Just proven human neuroscience turned into simple software that protects your time.
+            </p>
           </div>
-        </div>
 
-      </div>
-    </section>
+          {/* The 4 Science Pillars with 3D Zoom Camera Dive & Component Exhibits */}
+          <div className="space-y-24 sm:space-y-32 lg:space-y-40">
+            {PILLARS.map((pillar, idx) => (
+              <PillarCardRow 
+                key={pillar.number} 
+                pillar={pillar} 
+                idx={idx} 
+              />
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* The 5 Layers of Habits CollectionSurfer 3D Experience */}
+      <section className="w-full">
+        <CollectionSurfer 
+          headerKicker="HABIT EXECUTION FRAMEWORK" 
+          headerTitle="THE 5 LAYERS OF HABITS"
+        />
+      </section>
+
+      {/* Bottom Marquee CTA Section */}
+      <section className="w-full border-t border-[var(--separator)]">
+        <CTAWithVerticalMarquee />
+      </section>
+    </div>
   )
 }
