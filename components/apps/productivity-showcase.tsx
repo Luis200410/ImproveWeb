@@ -202,8 +202,16 @@ function PillarCardRow({ pillar, idx }: { pillar: PillarSection; idx: number }) 
 export function ProductivityShowcase() {
   return (
     <div className="w-full bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)]">
+      {/* The 5 Layers of Habits CollectionSurfer 3D Experience */}
+      <section className="w-full">
+        <CollectionSurfer 
+          headerKicker="HABIT EXECUTION FRAMEWORK" 
+          headerTitle="THE 5 LAYERS OF HABITS"
+        />
+      </section>
+
       {/* Upper Science Pillars Section */}
-      <section className="w-full py-20 sm:py-28 lg:py-36 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden">
+      <section className="w-full py-20 sm:py-28 lg:py-36 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden border-t border-[var(--separator)]">
         <div className="w-full max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto space-y-28 sm:space-y-36 lg:space-y-44">
           
           {/* Main Section Header */}
@@ -234,14 +242,6 @@ export function ProductivityShowcase() {
           </div>
 
         </div>
-      </section>
-
-      {/* The 5 Layers of Habits CollectionSurfer 3D Experience */}
-      <section className="w-full">
-        <CollectionSurfer 
-          headerKicker="HABIT EXECUTION FRAMEWORK" 
-          headerTitle="THE 5 LAYERS OF HABITS"
-        />
       </section>
 
       {/* Bottom Marquee CTA Section */}

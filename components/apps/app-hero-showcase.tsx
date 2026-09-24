@@ -54,36 +54,10 @@ export function AppHeroShowcase({ app }: AppHeroShowcaseProps) {
         /* Full Bleed 100vw Unboxed 3D Hero Stage for Productivity App */
         <div className="w-full flex flex-col items-center text-center">
           
-          {/* Full Wall-to-Wall 3D Hero Stage */}
+          {/* Full Wall-to-Wall 3D Hero Stage (Contains Logo, 3D Words & First-Frame CTA Buttons) */}
           <div className="w-full relative overflow-hidden">
             <JellyfishDrift centerMode="logo" />
           </div>
-
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6 pt-6">
-            {/* Polished Capsule Buttons - Fades in at 7.5s right after logo lands */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 7.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-wrap items-center justify-center gap-4 pt-2"
-            >
-              <a
-                href="https://apps.apple.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary text-xs sm:text-sm uppercase px-8 sm:px-10 py-4 sm:py-4.5 tracking-wider bg-[#FF02E8] text-white shadow-[0_0_35px_rgba(255,2,232,0.5)] hover:shadow-[0_0_50px_rgba(255,2,232,0.75)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 rounded-full"
-              >
-                <Apple className="w-4.5 h-4.5 text-white" />
-                <span>Get {app.name}</span>
-                <ArrowRight className="w-4 h-4" />
-              </a>
-              <Link
-                href="#pricing"
-                className="btn-secondary text-xs sm:text-sm uppercase px-8 sm:px-9 py-4 sm:py-4.5 tracking-wider bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/40 hover:scale-105 active:scale-95 transition-all rounded-full backdrop-blur-md"
-              >
-                <span>View Membership</span>
-              </Link>
-            </motion.div>
 
             {/* Micro Trust Indicators */}
             <motion.div 
@@ -106,129 +80,7 @@ export function AppHeroShowcase({ app }: AppHeroShowcaseProps) {
               </span>
             </motion.div>
 
-            {/* Centered Device Showcase Frame */}
-            <div className="w-full pt-8 sm:pt-12 flex justify-center relative">
-              
-              {/* Top Floating Orbiting Badge */}
-              <motion.div 
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                className="absolute top-2 sm:top-4 left-4 sm:left-24 z-30 px-4 py-2.5 rounded-2xl bg-[#1C1C24]/90 border border-white/15 text-white shadow-2xl backdrop-blur-xl flex items-center gap-2.5"
-              >
-                <div className="w-8 h-8 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-400">
-                  <Lock className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs font-bold text-white">App Shield Active</div>
-                  <div className="text-[10px] text-white/50">Instagram, TikTok & Games Blocked</div>
-                </div>
-              </motion.div>
-
-              {/* Bottom Floating Orbiting Badge */}
-              <motion.div 
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-                className="absolute bottom-2 sm:bottom-4 right-4 sm:right-24 z-30 px-4 py-2.5 rounded-2xl bg-[#1C1C24]/90 border border-white/15 text-white shadow-2xl backdrop-blur-xl flex items-center gap-2.5"
-              >
-                <div className="w-8 h-8 rounded-xl bg-[#FF9F0A]/20 border border-[#FF9F0A]/30 flex items-center justify-center text-[#FF9F0A]">
-                  <Calendar className="w-4 h-4" />
-                </div>
-                <div className="text-left">
-                  <div className="text-xs font-bold text-white">Timeline Synced</div>
-                  <div className="text-[10px] text-white/50">Habits Locked into Real Hours</div>
-                </div>
-              </motion.div>
-
-              {/* The iPhone Showcase Frame */}
-              <motion.div 
-                whileHover={{ rotateY: 4, rotateX: -3, scale: 1.02 }}
-                transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                className="w-full max-w-[340px] sm:max-w-[380px] rounded-[52px] border-[5px] border-[#323238] bg-[#0A0A0E] p-3.5 shadow-[0_25px_80px_rgba(0,0,0,0.9)] relative overflow-hidden"
-              >
-                
-                {/* Device Bezel & Inner Glass */}
-                <div className="w-full rounded-[42px] bg-[#050507] border border-white/10 p-4 space-y-4 text-white overflow-hidden relative">
-                  
-                  {/* Status Bar + Dynamic Island */}
-                  <div className="flex items-center justify-between px-2 pt-1 pb-2 border-b border-white/5">
-                    <span className="text-xs font-rounded font-bold text-white/80">9:41</span>
-                    <div className="w-24 h-4.5 bg-black rounded-full border border-white/15 mx-auto" />
-                    <div className="flex items-center gap-1.5 text-white/80">
-                      <span className="text-[10px] font-bold">5G</span>
-                      <div className="w-4 h-2 border border-white/80 rounded-sm" />
-                    </div>
-                  </div>
-
-                  {/* Dashboard Top Greeting */}
-                  <div className="flex items-center justify-between pt-1">
-                    <div>
-                      <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Good Morning</span>
-                      <h3 className="text-lg font-black text-white tracking-tight">Today&apos;s Focus</h3>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FF02E8] to-[#30D158] flex items-center justify-center font-bold text-xs shadow-md">
-                      LC
-                    </div>
-                  </div>
-
-                  {/* The Hero Live Card */}
-                  <div className="rounded-2xl bg-gradient-to-r from-[#15803D] via-[#22C55E] to-[#16A34A] p-4 text-white shadow-[0_0_30px_rgba(34,197,94,0.4)] border border-white/20 relative overflow-hidden group">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-white/90">
-                          <span className="w-2 h-2 rounded-full bg-white animate-ping" />
-                          <span>FOCUS TIMER ACTIVE</span>
-                        </div>
-                        <div className="text-sm font-bold text-white">Study programming</div>
-                      </div>
-                      <div className="text-right">
-                        <div suppressHydrationWarning className="font-rounded text-xl font-black text-white">
-                          {mounted ? `1:${minutes}:${seconds.toString().padStart(2, '0')}` : '1:55:41'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 4 Telemetry Metrics Grid */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white/[0.04] border border-white/5 rounded-xl p-2.5">
-                      <span className="text-[9px] text-white/40 uppercase tracking-wider block">Sessions</span>
-                      <div className="font-rounded text-lg font-black text-white mt-0.5">6 Today</div>
-                    </div>
-                    <div className="bg-white/[0.04] border border-white/5 rounded-xl p-2.5">
-                      <span className="text-[9px] text-white/40 uppercase tracking-wider block">Deep Work</span>
-                      <div className="font-rounded text-lg font-black text-white mt-0.5">8h Logged</div>
-                    </div>
-                    <div className="bg-white/[0.04] border border-white/5 rounded-xl p-2.5">
-                      <span className="text-[9px] text-white/40 uppercase tracking-wider block">Consistency</span>
-                      <div className="font-rounded text-lg font-black text-white mt-0.5">94% Score</div>
-                    </div>
-                    <div className="bg-white/[0.04] border border-white/5 rounded-xl p-2.5">
-                      <span className="text-[9px] text-white/40 uppercase tracking-wider block">This Week</span>
-                      <div className="font-rounded text-lg font-black text-white mt-0.5">36.3h Peak</div>
-                    </div>
-                  </div>
-
-                  {/* Next Scheduled Event on Calendar */}
-                  <div className="bg-[#121216] border border-white/5 rounded-xl p-2.5 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-[#FF9F0A]" />
-                      <span className="text-white/80 font-medium truncate">Deep study session</span>
-                    </div>
-                    <span className="text-[10px] font-rounded text-white/40">8:00 AM</span>
-                  </div>
-
-                  {/* Bottom Home Bar */}
-                  <div className="flex justify-center pt-2 pb-1">
-                    <div className="w-28 h-1 bg-white/25 rounded-full" />
-                  </div>
-
-                </div>
-              </motion.div>
-
-            </div>
-
           </div>
-        </div>
       ) : (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Standard 2-Column Grid Layout for Other Apps */}

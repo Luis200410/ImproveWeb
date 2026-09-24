@@ -595,19 +595,19 @@ export default function JellyfishDrift({ centerMode = "logo" }: { centerMode?: "
       ))}
 
       {/* ── Center Hub: App Logo Design (Letters) or 3D Jellyfish
-            Bigger & closer to letters: Logo starts at 2.0s, glides down slowly over 5.5s to land at 7.5s. ──── */}
+            Glides down slowly over 5.5s to land 25px lower towards the buttons. ──── */}
       <motion.div
         initial={{ y: "-40vh", opacity: 0 }}
-        animate={{ y: "-5vh", opacity: 1 }}
+        animate={{ y: "calc(-15vh + 25px)", opacity: 1 }}
         transition={{ duration: 5.5, delay: 2.0, ease: [0.16, 1, 0.3, 1] }}
         style={{
           position: "absolute",
           left: "50%",
-          top: "43%",
+          top: "34%",
           x: "-50%",
           y: "-50%",
-          width: "min(50vh, 68vw)",
-          height: "50vh",
+          width: "min(48vh, 64vw)",
+          height: "48vh",
           zIndex: 20,
           pointerEvents: "none",
         }}
@@ -617,6 +617,52 @@ export default function JellyfishDrift({ centerMode = "logo" }: { centerMode?: "
         ) : (
           <Jellyfish3D loop={LOOP} />
         )}
+      </motion.div>
+
+      {/* ── First Frame CTA Action Buttons
+            Left: SUBSCRIBE (redirects to #pricing). Right: GET THE APP (blue button with Apple logo, redirects to App Store).
+            Appears earlier at 3.8s during the hero entry transition. ──── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20, x: "-50%" }}
+        animate={{ opacity: 1, y: 0, x: "-50%" }}
+        transition={{ duration: 0.8, delay: 3.8, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: "absolute",
+          left: "50%",
+          bottom: "3.5vh",
+          zIndex: 40,
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "1.2rem",
+          pointerEvents: "auto",
+        }}
+      >
+        <a
+          href="#pricing"
+          onClick={(e) => {
+            e.preventDefault();
+            const el = document.getElementById("pricing");
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth" });
+            } else {
+              window.location.hash = "#pricing";
+            }
+          }}
+          className="btn-primary text-xs sm:text-sm font-extrabold uppercase px-8 sm:px-10 py-3.5 sm:py-4 tracking-wider bg-[#FF02E8] text-white shadow-[0_0_35px_rgba(255,2,232,0.6)] hover:shadow-[0_0_55px_rgba(255,2,232,0.85)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2 rounded-full cursor-pointer"
+        >
+          <span>SUBSCRIBE</span>
+        </a>
+        <a
+          href="https://apps.apple.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-secondary text-xs sm:text-sm font-extrabold uppercase px-8 sm:px-10 py-3.5 sm:py-4 tracking-wider bg-[#5E5CE6] text-white shadow-[0_0_35px_rgba(94,92,230,0.6)] hover:shadow-[0_0_55px_rgba(94,92,230,0.85)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2.5 rounded-full cursor-pointer"
+        >
+          <Apple className="w-4.5 h-4.5 text-white" />
+          <span>GET THE APP</span>
+        </a>
       </motion.div>
 
 

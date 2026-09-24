@@ -251,9 +251,10 @@ export default function CTAWithVerticalMarquee() {
 
   return (
     <div
+      id="pricing"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative min-h-[90vh] bg-[#07050A] text-white flex flex-col items-center justify-between px-6 py-16 overflow-hidden border-t border-zinc-900 select-none"
+      className="relative min-h-[90vh] bg-[#07050A] text-white flex flex-col items-center justify-between px-6 py-16 overflow-hidden border-t border-zinc-900 select-none scroll-mt-20"
     >
       {/* Background ambient purple glow */}
       <div
