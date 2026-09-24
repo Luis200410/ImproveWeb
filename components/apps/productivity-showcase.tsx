@@ -18,6 +18,7 @@ import { UltradianWaveExhibit } from './exhibits/ultradian-wave-exhibit'
 import { FourBigsFlameExhibit } from './exhibits/four-bigs-flame-exhibit'
 import CTAWithVerticalMarquee from '@/components/ui/cta-with-text-marquee'
 import { CollectionSurfer } from '@/components/ui/collection-surfer'
+import Timeline from '@/components/ui/timeline'
 
 interface PillarSection {
   number: string
@@ -243,6 +244,16 @@ export function ProductivityShowcase() {
 
         </div>
       </section>
+
+      {/* Product Storyline GSAP Timeline Section */}
+      <Timeline 
+        title="PRODUCT STORYLINE"
+        periodLabel="2020 - 2026 ROADMAP"
+        activeColor="#FF02E8"
+        backgroundColor="var(--bg)"
+        textColor="var(--label)"
+        mutedTextColor="var(--label-2)"
+      />
 
       {/* Bottom Marquee CTA Section */}
       <section className="w-full border-t border-[var(--separator)]">

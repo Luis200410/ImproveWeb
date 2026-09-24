@@ -3,6 +3,8 @@ export interface AppIdentity {
   slug: string;
   number: string;
   name: string;
+  singleWord: string;
+  logoUrl: string;
   tagline: string;
   description: string;
   badge: string;
@@ -28,84 +30,90 @@ export interface AppIdentity {
 
 export const APPS_DATA: AppIdentity[] = [
   {
-    id: 'body-optimization',
-    slug: 'body-optimization',
+    id: 'relationships-capital',
+    slug: 'relationships-capital',
     number: '01',
-    name: 'Body Optimization',
-    tagline: 'Physical optimization and peak performance',
-    description: 'Biometric tracking, sleep velocity recovery, and physical protocol optimization built for high-performance individuals.',
-    badge: 'SYSTEM 01 • PHYSIOLOGY',
-    heroTitle: 'BODY OPTIMIZATION ENGINE',
-    heroSubtitle: 'Peak physiological performance through data-driven recovery and biometric precision.',
-    accentColor: 'from-rose-500 to-amber-500',
-    accentHex: '#f43f5e',
-    bgGradient: 'from-rose-950/40 via-black to-black',
-    borderColor: 'border-rose-500/30',
-    iconName: 'Activity',
-    imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2020&auto=format&fit=crop',
+    name: 'Relationships & Social Capital',
+    singleWord: 'RELATIONSHIPS',
+    logoUrl: '/RelationShips logo.svg',
+    tagline: 'Cultivating high-value social capital',
+    description: 'Nurture deep personal connections, manage high-trust professional networks, and build lasting relational capital.',
+    badge: 'SYSTEM 01 • RELATIONS',
+    heroTitle: 'SOCIAL CAPITAL NETWORK',
+    heroSubtitle: 'Cultivate meaningful alliances and maintain high-touch relationships effortlessly.',
+    accentColor: 'from-amber-500 to-rose-500',
+    accentHex: '#f59e0b',
+    bgGradient: 'from-amber-950/40 via-black to-black',
+    borderColor: 'border-amber-500/30',
+    iconName: 'Users',
+    imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=2070&auto=format&fit=crop',
     features: [
-      { title: 'Biometric Pulse Monitor', description: 'Real-time synchronization of HRV, sleep architecture, and metabolic strain.', metrics: '98.4% Accuracy' },
-      { title: 'Protocol Stack Generator', description: 'Custom nutrition, supplement, and workout regimens adapted daily.', metrics: '14 Active Routines' },
-      { title: 'Recovery Velocity Score', description: 'Predictive readiness score telling you exactly how hard to push each morning.', metrics: 'Readiness 92/100' }
+      { title: 'Relational Cadence Tracker', description: 'Smart reminders to reach out to core mentors, collaborators, and trusted friends.', metrics: '42 Active Cadences' },
+      { title: 'Context & Gift Memory Vault', description: 'Log important preferences, family milestones, and meaningful shared moments.', metrics: '100% Retain Rate' },
+      { title: 'Network Influence Heatmap', description: 'Visualize your relationship density across key industries, locations, and interests.', metrics: 'High Cohesion' }
     ],
     statSummary: [
-      { label: 'HRV Baseline', value: '84 ms', change: '+12% vs last month' },
-      { label: 'Deep Sleep Avg', value: '2.4 hrs', change: '+24 min' },
-      { label: 'Recovery Score', value: '94%', change: 'Optimal' }
+      { label: 'Key Touchpoints', value: '14/wk', change: '100% Cadence' },
+      { label: 'Network Depth', value: '92 Score', change: '+5 vs Q1' },
+      { label: 'Trust Index', value: 'High', change: 'Verified' }
     ]
   },
   {
-    id: 'second-brain',
-    slug: 'second-brain',
+    id: 'mind-emotions',
+    slug: 'mind-emotions',
     number: '02',
-    name: 'Second Brain',
-    tagline: 'Capture, organize, and plan on your real Apple Calendar',
-    description: 'A calm, organized home for everything on your mind — captured fast, sorted into life areas and projects, broken into doable steps, and scheduled onto your real calendar by an on-device planner.',
-    badge: 'SUITE 01 • SECOND BRAIN',
-    heroTitle: 'ON-DEVICE COGNITIVE CORTEX',
-    heroSubtitle: 'Capture frictionless ideas, auto-triage with on-device AI, and schedule tasks directly into your recurring Apple Calendar habit blocks.',
-    accentColor: 'from-indigo-500 to-purple-500',
-    accentHex: '#6366f1',
-    bgGradient: 'from-indigo-950/40 via-black to-black',
-    borderColor: 'border-indigo-500/30',
-    iconName: 'Brain',
-    imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1973&auto=format&fit=crop',
+    name: 'Mind, Emotions & Clarity',
+    singleWord: 'MIND',
+    logoUrl: '/mind Logo.svg',
+    tagline: 'Mental clarity and psychological resilience',
+    description: 'Stoic reflection tools, mood equilibrium tracking, and cognitive debriefing for unwavering mental fortitude.',
+    badge: 'SYSTEM 02 • CLARITY',
+    heroTitle: 'COGNITIVE CLARITY CHAMBER',
+    heroSubtitle: 'Maintain emotional equilibrium and mental clarity through structured debriefs.',
+    accentColor: 'from-teal-500 to-emerald-500',
+    accentHex: '#14b8a6',
+    bgGradient: 'from-teal-950/40 via-black to-black',
+    borderColor: 'border-teal-500/30',
+    iconName: 'Compass',
+    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1999&auto=format&fit=crop',
     features: [
-      { title: 'Frictionless Voice & OCR Capture', description: 'Record thoughts with on-device speech transcription (no audio leaves phone) or snap photos with instant offline triage.', metrics: '100% On-Device' },
-      { title: 'AI Goal Reverse-Engineering', description: 'Split ambitious tasks into micro-steps or generate entire project roadmaps from just a title and target outcome.', metrics: 'On-Device AI' },
-      { title: 'Plan My Day Calendar Bridge', description: 'Proposes rolling horizon task schedules grouped under active Apple Calendar habit blocks with adaptive recovery.', metrics: 'EventKit Native' }
+      { title: 'Evening Mental Debrief', description: 'Guided 3-minute prompts to offload mental tension, review decisions, and reset.', metrics: 'Daily Habit' },
+      { title: 'Cognitive Bias Shield', description: 'Identify emotional triggers and decision pitfalls before they influence major choices.', metrics: 'Zero Knee-Jerk Decisions' },
+      { title: 'Equilibrium Index', description: 'Tracking mental baseline stability, anxiety mitigation, and focus tranquility.', metrics: '9.2/10 Stability' }
     ],
     statSummary: [
-      { label: 'Capture Velocity', value: '< 1s', change: 'Instant Inbox' },
-      { label: 'AI Privacy', value: '100% Local', change: 'Zero Cloud Storage' },
-      { label: 'Calendar Sync', value: 'Bidirectional', change: 'Native EventKit' }
+      { label: 'Clarity Index', value: '9.4/10', change: '+0.8 points' },
+      { label: 'Reflection Streak', value: '45 Days', change: 'Consistent' },
+      { label: 'Stress Recovery', value: 'Fast', change: '< 15 mins' }
     ]
   },
   {
-    id: 'money-wealth',
-    slug: 'money-wealth',
+    id: 'execution-productivity',
+    slug: 'execution-productivity',
     number: '03',
-    name: 'Money & Wealth System',
-    tagline: 'Financial intelligence and wealth architecture',
-    description: 'Proactive cash flow forecasting, envelope budgeting, and strategic asset allocation for absolute financial velocity.',
-    badge: 'SYSTEM 03 • WEALTH',
-    heroTitle: 'CASH FLOW VELOCITY SUITE',
-    heroSubtitle: 'See 90 days into your financial future with continuous risk analysis and automated surplus allocation.',
-    accentColor: 'from-emerald-500 to-teal-500',
-    accentHex: '#10b981',
-    bgGradient: 'from-emerald-950/40 via-black to-black',
-    borderColor: 'border-emerald-500/30',
-    iconName: 'Wallet',
-    imageUrl: 'https://images.unsplash.com/photo-1565514020179-026b92b84bb6?q=80&w=2070&auto=format&fit=crop',
+    name: 'Productivity',
+    singleWord: 'PRODUCTIVITY',
+    logoUrl: '/Productivity Logo.svg',
+    tagline: 'Focus sessions, habit routines, and Screen-Time app blocking',
+    description: 'The execution side: yearly Four Bigs goals, daily habit routines on a real timeline, focus sessions with a timer, and a Screen-Time shield that blocks distracting apps automatically.',
+    badge: 'SUITE 03 • PRODUCTIVITY',
+    heroTitle: 'DEEP EXECUTION & SCREEN-TIME SHIELD',
+    heroSubtitle: 'Execute with background-resilient focus timers, timeline habit routines, and automated per-habit app blocking powered by Apple Family Controls.',
+    accentColor: 'from-amber-500 to-yellow-500',
+    accentHex: '#f59e0b',
+    bgGradient: 'from-amber-950/40 via-black to-black',
+    borderColor: 'border-amber-500/30',
+    iconName: 'CheckCircle2',
+    imageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2072&auto=format&fit=crop',
     features: [
-      { title: '90-Day Cash Flow Line', description: 'Predictive runway view mapping every subscription, income stream, and goal trade-off.', metrics: '+90 Days Forward' },
-      { title: 'Adaptive Rhythm Envelopes', description: 'Dynamic spending pools that automatically adjust to your natural purchase cycles.', metrics: '6 Active Envelopes' },
-      { title: 'Surplus Allocator', description: 'Automated recommendations for investing extra capital into high-yield reserves.', metrics: '$4.2k Reallocated' }
+      { title: 'Per-Habit Auto App Blocking', description: 'Distracting apps are blocked automatically during scheduled habit blocks with zero manual toggling.', metrics: 'Family Controls' },
+      { title: 'Focus Timer & Live Write-Back', description: 'Whole-block timers cycle through assigned tasks; checking off sub-steps writes straight back to Second Brain.', metrics: 'Zero-Lag Sync' },
+      { title: 'Flow & Chronotype Intelligence', description: 'On-device analysis maps your peak energy windows, tailoring habit schedules to biological focus rhythms.', metrics: 'On-Device AI' }
     ],
     statSummary: [
-      { label: 'Savings Velocity', value: '$2,850/mo', change: '+18% acceleration' },
-      { label: 'Runway Protected', value: '14 Months', change: 'Zero Debt Risk' },
-      { label: 'Subscription Efficiency', value: '94%', change: '3 Canceled' }
+      { label: 'App Shielding', value: 'Automated', change: 'Per-Habit Active' },
+      { label: 'Habit Consistency', value: '94% (30-day)', change: 'Rolling Score' },
+      { label: 'Calendar Sync', value: 'Automatic', change: 'Apple Calendar' }
     ]
   },
   {
@@ -113,6 +121,8 @@ export const APPS_DATA: AppIdentity[] = [
     slug: 'professional-mastery',
     number: '04',
     name: 'Professional Work Mastery',
+    singleWord: 'WORK',
+    logoUrl: '/Work Logo.svg',
     tagline: 'Professional excellence and project mastery',
     description: 'Elevate career trajectory, master high-leverage skill acquisition, and execute high-stakes projects with precision.',
     badge: 'SYSTEM 04 • CAREER',
@@ -136,84 +146,90 @@ export const APPS_DATA: AppIdentity[] = [
     ]
   },
   {
-    id: 'execution-productivity',
-    slug: 'execution-productivity',
+    id: 'body-optimization',
+    slug: 'body-optimization',
     number: '05',
-    name: 'Productivity',
-    tagline: 'Focus sessions, habit routines, and Screen-Time app blocking',
-    description: 'The execution side: yearly Four Bigs goals, daily habit routines on a real timeline, focus sessions with a timer, and a Screen-Time shield that blocks distracting apps automatically.',
-    badge: 'SUITE 02 • PRODUCTIVITY',
-    heroTitle: 'DEEP EXECUTION & SCREEN-TIME SHIELD',
-    heroSubtitle: 'Execute with background-resilient focus timers, timeline habit routines, and automated per-habit app blocking powered by Apple Family Controls.',
-    accentColor: 'from-amber-500 to-yellow-500',
-    accentHex: '#f59e0b',
-    bgGradient: 'from-amber-950/40 via-black to-black',
-    borderColor: 'border-amber-500/30',
-    iconName: 'CheckCircle2',
-    imageUrl: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=2072&auto=format&fit=crop',
+    name: 'Body Optimization',
+    singleWord: 'BODY',
+    logoUrl: '/Body Logo.svg',
+    tagline: 'Physical optimization and peak performance',
+    description: 'Biometric tracking, sleep velocity recovery, and physical protocol optimization built for high-performance individuals.',
+    badge: 'SYSTEM 05 • PHYSIOLOGY',
+    heroTitle: 'BODY OPTIMIZATION ENGINE',
+    heroSubtitle: 'Peak physiological performance through data-driven recovery and biometric precision.',
+    accentColor: 'from-rose-500 to-amber-500',
+    accentHex: '#f43f5e',
+    bgGradient: 'from-rose-950/40 via-black to-black',
+    borderColor: 'border-rose-500/30',
+    iconName: 'Activity',
+    imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2020&auto=format&fit=crop',
     features: [
-      { title: 'Per-Habit Auto App Blocking', description: 'Distracting apps are blocked automatically during scheduled habit blocks with zero manual toggling.', metrics: 'Family Controls' },
-      { title: 'Focus Timer & Live Write-Back', description: 'Whole-block timers cycle through assigned tasks; checking off sub-steps writes straight back to Second Brain.', metrics: 'Zero-Lag Sync' },
-      { title: 'Flow & Chronotype Intelligence', description: 'On-device analysis maps your peak energy windows, tailoring habit schedules to biological focus rhythms.', metrics: 'On-Device AI' }
+      { title: 'Biometric Pulse Monitor', description: 'Real-time synchronization of HRV, sleep architecture, and metabolic strain.', metrics: '98.4% Accuracy' },
+      { title: 'Protocol Stack Generator', description: 'Custom nutrition, supplement, and workout regimens adapted daily.', metrics: '14 Active Routines' },
+      { title: 'Recovery Velocity Score', description: 'Predictive readiness score telling you exactly how hard to push each morning.', metrics: 'Readiness 92/100' }
     ],
     statSummary: [
-      { label: 'App Shielding', value: 'Automated', change: 'Per-Habit Active' },
-      { label: 'Habit Consistency', value: '94% (30-day)', change: 'Rolling Score' },
-      { label: 'Calendar Sync', value: 'Automatic', change: 'Apple Calendar' }
+      { label: 'HRV Baseline', value: '84 ms', change: '+12% vs last month' },
+      { label: 'Deep Sleep Avg', value: '2.4 hrs', change: '+24 min' },
+      { label: 'Recovery Score', value: '94%', change: 'Optimal' }
     ]
   },
   {
-    id: 'relationships-capital',
-    slug: 'relationships-capital',
+    id: 'second-brain',
+    slug: 'second-brain',
     number: '06',
-    name: 'Relationships & Social Capital',
-    tagline: 'Cultivating high-value social capital',
-    description: 'Nurture deep personal connections, manage high-trust professional networks, and build lasting relational capital.',
-    badge: 'SYSTEM 06 • RELATIONS',
-    heroTitle: 'SOCIAL CAPITAL NETWORK',
-    heroSubtitle: 'Cultivate meaningful alliances and maintain high-touch relationships effortlessly.',
-    accentColor: 'from-amber-500 to-rose-500',
-    accentHex: '#f59e0b',
-    bgGradient: 'from-amber-950/40 via-black to-black',
-    borderColor: 'border-amber-500/30',
-    iconName: 'Users',
-    imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=2070&auto=format&fit=crop',
+    name: 'Second Brain',
+    singleWord: 'SECOND BRAIN',
+    logoUrl: '/Second Brain Logo.svg',
+    tagline: 'Capture, organize, and plan on your real Apple Calendar',
+    description: 'A calm, organized home for everything on your mind — captured fast, sorted into life areas and projects, broken into doable steps, and scheduled onto your real calendar by an on-device planner.',
+    badge: 'SUITE 06 • SECOND BRAIN',
+    heroTitle: 'ON-DEVICE COGNITIVE CORTEX',
+    heroSubtitle: 'Capture frictionless ideas, auto-triage with on-device AI, and schedule tasks directly into your recurring Apple Calendar habit blocks.',
+    accentColor: 'from-indigo-500 to-purple-500',
+    accentHex: '#6366f1',
+    bgGradient: 'from-indigo-950/40 via-black to-black',
+    borderColor: 'border-indigo-500/30',
+    iconName: 'Brain',
+    imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1973&auto=format&fit=crop',
     features: [
-      { title: 'Relational Cadence Tracker', description: 'Smart reminders to reach out to core mentors, collaborators, and trusted friends.', metrics: '42 Active Cadences' },
-      { title: 'Context & Gift Memory Vault', description: 'Log important preferences, family milestones, and meaningful shared moments.', metrics: '100% Retain Rate' },
-      { title: 'Network Influence Heatmap', description: 'Visualize your relationship density across key industries, locations, and interests.', metrics: 'High Cohesion' }
+      { title: 'Frictionless Voice & OCR Capture', description: 'Record thoughts with on-device speech transcription (no audio leaves phone) or snap photos with instant offline triage.', metrics: '100% On-Device' },
+      { title: 'AI Goal Reverse-Engineering', description: 'Split ambitious tasks into micro-steps or generate entire project roadmaps from just a title and target outcome.', metrics: 'On-Device AI' },
+      { title: 'Plan My Day Calendar Bridge', description: 'Proposes rolling horizon task schedules grouped under active Apple Calendar habit blocks with adaptive recovery.', metrics: 'EventKit Native' }
     ],
     statSummary: [
-      { label: 'Key Touchpoints', value: '14/wk', change: '100% Cadence' },
-      { label: 'Network Depth', value: '92 Score', change: '+5 vs Q1' },
-      { label: 'Trust Index', value: 'High', change: 'Verified' }
+      { label: 'Capture Velocity', value: '< 1s', change: 'Instant Inbox' },
+      { label: 'AI Privacy', value: '100% Local', change: 'Zero Cloud Storage' },
+      { label: 'Calendar Sync', value: 'Bidirectional', change: 'Native EventKit' }
     ]
   },
   {
-    id: 'mind-emotions',
-    slug: 'mind-emotions',
+    id: 'money-wealth',
+    slug: 'money-wealth',
     number: '07',
-    name: 'Mind, Emotions & Clarity',
-    tagline: 'Mental clarity and psychological resilience',
-    description: 'Stoic reflection tools, mood equilibrium tracking, and cognitive debriefing for unwavering mental fortitude.',
-    badge: 'SYSTEM 07 • CLARITY',
-    heroTitle: 'COGNITIVE CLARITY CHAMBER',
-    heroSubtitle: 'Maintain emotional equilibrium and mental clarity through structured debriefs.',
-    accentColor: 'from-teal-500 to-emerald-500',
-    accentHex: '#14b8a6',
-    bgGradient: 'from-teal-950/40 via-black to-black',
-    borderColor: 'border-teal-500/30',
-    iconName: 'Compass',
-    imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=1999&auto=format&fit=crop',
+    name: 'Money & Wealth System',
+    singleWord: 'MONEY',
+    logoUrl: '/money Logo.svg',
+    tagline: 'Financial intelligence and wealth architecture',
+    description: 'Proactive cash flow forecasting, envelope budgeting, and strategic asset allocation for absolute financial velocity.',
+    badge: 'SYSTEM 07 • WEALTH',
+    heroTitle: 'CASH FLOW VELOCITY SUITE',
+    heroSubtitle: 'See 90 days into your financial future with continuous risk analysis and automated surplus allocation.',
+    accentColor: 'from-emerald-500 to-teal-500',
+    accentHex: '#10b981',
+    bgGradient: 'from-emerald-950/40 via-black to-black',
+    borderColor: 'border-emerald-500/30',
+    iconName: 'Wallet',
+    imageUrl: 'https://images.unsplash.com/photo-1565514020179-026b92b84bb6?q=80&w=2070&auto=format&fit=crop',
     features: [
-      { title: 'Evening Mental Debrief', description: 'Guided 3-minute prompts to offload mental tension, review decisions, and reset.', metrics: 'Daily Habit' },
-      { title: 'Cognitive Bias Shield', description: 'Identify emotional triggers and decision pitfalls before they influence major choices.', metrics: 'Zero Knee-Jerk Decisions' },
-      { title: 'Equilibrium Index', description: 'Tracking mental baseline stability, anxiety mitigation, and focus tranquility.', metrics: '9.2/10 Stability' }
+      { title: '90-Day Cash Flow Line', description: 'Predictive runway view mapping every subscription, income stream, and goal trade-off.', metrics: '+90 Days Forward' },
+      { title: 'Adaptive Rhythm Envelopes', description: 'Dynamic spending pools that automatically adjust to your natural purchase cycles.', metrics: '6 Active Envelopes' },
+      { title: 'Surplus Allocator', description: 'Automated recommendations for investing extra capital into high-yield reserves.', metrics: '$4.2k Reallocated' }
     ],
     statSummary: [
-      { label: 'Clarity Index', value: '9.4/10', change: '+0.8 points' },
-      { label: 'Reflection Streak', value: '45 Days', change: 'Consistent' },
-      { label: 'Stress Recovery', value: 'Fast', change: '< 15 mins' }
+      { label: 'Savings Velocity', value: '$2,850/mo', change: '+18% acceleration' },
+      { label: 'Runway Protected', value: '14 Months', change: 'Zero Debt Risk' },
+      { label: 'Subscription Efficiency', value: '94%', change: '3 Canceled' }
     ]
   },
   {
@@ -221,6 +237,8 @@ export const APPS_DATA: AppIdentity[] = [
     slug: 'legacy-fun',
     number: '08',
     name: 'Legacy & Strategic Fun',
+    singleWord: 'LEGACY',
+    logoUrl: '/logo.svg',
     tagline: 'Strategic recovery and long-term impact',
     description: 'Design extraordinary life experiences, fund legacy projects, and ensure strategic recovery that recharges peak performance.',
     badge: 'SYSTEM 08 • LEGACY',

@@ -19,9 +19,9 @@ interface NavLink {
 }
 
 const publicLinks: NavLink[] = [
+    { href: '/apps', label: 'Improve' },
     { href: '/blog', label: 'The Blog' },
     { href: '/pricing', label: 'Membership' },
-    { href: '/sales', label: 'The System' },
 ]
 
 const iconMap: Record<string, any> = {
@@ -39,7 +39,6 @@ export function Navigation() {
     const pathname = usePathname()
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isMemberMenuOpen, setIsMemberMenuOpen] = useState(false)
-    const [isAppsMenuOpen, setIsAppsMenuOpen] = useState(false)
     const [sessionUser, setSessionUser] = useState<any>(null)
     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null)
     const [checkedAuth, setCheckedAuth] = useState(false)
@@ -155,78 +154,6 @@ export function Navigation() {
 
                 {/* Desktop Navigation */}
                 <div className="hidden md:flex items-center gap-6">
-                    {/* The 8 Apps Dropdown Menu */}
-                    <div
-                        className="relative"
-                        onMouseEnter={() => setIsAppsMenuOpen(true)}
-                        onMouseLeave={() => setIsAppsMenuOpen(false)}
-                    >
-                        <button
-                            type="button"
-                            onClick={() => setIsAppsMenuOpen((prev) => !prev)}
-                            className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] transition-colors py-2 ${
-                                pathname.startsWith('/apps') ? 'text-[var(--indigo)] border-b-2 border-[var(--indigo)]' : 'text-[var(--label-2)] hover:text-[var(--label)]'
-                            }`}
-                        >
-                            <span>The 8 Apps</span>
-                            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isAppsMenuOpen ? 'rotate-180 text-[var(--indigo)]' : 'text-[var(--label-3)]'}`} />
-                        </button>
-
-                        <AnimatePresence>
-                            {isAppsMenuOpen && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                                    className="absolute left-1/2 -translate-x-1/2 mt-3 w-[720px] liquid-glass-dropdown p-4 z-50 grid grid-cols-2 gap-2.5"
-                                >
-                                    <div className="col-span-2 px-3 py-2 border-b border-white/10 flex items-center justify-between mb-1">
-                                        <span className="type-kicker flex items-center gap-1.5 text-[var(--indigo)] font-bold">
-                                            <Sparkles className="w-3.5 h-3.5 text-[var(--indigo)]" /> The 8 Core Integrity Systems
-                                        </span>
-                                        <span className="type-subcaption text-[var(--label-3)]">Apple Native Frameworks</span>
-                                    </div>
-
-                                    {APPS_DATA.map((app) => {
-                                        const IconComponent = iconMap[app.iconName] || Sparkles
-                                        const isActive = pathname === `/apps/${app.slug}`
-
-                                        return (
-                                            <Link
-                                                key={app.id}
-                                                href={`/apps/${app.slug}`}
-                                                onClick={() => setIsAppsMenuOpen(false)}
-                                                className={`group relative p-3 rounded-[16px] transition-all duration-200 flex items-start gap-3 border ${
-                                                    isActive
-                                                        ? 'bg-white/15 border-[var(--indigo)] shadow-lg'
-                                                        : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.08] hover:border-white/20'
-                                                }`}
-                                            >
-                                                <div className="icon-box-tint group-hover:scale-105 transition-transform">
-                                                    <IconComponent className="w-4 h-4 text-[var(--indigo)]" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="type-headline text-xs font-bold text-[var(--label)] uppercase tracking-wider truncate group-hover:text-[var(--indigo)] transition-colors">
-                                                            {app.name}
-                                                        </span>
-                                                        <span className="font-rounded text-[10px] text-[var(--label-3)] ml-1">
-                                                            {app.number}
-                                                        </span>
-                                                    </div>
-                                                    <p className="type-caption text-[11px] text-[var(--label-2)] line-clamp-1 mt-0.5">
-                                                        {app.tagline}
-                                                    </p>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-                    </div>
-
                     {links.map((link) => (
                         <Link
                             key={link.href}
@@ -344,27 +271,7 @@ export function Navigation() {
                     className="md:hidden absolute top-full left-0 right-0 border-t border-white/15 liquid-glass-dropdown rounded-none border-x-0 border-b-0 backdrop-blur-3xl z-40 overflow-y-auto max-h-[85vh]"
                 >
                     <div className="px-6 py-6 space-y-6">
-                        {/* Mobile Apps Section */}
-                        <div className="space-y-3">
-                            <span className="text-xs font-mono uppercase tracking-widest text-amber-400 block border-b border-white/10 pb-2">
-                                The 8 App Suites
-                            </span>
-                            <div className="grid grid-cols-1 gap-2 pt-1">
-                                {APPS_DATA.map((app) => (
-                                    <Link
-                                        key={app.id}
-                                        href={`/apps/${app.slug}`}
-                                        onClick={() => setIsMenuOpen(false)}
-                                        className="flex items-center justify-between p-2.5 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10"
-                                    >
-                                        <span className="text-sm font-semibold uppercase">{app.name}</span>
-                                        <span className="text-xs font-mono text-amber-400">{app.number}</span>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="border-t border-white/10 pt-4 space-y-4">
+                        <div className="space-y-4">
                             {links.map((link) => (
                                 <Link
                                     key={link.href}
