@@ -80,6 +80,7 @@ type JourneyItem = {
 };
 
 export type TimelineProps = {
+  sectionTitle?: string;
   title?: string;
   periodLabel?: string;
   textColor?: string;
@@ -181,6 +182,7 @@ const allJourneyItems: JourneyItem[] = [
 });
 
 export default function Timeline({
+  sectionTitle = "ENGINEERED FOR PEAK DEEP WORK",
   title = "Product Storyline",
   periodLabel = "2020-2026",
   textColor = "var(--color-foreground, #ffffff)",
@@ -322,10 +324,19 @@ export default function Timeline({
       className="w-full h-screen relative overflow-hidden text-[var(--label)] bg-[var(--bg)] border-t border-[var(--separator)]"
       style={sectionStyle}
     >
-      <div className="h-screen w-full flex items-center overflow-hidden relative">
+      {/* Pinned Top Title Header (Positioned below the 80px fixed navbar) */}
+      {sectionTitle && (
+        <div className="absolute top-24 sm:top-28 md:top-32 left-0 right-0 z-20 text-center pointer-events-none px-4 sm:px-8">
+          <h2 className="title-huge text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-[var(--label)] leading-[0.90] max-w-5xl mx-auto">
+            {sectionTitle}
+          </h2>
+        </div>
+      )}
+
+      <div className="h-screen w-full flex items-center overflow-hidden relative pt-36 sm:pt-44 md:pt-48">
         <div
           ref={wholeSliderRef}
-          className="mr-[2vw] flex h-[30vw] min-h-[380px] max-h-[550px] w-[240vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[80vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw] will-change-transform"
+          className="mr-[2vw] flex h-[24vw] min-h-[300px] max-h-[440px] w-[240vw] items-center gap-[5vw] px-[5vw] max-[600px]:h-[70vh] max-[600px]:w-[800vw] max-[600px]:px-[7vw] will-change-transform"
         >
           <div className="h-full w-[30vw] overflow-hidden rounded-[1vw] max-[600px]:h-[65vw] max-[600px]:w-[85vw] max-[600px]:rounded-[5vw]">
             <img
@@ -353,8 +364,8 @@ export default function Timeline({
             </div>
 
             <div className="flex h-1/2 w-full items-center justify-start gap-[.5vw]">
-              <div className="h-full w-[20%] pt-[2vw] max-[600px]:h-fit max-[600px]:pt-[5vw]">
-                <h2 className="w-[65%] text-[3vw] font-bold uppercase tracking-tight leading-[0.95] max-[600px]:text-[8.5vw]">
+              <div className="h-full w-[25%] pt-[2vw] max-[600px]:h-fit max-[600px]:pt-[5vw]">
+                <h2 className="w-full text-[2.2vw] font-black uppercase tracking-tight leading-[0.95] max-[600px]:text-[7vw]">
                   {title}
                 </h2>
               </div>

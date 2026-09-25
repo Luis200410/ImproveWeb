@@ -41,6 +41,7 @@ const defaultItems: CircularSplitRollItem[] = APPS_DATA.map((app) => ({
   number: app.number,
   tagline: app.tagline,
   logoUrl: app.logoUrl,
+  accentHex: app.accentHex,
   image: app.imageUrl,
   alt: app.name,
 }));
@@ -92,6 +93,7 @@ export interface CircularSplitRollItem {
   number?: string;
   tagline?: string;
   logoUrl?: string;
+  accentHex?: string;
   image?: string;
   alt?: string;
 }
@@ -198,6 +200,7 @@ function CircularSplitRollComp({
         number: item.number ?? `0${index + 1}`,
         tagline: item.tagline ?? fallbackApp?.tagline ?? "",
         logoUrl: item.logoUrl ?? fallbackApp?.logoUrl ?? "/logo.svg",
+        accentHex: item.accentHex ?? fallbackApp?.accentHex ?? "#FF02E8",
         image: item.image ?? fallbackApp?.imageUrl ?? "",
         alt: item.alt ?? item.title ?? `Item ${index + 1}`,
       };
@@ -435,10 +438,20 @@ function CircularSplitRollComp({
                 <Link
                   key={item.id}
                   href={`/apps/${item.slug}`}
-                  className="circular-scroll-showcase__left-item pointer-events-auto absolute left-1/2 top-1/2 w-full origin-center whitespace-nowrap text-center text-(length:--css-title-size,clamp(24px,2.5vw,48px)) font-black uppercase leading-none tracking-tight opacity-0 will-change-[transform,opacity] hover:text-[#FF02E8] transition-colors cursor-pointer"
+                  className="circular-scroll-showcase__left-item pointer-events-auto absolute left-1/2 top-1/2 w-full origin-center whitespace-nowrap text-center text-(length:--css-title-size,clamp(24px,2.5vw,48px)) font-black uppercase leading-none tracking-tight opacity-0 will-change-[transform,opacity] transition-colors cursor-pointer group"
                 >
-                  <span className="text-xs font-mono font-bold text-[#FF02E8] mr-3 align-middle">{item.number}</span>
-                  <span>{item.title}</span>
+                  <span
+                    className="text-xs font-mono font-bold mr-3 align-middle transition-colors"
+                    style={{ color: item.accentHex }}
+                  >
+                    {item.number}
+                  </span>
+                  <span
+                    className="transition-colors group-hover:text-[var(--hover-accent)]"
+                    style={{ "--hover-accent": item.accentHex } as React.CSSProperties}
+                  >
+                    {item.title}
+                  </span>
                 </Link>
               ))}
             </div>
@@ -456,7 +469,17 @@ function CircularSplitRollComp({
                   href={`/apps/${item.slug}`}
                   className="circular-scroll-showcase__right-item pointer-events-auto absolute left-1/2 top-1/2 ml-[calc(var(--css-card-width,240px)*-0.5)] mt-[calc(var(--css-card-height,260px)*-0.5)] h-(--css-card-height,260px) w-(--css-card-width,240px) origin-center opacity-0 will-change-[transform,opacity] cursor-pointer group"
                 >
-                  <div className="relative h-full w-full overflow-hidden rounded-[24px] bg-[#0c0a14] border border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.8),0_8px_20px_rgba(0,0,0,0.5)] group-hover:scale-105 group-hover:border-[#FF02E8] group-hover:shadow-[0_0_30px_rgba(255,2,232,0.4)] transition-all duration-300 flex items-center justify-center p-4">
+                  <div
+                    className="relative h-full w-full overflow-hidden rounded-[24px] bg-[#0c0a14] border border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.8),0_8px_20px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = item.accentHex;
+                      e.currentTarget.style.boxShadow = `0 0 35px ${item.accentHex}66, 0 30px 60px rgba(0,0,0,0.9)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                      e.currentTarget.style.boxShadow = "0 30px 60px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.5)";
+                    }}
+                  >
                     <img
                       src={item.logoUrl}
                       alt={item.alt}
@@ -485,7 +508,15 @@ function CircularSplitRollComp({
               className={`w-full group cursor-pointer ${gridCardClassName}`}
             >
               <div
-                className={`relative aspect-[4/5] w-full overflow-hidden rounded-[20px] bg-[#0c0a14] border border-white/15 p-4 flex items-center justify-center shadow-xl group-hover:border-[#FF02E8] transition-all duration-300 ${gridImageClassName}`}
+                className={`relative aspect-[4/5] w-full overflow-hidden rounded-[20px] bg-[#0c0a14] border border-white/15 p-4 flex items-center justify-center shadow-xl transition-all duration-300 ${gridImageClassName}`}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = item.accentHex;
+                  e.currentTarget.style.boxShadow = `0 0 25px ${item.accentHex}66`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
                 <img
                   src={item.logoUrl}
@@ -521,7 +552,8 @@ export default function CircularSplitRoll({
   items = defaultItems,
   radius = 500,
   cardSize = 240,
-  sectionHeight = 100,
+  sectionHeight = 450,
+  scrub = 1.5,
   leftRadiusX,
   leftRadiusY,
   rightRadiusX,
@@ -534,6 +566,7 @@ export default function CircularSplitRoll({
     <CircularSplitRollComp
       items={items}
       sectionHeight={sectionHeight}
+      scrub={scrub}
       leftRadiusX={leftRadiusX ?? radius}
       leftRadiusY={leftRadiusY ?? radius}
       rightRadiusX={rightRadiusX ?? radius}

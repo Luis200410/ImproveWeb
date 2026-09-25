@@ -203,7 +203,7 @@ function PillarCardRow({ pillar, idx }: { pillar: PillarSection; idx: number }) 
 export function ProductivityShowcase() {
   return (
     <div className="w-full bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)]">
-      {/* The 5 Layers of Habits CollectionSurfer 3D Experience */}
+      {/* 1. The 5 Layers of Habits CollectionSurfer 3D Experience */}
       <section className="w-full">
         <CollectionSurfer 
           headerKicker="HABIT EXECUTION FRAMEWORK" 
@@ -211,7 +211,18 @@ export function ProductivityShowcase() {
         />
       </section>
 
-      {/* Upper Science Pillars Section */}
+      {/* 2. Timeline GSAP Section with Pinned Title Header */}
+      <Timeline 
+        sectionTitle="ENGINEERED FOR PEAK DEEP WORK"
+        title="PRODUCT ROADMAP"
+        periodLabel="2020 - 2026 ROADMAP"
+        activeColor="#FF02E8"
+        backgroundColor="var(--bg)"
+        textColor="var(--label)"
+        mutedTextColor="var(--label-2)"
+      />
+
+      {/* 3. Upper Science Pillars Section */}
       <section className="w-full py-20 sm:py-28 lg:py-36 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden border-t border-[var(--separator)]">
         <div className="w-full max-w-7xl xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto space-y-28 sm:space-y-36 lg:space-y-44">
           
@@ -223,7 +234,7 @@ export function ProductivityShowcase() {
             </div>
             
             <h2 className="title-huge text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-[var(--label)] leading-[0.92]">
-              ENGINEERED FOR PEAK DEEP WORK
+              FOUR PILLARS OF HIGH PERFORMANCE
             </h2>
             
             <p className="type-body text-base sm:text-xl lg:text-2xl text-[var(--label-2)] max-w-3xl mx-auto leading-relaxed pt-2">
@@ -244,16 +255,6 @@ export function ProductivityShowcase() {
 
         </div>
       </section>
-
-      {/* Product Storyline GSAP Timeline Section */}
-      <Timeline 
-        title="PRODUCT STORYLINE"
-        periodLabel="2020 - 2026 ROADMAP"
-        activeColor="#FF02E8"
-        backgroundColor="var(--bg)"
-        textColor="var(--label)"
-        mutedTextColor="var(--label-2)"
-      />
 
       {/* Bottom Marquee CTA Section */}
       <section className="w-full border-t border-[var(--separator)]">
