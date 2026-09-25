@@ -11,26 +11,6 @@ const CHAPTERS = [
   {
     title: "01. Daily Decisions",
     text: "Most finance apps show you what happened. This one tells you what to do next. Every day you open to one decision, ranked by what matters most — approve it, adjust it, or come back tomorrow."
-  },
-  {
-    title: "02. Cash Flow",
-    text: "Your bank balance tells you where you are. This tells you where you are going. Every charge coming in the next 90 days is mapped on a single line — so you see problems before they happen."
-  },
-  {
-    title: "03. Envelopes",
-    text: "Monthly budgets fail because life doesn't run on calendar months. These envelopes learn your actual spending rhythm from your real transactions. When your pace shifts, you know before it becomes a problem."
-  },
-  {
-    title: "04. Income",
-    text: "Automated tracking handles your regular income. This screen handles everything else — freelance payments, irregular deposits, one-time windfalls. Classify them once and they feed your forecast automatically."
-  },
-  {
-    title: "05. Subscriptions",
-    text: "One number: everything leaving your account on autopilot every month. Review any subscription and the system queues a decision for you — keep it, cancel it, or revisit it next month."
-  },
-  {
-    title: "06. Goals Simulator",
-    text: "A savings goal without a trade-off is a wish. This simulator shows you exactly which spending envelopes get squeezed, by how much, and for how long — before you commit to anything."
   }
 ]
 
@@ -68,12 +48,7 @@ function SystemChapter({ chapter, index }: { chapter: any, index: number }) {
 
             <div className="liquid-glass-card relative w-full aspect-[4/3] p-6 overflow-hidden shadow-2xl">
                 <div className="w-full h-full flex flex-col justify-center">
-                    {index === 0 && <DemoDailyDecisions />}
-                    {index === 1 && <DemoCashFlow />}
-                    {index === 2 && <DemoEnvelopes />}
-                    {index === 3 && <DemoIncome />}
-                    {index === 4 && <DemoSubscriptions />}
-                    {index === 5 && <DemoGoals />}
+                    <DemoDailyDecisions />
                 </div>
             </div>
         </div>
@@ -98,149 +73,6 @@ function DemoDailyDecisions() {
                 <button className="btn-primary text-xs px-4 py-2">Approve ($450)</button>
                 <button className="btn-secondary text-xs px-4 py-2">Adjust</button>
             </div>
-        </div>
-    )
-}
-
-function DemoCashFlow() {
-    return (
-        <div className="space-y-4 p-5 bg-[var(--card-inset)] rounded-[14px]">
-            <div className="flex items-center justify-between">
-                <span className="type-kicker text-[var(--green)] flex items-center gap-2">
-                    <div className="icon-box-tint">
-                        <TrendingUp className="w-4 h-4 text-[var(--green)]" />
-                    </div>
-                    90-Day Cash Flow Runway
-                </span>
-                <span className="type-subcaption font-rounded text-[var(--green)]">+14.2% projected</span>
-            </div>
-            <div className="h-32 w-full flex items-end justify-between gap-2 pt-4 px-2">
-                {[40, 55, 35, 70, 65, 85, 90, 75, 95, 100].map((h, i) => (
-                    <div key={i} className="flex-1 bg-[var(--indigo)] rounded-t transition-all duration-700 ease-out" style={{ height: `${h}%` }} />
-                ))}
-            </div>
-            <div className="flex justify-between type-subcaption font-rounded text-[var(--label-3)] pt-2 border-t border-[var(--separator)]">
-                <span>Month 1 ($4.2k)</span>
-                <span>Month 2 ($5.8k)</span>
-                <span>Month 3 ($7.1k)</span>
-            </div>
-        </div>
-    )
-}
-
-function DemoEnvelopes() {
-    return (
-        <div className="space-y-3 p-5 bg-[var(--card-inset)] rounded-[14px]">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--separator)]">
-                <span className="type-kicker text-[var(--label-2)] flex items-center gap-2">
-                    <div className="icon-box-tint">
-                        <Wallet className="w-4 h-4 text-[var(--indigo)]" />
-                    </div>
-                    Active Spending Rhythm
-                </span>
-                <span className="tag-chip text-xs">6 Envelopes</span>
-            </div>
-            {[
-                { label: "Dining & Social", spent: 340, total: 500, color: "bg-[var(--orange)]" },
-                { label: "Groceries & Staples", spent: 620, total: 800, color: "bg-[var(--green)]" },
-                { label: "Subscriptions", spent: 180, total: 200, color: "bg-[var(--purple)]" },
-            ].map((env, i) => (
-                <div key={i} className="space-y-1">
-                    <div className="flex justify-between type-callout">
-                        <span className="text-[var(--label)]">{env.label}</span>
-                        <span className="font-rounded text-[var(--label-2)]">${env.spent} / ${env.total}</span>
-                    </div>
-                    <div className="h-2 w-full bg-[var(--fill)] rounded-full overflow-hidden">
-                        <div className={`h-full ${env.color}`} style={{ width: `${(env.spent / env.total) * 100}%` }} />
-                    </div>
-                </div>
-            ))}
-        </div>
-    )
-}
-
-function DemoIncome() {
-    return (
-        <div className="space-y-3 p-5 bg-[var(--card-inset)] rounded-[14px]">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--separator)]">
-                <span className="type-kicker text-[var(--label-2)] flex items-center gap-2">
-                    <div className="icon-box-tint">
-                        <ArrowUpRight className="w-4 h-4 text-[var(--green)]" />
-                    </div>
-                    Recent Income Events
-                </span>
-                <span className="font-rounded type-callout text-[var(--green)]">+$6,420 / mo</span>
-            </div>
-            {[
-                { source: "Primary Payroll Direct Deposit", amount: "+$4,500.00", status: "Verified" },
-                { source: "Freelance Project Payout", amount: "+$1,200.00", status: "Classified" },
-                { source: "Consulting Retainer", amount: "+$720.00", status: "Classified" }
-            ].map((inc, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-[var(--card)] rounded-[10px] border border-[var(--separator)]">
-                    <div>
-                        <div className="type-callout text-[var(--label)]">{inc.source}</div>
-                        <div className="type-subcaption text-[var(--label-3)]">{inc.status}</div>
-                    </div>
-                    <span className="font-rounded type-callout text-[var(--green)]">{inc.amount}</span>
-                </div>
-            ))}
-        </div>
-    )
-}
-
-function DemoSubscriptions() {
-    return (
-        <div className="space-y-3 p-5 bg-[var(--card-inset)] rounded-[14px]">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--separator)]">
-                <span className="type-kicker text-[var(--label-2)] flex items-center gap-2">
-                    <div className="icon-box-tint">
-                        <ShieldAlert className="w-4 h-4 text-[var(--orange)]" />
-                    </div>
-                    Autopilot Outflow Queue
-                </span>
-                <span className="font-rounded type-callout text-[var(--orange)]">$184 / mo</span>
-            </div>
-            {[
-                { name: "Cloud Compute Workstation", cost: "$49/mo", action: "Keep" },
-                { name: "Streaming Entertainment Pass", cost: "$18/mo", action: "Review" },
-                { name: "Dev Tools Suite Pro", cost: "$29/mo", action: "Keep" }
-            ].map((sub, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-[var(--card)] rounded-[10px] border border-[var(--separator)]">
-                    <div>
-                        <div className="type-callout text-[var(--label)]">{sub.name}</div>
-                        <div className="type-subcaption font-rounded text-[var(--label-3)]">{sub.cost}</div>
-                    </div>
-                    <span className={`tag-chip text-xs ${sub.action === 'Keep' ? 'text-[var(--green)]' : 'text-[var(--orange)]'}`}>{sub.action}</span>
-                </div>
-            ))}
-        </div>
-    )
-}
-
-function DemoGoals() {
-    return (
-        <div className="space-y-4 p-5 bg-[var(--card-inset)] rounded-[14px]">
-            <div className="flex items-center justify-between">
-                <span className="type-kicker text-[var(--label-2)] flex items-center gap-2">
-                    <div className="icon-box-tint">
-                        <PieChart className="w-4 h-4 text-[var(--indigo)]" />
-                    </div>
-                    Goal Trade-Off Simulator
-                </span>
-                <span className="type-subcaption font-rounded text-[var(--label-2)]">Target: $15,000</span>
-            </div>
-            <div className="space-y-2">
-                <div className="flex justify-between type-callout">
-                    <span className="text-[var(--label)]">Emergency Fund Target</span>
-                    <span className="font-rounded text-[var(--orange)]">82% Complete</span>
-                </div>
-                <div className="h-3 w-full bg-[var(--fill)] rounded-full overflow-hidden p-0.5">
-                    <div className="h-full bg-[var(--orange)] rounded-full transition-all duration-1000 ease-out" style={{ width: '82%' }} />
-                </div>
-            </div>
-            <p className="type-caption text-[var(--label-2)] italic border-l-2 border-[var(--orange)] pl-3">
-                Squeezing "Dining Out" envelope by $120/mo accelerates target completion by 3 months.
-            </p>
         </div>
     )
 }

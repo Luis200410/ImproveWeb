@@ -5,7 +5,7 @@ import gsap from "gsap";
 import type { MouseEvent, ReactNode } from "react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
-import { ImproveLogo } from "@/components/ui/improve-logo";
+import { ImproveLogo, AnimatedLogoSvg } from "@/components/ui/improve-logo";
 
 /* ------------------------------------------------------------------ *
  * Inlined from ./useFocusTrap — keeps keyboard focus inside a container
@@ -170,9 +170,9 @@ function FullscreenNav({
   linkHoverColor = "#a3a3a3",
   linkSizeClass = "text-5xl",
   headerClassName = "",
-  openDuration = 1.2,
-  closeDuration = 1.2,
-  ease = "power4.inOut",
+  openDuration = 0.45,
+  closeDuration = 0.4,
+  ease = "power3.out",
   headerOpenColor = "#ffffff",
   onOpen,
   onClose,
@@ -231,7 +231,7 @@ function FullscreenNav({
     timeline.to(overlayRef.current, {
       clipPath: openClipPath,
       duration: openDuration,
-      delay: 0.2,
+      delay: 0,
       ease,
     });
   };
@@ -475,10 +475,7 @@ export interface CustomNavbarProps {
 
 function CustomNavbar({
   links = [],
-  images = [
-    "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop",
-  ],
+  images = ["/Logo option 3.svg"],
   socials = [
     { type: "instagram", href: "#" },
     { type: "youtube", href: "#" },
@@ -564,28 +561,31 @@ function CustomNavbar({
 
   return (
     <div style={{ backgroundColor: overlayBg }} className="flex min-h-screen w-full flex-col justify-between gap-10 px-6 sm:px-28 py-10 pt-28 text-white max-[1025px]:px-6 max-[1025px]:py-20">
-      <div className="flex items-center justify-between gap-10 max-[1025px]:flex-col max-[1025px]:items-start max-[1025px]:gap-18 my-auto">
-        <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-10 max-[1025px]:flex-col max-[1025px]:items-center max-[1025px]:gap-12 my-auto w-full max-w-7xl mx-auto">
+        <div className="flex flex-col justify-center gap-3 md:gap-5 w-1/2 max-[1025px]:w-full">
           {links.map((link, index) => (
-            <div key={link.label} ref={setLinkRef(index)} className="z-60 text-[5vw] max-[1025px]:text-[7vw] font-black uppercase tracking-tight" style={{ opacity: 0, transform: `translateY(${linkOffsetY}px)` }}>
+            <div key={link.label} ref={setLinkRef(index)} className="z-60 text-[6.5vw] max-[1025px]:text-[9vw] font-black uppercase tracking-tight leading-[1.05]" style={{ opacity: 0, transform: `translateY(${linkOffsetY}px)` }}>
               <NavLinkHover label={link.label} href={link.href} onClick={onCloseMenu} charStagger={linkCharStagger} reduced={isReducedMotion} />
             </div>
           ))}
         </div>
 
-        <div className="flex h-full flex-col items-end justify-center gap-40 py-5 max-[1025px]:w-full max-[1025px]:items-start max-[1025px]:gap-25 max-[1025px]:py-0">
-          <div className="flex items-end gap-8 max-[1025px]:w-full max-[1025px]:flex-col max-[1025px]:items-start max-[1025px]:gap-3">
-            {images.slice(0, 2).map((src, index) => (
-              <div
-                key={index}
-                ref={setImageRef(index)}
-                style={{ opacity: 0, transform: `scale(${IMAGE_INITIAL_SCALE})` }}
-                className="relative h-[18vw] w-[25vw] overflow-hidden rounded-xl max-[1025px]:h-[30vw] max-[1025px]:w-[60vw] max-[1025px]:rounded-md border border-white/10"
-              >
-                <img src={src} alt={`Overlay showcase ${index + 1}`} className="absolute inset-0 h-full w-full object-cover transition duration-500 hover:scale-105 motion-reduce:scale-100 motion-reduce:transition-none motion-reduce:hover:scale-100" />
-              </div>
-            ))}
-          </div>
+        <div
+          ref={setImageRef(0)}
+          style={{ opacity: 0, transform: `scale(${IMAGE_INITIAL_SCALE})` }}
+          className="w-1/2 max-[1025px]:w-full flex items-center justify-center p-2"
+        >
+          <AnimatedLogoSvg
+            triggerKey={isOpen}
+            duration={1.2}
+            stagger={0.42}
+            startDelay={0.2}
+            startOffset={-700}
+            viewBox="190 60 644 904"
+            interactive={true}
+            onCloseMenu={onCloseMenu}
+            className="h-[36vw] min-h-[380px] max-h-[600px] w-auto max-[1025px]:h-[55vw] max-[1025px]:w-auto hover:scale-105 transition-transform duration-500"
+          />
         </div>
       </div>
 
@@ -596,6 +596,9 @@ function CustomNavbar({
               {SOCIAL_ICONS[social.type]}
             </a>
           ))}
+        </div>
+        <div className="flex items-center gap-2 opacity-90">
+          <ImproveLogo small />
         </div>
       </div>
     </div>
@@ -609,21 +612,18 @@ const NAV_CONFIG: Partial<FullscreenNavProps> = {
   clipOrigin: "bottom",
   overlayBg: "#050307",
   headerOpenColor: "#ffffff",
-  openDuration: 1.2,
-  closeDuration: 1.2,
+  openDuration: 0.45,
+  closeDuration: 0.4,
 };
 
 const NAV_CONTENT: Partial<CustomNavbarProps> = {
   links: [
-    { label: "IMPROVE", href: "/apps" },
+    { label: "IMPROVE", href: "/" },
     { label: "LEARN", href: "/blog" },
     { label: "INVEST", href: "/pricing" },
     { label: "ACCESS", href: "/login" },
   ],
-  images: [
-    "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=1200&auto=format&fit=crop",
-  ],
+  images: ["/Logo option 3.svg"],
   socials: [
     { type: "instagram", href: "#" },
     { type: "youtube", href: "#" },

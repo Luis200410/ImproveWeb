@@ -82,33 +82,11 @@ export function SystemConvergenceAnimation({ onComplete, onTimeUpdate }: SystemC
 
     const textOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
-    const [hasStarted, setHasStarted] = useState(false);
+    const [hasStarted, setHasStarted] = useState(true);
     const [screenSize, setScreenSize] = useState({ width: 1200, isMobile: false });
-    const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    const handleStart = async () => {
+    const handleStart = () => {
         setHasStarted(true);
-        if (audioRef.current) {
-            // CRITICAL FOR CHROME: Initiating play() directly in the click event
-            // to satisfy User Activation policies, but keeping it silent for the sync delay.
-            audioRef.current.volume = 0;
-            audioRef.current.muted = false;
-
-            try {
-                audioRef.current.load();
-                await audioRef.current.play();
-
-                // After the 1150ms sync delay, reset to start and make it audible
-                setTimeout(() => {
-                    if (audioRef.current) {
-                        audioRef.current.currentTime = 0;
-                        audioRef.current.volume = 1.0;
-                    }
-                }, 1150);
-            } catch (error) {
-                console.error("Chrome blocked audio initialization:", error);
-            }
-        }
     };
 
     useEffect(() => {
@@ -164,14 +142,6 @@ export function SystemConvergenceAnimation({ onComplete, onTimeUpdate }: SystemC
             return () => clearTimeout(revealTimer);
         }
     }, [hasStarted, stage]);
-
-    useEffect(() => {
-        return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
-            }
-        };
-    }, []);
 
     // More aggressive responsive dimensions for mobile
     const globeSize = screenSize.isMobile
@@ -230,36 +200,6 @@ export function SystemConvergenceAnimation({ onComplete, onTimeUpdate }: SystemC
             ref={containerRef}
             className="relative w-full min-h-[600px] md:min-h-[800px] flex items-center justify-center overflow-visible select-none"
         >
-            <AnimatePresence>
-                {!hasStarted && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0, filter: "blur(20px)", scale: 1.1 }}
-                        className="absolute inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-md cursor-pointer"
-                        onClick={handleStart}
-                    >
-                        <div className="relative group/btn flex flex-col items-center">
-                            <motion.div
-                                animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
-                                transition={{ duration: 3, repeat: Infinity }}
-                                className="absolute -inset-10 border border-white/20 rounded-full blur-xl"
-                            />
-                            <motion.button
-                                whileHover={{ scale: 1.05, boxShadow: "0 0 80px rgba(255,255,255,0.4)" }}
-                                whileTap={{ scale: 0.95 }}
-                                className={`${bebas.className} relative px-16 py-8 bg-white text-black text-3xl tracking-[0.3em] font-bold rounded-full transition-all duration-500`}
-                            >
-                                START PITCHING
-                            </motion.button>
-                            <span className="mt-8 text-white/40 text-[10px] tracking-[0.5em] uppercase font-light">
-                                Unlock the cinematic experience
-                            </span>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
             {/* Kinetic Studio Subtitles (Ultra-Creative & Responsive) */}
             <motion.div
                 style={{ opacity: textOpacity }}
@@ -622,17 +562,6 @@ export function SystemConvergenceAnimation({ onComplete, onTimeUpdate }: SystemC
                     </motion.div>
                 )}
             </AnimatePresence>
-
-            {/* Hidden audio element for browser compliance */}
-            <audio
-                ref={audioRef}
-                preload="auto"
-                className="hidden"
-                aria-hidden="true"
-                playsInline
-            >
-                <source src="./Landing.mp3" type="audio/mpeg" />
-            </audio>
         </div>
     );
 }

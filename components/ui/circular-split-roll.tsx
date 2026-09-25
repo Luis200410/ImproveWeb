@@ -256,9 +256,11 @@ function CircularSplitRollComp({
             );
           }
 
+          const effectiveFocusPhase = total * 0.75;
+
           leftNodes.forEach((node, index) => {
             const localProgress = wrapProgress(
-              (index - scrollProgress * (total - 1) + focusPhase) / total
+              (index - scrollProgress * total + effectiveFocusPhase) / total
             );
 
             const position = getCircularPosition(
@@ -292,6 +294,8 @@ function CircularSplitRollComp({
             );
 
             gsap.set(node, {
+              xPercent: -50,
+              yPercent: -50,
               x: position.x,
               y: position.y,
               scale,
@@ -303,7 +307,7 @@ function CircularSplitRollComp({
 
           rightNodes.forEach((node, index) => {
             const localProgress = wrapProgress(
-              (index - scrollProgress * (total - 1) + focusPhase) / total
+              (index - scrollProgress * total + effectiveFocusPhase) / total
             );
 
             const position = getCircularPosition(
@@ -337,6 +341,8 @@ function CircularSplitRollComp({
             );
 
             gsap.set(node, {
+              xPercent: -50,
+              yPercent: -50,
               x: position.x,
               y: position.y,
               scale,
@@ -347,6 +353,38 @@ function CircularSplitRollComp({
           });
         };
 
+        const animState = { progress: 0, step: 0 };
+        let currentTween: gsap.core.Tween | null = null;
+        let isStepAnimating = false;
+        let lastStepTime = 0;
+        let lastProgress = 0;
+
+        const TOTAL_STEPS = total + 1;
+
+        const goToStep = (stepIndex: number) => {
+          const targetStep = gsap.utils.clamp(0, TOTAL_STEPS - 1, stepIndex);
+          animState.step = targetStep;
+          const targetProgress = targetStep / total;
+
+          if (currentTween) {
+            currentTween.kill();
+          }
+
+          currentTween = gsap.to(animState, {
+            progress: targetProgress,
+            duration: 0.5,
+            ease: "power2.out",
+            onUpdate: () => {
+              render(animState.progress);
+            },
+            onComplete: () => {
+              setTimeout(() => {
+                isStepAnimating = false;
+              }, 250);
+            },
+          });
+        };
+
         render(0);
 
         const scrollTrigger = ScrollTrigger.create({
@@ -354,16 +392,49 @@ function CircularSplitRollComp({
           start: "top top",
           end: `+=${sectionHeight}%`,
           pin: stickyRef.current,
-          scrub,
           pinSpacing,
           invalidateOnRefresh: true,
           onUpdate: (self) => {
-            render(self.progress);
+            const now = Date.now();
+            const delta = self.progress - lastProgress;
+
+            if (isStepAnimating) {
+              lastProgress = self.progress;
+              return;
+            }
+
+            if (now - lastStepTime < 500) {
+              lastProgress = self.progress;
+              return;
+            }
+
+            if (delta > 0.015 && animState.step < TOTAL_STEPS - 1) {
+              isStepAnimating = true;
+              lastStepTime = now;
+              lastProgress = self.progress;
+              goToStep(animState.step + 1);
+            } else if (delta < -0.015 && animState.step > 0) {
+              isStepAnimating = true;
+              lastStepTime = now;
+              lastProgress = self.progress;
+              goToStep(animState.step - 1);
+            }
+          },
+          onToggle: (self) => {
+            if (self.isActive) {
+              if (self.direction < 0) {
+                lastProgress = 1;
+                goToStep(TOTAL_STEPS - 1);
+              } else {
+                lastProgress = 0;
+                goToStep(0);
+              }
+            }
           },
         });
 
         const onResize = () => {
-          render(progressRef.current);
+          render(animState.progress);
           scrollTrigger.refresh();
         };
 
@@ -371,6 +442,7 @@ function CircularSplitRollComp({
 
         return () => {
           window.removeEventListener("resize", onResize);
+          if (currentTween) currentTween.kill();
           scrollTrigger.kill();
         };
       }, rootRef);
@@ -467,7 +539,7 @@ function CircularSplitRollComp({
                 <Link
                   key={item.id}
                   href={`/apps/${item.slug}`}
-                  className="circular-scroll-showcase__right-item pointer-events-auto absolute left-1/2 top-1/2 ml-[calc(var(--css-card-width,240px)*-0.5)] mt-[calc(var(--css-card-height,260px)*-0.5)] h-(--css-card-height,260px) w-(--css-card-width,240px) origin-center opacity-0 will-change-[transform,opacity] cursor-pointer group"
+                  className="circular-scroll-showcase__right-item pointer-events-auto absolute left-1/2 top-1/2 h-(--css-card-height,260px) w-(--css-card-width,240px) origin-center opacity-0 will-change-[transform,opacity] cursor-pointer group"
                 >
                   <div
                     className="relative h-full w-full overflow-hidden rounded-[24px] bg-[#0c0a14] border border-white/20 shadow-[0_30px_60px_rgba(0,0,0,0.8),0_8px_20px_rgba(0,0,0,0.5)] group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4"
@@ -552,8 +624,8 @@ export default function CircularSplitRoll({
   items = defaultItems,
   radius = 500,
   cardSize = 240,
-  sectionHeight = 450,
-  scrub = 1.5,
+  sectionHeight = 350,
+  scrub = 0.1,
   leftRadiusX,
   leftRadiusY,
   rightRadiusX,
