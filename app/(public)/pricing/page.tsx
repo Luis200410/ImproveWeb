@@ -89,5 +89,3 @@ export default function PricingPreview() {
         </div>
     );
 }
-
-export { PricingPreview }
