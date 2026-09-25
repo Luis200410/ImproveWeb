@@ -138,7 +138,7 @@ export function PracticalLabAnimation() {
                             <div className="relative w-11 h-11 shrink-0">
                                 <svg className="w-full h-full rotate-[-90deg]">
                                     <circle cx="22" cy="22" r="19" stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-white/5" />
-                                    <motion.circle cx="22" cy="22" r="19" stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-amber-500" strokeDasharray="119.3" animate={{ strokeDashoffset: 119.3 * 0.98 }} />
+                                    <motion.circle cx="22" cy="22" r="19" stroke="currentColor" strokeWidth="2.5" fill="transparent" className="text-amber-500" strokeDasharray="119.3" initial={{ strokeDashoffset: 119.3 }} animate={{ strokeDashoffset: 119.3 * 0.98 }} />
                                 </svg>
                                 <div className="absolute inset-0 flex items-center justify-center font-bold text-[10px]">2%</div>
                             </div>
