@@ -16,8 +16,7 @@ import {
 import Link from 'next/link'
 import type { AppIdentity } from '@/lib/apps-data'
 
-import { ProductivityLogo3DExhibit } from './exhibits/productivity-logo-3d-exhibit'
-import JellyfishDrift from '@/components/ui/jelly-fish'
+import JellyfishDrift from '@/components/general/jelly-fish'
 
 interface AppHeroShowcaseProps {
   app: AppIdentity

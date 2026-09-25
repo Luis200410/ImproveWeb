@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock'
+import { Dock, DockIcon, DockItem, DockLabel } from '@/components/general/dock'
 import { APPS_DATA } from '@/lib/apps-data'
 
 const logoMap: Record<string, string> = {

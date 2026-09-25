@@ -1,6 +1,6 @@
 "use client";
 
-import { PricingTable, PricingFeature, PricingPlan } from "@/components/blocks/pricing-table";
+import { PricingTable, PricingFeature, PricingPlan } from '@/components/pricing/pricing-table';
 
 const features: PricingFeature[] = [
     { name: "Global Cognitive Dashboard", included: "starter" },

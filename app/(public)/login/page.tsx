@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Bebas_Neue } from "@/lib/font-shim";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/general/button';
 import { motion } from "framer-motion";
 import { Mail, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { login } from './actions';

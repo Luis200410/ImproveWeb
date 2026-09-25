@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/general/button'
 import { cn } from "@/lib/utils"
 import { CheckIcon, ArrowRightIcon, PlusIcon } from "@radix-ui/react-icons"
 import NumberFlow from "@number-flow/react"
-import { BorderTrail } from "@/components/ui/border-trail"
+import { BorderTrail } from '@/components/general/border-trail'
 import { motion } from "framer-motion"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from '@/components/general/badge'
 
 export type PlanLevel = "starter" | "pro" | "all" | string
 

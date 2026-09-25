@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Dock, DockIcon, DockItem, DockLabel } from "@/components/ui/dock";
+import { Dock, DockIcon, DockItem, DockLabel } from '@/components/general/dock';
 
 const dedicatedAppsData = [
   {

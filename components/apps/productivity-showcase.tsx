@@ -8,17 +8,161 @@ import {
   Zap, 
   Target, 
   ArrowRight, 
-  Sparkles
+  Sparkles,
+  Lock,
+  Flame,
+  CheckCircle2,
+  Clock
 } from 'lucide-react'
 import Link from 'next/link'
 
-import { ShieldMotionExhibit } from './exhibits/shield-motion-exhibit'
-import { TimelineSnapExhibit } from './exhibits/timeline-snap-exhibit'
-import { UltradianWaveExhibit } from './exhibits/ultradian-wave-exhibit'
-import { FourBigsFlameExhibit } from './exhibits/four-bigs-flame-exhibit'
-import CTAWithVerticalMarquee from '@/components/ui/cta-with-text-marquee'
-import { CollectionSurfer } from '@/components/ui/collection-surfer'
-import Timeline from '@/components/ui/timeline'
+import CTAWithVerticalMarquee from '@/components/general/cta-with-text-marquee'
+import { CollectionSurfer } from '@/components/general/collection-surfer'
+import Timeline from '@/components/general/timeline'
+
+// --- Inline Pillar Visual Cards ---
+function ShieldMotionCard() {
+  return (
+    <div className="w-full rounded-3xl bg-[#0D0D12] border border-white/10 p-6 shadow-2xl relative overflow-hidden text-white">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[var(--indigo)]/20 border border-[var(--indigo)]/40 flex items-center justify-center text-[var(--indigo)]">
+            <Lock className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-white">Attention Shield Active</h4>
+            <p className="text-xs text-white/50">iOS System-Level App Blocker</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--indigo)]/20 text-[var(--indigo)] border border-[var(--indigo)]/30">
+          Enforced
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { name: 'Instagram', status: 'Blocked' },
+          { name: 'TikTok', status: 'Blocked' },
+          { name: 'YouTube', status: 'Blocked' },
+          { name: 'X / Twitter', status: 'Blocked' },
+        ].map((app, i) => (
+          <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <span className="text-xs font-medium text-white/80">{app.name}</span>
+            <span className="text-[10px] font-bold text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full border border-red-500/20">
+              {app.status}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TimelineSnapCard() {
+  return (
+    <div className="w-full rounded-3xl bg-[#0D0D12] border border-white/10 p-6 shadow-2xl relative overflow-hidden text-white">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[var(--orange)]/20 border border-[var(--orange)]/40 flex items-center justify-center text-[var(--orange)]">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-white">Apple Calendar Sync</h4>
+            <p className="text-xs text-white/50">Habits locked into real hours</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--orange)]/20 text-[var(--orange)] border border-[var(--orange)]/30">
+          Live EventKit
+        </span>
+      </div>
+
+      <div className="space-y-2.5">
+        {[
+          { time: '08:00 AM', title: 'Deep Programming Session', color: 'bg-[var(--indigo)]' },
+          { time: '10:30 AM', title: 'Ultradian Energy Break', color: 'bg-[var(--green)]' },
+          { time: '02:00 PM', title: 'High-Impact Writing', color: 'bg-[var(--orange)]' },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <span className="text-xs font-mono text-white/50 w-20">{item.time}</span>
+            <div className={`w-2 h-2 rounded-full ${item.color}`} />
+            <span className="text-xs font-medium text-white truncate">{item.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function UltradianWaveCard() {
+  return (
+    <div className="w-full rounded-3xl bg-[#0D0D12] border border-white/10 p-6 shadow-2xl relative overflow-hidden text-white">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[var(--green)]/20 border border-[var(--green)]/40 flex items-center justify-center text-[var(--green)]">
+            <Zap className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-white">Ultradian Energy Curve</h4>
+            <p className="text-xs text-white/50">90-Minute Peak Performance Wave</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--green)]/20 text-[var(--green)] border border-[var(--green)]/30">
+          94% Sharpness
+        </span>
+      </div>
+
+      <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex items-center justify-between">
+        <div>
+          <span className="text-[10px] text-white/40 uppercase tracking-widest block font-bold">Current Cycle</span>
+          <span className="text-lg font-bold text-white">Peak Focus Wave #2</span>
+        </div>
+        <div className="text-right">
+          <span className="font-mono text-2xl font-black text-[var(--green)]">01:25:40</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FourBigsFlameCard() {
+  return (
+    <div className="w-full rounded-3xl bg-[#0D0D12] border border-white/10 p-6 shadow-2xl relative overflow-hidden text-white">
+      <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[var(--purple)]/20 border border-[var(--purple)]/40 flex items-center justify-center text-[var(--purple)]">
+            <Target className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-white">Four Bigs Framework</h4>
+            <p className="text-xs text-white/50">Annual Targets into 15m Micro-steps</p>
+          </div>
+        </div>
+        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[var(--purple)]/20 text-[var(--purple)] border border-[var(--purple)]/30">
+          2026 Goals
+        </span>
+      </div>
+
+      <div className="space-y-3">
+        {[
+          { goal: 'Relationships & Family', pct: 85, color: 'bg-rose-500' },
+          { goal: 'Health & Vitality', pct: 90, color: 'bg-emerald-500' },
+          { goal: 'Career & Systems', pct: 78, color: 'bg-indigo-500' },
+          { goal: 'Wealth & Assets', pct: 92, color: 'bg-amber-500' },
+        ].map((g, i) => (
+          <div key={i} className="space-y-1">
+            <div className="flex justify-between text-xs font-medium">
+              <span className="text-white/80">{g.goal}</span>
+              <span className="text-white/50">{g.pct}%</span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+              <div className={`h-full ${g.color} rounded-full`} style={{ width: `${g.pct}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 interface PillarSection {
   number: string
@@ -42,7 +186,7 @@ const PILLARS: PillarSection[] = [
     badge: 'Apple Family Controls',
     icon: ShieldCheck,
     accentColor: 'var(--indigo)',
-    screenComponent: ShieldMotionExhibit,
+    screenComponent: ShieldMotionCard,
     tagline: 'System-Level App Blocker Sheet',
     specs: [
       { label: 'Distractions', value: 'Zero Pings' },
@@ -58,7 +202,7 @@ const PILLARS: PillarSection[] = [
     badge: 'Apple Calendar Native',
     icon: Calendar,
     accentColor: 'var(--orange)',
-    screenComponent: TimelineSnapExhibit,
+    screenComponent: TimelineSnapCard,
     tagline: 'Habits Day Plan & EventKit',
     specs: [
       { label: 'Calendar', value: 'Apple EventKit' },
@@ -74,7 +218,7 @@ const PILLARS: PillarSection[] = [
     badge: 'Ultradian Energy Curve',
     icon: Zap,
     accentColor: 'var(--green)',
-    screenComponent: UltradianWaveExhibit,
+    screenComponent: UltradianWaveCard,
     tagline: 'Main Focus Dashboard & Live Timer',
     specs: [
       { label: 'Focus Wave', value: '90 Minutes' },
@@ -90,7 +234,7 @@ const PILLARS: PillarSection[] = [
     badge: 'Four Bigs Framework',
     icon: Target,
     accentColor: 'var(--purple)',
-    screenComponent: FourBigsFlameExhibit,
+    screenComponent: FourBigsFlameCard,
     tagline: '2026 Four Bigs Annual Target Suite',
     specs: [
       { label: 'Yearly Focus', value: 'Max 4 Goals' },

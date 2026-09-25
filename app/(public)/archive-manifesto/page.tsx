@@ -1,7 +1,7 @@
 'use client'
 
 import { Playfair_Display, Inter } from "@/lib/font-shim";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/general/button';
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Quote } from "lucide-react";

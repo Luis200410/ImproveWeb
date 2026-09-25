@@ -2,7 +2,7 @@
 
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { Bebas_Neue } from "@/lib/font-shim";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/general/button';
 import Link from "next/link";
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from "framer-motion";
 import { 
@@ -41,10 +41,10 @@ import {
     RefreshCw,
     Smartphone
 } from "lucide-react";
-import { ImproveLogo } from "@/components/ui/improve-logo";
-import { Menu, MenuItem } from "@/components/ui/navbar-menu";
-import { BodySaaSAnimation } from "@/components/ui/body-saas-animation";
-import { SecondBrainSaaSAnimation } from "@/components/ui/second-brain-saas-animation";
+import { ImproveLogo } from '@/components/landing/improve-logo';
+import { Menu, MenuItem } from '@/components/general/navbar-menu';
+import { BodySaaSAnimation } from '@/components/landing/body-saas-animation';
+import { SecondBrainSaaSAnimation } from '@/components/landing/second-brain-saas-animation';
 import { TheSystemSection } from "@/components/landing/the-system-section";
 import { SecondBrainProductivitySuite } from "@/components/landing/second-brain-productivity-suite";
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import CircularSplitRoll from '@/components/ui/circular-split-roll'
+import CircularSplitRoll from '@/components/landing/circular-split-roll'
 
 export default function AppsIndexPage() {
   return (

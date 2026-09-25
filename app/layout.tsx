@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Ballet } from "@/lib/font-shim";
 import "./globals.css";
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/general/sonner'
 import 'sileo/styles.css'
 
 const bebas = Bebas_Neue({
