@@ -38,14 +38,21 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
   );
 }
 
-/* AnimatedV component: two clean solid bars that hug in center as II, hold, then drop into V (2.6s total duration) */
+/* AnimatedV component: 3 distinct steps: 1) II coming together, 2) the bars separate, 3) the V */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
-  const [showII, setShowII] = React.useState(true);
+  // Step 1: "II" (0s - 1.0s) -> Step 2: "separate" (1.0s - 2.2s) -> Step 3: "V" (2.2s+)
+  const [step, setStep] = React.useState<"II" | "separate" | "V">("II");
 
   React.useEffect(() => {
-    // 2600ms animation (1.5s slower) then locks cleanly into solid native V
-    const timer = setTimeout(() => setShowII(false), 2600);
-    return () => clearTimeout(timer);
+    // Beat 1 -> Beat 2 at 1.0s
+    const t1 = setTimeout(() => setStep("separate"), 1000);
+    // Beat 2 -> Beat 3 at 2.2s
+    const t2 = setTimeout(() => setStep("V"), 2200);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   return (
@@ -57,7 +64,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <span
         className={cn(
           "transition-opacity duration-300",
-          showII ? "opacity-0" : "opacity-100"
+          step === "V" ? "opacity-100" : "opacity-0"
         )}
         style={{
           color,
@@ -67,15 +74,38 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         V
       </span>
 
-      {/* Animated bars overlay: clean solid bars (NO shadows/glow) */}
-      {showII && (
+      {/* STEP 1: Two 'I' letters coming together into 'II' in the center */}
+      {step === "II" && (
+        <span
+          className="absolute inset-0 flex justify-center pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          {/* Left I */}
+          <span
+            className="animate-clap-left absolute"
+            style={{ color, fontStyle: "normal" }}
+          >
+            I
+          </span>
+          {/* Right I */}
+          <span
+            className="animate-clap-right absolute"
+            style={{ color, fontStyle: "normal" }}
+          >
+            I
+          </span>
+        </span>
+      )}
+
+      {/* STEP 2: The bars separate outward diagonally into the V position */}
+      {step === "separate" && (
         <span
           className="absolute inset-0 pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left bar: starts upright on left, hugs center into II, then drops outward */}
+          {/* Left bar: drops outward to left (\) */}
           <span
-            className="animate-v-left absolute inset-0"
+            className="animate-separate-left absolute inset-0"
             style={{
               color,
               clipPath: "polygon(0 0, 50.5% 0, 50.5% 100%, 0 100%)",
@@ -85,9 +115,9 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             V
           </span>
 
-          {/* Right bar: starts upright on right, hugs center into II, then drops outward */}
+          {/* Right bar: drops outward to right (/) */}
           <span
-            className="animate-v-right absolute inset-0"
+            className="animate-separate-right absolute inset-0"
             style={{
               color,
               clipPath: "polygon(49.5% 0, 100% 0, 100% 100%, 49.5% 100%)",
@@ -100,45 +130,52 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       )}
 
       <style jsx>{`
-        @keyframes v-left-stage {
+        /* STEP 1: II coming together */
+        @keyframes clap-left {
           0% {
-            /* Upright vertical bar on the left (I) */
-            transform: translateX(-0.18em) rotate(16deg);
-            opacity: 1;
+            transform: translateX(-0.24em);
           }
-          /* Stage 1: Slide to center into II and hold so it's clearly readable */
-          28%, 54% {
+          45%, 100% {
+            transform: translateX(-0.04em);
+          }
+        }
+        @keyframes clap-right {
+          0% {
+            transform: translateX(0.24em);
+          }
+          45%, 100% {
+            transform: translateX(0.04em);
+          }
+        }
+        .animate-clap-left {
+          animation: clap-left 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .animate-clap-right {
+          animation: clap-right 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* STEP 2: The bars you separate */
+        @keyframes separate-left {
+          0% {
             transform: translateX(-0.015em) rotate(16deg);
-            opacity: 1;
           }
-          /* Stage 2: Drops diagonally outward into V */
-          82%, 100% {
+          100% {
             transform: translateX(0) rotate(0deg);
-            opacity: 1;
           }
         }
-        @keyframes v-right-stage {
+        @keyframes separate-right {
           0% {
-            /* Upright vertical bar on the right (I) */
-            transform: translateX(0.18em) rotate(-16deg);
-            opacity: 1;
-          }
-          /* Stage 1: Slide to center into II and hold so it's clearly readable */
-          28%, 54% {
             transform: translateX(0.015em) rotate(-16deg);
-            opacity: 1;
           }
-          /* Stage 2: Drops diagonally outward into V */
-          82%, 100% {
+          100% {
             transform: translateX(0) rotate(0deg);
-            opacity: 1;
           }
         }
-        .animate-v-left {
-          animation: v-left-stage 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .animate-separate-left {
+          animation: separate-left 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
-        .animate-v-right {
-          animation: v-right-stage 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .animate-separate-right {
+          animation: separate-right 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
