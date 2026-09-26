@@ -27,12 +27,79 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
           }}
           className="inline-block transition-transform duration-300 hover:scale-105"
         >
-          {letter}
+          {letter === "V" ? (
+            <AnimatedV color={color} glow={glow} />
+          ) : (
+            letter
+          )}
         </span>
       ))}
     </span>
   );
 }
+
+/* AnimatedV component: displays two "I" letters that clap together and then transform into a "V" */
+function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
+  const [showII, setShowII] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setShowII(false), 800); // duration matches animation
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <>
+      {showII ? (
+        <span className="inline-flex items-center" style={{ gap: '0.1em' }}>
+          <span
+            className="inline-block animate-clap-left"
+            style={{
+              color,
+              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+            }}
+          >
+            I
+          </span>
+          <span
+            className="inline-block animate-clap-right"
+            style={{
+              color,
+              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+            }}
+          >
+            I
+          </span>
+        </span>
+      ) : (
+        <span
+          style={{
+            color,
+            textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+          }}
+        >
+          V
+        </span>
+      )}
+      <style jsx>{`
+        @keyframes clap-left {
+          0% { transform: translateX(0) rotate(0deg); }
+          100% { transform: translateX(0.2em) rotate(-45deg); }
+        }
+        @keyframes clap-right {
+          0% { transform: translateX(0) rotate(0deg); }
+          100% { transform: translateX(-0.2em) rotate(45deg); }
+        }
+        .animate-clap-left {
+          animation: clap-left 0.8s forwards ease-in-out;
+        }
+        .animate-clap-right {
+          animation: clap-right 0.8s forwards ease-in-out;
+        }
+      `}</style>
+    </>
+  );
+}
+
 
 interface ManifestoStep {
   text: string;
