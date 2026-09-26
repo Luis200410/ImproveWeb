@@ -257,9 +257,9 @@ function TypewriterSubhead({ start }: { start: boolean }) {
   React.useEffect(() => {
     if (!start) return;
 
-    // Small pause after V completes before typewriter starts typing
+    let timer: NodeJS.Timeout;
     const delay = setTimeout(() => {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setCharCount((prev) => {
           if (prev < fullLength) {
             return prev + 1;
@@ -269,11 +269,12 @@ function TypewriterSubhead({ start }: { start: boolean }) {
           return prev;
         });
       }, 22);
-
-      return () => clearInterval(timer);
     }, 350);
 
-    return () => clearTimeout(delay);
+    return () => {
+      clearTimeout(delay);
+      if (timer) clearInterval(timer);
+    };
   }, [start, fullLength]);
 
   let charsRemaining = charCount;

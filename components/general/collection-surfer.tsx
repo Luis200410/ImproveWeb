@@ -7,6 +7,7 @@ import {
   useTransform,
   useSpring,
   useMotionValue,
+  useInView,
   MotionValue,
 } from "framer-motion";
 
@@ -82,6 +83,97 @@ interface CollectionSurferProps {
   headerKicker?: string;
   headerTitle?: string;
   headerDescription?: string;
+}
+
+interface TextSegment {
+  text: string;
+  isKey: boolean;
+}
+
+export function TypewriterDescription({
+  text,
+  delay = 350,
+}: {
+  text: string;
+  delay?: number;
+}) {
+  const containerRef = useRef<HTMLParagraphElement>(null);
+  const isInView = useInView(containerRef, { once: true, margin: "100px 0px" });
+  const [charCount, setCharCount] = React.useState(0);
+  const [isFinished, setIsFinished] = React.useState(false);
+
+  const parsedSegments: TextSegment[] = React.useMemo(() => {
+    if (!text) return [];
+    const keyPhrases = [
+      "4 yearly targets",
+      "Second Brain",
+      "IMPROVE",
+      "macro goals",
+      "actionable tasks",
+      "daily habits",
+    ];
+    const regex = new RegExp(`(${keyPhrases.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+    const parts = text.split(regex);
+    return parts.filter(Boolean).map((part) => ({
+      text: part,
+      isKey: keyPhrases.includes(part),
+    }));
+  }, [text]);
+
+  const fullLength = React.useMemo(() => {
+    return parsedSegments.reduce((sum, seg) => sum + seg.text.length, 0);
+  }, [parsedSegments]);
+
+  React.useEffect(() => {
+    if (!isInView || fullLength === 0) return;
+
+    let timer: NodeJS.Timeout;
+    const timeout = setTimeout(() => {
+      timer = setInterval(() => {
+        setCharCount((prev) => {
+          if (prev < fullLength) {
+            return prev + 1;
+          }
+          clearInterval(timer);
+          setIsFinished(true);
+          return prev;
+        });
+      }, 18);
+    }, delay);
+
+    return () => {
+      clearTimeout(timeout);
+      if (timer) clearInterval(timer);
+    };
+  }, [isInView, fullLength, delay]);
+
+  let charsRemaining = charCount;
+
+  return (
+    <p
+      ref={containerRef}
+      className="text-xs sm:text-sm md:text-base font-normal text-zinc-400 leading-relaxed min-h-[4em]"
+    >
+      {parsedSegments.map((seg, idx) => {
+        if (charsRemaining <= 0) return null;
+        const visibleChars = Math.min(charsRemaining, seg.text.length);
+        charsRemaining -= visibleChars;
+        const visibleText = seg.text.slice(0, visibleChars);
+
+        return (
+          <span
+            key={idx}
+            className={seg.isKey ? "font-bold text-white transition-colors duration-300" : "text-zinc-400 font-normal"}
+          >
+            {visibleText}
+          </span>
+        );
+      })}
+      {!isFinished && charCount > 0 && (
+        <span className="inline-block w-[2px] h-[1em] ml-1 bg-[#FF02E8] shadow-[0_0_8px_#FF02E8] animate-pulse align-middle" />
+      )}
+    </p>
+  );
 }
 
 export function CollectionSurfer({
@@ -163,9 +255,7 @@ export function CollectionSurfer({
             {headerTitle}
           </h2>
           {headerDescription && (
-            <p className="text-xs sm:text-sm md:text-base font-normal text-zinc-300/90 leading-relaxed">
-              {headerDescription}
-            </p>
+            <TypewriterDescription text={headerDescription} />
           )}
         </div>
 

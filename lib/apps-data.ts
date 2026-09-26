@@ -88,8 +88,8 @@ export const APPS_DATA: AppIdentity[] = [
     ]
   },
   {
-    id: 'execution-productivity',
-    slug: 'execution-productivity',
+    id: 'productivity',
+    slug: 'productivity',
     number: '03',
     name: 'Productivity',
     singleWord: 'PRODUCTIVITY',
@@ -235,5 +235,5 @@ export const APPS_DATA: AppIdentity[] = [
 ];
 
 export function getAppBySlug(slug: string): AppIdentity | undefined {
-  return APPS_DATA.find((app) => app.slug === slug);
+  return APPS_DATA.find((app) => app.slug === slug || (slug === 'execution-productivity' && app.slug === 'productivity'));
 }

@@ -11,6 +11,7 @@ const logoMap: Record<string, string> = {
   'second-brain': '/Second Brain Logo.svg',
   'money-wealth': '/money Logo.svg',
   'professional-mastery': '/Work Logo.svg',
+  'productivity': '/Productivity Logo.svg',
   'execution-productivity': '/Productivity Logo.svg',
   'relationships-capital': '/RelationShips logo.svg',
   'mind-emotions': '/mind Logo.svg',

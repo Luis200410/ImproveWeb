@@ -192,7 +192,7 @@ function CircularSplitRollComp({
       const fallbackApp = APPS_DATA[index % APPS_DATA.length];
       return {
         id: item.id ?? index,
-        slug: item.slug ?? fallbackApp?.slug ?? "execution-productivity",
+        slug: item.slug ?? fallbackApp?.slug ?? "productivity",
         title: item.title ?? fallbackApp?.singleWord ?? `Item ${index + 1}`,
         number: item.number ?? `0${index + 1}`,
         tagline: item.tagline ?? fallbackApp?.tagline ?? "",

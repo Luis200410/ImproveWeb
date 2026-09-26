@@ -41,7 +41,7 @@ export function AppHeroShowcase({ app }: AppHeroShowcaseProps) {
     return () => clearInterval(interval)
   }, [])
 
-  const isProductivity = app.slug === 'execution-productivity' || app.id === 'execution-productivity'
+  const isProductivity = app.slug === 'productivity' || app.id === 'productivity' || app.slug === 'execution-productivity' || app.id === 'execution-productivity'
 
   return (
     <div className={`relative w-full overflow-hidden ${isProductivity ? 'pt-0 pb-10 sm:pb-16' : 'py-12 sm:py-20'}`}>

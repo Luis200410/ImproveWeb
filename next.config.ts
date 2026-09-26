@@ -37,6 +37,15 @@ const nextConfig: NextConfig = {
       "next/font/google": "./lib/font-shim",
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/apps/execution-productivity',
+        destination: '/apps/productivity',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

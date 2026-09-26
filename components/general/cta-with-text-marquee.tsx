@@ -29,7 +29,7 @@ const dedicatedAppsData = [
   {
     title: "Productivity",
     iconSrc: "/Productivity Logo.svg",
-    href: "/apps/execution-productivity",
+    href: "/apps/productivity",
   },
   {
     title: "Relationships",

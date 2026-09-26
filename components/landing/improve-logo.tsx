@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 const LOGO_BARS = [
   { id: "red", color: "#cc0000", d: "M 211 751 L 286 751 L 286 80 L 211 80 Z", slug: "relationships-capital", name: "01 RELATIONSHIPS" },
   { id: "purple", color: "#6f1bd3", d: "M 299 564 L 374 564 L 374 322 L 299 322 Z", slug: "mind-emotions", name: "02 MIND" },
-  { id: "magenta", color: "#ff02e8", d: "M 387 944 L 462 944 L 462 322 L 387 322 Z", slug: "execution-productivity", name: "03 PRODUCTIVITY" },
+  { id: "magenta", color: "#ff02e8", d: "M 387 944 L 462 944 L 462 322 L 387 322 Z", slug: "productivity", name: "03 PRODUCTIVITY" },
   { id: "blue", color: "#2254f5", d: "M 474 455 L 549 455 L 549 213 L 474 213 Z", slug: "professional-mastery", name: "04 WORK" },
   { id: "green", color: "#43b752", d: "M 561 501 L 636 501 L 636 259 L 561 259 Z", slug: "body-optimization", name: "05 BODY" },
   { id: "orange", color: "#ff6900", d: "M 649 671 L 724 671 L 724 322 L 649 322 Z", slug: "second-brain", name: "06 SECOND BRAIN" },

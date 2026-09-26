@@ -49,7 +49,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
       <AppHeroShowcase app={app} />
 
       {/* 3.2 Dedicated Science & Execution Showcase for Productivity */}
-      {app.slug === 'execution-productivity' && (
+      {(app.slug === 'productivity' || app.slug === 'execution-productivity') && (
         <ProductivityShowcase />
       )}
 
