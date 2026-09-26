@@ -38,21 +38,14 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
   );
 }
 
-/* AnimatedV component: 3 distinct steps with progressive cross-fade into V */
+/* AnimatedV component: two sticks clap into II, then fall continuously all the way into V */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
-  // Step 1: "II" (0s - 1.0s) -> Step 2: "separate" (1.0s - 2.6s) -> Step 3: "V" (2.6s+)
-  const [step, setStep] = React.useState<"II" | "separate" | "V">("II");
+  const [animating, setAnimating] = React.useState(true);
 
   React.useEffect(() => {
-    // Beat 1 (II clap) -> Beat 2 (bars separate) at 1.0s
-    const t1 = setTimeout(() => setStep("separate"), 1000);
-    // Beat 2 -> Final lock at 2.6s (after progressive cross-fade has fully completed)
-    const t2 = setTimeout(() => setStep("V"), 2600);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
+    // 2600ms total fluid sequence
+    const timer = setTimeout(() => setAnimating(false), 2600);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -63,151 +56,113 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
-        Progressively fades in as the separating bars reach the V position.
+        Fluidly fades in right as the sticks reach their final V position.
       */}
       <span
         style={{
           color,
           textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-          opacity: step === "V" ? 1 : step === "II" ? 0 : undefined,
-          animation: step === "separate" ? "v-progressive-fade 1.6s ease-in-out forwards" : undefined,
+          opacity: animating ? undefined : 1,
+          animation: animating ? "v-final-fade 2.6s ease-in-out forwards" : undefined,
         }}
       >
         V
       </span>
 
-      {/* STEP 1: Two 'I' letters coming together into 'II' in the center */}
-      {step === "II" && (
+      {/* The two sticks: one continuous unbroken motion from start to finish */}
+      {animating && (
         <span
           className="absolute inset-0 flex justify-center pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left I */}
+          {/* Left stick */}
           <span
-            className="animate-clap-left absolute"
-            style={{ color, fontStyle: "normal" }}
+            className="animate-stick-left absolute"
+            style={{
+              color,
+              fontStyle: "normal",
+              transformOrigin: "50% 90%",
+            }}
           >
             I
           </span>
-          {/* Right I */}
+
+          {/* Right stick */}
           <span
-            className="animate-clap-right absolute"
-            style={{ color, fontStyle: "normal" }}
+            className="animate-stick-right absolute"
+            style={{
+              color,
+              fontStyle: "normal",
+              transformOrigin: "50% 90%",
+            }}
           >
             I
-          </span>
-        </span>
-      )}
-
-      {/* STEP 2: The bars separate outward diagonally and smoothly cross-fade into V */}
-      {step === "separate" && (
-        <span
-          className="absolute inset-0 pointer-events-none select-none"
-          aria-hidden="true"
-        >
-          {/* Left bar: drops outward to left (\) and fades out as V fades in */}
-          <span
-            className="animate-separate-left absolute inset-0"
-            style={{
-              color,
-              clipPath: "polygon(0 0, 50.5% 0, 50.5% 100%, 0 100%)",
-              transformOrigin: "50% 88%",
-            }}
-          >
-            V
-          </span>
-
-          {/* Right bar: drops outward to right (/) and fades out as V fades in */}
-          <span
-            className="animate-separate-right absolute inset-0"
-            style={{
-              color,
-              clipPath: "polygon(49.5% 0, 100% 0, 100% 100%, 49.5% 100%)",
-              transformOrigin: "50% 88%",
-            }}
-          >
-            V
           </span>
         </span>
       )}
 
       <style jsx>{`
-        /* STEP 1: II coming together */
-        @keyframes clap-left {
-          0% {
-            transform: translateX(-0.24em);
-          }
-          45%, 100% {
-            transform: translateX(-0.04em);
-          }
-        }
-        @keyframes clap-right {
-          0% {
-            transform: translateX(0.24em);
-          }
-          45%, 100% {
-            transform: translateX(0.04em);
-          }
-        }
-        .animate-clap-left {
-          animation: clap-left 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-        .animate-clap-right {
-          animation: clap-right 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-
-        /* Progressive fade-in of the real V */
-        @keyframes v-progressive-fade {
-          0%, 45% {
+        /* Fluid reveal of native V right as sticks hit the full V position */
+        @keyframes v-final-fade {
+          0%, 82% {
             opacity: 0;
           }
-          85%, 100% {
+          92%, 100% {
             opacity: 1;
           }
         }
 
-        /* STEP 2: The bars separate and progressively hand over to V */
-        @keyframes separate-left {
+        /* Left stick: slides to center, hugs as II, then falls all the way outward into V */
+        @keyframes v-stick-left {
           0% {
-            transform: translateX(-0.015em) rotate(16deg);
+            transform: translateX(-0.24em) rotate(0deg);
             opacity: 1;
           }
-          50% {
-            transform: translateX(-0.008em) rotate(8deg);
+          /* Phase 1: Meet in center as II and hold */
+          32%, 50% {
+            transform: translateX(-0.035em) rotate(0deg);
             opacity: 1;
           }
-          85% {
-            transform: translateX(0) rotate(0deg);
-            opacity: 0.15;
+          /* Phase 2: Fall continuously outward to the left until fully forming V */
+          88% {
+            transform: translateX(-0.05em) rotate(-18deg);
+            opacity: 1;
           }
+          /* Phase 3: Fluid handoff to real V */
           100% {
-            transform: translateX(0) rotate(0deg);
+            transform: translateX(-0.05em) rotate(-18deg);
             opacity: 0;
           }
         }
-        @keyframes separate-right {
+
+        /* Right stick: slides to center, hugs as II, then falls all the way outward into V */
+        @keyframes v-stick-right {
           0% {
-            transform: translateX(0.015em) rotate(-16deg);
+            transform: translateX(0.24em) rotate(0deg);
             opacity: 1;
           }
-          50% {
-            transform: translateX(0.008em) rotate(-8deg);
+          /* Phase 1: Meet in center as II and hold */
+          32%, 50% {
+            transform: translateX(0.035em) rotate(0deg);
             opacity: 1;
           }
-          85% {
-            transform: translateX(0) rotate(0deg);
-            opacity: 0.15;
+          /* Phase 2: Fall continuously outward to the right until fully forming V */
+          88% {
+            transform: translateX(0.05em) rotate(18deg);
+            opacity: 1;
           }
+          /* Phase 3: Fluid handoff to real V */
           100% {
-            transform: translateX(0) rotate(0deg);
+            transform: translateX(0.05em) rotate(18deg);
             opacity: 0;
           }
         }
-        .animate-separate-left {
-          animation: separate-left 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+
+        .animate-stick-left {
+          animation: v-stick-left 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
-        .animate-separate-right {
-          animation: separate-right 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .animate-stick-right {
+          animation: v-stick-right 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
