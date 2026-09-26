@@ -77,7 +77,7 @@ function AnimatedV({
   return (
     <span
       className="relative inline-block"
-      style={{ transform: "scale(0.955)", transformOrigin: "center 54%" }}
+      style={{ fontSize: "0.965em", verticalAlign: "baseline" }}
     >
       {/* 
         The real in-flow V: 
@@ -211,77 +211,90 @@ function AnimatedV({
   );
 }
 
-/* Subhead below IMPROVE with progressive bolding across key words */
-function ProgressiveSubhead({ start }: { start: boolean }) {
-  const [boldIndex, setBoldIndex] = React.useState(-1);
+interface SubheadSegment {
+  text: string;
+  isKey: boolean;
+}
+
+const SUBHEAD_SEGMENTS: SubheadSegment[] = [
+  { text: "a ", isKey: false },
+  { text: "powerful ecosystem", isKey: true },
+  { text: " that connects your ", isKey: false },
+  { text: "Knowledge", isKey: true },
+  { text: ", ", isKey: false },
+  { text: "Finances", isKey: true },
+  { text: ", ", isKey: false },
+  { text: "Body", isKey: true },
+  { text: ", ", isKey: false },
+  { text: "Productivity", isKey: true },
+  { text: ", ", isKey: false },
+  { text: "Work", isKey: true },
+  { text: ", ", isKey: false },
+  { text: "Relationships", isKey: true },
+  { text: " and ", isKey: false },
+  { text: "mind", isKey: true },
+  { text: ", giving you the ", isKey: false },
+  { text: "clarity", isKey: true },
+  { text: " to act with ", isKey: false },
+  { text: "absolute intention", isKey: true },
+  { text: ".", isKey: false },
+];
+
+/* Subhead below IMPROVE typed out smoothly with key words progressively bolded */
+function TypewriterSubhead({ start }: { start: boolean }) {
+  const [charCount, setCharCount] = React.useState(0);
+  const [isFinished, setIsFinished] = React.useState(false);
+
+  const fullLength = React.useMemo(() => {
+    return SUBHEAD_SEGMENTS.reduce((sum, seg) => sum + seg.text.length, 0);
+  }, []);
 
   React.useEffect(() => {
     if (!start) return;
 
-    // Small initial pause after V completes before progressive bolding begins
-    const startTimeout = setTimeout(() => {
-      setBoldIndex(0);
+    // Small pause after V completes before typewriter starts typing
+    const delay = setTimeout(() => {
+      const timer = setInterval(() => {
+        setCharCount((prev) => {
+          if (prev < fullLength) {
+            return prev + 1;
+          }
+          clearInterval(timer);
+          setIsFinished(true);
+          return prev;
+        });
+      }, 22);
+
+      return () => clearInterval(timer);
     }, 350);
 
-    return () => clearTimeout(startTimeout);
-  }, [start]);
+    return () => clearTimeout(delay);
+  }, [start, fullLength]);
 
-  React.useEffect(() => {
-    if (boldIndex < 0 || boldIndex >= 9) return;
-
-    // Step to the next key word in smooth cadence
-    const timer = setTimeout(() => {
-      setBoldIndex((prev) => prev + 1);
-    }, 240);
-
-    return () => clearTimeout(timer);
-  }, [boldIndex]);
-
-  const isB = (idx: number) => boldIndex >= idx;
+  let charsRemaining = charCount;
 
   return (
-    <p className="text-lg sm:text-xl text-zinc-400 leading-relaxed max-w-3xl mx-auto font-normal animate-in fade-in slide-in-from-bottom-4 duration-700">
-      a{" "}
-      <span className={cn("transition-colors duration-500", isB(0) ? "font-bold text-white" : "text-zinc-400")}>
-        powerful ecosystem
-      </span>{" "}
-      that connects your{" "}
-      <span className={cn("transition-colors duration-500", isB(1) ? "font-bold text-white" : "text-zinc-400")}>
-        Knowledge
-      </span>
-      ,{" "}
-      <span className={cn("transition-colors duration-500", isB(2) ? "font-bold text-white" : "text-zinc-400")}>
-        Finances
-      </span>
-      ,{" "}
-      <span className={cn("transition-colors duration-500", isB(3) ? "font-bold text-white" : "text-zinc-400")}>
-        Body
-      </span>
-      ,{" "}
-      <span className={cn("transition-colors duration-500", isB(4) ? "font-bold text-white" : "text-zinc-400")}>
-        Productivity
-      </span>
-      ,{" "}
-      <span className={cn("transition-colors duration-500", isB(5) ? "font-bold text-white" : "text-zinc-400")}>
-        Work
-      </span>
-      ,{" "}
-      <span className={cn("transition-colors duration-500", isB(6) ? "font-bold text-white" : "text-zinc-400")}>
-        Relationships
-      </span>{" "}
-      and{" "}
-      <span className={cn("transition-colors duration-500", isB(7) ? "font-bold text-white" : "text-zinc-400")}>
-        mind
-      </span>
-      , giving you the{" "}
-      <span className={cn("transition-colors duration-500", isB(8) ? "font-bold text-white" : "text-zinc-400")}>
-        clarity
-      </span>{" "}
-      to act with{" "}
-      <span className={cn("transition-colors duration-500", isB(9) ? "font-bold text-white" : "text-zinc-400")}>
-        absolute intention
-      </span>
-      .
+    <p className="text-lg sm:text-xl text-zinc-400 leading-relaxed max-w-3xl mx-auto font-normal min-h-[4.5em] animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {SUBHEAD_SEGMENTS.map((seg, idx) => {
+        if (charsRemaining <= 0) return null;
+        const visibleChars = Math.min(charsRemaining, seg.text.length);
+        charsRemaining -= visibleChars;
+        const visibleText = seg.text.slice(0, visibleChars);
+
+        return (
+          <span
+            key={idx}
+            className={cn(
+              seg.isKey ? "font-bold text-white transition-colors duration-300" : "text-zinc-400 font-normal"
+            )}
+          >
+            {visibleText}
+          </span>
+        );
+      })}
+      {!isFinished && charCount > 0 && (
+        <span className="inline-block w-[2px] h-[1em] ml-1 bg-white animate-pulse align-middle" />
+      )}
     </p>
   );
 }
@@ -475,17 +488,22 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
           </div>
         )}
 
-        {/* Single Unified Final Frame: IMPROVE + Subhead below */}
+        {/* Single Unified Final Frame: Top sentence + IMPROVE + Typed subhead */}
         {phase === "final" && (
           <div className="min-h-[80vh] w-full flex flex-col items-center justify-center text-center px-6 py-20 animate-in fade-in zoom-in-95 duration-700">
             <div className="max-w-4xl mx-auto flex flex-col items-center">
+              {/* Top sentence that stays */}
+              <p className="text-sm sm:text-base md:text-lg font-medium tracking-[0.25em] uppercase text-zinc-400 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
+                Purpose in mind. Intention in motion.
+              </p>
+
               {/* The Headline: IMPROVE (with individual pillar colors) */}
               <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 sm:mb-8 selection:bg-white selection:text-black">
                 <ColorfulImprove glow={false} onComplete={() => setHeadlineComplete(true)} />
               </h1>
 
-              {/* Only the subhead below IMPROVE, with progressive bolding of key words */}
-              <ProgressiveSubhead start={headlineComplete} />
+              {/* Typed subhead below IMPROVE with progressive bolding of key words */}
+              <TypewriterSubhead start={headlineComplete} />
             </div>
           </div>
         )}
