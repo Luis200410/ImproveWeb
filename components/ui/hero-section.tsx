@@ -38,7 +38,7 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: displays two "I" letters that merge into a single massive thick "I", then drop top outward to form "V" */
+/* AnimatedV component: two vertical strokes that hug in the center as a massive I, then drop into the exact V glyph with zero jump */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
@@ -52,8 +52,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
     <span className="relative inline-block">
       {/* 
         The real in-flow V: 
-        This is rendered in the normal document text flow.
-        It GUARANTEES 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
+        Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
       */}
       <span
         className={cn(
@@ -68,33 +67,36 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         V
       </span>
 
-      {/* Animated I I overlay: perfectly matches V's bounding box and baseline */}
+      {/* Animated strokes overlay: two halves of V that start upright as I's, hug in center, and drop to assemble V */}
       {showII && (
         <span
-          className="absolute inset-0 flex justify-center pointer-events-none select-none"
+          className="absolute inset-0 pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left I */}
+          {/* Left stroke: starts vertical as an I, hugs center, then drops to form left leg of V */}
           <span
-            className="animate-v-left absolute"
+            className="animate-v-left absolute inset-0"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+              clipPath: "polygon(0 0, 51% 0, 51% 100%, 0 100%)",
               transformOrigin: "50% 88%",
             }}
           >
-            I
+            V
           </span>
-          {/* Right I */}
+
+          {/* Right stroke: starts vertical as an I, hugs center, then drops to form right leg of V */}
           <span
-            className="animate-v-right absolute"
+            className="animate-v-right absolute inset-0"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+              clipPath: "polygon(49% 0, 100% 0, 100% 100%, 49% 100%)",
               transformOrigin: "50% 88%",
             }}
           >
-            I
+            V
           </span>
         </span>
       )}
@@ -102,42 +104,36 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            transform: translateX(-0.18em) rotate(0deg);
+            /* Upright vertical stroke on the left (looks like an I) */
+            transform: translateX(-0.16em) rotate(16deg);
             opacity: 1;
           }
-          /* Stage 1: Slide to center from left and hug (forming left half of massive I) */
+          /* Stage 1: Slide to center and hug from the left (forming left half of massive I) */
           30%, 48% {
-            transform: translateX(-0.035em) rotate(0deg);
+            transform: translateX(-0.015em) rotate(16deg);
             opacity: 1;
           }
-          /* Stage 2: Top drops outward to the left diagonal leg of V (\) */
-          82% {
-            transform: translateX(-0.055em) rotate(-16deg);
+          /* Stage 2: Drops diagonally to 0deg, perfectly assembling the left half of V */
+          85%, 100% {
+            transform: translateX(0) rotate(0deg);
             opacity: 1;
-          }
-          100% {
-            transform: translateX(-0.055em) rotate(-16deg);
-            opacity: 0;
           }
         }
         @keyframes v-right-stage {
           0% {
-            transform: translateX(0.18em) rotate(0deg);
+            /* Upright vertical stroke on the right (looks like an I) */
+            transform: translateX(0.16em) rotate(-16deg);
             opacity: 1;
           }
-          /* Stage 1: Slide to center from right and hug (forming right half of massive I) */
+          /* Stage 1: Slide to center and hug from the right (forming right half of massive I) */
           30%, 48% {
-            transform: translateX(0.035em) rotate(0deg);
+            transform: translateX(0.015em) rotate(-16deg);
             opacity: 1;
           }
-          /* Stage 2: Top drops outward to the right diagonal leg of V (/) */
-          82% {
-            transform: translateX(0.055em) rotate(16deg);
+          /* Stage 2: Drops diagonally to 0deg, perfectly assembling the right half of V */
+          85%, 100% {
+            transform: translateX(0) rotate(0deg);
             opacity: 1;
-          }
-          100% {
-            transform: translateX(0.055em) rotate(16deg);
-            opacity: 0;
           }
         }
         .animate-v-left {
