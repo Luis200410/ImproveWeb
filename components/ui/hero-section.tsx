@@ -353,13 +353,22 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
     pauseAfterDelete: 400,
   },
   {
-    // Decelerates dramatically: human, calm, deliberate cadence (white text)
-    text: "Just be you. Live with purpose.",
+    // Frame 5: First human truth in calm pure white
+    text: "Just be you.",
     isBad: false,
-    typeSpeed: 105,
-    pauseAtEnd: 3400, // 3.4s deep breath and absorb the contrast
-    deleteSpeed: 32, // gentle visible backspacing
-    pauseAfterDelete: 700, // momentary stillness before reveal
+    typeSpeed: 95,
+    pauseAtEnd: 2400, // 2.4s to absorb
+    deleteSpeed: 30, // gentle visible backspacing
+    pauseAfterDelete: 450,
+  },
+  {
+    // Frame 6: Second human truth in calm pure white
+    text: "Live with purpose.",
+    isBad: false,
+    typeSpeed: 95,
+    pauseAtEnd: 2600, // 2.6s deep breath before reveal
+    deleteSpeed: 30, // gentle visible backspacing
+    pauseAfterDelete: 700, // momentary stillness before IMPROVE reveal
   },
 ];
 
