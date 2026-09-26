@@ -63,8 +63,10 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
+        Fades in progressively right as the bars complete their fall.
       */}
       <span
+        className="transition-opacity duration-300 ease-out"
         style={{
           color,
           textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
@@ -99,9 +101,12 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       )}
 
       {/* STEP 2: The bars that FALL all the way until forming the complete V */}
-      {step === "bars" && (
+      {(step === "bars" || step === "V") && (
         <span
-          className="absolute inset-0 pointer-events-none select-none"
+          className={cn(
+            "absolute inset-0 pointer-events-none select-none transition-opacity duration-300",
+            step === "V" ? "opacity-0" : "opacity-100"
+          )}
           aria-hidden="true"
         >
           {/* Left bar: falls all the way into the left leg of V */}
