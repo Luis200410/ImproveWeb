@@ -229,7 +229,7 @@ const PILLARS: PillarSection[] = [
   {
     number: '04',
     kicker: 'GOAL EXECUTION',
-    title: "Define the goal. Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them.",
+    title: 'FOUR BIG GOALS. NOTHING ELSE.',
     copy: 'Big dreams die when they stay big. You pick four major goals for the year. Improve breaks them down into 15-minute daily micro-steps. Check off today’s tiny step, and the big outcome takes care of itself.',
     badge: 'Four Bigs Framework',
     icon: Target,
@@ -347,11 +347,12 @@ function PillarCardRow({ pillar, idx }: { pillar: PillarSection; idx: number }) 
 export function ProductivityShowcase() {
   return (
     <div className="w-full bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)]">
-      {/* 1. The 5 Layers of Habits CollectionSurfer 3D Experience */}
+      {/* 1. Goal Execution Framework CollectionSurfer 3D Experience */}
       <section className="w-full">
         <CollectionSurfer 
-          headerKicker="HABIT EXECUTION FRAMEWORK" 
-          headerTitle="THE 5 LAYERS OF HABITS"
+          headerKicker="GOAL EXECUTION FRAMEWORK" 
+          headerTitle="Define the goal."
+          headerDescription="Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them."
         />
       </section>
 

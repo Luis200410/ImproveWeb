@@ -81,13 +81,15 @@ interface CollectionSurferProps {
   variant?: CollectionSurferVariant;
   headerKicker?: string;
   headerTitle?: string;
+  headerDescription?: string;
 }
 
 export function CollectionSurfer({
   items = HABIT_LAYERS_ITEMS,
   variant = "magnetic",
-  headerKicker = "HABIT EXECUTION FRAMEWORK",
-  headerTitle = "THE 5 LAYERS OF HABITS",
+  headerKicker = "GOAL EXECUTION FRAMEWORK",
+  headerTitle = "Define the goal.",
+  headerDescription = "Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them.",
 }: CollectionSurferProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -150,17 +152,21 @@ export function CollectionSurfer({
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {/* Header Overlay - Positioned safely below top navigation bar */}
-        <div className="absolute top-20 sm:top-24 lg:top-28 left-6 sm:left-12 lg:left-16 z-40 pointer-events-none space-y-2">
-          <span className="inline-block kicker text-xs sm:text-sm font-bold text-[#FF02E8] tracking-widest uppercase">
-            {headerKicker}
-          </span>
-          <h2 className="font-heading font-black text-3xl sm:text-5xl md:text-6xl tracking-tight text-white uppercase leading-none">
+        {/* Header Overlay - Positioned safely on the left */}
+        <div className="absolute top-20 sm:top-24 lg:top-28 left-6 sm:left-12 lg:left-16 z-40 pointer-events-none space-y-2.5 sm:space-y-3 max-w-sm sm:max-w-md lg:max-w-lg">
+          {headerKicker && (
+            <span className="inline-block kicker text-xs sm:text-sm font-bold text-[#FF02E8] tracking-widest uppercase">
+              {headerKicker}
+            </span>
+          )}
+          <h2 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight text-white leading-tight">
             {headerTitle}
           </h2>
-          <p className="text-xs sm:text-sm font-rounded text-zinc-400 max-w-md">
-            1. Set It • 2. Protect It • 3. Sync It • 4. Do It • 5. Review It
-          </p>
+          {headerDescription && (
+            <p className="text-xs sm:text-sm md:text-base font-normal text-zinc-300/90 leading-relaxed">
+              {headerDescription}
+            </p>
+          )}
         </div>
 
         {/* Ambient Glow */}
