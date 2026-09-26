@@ -321,7 +321,7 @@ interface ManifestoStep {
 // - Final Frame: Snaps directly into the single unified frame of "Use IMPROVE." + copy
 const MANIFESTO_STEPS: ManifestoStep[] = [
   {
-    text: "Do more. Be more.",
+    text: "Do more, be more",
     isBad: true,
     typeSpeed: 45,
     pauseAtEnd: 2200, // 2.2s comfortable reading time
@@ -329,7 +329,7 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
     pauseAfterDelete: 350,
   },
   {
-    text: "10X your life or you're falling behind.",
+    text: "10X your life or you're falling behind",
     isBad: true,
     typeSpeed: 38,
     pauseAtEnd: 2500, // 2.5s comfortable reading time
@@ -337,7 +337,7 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
     pauseAfterDelete: 350,
   },
   {
-    text: "Sleep when you're dead. Rise and grind.",
+    text: "Sleep when you're dead, rise and grind",
     isBad: true,
     typeSpeed: 38,
     pauseAtEnd: 2500, // 2.5s comfortable reading time
@@ -345,7 +345,7 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
     pauseAfterDelete: 350,
   },
   {
-    text: "Work hard, play hard.",
+    text: "Work hard, play hard",
     isBad: true,
     typeSpeed: 45,
     pauseAtEnd: 2200, // 2.2s comfortable reading time
@@ -354,7 +354,7 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
   },
   {
     // Frame 5: First human truth in calm pure white
-    text: "Just be you.",
+    text: "Just Be You",
     isBad: false,
     typeSpeed: 95,
     pauseAtEnd: 2400, // 2.4s to absorb
@@ -363,7 +363,7 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
   },
   {
     // Frame 6: Second human truth in calm pure white
-    text: "Live with purpose.",
+    text: "Live With Purpose",
     isBad: false,
     typeSpeed: 95,
     pauseAtEnd: 2600, // 2.6s deep breath before reveal
