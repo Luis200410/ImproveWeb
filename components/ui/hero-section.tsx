@@ -24,6 +24,13 @@ export function ColorfulImprove({
   glow?: boolean;
   onComplete?: () => void;
 }) {
+  const [animationDone, setAnimationDone] = React.useState(false);
+
+  const handleVComplete = React.useCallback(() => {
+    setAnimationDone(true);
+    onComplete?.();
+  }, [onComplete]);
+
   return (
     <span className={cn("inline-flex items-center tracking-tight", className)}>
       {IMPROVE_COLORS.map(({ letter, color }, index) => (
@@ -35,8 +42,8 @@ export function ColorfulImprove({
           }}
           className="inline-block transition-transform duration-300 hover:scale-105"
         >
-          {letter === "V" ? (
-            <AnimatedV color={color} glow={glow} onComplete={onComplete} />
+          {letter === "V" && !animationDone ? (
+            <AnimatedV color={color} glow={glow} onComplete={handleVComplete} />
           ) : (
             letter
           )}
@@ -75,10 +82,7 @@ function AnimatedV({
   }, [onComplete]);
 
   return (
-    <span
-      className="relative inline-block"
-      style={{ fontSize: "0.965em", verticalAlign: "baseline" }}
-    >
+    <span className="relative inline-block">
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
