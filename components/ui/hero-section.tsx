@@ -43,31 +43,34 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    // Keep 2-stage animation active for 1.4s then lock into solid V glyph
-    const timer = setTimeout(() => setShowII(false), 1300);
+    // Lock into final solid V after animation completes
+    const timer = setTimeout(() => setShowII(false), 1350);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <>
+    <span className="inline-block relative" style={{ minWidth: "0.65em" }}>
+      {/* Invisible V placeholder guarantees exact width, baseline, and vertical placement */}
+      <span className="opacity-0 pointer-events-none select-none">V</span>
+
       {showII ? (
-        <span className="inline-flex items-center relative justify-center" style={{ width: '0.7em', height: '1em' }}>
+        <span className="absolute inset-0 flex items-center justify-center">
           <span
-            className="absolute animate-v-left"
+            className="animate-v-left inline-block"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "bottom right",
+              transformOrigin: "75% 85%",
             }}
           >
             I
           </span>
           <span
-            className="absolute animate-v-right"
+            className="animate-v-right inline-block"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "bottom left",
+              transformOrigin: "25% 85%",
             }}
           >
             I
@@ -75,6 +78,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         </span>
       ) : (
         <span
+          className="absolute inset-0 flex items-center justify-center"
           style={{
             color,
             textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
@@ -86,30 +90,30 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            transform: translateX(-0.3em) rotate(0deg);
+            transform: translateX(-0.25em) translateY(0) rotate(0deg);
           }
           35% {
-            transform: translateX(-0.04em) rotate(0deg);
+            transform: translateX(-0.03em) translateY(0) rotate(0deg);
           }
           50% {
-            transform: translateX(-0.04em) rotate(0deg);
+            transform: translateX(-0.03em) translateY(0) rotate(0deg);
           }
           100% {
-            transform: translateX(-0.08em) rotate(18deg);
+            transform: translateX(-0.05em) translateY(0.04em) rotate(18deg);
           }
         }
         @keyframes v-right-stage {
           0% {
-            transform: translateX(0.3em) rotate(0deg);
+            transform: translateX(0.25em) translateY(0) rotate(0deg);
           }
           35% {
-            transform: translateX(0.04em) rotate(0deg);
+            transform: translateX(0.03em) translateY(0) rotate(0deg);
           }
           50% {
-            transform: translateX(0.04em) rotate(0deg);
+            transform: translateX(0.03em) translateY(0) rotate(0deg);
           }
           100% {
-            transform: translateX(0.08em) rotate(-18deg);
+            transform: translateX(0.05em) translateY(0.04em) rotate(-18deg);
           }
         }
         .animate-v-left {
@@ -119,7 +123,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
           animation: v-right-stage 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
-    </>
+    </span>
   );
 }
 
