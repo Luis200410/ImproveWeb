@@ -14,13 +14,10 @@ import {
   Brain, 
   Zap, 
   Award,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Calendar,
-  Lock,
+  Sparkles,
   Layers,
-  Sparkles
+  ChevronRight,
+  Maximize2
 } from "lucide-react";
 
 if (typeof window !== "undefined") {
@@ -120,7 +117,7 @@ const DIAGRAM_STAGES: DiagramStage[] = [
     circleStyle: "bg-gradient-to-r from-[#FF02E8]/20 via-[#FF02E8]/10 to-transparent border border-[#FF02E8]/40 shadow-[0_0_60px_rgba(255,2,232,0.15)]",
     floatingPills: [
       { text: "I am a morning bird", top: "12%", left: "18%" },
-      { text: "I am a training athlete", top: "26%", right: "8%" },
+      { text: "I am an training athele", top: "26%", right: "8%" },
       { text: "I am a non-smoker", bottom: "30%", right: "12%" },
       { text: "I am a reader", bottom: "16%", left: "22%" },
       { text: "I am focused & intentional", bottom: "4%", right: "24%" },
@@ -199,175 +196,191 @@ const DIAGRAM_STAGES: DiagramStage[] = [
 ];
 
 /**
- * High-definition, scalable vector diagram reproducing the authentic
- * concentric inside-out behavioral transformation model from James Clear.
- * Mutually tangent on the left at the origin dot, with horizontal axis cutting through.
+ * 100% Code-based conversion of the user's reference image:
+ * Pixel-calibrated 1024x551 coordinate space matching media_1790463766825.png.
+ * Features:
+ * - Mutually tangent concentric circles sharing the left origin dot (●).
+ * - Soft stippled rose/coral shading on Identity and Process.
+ * - Central horizontal axis with terminal arrow and "CHANGE FROM THE INSIDE OUT".
+ * - Authentic serif cursive script for Identity, Process, Outcome.
+ * - Bold uppercase subtitles: WHO YOU ARE / WHAT YOU BELIEVE, WHAT YOU DO, WHAT YOU GET.
+ * - All 16 scattered thoughts and habits in their exact places.
  */
-function GeneralDiagramGraphic() {
+function ExactBehavioralDiagram({ onSelectStage }: { onSelectStage?: (id: string) => void }) {
   return (
-    <div className="w-full h-full flex flex-col justify-between p-4 sm:p-6 md:p-8 select-none">
-      {/* Top Header inside canvas */}
-      <div className="flex items-center justify-between border-b border-zinc-200/80 pb-2 sm:pb-3 shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="size-2.5 rounded-full bg-[#E11D48] animate-pulse" />
-          <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-zinc-700">
-            THE GENERAL FRAMEWORK • THREE LAYERS OF BEHAVIOR CHANGE
-          </span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[9px] sm:text-[11px] font-mono text-zinc-500 uppercase tracking-widest">
-          <span>PART 1: THE OVERVIEW</span>
-          <span className="text-zinc-300">•</span>
-          <span className="text-zinc-800 font-semibold">ONE-BY-ONE DETAILS FOLLOW →</span>
-        </div>
-      </div>
+    <div className="w-full h-full flex flex-col justify-center items-center select-none bg-[#FAF8F5] relative overflow-hidden rounded-3xl p-2 sm:p-4 md:p-6 shadow-2xl border border-zinc-200/90">
+      <svg
+        viewBox="0 0 1024 551"
+        className="w-full h-auto max-h-[580px] object-contain drop-shadow-sm"
+        preserveAspectRatio="xMidYMid meet"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          {/* Authentic Stippled Noise Filter */}
+          <filter id="stippleFilter" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" result="noise" />
+            <feColorMatrix
+              type="matrix"
+              values="
+                1 0 0 0 0
+                0 0.2 0 0 0
+                0 0 0.35 0 0
+                0 0 0 0.45 0"
+              result="colorNoise"
+            />
+            <feComposite in="SourceGraphic" in2="colorNoise" operator="in" />
+          </filter>
 
-      {/* Main SVG Diagram Container */}
-      <div className="relative w-full flex-1 flex items-center justify-center min-h-[300px] sm:min-h-[380px] my-1 sm:my-2 overflow-hidden">
-        <svg
-          viewBox="0 0 1000 520"
-          className="w-full h-full max-h-[460px] object-contain"
-          preserveAspectRatio="xMidYMid meet"
-          aria-label="Concentric diagram of Identity, Process, and Outcome"
-        >
-          <defs>
-            {/* Soft pink stippled radial gradient for Identity */}
-            <radialGradient id="identityFill" cx="42%" cy="50%" r="55%">
-              <stop offset="0%" stopColor="#FDA4AF" stopOpacity="0.55" />
-              <stop offset="60%" stopColor="#FB7185" stopOpacity="0.38" />
-              <stop offset="90%" stopColor="#F43F5E" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#E11D48" stopOpacity="0.08" />
-            </radialGradient>
+          {/* Identity Circular Gradient (Soft warm pink with stippled edges) */}
+          <radialGradient id="identityRadial" cx="48%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+            <stop offset="65%" stopColor="#FFE4E6" stopOpacity="0.75" />
+            <stop offset="85%" stopColor="#FDA4AF" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#FB7185" stopOpacity="0.35" />
+          </radialGradient>
 
-            {/* Subtle rose/cream wash for Process */}
-            <radialGradient id="processFill" cx="38%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#FDA4AF" stopOpacity="0.22" />
-              <stop offset="65%" stopColor="#FECDD3" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#FFF1F2" stopOpacity="0.02" />
-            </radialGradient>
+          {/* Process Circular Gradient */}
+          <radialGradient id="processRadial" cx="44%" cy="50%" r="54%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.4" />
+            <stop offset="70%" stopColor="#FFF1F2" stopOpacity="0.35" />
+            <stop offset="90%" stopColor="#FFE4E6" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#FDA4AF" stopOpacity="0.1" />
+          </radialGradient>
 
-            {/* Arrow marker for horizontal line */}
-            <marker
-              id="axisArrowhead"
-              viewBox="0 0 10 10"
-              refX="6"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#18181B" />
-            </marker>
+          {/* Fine Stipple Texture Pattern Overlay */}
+          <pattern id="stippleDots" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="0.75" fill="#E11D48" opacity="0.25" />
+            <circle cx="6" cy="6" r="0.6" fill="#F43F5E" opacity="0.2" />
+          </pattern>
 
-            {/* Subtle stipple / grain texture overlay pattern */}
-            <pattern id="stippleTexture" width="6" height="6" patternUnits="userSpaceOnUse">
-              <circle cx="2" cy="2" r="0.75" fill="#E11D48" opacity="0.18" />
-              <circle cx="5" cy="5" r="0.6" fill="#FB7185" opacity="0.15" />
-            </pattern>
-          </defs>
-
-          {/* ══════════ CONCENTRIC CIRCLES (TANGENT ON LEFT AT X=90, Y=260) ══════════ */}
-          
-          {/* Faint Outer Guide Ripples */}
-          <ellipse cx="490" cy="260" rx="400" ry="250" fill="none" stroke="#E5E7EB" strokeWidth="1" strokeDasharray="4 4" />
-          <ellipse cx="440" cy="260" rx="350" ry="235" fill="none" stroke="#E5E7EB" strokeWidth="1" />
-
-          {/* 1. OUTCOME CIRCLE (Largest) */}
-          <ellipse
-            cx="400"
-            cy="260"
-            rx="310"
-            ry="220"
-            fill="rgba(255, 255, 255, 0.45)"
-            stroke="#D1D5DB"
-            strokeWidth="1.2"
-          />
-
-          {/* 2. PROCESS CIRCLE (Middle) */}
-          <ellipse
-            cx="315"
-            cy="260"
-            rx="225"
-            ry="185"
-            fill="url(#processFill)"
-            stroke="#FB7185"
-            strokeOpacity="0.35"
-            strokeWidth="1.2"
-          />
-          {/* Texture wash */}
-          <ellipse
-            cx="315"
-            cy="260"
-            rx="225"
-            ry="185"
-            fill="url(#stippleTexture)"
-            opacity="0.5"
-          />
-
-          {/* 3. IDENTITY CIRCLE (Innermost - vibrant pink/rose fill) */}
-          <ellipse
-            cx="235"
-            cy="260"
-            rx="145"
-            ry="145"
-            fill="url(#identityFill)"
-            stroke="#E11D48"
-            strokeOpacity="0.55"
-            strokeWidth="1.6"
-          />
-          <ellipse
-            cx="235"
-            cy="260"
-            rx="145"
-            ry="145"
-            fill="url(#stippleTexture)"
-            opacity="0.75"
-          />
-
-          {/* ══════════ HORIZONTAL TIMELINE AXIS & ARROW ══════════ */}
-          {/* Tangent Origin Dot at left edge */}
-          <circle cx="90" cy="260" r="5" fill="#18181B" />
-
-          {/* Solid Black Axis Line slicing across */}
-          <line
-            x1="90"
-            y1="260"
-            x2="905"
-            y2="260"
-            stroke="#18181B"
-            strokeWidth="1.75"
-            markerEnd="url(#axisArrowhead)"
-          />
-
-          {/* Terminal label at the arrow: "CHANGE FROM THE INSIDE OUT" */}
-          <text
-            x="715"
-            y="245"
-            fill="#18181B"
-            fontSize="12.5"
-            fontWeight="600"
-            letterSpacing="1.8"
-            fontFamily="system-ui, -apple-system, sans-serif"
+          {/* Terminal Arrowhead marker */}
+          <marker
+            id="diagramArrowhead"
+            viewBox="0 0 10 10"
+            refX="6"
+            refY="5"
+            markerWidth="6.5"
+            markerHeight="6.5"
+            orient="auto-start-reverse"
           >
-            CHANGE FROM THE INSIDE OUT
-          </text>
+            <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#18181B" />
+          </marker>
+        </defs>
 
-          {/* ══════════ AXIS TITLES & SUBTITLES ══════════ */}
+        {/* ══════════ CONCENTRIC CIRCLES (ALL TANGENT ON LEFT AT X=95, Y=270) ══════════ */}
 
-          {/* IDENTITY */}
+        {/* Outer Ripple Concentric Guide Arcs */}
+        <ellipse cx="585" cy="270" rx="490" ry="390" fill="none" stroke="#EAE6DF" strokeWidth="1" />
+        <ellipse cx="485" cy="270" rx="390" ry="315" fill="none" stroke="#EAE6DF" strokeWidth="1" strokeDasharray="3 3" />
+
+        {/* 1. OUTCOME REGION (Outer Circle) */}
+        <ellipse
+          cx="395"
+          cy="270"
+          rx="300"
+          ry="260"
+          fill="rgba(255, 255, 255, 0.35)"
+          stroke="#D8D3CA"
+          strokeWidth="1.2"
+          className="transition-all duration-300 hover:stroke-zinc-500 cursor-pointer"
+          onClick={() => onSelectStage?.("outcome")}
+        />
+
+        {/* 2. PROCESS REGION (Middle Ellipse) */}
+        <ellipse
+          cx="315"
+          cy="270"
+          rx="220"
+          ry="205"
+          fill="url(#processRadial)"
+          stroke="#FB7185"
+          strokeOpacity="0.4"
+          strokeWidth="1.4"
+          className="transition-all duration-300 hover:stroke-rose-500 cursor-pointer"
+          onClick={() => onSelectStage?.("process")}
+        />
+        <ellipse
+          cx="315"
+          cy="270"
+          rx="220"
+          ry="205"
+          fill="url(#stippleDots)"
+          opacity="0.4"
+          pointerEvents="none"
+        />
+
+        {/* 3. IDENTITY REGION (Inner Circle - pink/rose stippled glow) */}
+        <ellipse
+          cx="240"
+          cy="270"
+          rx="145"
+          ry="145"
+          fill="url(#identityRadial)"
+          stroke="#E11D48"
+          strokeOpacity="0.65"
+          strokeWidth="1.8"
+          className="transition-all duration-300 hover:stroke-rose-600 hover:drop-shadow-md cursor-pointer"
+          onClick={() => onSelectStage?.("identity")}
+        />
+        <ellipse
+          cx="240"
+          cy="270"
+          rx="145"
+          ry="145"
+          fill="url(#stippleDots)"
+          opacity="0.75"
+          pointerEvents="none"
+        />
+
+        {/* ══════════ HORIZONTAL TIMELINE ARROW (CROSSING THROUGH ALL LAYERS) ══════════ */}
+        {/* Origin Tangent Dot (●) */}
+        <circle cx="95" cy="270" r="5" fill="#18181B" />
+
+        {/* Solid Black Axis Line */}
+        <line
+          x1="95"
+          y1="270"
+          x2="895"
+          y2="270"
+          stroke="#18181B"
+          strokeWidth="1.8"
+          markerEnd="url(#diagramArrowhead)"
+        />
+
+        {/* Terminal Label: "CHANGE FROM THE INSIDE OUT" */}
+        <text
+          x="705"
+          y="256"
+          fill="#18181B"
+          fontSize="12"
+          fontWeight="500"
+          letterSpacing="1.5"
+          fontFamily="system-ui, -apple-system, sans-serif"
+        >
+          CHANGE FROM THE INSIDE OUT
+        </text>
+
+        {/* ══════════ THREE CORE STAGE LABELS ON AXIS ══════════ */}
+
+        {/* IDENTITY */}
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:scale-105"
+          onClick={() => onSelectStage?.("identity")}
+        >
           <text
-            x="235"
-            y="238"
+            x="240"
+            y="254"
             textAnchor="middle"
             fill="#18181B"
-            fontSize="32"
+            fontSize="34"
             fontStyle="italic"
             fontFamily="Georgia, Cambria, 'Times New Roman', serif"
           >
             Identity
           </text>
           <text
-            x="235"
-            y="280"
+            x="240"
+            y="288"
             textAnchor="middle"
             fill="#18181B"
             fontSize="11.5"
@@ -378,8 +391,8 @@ function GeneralDiagramGraphic() {
             WHO YOU ARE
           </text>
           <text
-            x="235"
-            y="295"
+            x="240"
+            y="302"
             textAnchor="middle"
             fill="#18181B"
             fontSize="11.5"
@@ -389,14 +402,19 @@ function GeneralDiagramGraphic() {
           >
             WHAT YOU BELIEVE
           </text>
+        </g>
 
-          {/* PROCESS */}
+        {/* PROCESS */}
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:scale-105"
+          onClick={() => onSelectStage?.("process")}
+        >
           <text
             x="455"
-            y="238"
+            y="254"
             textAnchor="middle"
             fill="#18181B"
-            fontSize="32"
+            fontSize="34"
             fontStyle="italic"
             fontFamily="Georgia, Cambria, 'Times New Roman', serif"
           >
@@ -404,7 +422,7 @@ function GeneralDiagramGraphic() {
           </text>
           <text
             x="455"
-            y="280"
+            y="290"
             textAnchor="middle"
             fill="#18181B"
             fontSize="11.5"
@@ -414,22 +432,27 @@ function GeneralDiagramGraphic() {
           >
             WHAT YOU DO
           </text>
+        </g>
 
-          {/* OUTCOME */}
+        {/* OUTCOME */}
+        <g
+          className="cursor-pointer transition-transform duration-200 hover:scale-105"
+          onClick={() => onSelectStage?.("outcome")}
+        >
           <text
-            x="615"
-            y="238"
+            x="618"
+            y="254"
             textAnchor="middle"
             fill="#18181B"
-            fontSize="32"
+            fontSize="34"
             fontStyle="italic"
             fontFamily="Georgia, Cambria, 'Times New Roman', serif"
           >
             Outcome
           </text>
           <text
-            x="615"
-            y="280"
+            x="618"
+            y="290"
             textAnchor="middle"
             fill="#18181B"
             fontSize="11.5"
@@ -439,86 +462,99 @@ function GeneralDiagramGraphic() {
           >
             WHAT YOU GET
           </text>
+        </g>
 
-          {/* ══════════ SCATTERED FLOATING THOUGHTS & HABITS (EXACT TO IMAGE) ══════════ */}
+        {/* ══════════ EXACT SCATTERED LABELS (ZERO OVERLAPS) ══════════ */}
 
-          {/* Top Outer / Outcome labels */}
-          <text x="310" y="48" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Get up early
-          </text>
-          <text x="475" y="78" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Live greener
-          </text>
-          <text x="590" y="148" textAnchor="start" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="590" dy="0">Lose weight and</tspan>
-            <tspan x="590" dy="16">get in shape</tspan>
-          </text>
-          <text x="580" y="375" textAnchor="start" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Give up smoking
-          </text>
+        {/* 1. Get up early (Top apex) */}
+        <text x="308" y="22" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Get up early
+        </text>
 
-          {/* Process ring labels (Top) */}
-          <text x="255" y="125" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="255" dy="0">Go to bed</tspan>
-            <tspan x="255" dy="16">early</tspan>
-          </text>
-          <text x="380" y="190" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="380" dy="0">Bring bags</tspan>
-            <tspan x="380" dy="16">when shopping</tspan>
-          </text>
-          <text x="440" y="218" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="440" dy="0">Workout for</tspan>
-            <tspan x="440" dy="16">20 mins/day</tspan>
-          </text>
+        {/* 2. Live greener (Top-mid outcome) */}
+        <text x="475" y="48" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Live greener
+        </text>
 
-          {/* Identity inner labels */}
-          <text x="225" y="180" textAnchor="middle" fill="#27272A" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
-            <tspan x="225" dy="0">I am a</tspan>
-            <tspan x="225" dy="16">morning bird</tspan>
-          </text>
-          <text x="330" y="222" textAnchor="middle" fill="#27272A" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
-            <tspan x="330" dy="0">I am an</tspan>
-            <tspan x="330" dy="16">training athele</tspan>
-          </text>
-          <text x="240" y="360" textAnchor="middle" fill="#27272A" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
-            I am a reader
-          </text>
-          <text x="310" y="315" textAnchor="middle" fill="#27272A" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
-            I am a non-smoker
-          </text>
+        {/* 3. Lose weight and get in shape (Upper right outcome) */}
+        <text x="588" y="138" textAnchor="start" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="588" dy="0">Lose weight and</tspan>
+          <tspan x="588" dy="16">get in shape</tspan>
+        </text>
 
-          {/* Process ring labels (Bottom) */}
-          <text x="425" y="338" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Eat gums
-          </text>
-          <text x="365" y="392" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="365" dy="0">Read</tspan>
-            <tspan x="365" dy="16">30 mins/day</tspan>
-          </text>
-          <text x="275" y="432" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            <tspan x="275" dy="0">Not use phone</tspan>
-            <tspan x="275" dy="16">before bed</tspan>
-          </text>
-          <text x="335" y="482" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Reduce screen time
-          </text>
-          <text x="465" y="460" textAnchor="middle" fill="#3F3F46" fontSize="12" fontFamily="system-ui, sans-serif">
-            Read more
-          </text>
-        </svg>
-      </div>
+        {/* 4. Go to bed early (Process upper left) */}
+        <text x="265" y="80" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="265" dy="0">Go to bed</tspan>
+          <tspan x="265" dy="16">early</tspan>
+        </text>
 
-      {/* Bottom Footer inside canvas */}
-      <div className="flex items-center justify-between border-t border-zinc-200/80 pt-2 sm:pt-3 text-[10px] sm:text-xs font-mono text-zinc-500 shrink-0">
-        <div className="flex items-center gap-2">
-          <Layers className="size-3.5 text-zinc-400" />
-          <span>Core Insight: Outcomes are lagging indicators. Transformation starts at Identity.</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-zinc-900 font-bold">
-          <span>Scroll to explore Step-by-Step</span>
-          <ArrowRight className="size-3.5 animate-pulse" />
-        </div>
-      </div>
+        {/* 5. Bring bags when shopping (Process top center) */}
+        <text x="370" y="115" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="370" dy="0">Bring bags</tspan>
+          <tspan x="370" dy="16">when shopping</tspan>
+        </text>
+
+        {/* 6. Workout for 20 mins/day (Process top right - safely above Process) */}
+        <text x="435" y="180" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="435" dy="0">Workout for</tspan>
+          <tspan x="435" dy="16">20 mins/day</tspan>
+        </text>
+
+        {/* 7. I am a morning bird (Identity top left) */}
+        <text x="235" y="145" textAnchor="middle" fill="#18181B" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
+          <tspan x="235" dy="0">I am a</tspan>
+          <tspan x="235" dy="17">a morning bird</tspan>
+        </text>
+
+        {/* 8. I am an training athele (Identity top right) */}
+        <text x="335" y="205" textAnchor="middle" fill="#18181B" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
+          <tspan x="335" dy="0">I am an</tspan>
+          <tspan x="335" dy="17">training athele</tspan>
+        </text>
+
+        {/* 9. Eat gums (Under line between Identity and Process) */}
+        <text x="420" y="355" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Eat gums
+        </text>
+
+        {/* 10. I am a non-smoker (Identity lower right - safely spaced below) */}
+        <text x="312" y="340" textAnchor="middle" fill="#18181B" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
+          <tspan x="312" dy="0">I am a</tspan>
+          <tspan x="312" dy="17">non-smoker</tspan>
+        </text>
+
+        {/* 11. I am a reader (Identity lower left) */}
+        <text x="245" y="390" textAnchor="middle" fill="#18181B" fontSize="12.5" fontWeight="500" fontFamily="system-ui, sans-serif">
+          I am a reader
+        </text>
+
+        {/* 12. Read 30 mins/day (Process lower center) */}
+        <text x="360" y="425" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="360" dy="0">Read</tspan>
+          <tspan x="360" dy="16">30 mins/day</tspan>
+        </text>
+
+        {/* 13. Not use phone before bed (Process lower left) */}
+        <text x="280" y="470" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          <tspan x="280" dy="0">Not use phone</tspan>
+          <tspan x="280" dy="16">before bed</tspan>
+        </text>
+
+        {/* 14. Reduce screen time (Process bottom center) */}
+        <text x="330" y="530" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Reduce screen time
+        </text>
+
+        {/* 15. Read more (Process bottom right) */}
+        <text x="465" y="505" textAnchor="middle" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Read more
+        </text>
+
+        {/* 16. Give up smoking (Outcome lower right) */}
+        <text x="582" y="395" textAnchor="start" fill="#374151" fontSize="12" fontFamily="system-ui, sans-serif">
+          Give up smoking
+        </text>
+      </svg>
     </div>
   );
 }
@@ -537,6 +573,15 @@ export default function Timeline({
   const sliderRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
+  const scrollToStage = (stageId: string) => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+    const targetEl = slider.querySelector(`.stage-group-${stageId}`);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+  };
+
   useGSAP(() => {
     const section = sectionRef.current;
     const slider = sliderRef.current;
@@ -547,10 +592,10 @@ export default function Timeline({
 
     const getScrollDistance = () => {
       const dist = slider.scrollWidth - window.innerWidth;
-      return dist > 0 ? dist + (isMobile ? 120 : 280) : 2600;
+      return dist > 0 ? dist + (isMobile ? 120 : 320) : 2800;
     };
 
-    const pinDuration = Math.max(3400, getScrollDistance() + 1400);
+    const pinDuration = Math.max(3600, getScrollDistance() + 1500);
 
     if (reducedMotion) {
       DIAGRAM_STAGES.forEach((stage) => {
@@ -594,7 +639,7 @@ export default function Timeline({
     // 2. Sequential illumination of each step card as it scrolls into focus
     const total = DIAGRAM_STAGES.length;
     DIAGRAM_STAGES.forEach((stage, idx) => {
-      // Offset so the first slide (Overview) is enjoyed first
+      // Offset so the first slide (Overview Diagram) is enjoyed first
       const progress = 0.28 + (idx / total) * 0.62;
 
       // Stage card reveal
@@ -638,8 +683,8 @@ export default function Timeline({
       className="w-full h-screen relative overflow-hidden bg-[#050308] text-white border-t border-zinc-900"
     >
       {/* ══════════ PINNED SECTION TITLE: "Block The Noise" ══════════ */}
-      {/* Sized with exact massive headline size */}
-      <div className="absolute top-12 sm:top-16 md:top-20 left-0 right-0 z-30 text-center pointer-events-none px-4 sm:px-8">
+      {/* Sized with exact massive headline size requested */}
+      <div className="absolute top-10 sm:top-14 md:top-18 left-0 right-0 z-30 text-center pointer-events-none px-4 sm:px-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-2 shadow-lg">
           <Sparkles className="size-3.5 text-[#FF02E8]" />
           <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest uppercase text-zinc-300">
@@ -652,17 +697,19 @@ export default function Timeline({
       </div>
 
       {/* ══════════ GSAP HORIZONTAL TRACK ══════════ */}
-      <div className="h-screen w-full flex items-center overflow-hidden relative pt-28 sm:pt-36 md:pt-40">
+      <div className="h-screen w-full flex items-center overflow-hidden relative pt-24 sm:pt-32 md:pt-36">
         <div
           ref={sliderRef}
-          className="flex h-[76vh] max-h-[720px] w-max items-center px-[6vw] gap-8 sm:gap-12 md:gap-16 will-change-transform relative"
+          className="flex h-[78vh] max-h-[740px] w-max items-center px-[5vw] gap-8 sm:gap-12 md:gap-16 will-change-transform relative"
         >
           {/* ═══════════════════════════════════════════════════════════
-              PART 1: THE GENERAL DIAGRAM (EXACT IMAGE VISUAL)
+              PART 1: THE GENERAL DIAGRAM (EXACT IMAGE VISUAL AS CODE)
               When the frame appears to the user, they see this first!
+              Exact image conversion: warm cream canvas, concentric rings,
+              horizontal arrow, all thoughts and labels.
               ═══════════════════════════════════════════════════════════ */}
-          <div className="relative flex flex-col justify-between w-[88vw] max-w-[1140px] min-w-[340px] h-[70vh] max-h-[660px] rounded-3xl bg-[#FAF7F2] text-zinc-900 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.8)] border border-white/20 overflow-hidden shrink-0 z-10">
-            <GeneralDiagramGraphic />
+          <div className="relative flex flex-col justify-center w-[92vw] max-w-[1300px] min-w-[340px] h-[74vh] max-h-[700px] shrink-0 z-10 mr-6 sm:mr-16 md:mr-24">
+            <ExactBehavioralDiagram onSelectStage={scrollToStage} />
           </div>
 
           {/* ═══════════════════════════════════════════════════════════
@@ -676,7 +723,7 @@ export default function Timeline({
             return (
               <div
                 key={stage.id}
-                className={`stage-group-${stage.id} relative flex flex-col justify-between w-[78vw] max-w-[880px] min-w-[340px] max-[768px]:w-[86vw] h-[70vh] max-h-[660px] p-6 sm:p-8 md:p-10 rounded-3xl bg-neutral-950/85 backdrop-blur-2xl border border-zinc-800/90 shadow-2xl transition-all duration-300 shrink-0 z-10 group overflow-hidden`}
+                className={`stage-group-${stage.id} relative flex flex-col justify-between w-[78vw] max-w-[880px] min-w-[340px] max-[768px]:w-[86vw] h-[72vh] max-h-[680px] p-6 sm:p-8 md:p-10 rounded-3xl bg-neutral-950/85 backdrop-blur-2xl border border-zinc-800/90 shadow-2xl transition-all duration-300 shrink-0 z-10 group overflow-hidden`}
               >
                 {/* Concentric Halo Ring */}
                 <div
