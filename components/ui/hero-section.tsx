@@ -43,20 +43,21 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    // 950ms total animation then locks into clean native V glyph
-    const timer = setTimeout(() => setShowII(false), 950);
+    // 1000ms animation then locks cleanly into solid native V
+    const timer = setTimeout(() => setShowII(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <span
-      className="inline-block relative align-baseline"
-      style={{ width: "0.72em", height: "1em" }}
-    >
-      {/* Crisp native V glyph (fades in as animation finishes) */}
+    <span className="relative inline-block">
+      {/* 
+        The real in-flow V: 
+        This is rendered in the normal document text flow.
+        It GUARANTEES 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
+      */}
       <span
         className={cn(
-          "absolute inset-0 flex items-center justify-center transition-opacity duration-300",
+          "transition-opacity duration-200",
           showII ? "opacity-0" : "opacity-100"
         )}
         style={{
@@ -67,25 +68,30 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         V
       </span>
 
-      {/* Animated I I elements bounded inside V slot */}
+      {/* Animated I I overlay: perfectly matches V's bounding box and baseline */}
       {showII && (
-        <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <span
+          className="absolute inset-0 flex justify-center pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          {/* Left I */}
           <span
-            className="animate-v-left inline-block"
+            className="animate-v-left absolute"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "50% 90%",
+              transformOrigin: "50% 88%",
             }}
           >
             I
           </span>
+          {/* Right I */}
           <span
-            className="animate-v-right inline-block"
+            className="animate-v-right absolute"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "50% 90%",
+              transformOrigin: "50% 88%",
             }}
           >
             I
@@ -96,49 +102,49 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            transform: translateX(-0.18em) rotate(0deg);
+            transform: translateX(-0.24em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 1: Clap together into a single massive centered I */
-          35%, 50% {
-            transform: translateX(0.04em) rotate(0deg);
+          30%, 48% {
+            transform: translateX(0.03em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 2: Open top outward to form left stroke of V (\) */
-          85% {
-            transform: translateX(-0.11em) rotate(-13deg);
+          /* Stage 2: Top drops outward to the left diagonal leg of V (\) */
+          82% {
+            transform: translateX(-0.1em) rotate(-16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(-0.11em) rotate(-13deg);
+            transform: translateX(-0.1em) rotate(-16deg);
             opacity: 0;
           }
         }
         @keyframes v-right-stage {
           0% {
-            transform: translateX(0.18em) rotate(0deg);
+            transform: translateX(0.24em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 1: Clap together into a single massive centered I */
-          35%, 50% {
-            transform: translateX(-0.04em) rotate(0deg);
+          30%, 48% {
+            transform: translateX(-0.03em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 2: Open top outward to form right stroke of V (/) */
-          85% {
-            transform: translateX(0.11em) rotate(13deg);
+          /* Stage 2: Top drops outward to the right diagonal leg of V (/) */
+          82% {
+            transform: translateX(0.1em) rotate(16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(0.11em) rotate(13deg);
+            transform: translateX(0.1em) rotate(16deg);
             opacity: 0;
           }
         }
         .animate-v-left {
-          animation: v-left-stage 0.95s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-left-stage 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-v-right {
-          animation: v-right-stage 0.95s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-right-stage 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
