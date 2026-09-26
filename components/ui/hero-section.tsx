@@ -15,7 +15,7 @@ export const IMPROVE_COLORS = [
   { letter: "E", color: "#efb219", name: "Money" },
 ];
 
-export function ColorfulImprove({ className, glow = true }: { className?: string; glow?: boolean }) {
+export function ColorfulImprove({ className, glow = false }: { className?: string; glow?: boolean }) {
   return (
     <span className={cn("inline-flex items-center tracking-tight", className)}>
       {IMPROVE_COLORS.map(({ letter, color }, index) => (
@@ -38,13 +38,13 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: two clean bars that hug in the center as II, then drop into V, and resolve to glowing V */
+/* AnimatedV component: two clean solid bars that hug in center as II, hold, then drop into V (2.6s total duration) */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    // 1100ms animation then locks cleanly into solid glowing native V
-    const timer = setTimeout(() => setShowII(false), 1100);
+    // 2600ms animation (1.5s slower) then locks cleanly into solid native V
+    const timer = setTimeout(() => setShowII(false), 2600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -67,7 +67,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         V
       </span>
 
-      {/* Animated bars overlay: clean bars (no shadows/glow lines) */}
+      {/* Animated bars overlay: clean solid bars (NO shadows/glow) */}
       {showII && (
         <span
           className="absolute inset-0 pointer-events-none select-none"
@@ -106,13 +106,13 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(-0.18em) rotate(16deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into center II (solid bar) */
-          28%, 46% {
+          /* Stage 1: Slide to center into II and hold so it's clearly readable */
+          28%, 54% {
             transform: translateX(-0.015em) rotate(16deg);
             opacity: 1;
           }
           /* Stage 2: Drops diagonally outward into V */
-          80%, 100% {
+          82%, 100% {
             transform: translateX(0) rotate(0deg);
             opacity: 1;
           }
@@ -123,22 +123,22 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(0.18em) rotate(-16deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into center II (solid bar) */
-          28%, 46% {
+          /* Stage 1: Slide to center into II and hold so it's clearly readable */
+          28%, 54% {
             transform: translateX(0.015em) rotate(-16deg);
             opacity: 1;
           }
           /* Stage 2: Drops diagonally outward into V */
-          80%, 100% {
+          82%, 100% {
             transform: translateX(0) rotate(0deg);
             opacity: 1;
           }
         }
         .animate-v-left {
-          animation: v-left-stage 1.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-left-stage 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-v-right {
-          animation: v-right-stage 1.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-right-stage 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
@@ -337,7 +337,7 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
               {/* The Headline: Use IMPROVE. (with individual pillar colors) */}
               <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 sm:mb-8 selection:bg-white selection:text-black">
 
-                <ColorfulImprove glow />
+                <ColorfulImprove glow={false} />
 
               </h1>
 
