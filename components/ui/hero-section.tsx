@@ -56,7 +56,10 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   }, []);
 
   return (
-    <span className="relative inline-block">
+    <span
+      className="relative inline-block"
+      style={{ transform: "scale(0.955)", transformOrigin: "center 54%" }}
+    >
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
