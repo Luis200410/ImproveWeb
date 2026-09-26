@@ -38,13 +38,13 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: two vertical strokes that hug in the center as a massive I, then drop into the exact V glyph with zero jump */
+/* AnimatedV component: two clean bars that hug in the center as II, then drop into V, and resolve to glowing V */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    // 1000ms animation then locks cleanly into solid native V
-    const timer = setTimeout(() => setShowII(false), 1000);
+    // 1100ms animation then locks cleanly into solid glowing native V
+    const timer = setTimeout(() => setShowII(false), 1100);
     return () => clearTimeout(timer);
   }, []);
 
@@ -56,7 +56,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       */}
       <span
         className={cn(
-          "transition-opacity duration-200",
+          "transition-opacity duration-300",
           showII ? "opacity-0" : "opacity-100"
         )}
         style={{
@@ -67,32 +67,30 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         V
       </span>
 
-      {/* Animated strokes overlay: two halves of V that start upright as I's, hug in center, and drop to assemble V */}
+      {/* Animated bars overlay: clean bars (no shadows/glow lines) */}
       {showII && (
         <span
           className="absolute inset-0 pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left stroke: starts vertical as an I, hugs center, then drops to form left leg of V */}
+          {/* Left bar: starts upright on left, hugs center into II, then drops outward */}
           <span
             className="animate-v-left absolute inset-0"
             style={{
               color,
-              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              clipPath: "polygon(0 0, 51% 0, 51% 100%, 0 100%)",
+              clipPath: "polygon(0 0, 50.5% 0, 50.5% 100%, 0 100%)",
               transformOrigin: "50% 88%",
             }}
           >
             V
           </span>
 
-          {/* Right stroke: starts vertical as an I, hugs center, then drops to form right leg of V */}
+          {/* Right bar: starts upright on right, hugs center into II, then drops outward */}
           <span
             className="animate-v-right absolute inset-0"
             style={{
               color,
-              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              clipPath: "polygon(49% 0, 100% 0, 100% 100%, 49% 100%)",
+              clipPath: "polygon(49.5% 0, 100% 0, 100% 100%, 49.5% 100%)",
               transformOrigin: "50% 88%",
             }}
           >
@@ -104,43 +102,43 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            /* Upright vertical stroke on the left (looks like an I) */
-            transform: translateX(-0.16em) rotate(16deg);
+            /* Upright vertical bar on the left (I) */
+            transform: translateX(-0.18em) rotate(16deg);
             opacity: 1;
           }
-          /* Stage 1: Slide to center and hug from the left (forming left half of massive I) */
-          30%, 48% {
+          /* Stage 1: Clap together into center II (solid bar) */
+          28%, 46% {
             transform: translateX(-0.015em) rotate(16deg);
             opacity: 1;
           }
-          /* Stage 2: Drops diagonally to 0deg, perfectly assembling the left half of V */
-          85%, 100% {
+          /* Stage 2: Drops diagonally outward into V */
+          80%, 100% {
             transform: translateX(0) rotate(0deg);
             opacity: 1;
           }
         }
         @keyframes v-right-stage {
           0% {
-            /* Upright vertical stroke on the right (looks like an I) */
-            transform: translateX(0.16em) rotate(-16deg);
+            /* Upright vertical bar on the right (I) */
+            transform: translateX(0.18em) rotate(-16deg);
             opacity: 1;
           }
-          /* Stage 1: Slide to center and hug from the right (forming right half of massive I) */
-          30%, 48% {
+          /* Stage 1: Clap together into center II (solid bar) */
+          28%, 46% {
             transform: translateX(0.015em) rotate(-16deg);
             opacity: 1;
           }
-          /* Stage 2: Drops diagonally to 0deg, perfectly assembling the right half of V */
-          85%, 100% {
+          /* Stage 2: Drops diagonally outward into V */
+          80%, 100% {
             transform: translateX(0) rotate(0deg);
             opacity: 1;
           }
         }
         .animate-v-left {
-          animation: v-left-stage 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-left-stage 1.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-v-right {
-          animation: v-right-stage 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-right-stage 1.1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
