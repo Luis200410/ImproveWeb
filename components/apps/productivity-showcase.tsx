@@ -359,9 +359,6 @@ export function ProductivityShowcase() {
       {/* 2. Timeline GSAP Section with Pinned Title Header */}
       <Timeline 
         sectionTitle="Block The Noise"
-        title="BEHAVIORAL ARCHITECTURE"
-        periodLabel="CHANGE FROM THE INSIDE OUT"
-        activeColor="#FF02E8"
       />
 
       {/* 3. Upper Science Pillars Section */}

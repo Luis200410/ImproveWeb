@@ -9,20 +9,15 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { 
-  Sparkles, 
-  ShieldCheck, 
-  Calendar, 
-  Zap, 
-  Lock, 
   ArrowRight, 
-  CheckCircle2, 
-  TrendingUp, 
-  Activity, 
   Brain, 
+  Zap, 
+  Award,
+  CheckCircle2,
   Clock,
-  Target,
-  Flame,
-  Award
+  ShieldCheck,
+  Calendar,
+  Lock
 } from "lucide-react";
 
 if (typeof window !== "undefined") {
@@ -91,136 +86,128 @@ function usePrefersReducedMotion() {
   );
 }
 
-export interface BehaviorStage {
+interface DiagramStage {
   id: string;
-  stageNumber: string;
-  title: string;
-  subtitle: string;
-  kicker: string;
-  description: string;
+  italicTitle: string; // "Identity", "Process", "Outcome"
+  blockTitle: string;  // "IDENTITY", "PROCESS", "OUTCOME"
+  subtitle: string;    // "WHO YOU ARE / WHAT YOU BELIEVE", "WHAT YOU DO", "WHAT YOU GET"
   accentColor: string;
-  floatingBubbles: string[];
-  appMockup: {
-    suiteBadge: string;
+  circleRadius: string;
+  circleStyle: string;
+  floatingPills: { text: string; top?: string; bottom?: string; left?: string; right?: string }[];
+  appCard: {
+    badge: string;
     icon: typeof Brain;
-    cardTitle: string;
-    metrics: { label: string; value: string; badge?: string }[];
-    quote: string;
+    title: string;
+    items: { label: string; value: string; badge?: string }[];
+    caption: string;
   };
 }
 
-const BEHAVIOR_STAGES: BehaviorStage[] = [
+const DIAGRAM_STAGES: DiagramStage[] = [
   {
     id: "identity",
-    stageNumber: "STAGE 01",
-    title: "Identity",
-    subtitle: "WHO YOU ARE • WHAT YOU BELIEVE",
-    kicker: "THE CORE ENGINE",
-    description:
-      "True behavior change is identity change. When your self-image aligns with your standard, action requires zero forced willpower. You simply act in accordance with who you believe you are.",
+    italicTitle: "Identity",
+    blockTitle: "IDENTITY",
+    subtitle: "WHO YOU ARE / WHAT YOU BELIEVE",
     accentColor: "#FF02E8",
-    floatingBubbles: [
-      "I am an athlete",
-      "I am a morning bird",
-      "I am a reader",
-      "I am a non-smoker",
-      "I am focused & intentional",
+    circleRadius: "w-[48vw] h-[48vw] max-w-[620px] max-h-[620px]",
+    circleStyle: "bg-gradient-to-r from-[#FF02E8]/20 via-[#FF02E8]/10 to-transparent border border-[#FF02E8]/40 shadow-[0_0_60px_rgba(255,2,232,0.15)]",
+    floatingPills: [
+      { text: "I am a morning bird", top: "12%", left: "18%" },
+      { text: "I am a training athlete", top: "28%", right: "8%" },
+      { text: "I am a non-smoker", bottom: "30%", right: "12%" },
+      { text: "I am a reader", bottom: "16%", left: "22%" },
+      { text: "I am focused & intentional", bottom: "4%", right: "24%" },
     ],
-    appMockup: {
-      suiteBadge: "SECOND BRAIN • IDENTITY MATRIX",
+    appCard: {
+      badge: "SECOND BRAIN SUITE",
       icon: Brain,
-      cardTitle: "Core Identity Blueprint",
-      metrics: [
-        { label: "Standard", value: "Relentless Focus", badge: "Active" },
-        { label: "Annual 4 Bigs", value: "3 of 4 Locked", badge: "Locked" },
-        { label: "Belief Alignment", value: "100%", badge: "Optimal" },
+      title: "Core Identity Blueprint",
+      items: [
+        { label: "Self-Standard", value: "High-Output Builder", badge: "Active" },
+        { label: "Annual Four Bigs", value: "3 of 4 Locked", badge: "Live" },
+        { label: "Belief Alignment", value: "100% Solid", badge: "Optimal" },
       ],
-      quote: "Every action is a vote for the type of person you wish to become.",
+      caption: "Every action is a vote for the person you believe you are.",
     },
   },
   {
     id: "process",
-    stageNumber: "STAGE 02",
-    title: "Process",
-    subtitle: "WHAT YOU DO • DAILY REPEATABLE SYSTEMS",
-    kicker: "THE EXECUTION BRIDGE",
-    description:
-      "You do not rise to the level of your goals. You fall to the level of your systems. Improve turns identity into daily Apple Calendar timeline blocks, hardware app shields, and 90-minute ultradian energy waves.",
+    italicTitle: "Process",
+    blockTitle: "PROCESS",
+    subtitle: "WHAT YOU DO",
     accentColor: "#FF9F0A",
-    floatingBubbles: [
-      "Workout for 20 mins/day",
-      "Read 30 mins/day",
-      "Screen-Time Shield Active",
-      "Not use phone before bed",
-      "90-Min Focus Wave",
-      "Go to bed early",
+    circleRadius: "w-[68vw] h-[68vw] max-w-[900px] max-h-[900px]",
+    circleStyle: "bg-gradient-to-r from-[#FF9F0A]/12 via-[#FF9F0A]/5 to-transparent border border-[#FF9F0A]/30 shadow-[0_0_70px_rgba(255,159,10,0.12)]",
+    floatingPills: [
+      { text: "Go to bed early", top: "8%", left: "12%" },
+      { text: "Bring bags when shopping", top: "18%", left: "28%" },
+      { text: "Workout for 20 mins/day", top: "24%", right: "14%" },
+      { text: "Eat gums", bottom: "34%", left: "32%" },
+      { text: "Read 30 mins/day", bottom: "20%", left: "28%" },
+      { text: "Not use phone before bed", bottom: "10%", left: "10%" },
+      { text: "Reduce screen time", bottom: "3%", left: "24%" },
+      { text: "Read more", bottom: "8%", right: "20%" },
     ],
-    appMockup: {
-      suiteBadge: "EXECUTION SUITE • EVENTKIT SYNC",
+    appCard: {
+      badge: "EXECUTION ENGINE",
       icon: Zap,
-      cardTitle: "Daily Execution Timeline",
-      metrics: [
-        { label: "08:00 AM", value: "Deep Code Sprint • Shield ON", badge: "Focus" },
-        { label: "10:30 AM", value: "Ultradian Energy Break", badge: "Wave" },
-        { label: "02:00 PM", value: "High-Leverage Execution", badge: "Sync" },
+      title: "Daily Habit Timeline Sync",
+      items: [
+        { label: "08:00 AM", value: "Deep Code Sprint • App Shield ON", badge: "Focus" },
+        { label: "10:30 AM", value: "Ultradian Energy Break (90m)", badge: "Sync" },
+        { label: "02:00 PM", value: "High-Leverage Execution", badge: "EventKit" },
       ],
-      quote: "Habits dropped straight into Apple Calendar as real blocks of time.",
+      caption: "Habits dropped into Apple Calendar as locked time blocks.",
     },
   },
   {
     id: "outcome",
-    stageNumber: "STAGE 03",
-    title: "Outcome",
-    subtitle: "WHAT YOU GET • CHANGE FROM THE INSIDE OUT",
-    kicker: "THE INEVITABLE BYPRODUCT",
-    description:
-      "Outcomes are never the starting point. They are the compounding byproduct of your identity and your process. Master the core, and the scoreboard takes care of itself.",
+    italicTitle: "Outcome",
+    blockTitle: "OUTCOME",
+    subtitle: "WHAT YOU GET",
     accentColor: "#30D158",
-    floatingBubbles: [
-      "Lose weight & get in shape",
-      "Get up early naturally",
-      "94% Habit Consistency",
-      "Zero Willpower Fatigue",
-      "45-Day Deep Work Streak",
-      "Financial Runway Protected",
+    circleRadius: "w-[88vw] h-[88vw] max-w-[1200px] max-h-[1200px]",
+    circleStyle: "bg-gradient-to-r from-[#30D158]/10 via-[#30D158]/4 to-transparent border border-[#30D158]/25 shadow-[0_0_80px_rgba(48,209,88,0.1)]",
+    floatingPills: [
+      { text: "Get up early", top: "6%", left: "16%" },
+      { text: "Live greener", top: "14%", left: "38%" },
+      { text: "Lose weight and get in shape", top: "24%", right: "22%" },
+      { text: "Give up smoking", bottom: "28%", left: "34%" },
+      { text: "Peak focus & zero burnout", bottom: "12%", right: "18%" },
     ],
-    appMockup: {
-      suiteBadge: "PRIVATE TELEMETRY • VERIFIED METRICS",
+    appCard: {
+      badge: "PRIVATE TELEMETRY",
       icon: Award,
-      cardTitle: "Compounding Scoreboard",
-      metrics: [
-        { label: "Consistency Score", value: "94% Rolling 30D", badge: "+12%" },
-        { label: "Runway Protected", value: "14 Months Zero Risk", badge: "Safe" },
-        { label: "Screen-Time Cut", value: "-2.4 hrs / Day", badge: "Saved" },
+      title: "Compounding Scoreboard",
+      items: [
+        { label: "Consistency Score", value: "94% Rolling 30D", badge: "+14%" },
+        { label: "Runway Protected", value: "14 Months Zero Risk", badge: "Secure" },
+        { label: "Screen-Time Cut", value: "-2.4 hrs / Day Saved", badge: "Shielded" },
       ],
-      quote: "Change happens from the inside out — permanent, effortless, and automated.",
+      caption: "Results occur as the inevitable byproduct of identity + process.",
     },
   },
 ];
 
-export type TimelineProps = {
+export interface TimelineProps {
   sectionTitle?: string;
   title?: string;
   periodLabel?: string;
-  textColor?: string;
-  mutedTextColor?: string;
   activeColor?: string;
-  backgroundColor?: string;
-};
+}
 
 export default function Timeline({
   sectionTitle = "Block The Noise",
-  title = "BEHAVIORAL ARCHITECTURE",
-  periodLabel = "CHANGE FROM THE INSIDE OUT",
-  activeColor = "#FF02E8",
 }: TimelineProps) {
   const sectionRef = useRef<HTMLElement>(null);
-  const wholeSliderRef = useRef<HTMLDivElement>(null);
+  const sliderRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   useGSAP(() => {
     const section = sectionRef.current;
-    const slider = wholeSliderRef.current;
+    const slider = sliderRef.current;
 
     if (!section || !slider) return;
 
@@ -229,29 +216,28 @@ export default function Timeline({
 
     const getScrollDistance = () => {
       const dist = slider.scrollWidth - window.innerWidth;
-      return dist > 0 ? dist + (isMobile ? 120 : 200) : 1800;
+      return dist > 0 ? dist + (isMobile ? 120 : 250) : 2200;
     };
 
-    const pinDuration = Math.max(2800, getScrollDistance() + 1000);
+    const pinDuration = Math.max(3000, getScrollDistance() + 1200);
 
     if (reducedMotion) {
-      gsap.set(".journey-line", { width: lineWidth });
-      BEHAVIOR_STAGES.forEach((stage) => {
-        gsap.set(`.stage-${stage.id}`, { opacity: 1, y: 0 });
-        gsap.set(`.jd-${stage.id}`, { scale: 1 });
-        gsap.set(`.jl-${stage.id}`, { scaleY: 1 });
+      gsap.set(".timeline-axis-line", { width: lineWidth });
+      DIAGRAM_STAGES.forEach((stage) => {
+        gsap.set(`.stage-group-${stage.id}`, { opacity: 1 });
+        gsap.set(`.stage-pill-${stage.id}`, { opacity: 1, scale: 1 });
       });
+      gsap.set(".terminal-inside-out", { opacity: 1, x: 0 });
       return;
     }
 
-    // Initialize item states
-    BEHAVIOR_STAGES.forEach((stage) => {
-      gsap.set(`.stage-${stage.id}`, { opacity: 0, y: 35 });
-      gsap.set(`.jd-${stage.id}`, { scale: 0 });
-      gsap.set(`.jl-${stage.id}`, { scaleY: 0, transformOrigin: "top top" });
-      gsap.set(`.bubble-${stage.id}`, { opacity: 0, scale: 0.8 });
+    // Set initial states
+    DIAGRAM_STAGES.forEach((stage) => {
+      gsap.set(`.stage-group-${stage.id}`, { opacity: 0.2, scale: 0.94 });
+      gsap.set(`.stage-pill-${stage.id}`, { opacity: 0, scale: 0.8 });
+      gsap.set(`.circle-layer-${stage.id}`, { opacity: 0.3, scale: 0.92 });
     });
-    gsap.set(".terminal-arrow", { opacity: 0, x: -20 });
+    gsap.set(".terminal-inside-out", { opacity: 0, x: -30 });
 
     const masterTl = gsap.timeline({
       scrollTrigger: {
@@ -278,9 +264,9 @@ export default function Timeline({
       0
     );
 
-    // 2. Continuous horizontal progress line
+    // 2. Horizontal timeline axis expansion
     masterTl.to(
-      ".journey-line",
+      ".timeline-axis-line",
       {
         width: lineWidth,
         duration: 0.85,
@@ -289,42 +275,58 @@ export default function Timeline({
       0
     );
 
-    // 3. Staggered reveals of the 3 stages
-    const total = BEHAVIOR_STAGES.length;
-    BEHAVIOR_STAGES.forEach((stage, index) => {
-      const progress = (index / total) * 0.72 + 0.04;
+    // 3. Staggered reveal of each stage, its concentric circle, and pills
+    const total = DIAGRAM_STAGES.length;
+    DIAGRAM_STAGES.forEach((stage, idx) => {
+      const progress = (idx / total) * 0.7 + 0.05;
 
-      // Connecting vertical node & line
+      // Circle illumination
       masterTl.to(
-        `.jd-${stage.id}`,
-        { scale: 1, duration: 0.08, ease: "back.out(1.8)" },
+        `.circle-layer-${stage.id}`,
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.12,
+          ease: "power2.out",
+        },
         progress
       );
+
+      // Stage card & titles
       masterTl.to(
-        `.jl-${stage.id}`,
-        { scaleY: 1, duration: 0.1, ease: "power2.out" },
-        progress + 0.02
+        `.stage-group-${stage.id}`,
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.14,
+          ease: "power2.out",
+        },
+        progress + 0.03
       );
 
-      // Stage card & typography
+      // Floating belief/habit pills
       masterTl.to(
-        `.stage-${stage.id}`,
-        { opacity: 1, y: 0, duration: 0.14, ease: "power2.out" },
-        progress + 0.04
-      );
-
-      // Floating belief bubbles
-      masterTl.to(
-        `.bubble-${stage.id}`,
-        { opacity: 1, scale: 1, duration: 0.12, stagger: 0.02, ease: "back.out(1.5)" },
-        progress + 0.06
+        `.stage-pill-${stage.id}`,
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.12,
+          stagger: 0.02,
+          ease: "back.out(1.5)",
+        },
+        progress + 0.05
       );
     });
 
-    // 4. Reveal terminal arrow at the end
+    // 4. Terminal Arrow reveal
     masterTl.to(
-      ".terminal-arrow",
-      { opacity: 1, x: 0, duration: 0.12, ease: "power2.out" },
+      ".terminal-inside-out",
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.12,
+        ease: "power2.out",
+      },
       0.82
     );
 
@@ -342,142 +344,123 @@ export default function Timeline({
       id="behavioral-architecture"
       className="w-full h-screen relative overflow-hidden bg-[#050308] text-white border-t border-zinc-900"
     >
-      {/* Top Header Section */}
-      <div className="absolute top-16 sm:top-20 md:top-24 left-0 right-0 z-20 text-center pointer-events-none px-4 sm:px-8 space-y-2">
-        <span className="inline-block kicker text-xs sm:text-sm font-bold text-[#FF02E8] tracking-widest uppercase">
-          {sectionTitle}
-        </span>
+      {/* Pinned Section Title: "Block The Noise" in exact massive headline size */}
+      <div className="absolute top-16 sm:top-20 md:top-24 left-0 right-0 z-30 text-center pointer-events-none px-4 sm:px-8">
         <h2 className="title-huge text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-[0.90] max-w-5xl mx-auto">
-          {title}
+          {sectionTitle}
         </h2>
-        <p className="text-xs sm:text-sm font-medium tracking-widest uppercase text-zinc-400">
-          {periodLabel}
-        </p>
       </div>
 
-      {/* Background Concentric Glow Rings representing Inside-Out Transformation */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center opacity-25">
-        <div className="absolute w-[350px] h-[350px] rounded-full border border-[#FF02E8]/40 animate-pulse" />
-        <div className="absolute w-[700px] h-[700px] rounded-full border border-[#FF9F0A]/30" />
-        <div className="absolute w-[1100px] h-[1100px] rounded-full border border-[#30D158]/20" />
-        <div className="absolute w-[600px] h-[600px] rounded-full bg-[#FF02E8]/10 blur-[140px]" />
-      </div>
-
-      {/* Horizontal GSAP Slider Container */}
-      <div className="h-screen w-full flex items-center overflow-hidden relative pt-40 sm:pt-48 md:pt-52">
+      {/* GSAP Horizontal Track Container */}
+      <div className="h-screen w-full flex items-center overflow-hidden relative pt-32 sm:pt-40 md:pt-44">
         <div
-          ref={wholeSliderRef}
-          className="flex h-[72vh] max-h-[680px] w-[310vw] max-[768px]:w-[800vw] items-center px-[6vw] will-change-transform relative"
+          ref={sliderRef}
+          className="flex h-[75vh] max-h-[720px] w-[340vw] max-[768px]:w-[880vw] items-center px-[8vw] will-change-transform relative"
         >
-          {/* Continuous Central Horizontal Axis Line */}
-          <div className="absolute left-[6vw] right-[6vw] top-[48%] -translate-y-1/2 flex items-center pointer-events-none z-10">
-            {/* Start Node */}
-            <div className="relative size-3.5 sm:size-4 rounded-full bg-[#FF02E8] shadow-[0_0_15px_#FF02E8] shrink-0">
+          {/* ══════════ THE HORIZONTAL TIMELINE ARROW (FROM DIAGRAM) ══════════ */}
+          <div className="absolute left-[8vw] right-[6vw] top-[46%] -translate-y-1/2 flex items-center pointer-events-none z-20">
+            {/* Leftmost Black/Glowing Origin Dot */}
+            <div className="relative size-4 sm:size-5 rounded-full bg-black border-2 border-white shadow-[0_0_15px_rgba(255,2,232,0.8)] shrink-0">
               <span className="absolute inset-0 rounded-full bg-[#FF02E8] animate-ping opacity-75" />
             </div>
 
-            {/* Expanding Horizontal Line */}
+            {/* Expanding Horizontal Black/Glowing Axis Line */}
             <div
-              className="h-[2px] w-[0%] journey-line shrink-0"
+              className="h-[3px] w-[0%] timeline-axis-line shrink-0"
               style={{
-                backgroundColor: activeColor,
-                boxShadow: `0 0 16px ${activeColor}, 0 0 4px ${activeColor}`,
+                backgroundColor: "#FFFFFF",
+                boxShadow: "0 0 12px rgba(255,255,255,0.8), 0 0 24px rgba(255,2,232,0.5)",
               }}
             />
 
-            {/* Terminal Arrow: "CHANGE FROM THE INSIDE OUT" */}
-            <div className="terminal-arrow flex items-center gap-3 shrink-0 pl-4 opacity-0">
-              <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#30D158]/15 border border-[#30D158]/40 shadow-[0_0_20px_rgba(48,209,88,0.4)]">
-                <span className="w-2 h-2 rounded-full bg-[#30D158] shadow-[0_0_8px_#30D158] animate-pulse" />
-                <span className="font-heading font-extrabold text-xs sm:text-sm tracking-wider uppercase text-white">
+            {/* Terminal Arrowhead with label "CHANGE FROM THE INSIDE OUT" */}
+            <div className="terminal-inside-out flex items-center gap-3 shrink-0 pl-4 opacity-0">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                <span className="font-heading font-black text-xs sm:text-sm tracking-widest uppercase text-white whitespace-nowrap">
                   CHANGE FROM THE INSIDE OUT
                 </span>
-                <ArrowRight className="w-4 h-4 text-[#30D158]" />
+                <ArrowRight className="w-5 h-5 text-white" />
               </div>
             </div>
           </div>
 
-          {/* 3 Staggered Stages along the Axis */}
-          <div className="flex h-full w-full items-center gap-[18vw] max-[768px]:gap-[40vw] pl-[4vw]">
-            {BEHAVIOR_STAGES.map((stage) => {
-              const IconComp = stage.appMockup.icon;
+          {/* ══════════ THE 3 CONCENTRIC STAGES ACROSS THE TRACK ══════════ */}
+          <div className="flex h-full w-full items-center gap-[16vw] max-[768px]:gap-[40vw] pl-[4vw]">
+            {DIAGRAM_STAGES.map((stage) => {
+              const IconComp = stage.appCard.icon;
 
               return (
                 <div
                   key={stage.id}
-                  className={`stage-${stage.id} relative flex flex-col justify-between w-[64vw] max-w-[780px] min-w-[320px] max-[768px]:w-[80vw] h-[64vh] max-h-[580px] p-6 sm:p-8 rounded-3xl bg-neutral-950/85 backdrop-blur-2xl border border-zinc-800 shadow-2xl transition-all duration-300 hover:border-[#FF02E8]/50 group`}
+                  className={`stage-group-${stage.id} relative flex flex-col justify-between w-[72vw] max-w-[880px] min-w-[340px] max-[768px]:w-[84vw] h-[68vh] max-h-[640px] p-6 sm:p-8 rounded-3xl bg-neutral-950/80 backdrop-blur-2xl border border-zinc-800/90 shadow-2xl transition-all duration-300 z-10 group`}
                 >
-                  {/* Vertical Connection Line to Horizontal Axis */}
-                  <div className="absolute left-8 top-[-36px] bottom-0 w-px pointer-events-none z-20">
-                    <div
-                      className={`size-3.5 -translate-x-1/2 rounded-full jd-${stage.id} shadow-lg`}
-                      style={{
-                        backgroundColor: stage.accentColor,
-                        boxShadow: `0 0 12px ${stage.accentColor}`,
-                      }}
-                    />
-                    <div
-                      className={`w-[2px] h-[36px] -translate-x-1/2 jl-${stage.id}`}
-                      style={{
-                        backgroundColor: stage.accentColor,
-                        boxShadow: `0 0 8px ${stage.accentColor}`,
-                      }}
-                    />
+                  {/* Concentric Circle Halo Layer from Diagram (Nested expanding spheres) */}
+                  <div
+                    className={`circle-layer-${stage.id} absolute -left-12 -top-12 ${stage.circleRadius} ${stage.circleStyle} rounded-full pointer-events-none -z-10`}
+                  />
+
+                  {/* Floating Belief / Process / Outcome Pills from Diagram */}
+                  <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl">
+                    {stage.floatingPills.map((pill, pIdx) => (
+                      <span
+                        key={pIdx}
+                        className={`stage-pill-${stage.id} absolute inline-flex items-center text-[10px] sm:text-xs font-rounded font-medium px-3 py-1 rounded-full bg-black/85 text-zinc-200 border border-zinc-700/80 shadow-md backdrop-blur-md transition-all duration-300 pointer-events-auto hover:scale-105 hover:border-white hover:text-white`}
+                        style={{
+                          top: pill.top,
+                          bottom: pill.bottom,
+                          left: pill.left,
+                          right: pill.right,
+                        }}
+                      >
+                        {pill.text}
+                      </span>
+                    ))}
                   </div>
 
-                  {/* Stage Top Bar: Stage Number + Kicker */}
-                  <div className="flex items-center justify-between z-10">
-                    <div className="flex items-center gap-2.5">
+                  {/* Top Header: Elegant Italic Script + Massive Block Title (MATCHING SECTION TITLE SIZE) */}
+                  <div className="space-y-1 z-10">
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl sm:text-4xl md:text-5xl font-serif italic text-white/90">
+                        {stage.italicTitle}
+                      </span>
                       <span
-                        className="px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wider uppercase border"
+                        className="text-[10px] font-mono font-bold tracking-widest uppercase px-2.5 py-0.5 rounded-full border"
                         style={{
                           color: stage.accentColor,
                           backgroundColor: `${stage.accentColor}15`,
                           borderColor: `${stage.accentColor}40`,
                         }}
                       >
-                        {stage.stageNumber}
-                      </span>
-                      <span className="text-xs font-bold tracking-widest uppercase text-zinc-400">
-                        {stage.kicker}
+                        {stage.id.toUpperCase()}
                       </span>
                     </div>
 
-                    <span
-                      className="text-xs font-mono font-bold tracking-wide uppercase px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-zinc-300"
-                    >
-                      {stage.appMockup.suiteBadge}
+                    {/* Massive Block Title: exact same size as the section title */}
+                    <h3 className="title-huge text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-[0.90]">
+                      {stage.blockTitle}
+                    </h3>
+
+                    {/* Subtitle from Diagram (e.g. WHO YOU ARE / WHAT YOU BELIEVE) */}
+                    <p className="font-heading font-black text-xs sm:text-sm md:text-base tracking-[0.2em] uppercase text-zinc-300 pt-1">
+                      {stage.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Center Line Cross-Section Anchor Marker */}
+                  <div className="relative py-2 flex items-center gap-3 z-10">
+                    <div
+                      className="size-3.5 rounded-full border-2 border-white"
+                      style={{ backgroundColor: stage.accentColor }}
+                    />
+                    <div className="h-px w-24 bg-white/30" />
+                    <span className="text-[11px] font-mono tracking-widest uppercase text-zinc-400">
+                      CORE LAYER
                     </span>
                   </div>
 
-                  {/* Main Editorial Typography matching the diagram */}
-                  <div className="space-y-2 z-10">
-                    <h3 className="text-4xl sm:text-6xl md:text-7xl font-serif italic tracking-wide text-white leading-none">
-                      {stage.title}
-                    </h3>
-                    <p className="font-heading font-black text-xs sm:text-sm md:text-base tracking-[0.18em] uppercase text-zinc-300">
-                      {stage.subtitle}
-                    </p>
-                    <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed max-w-xl">
-                      {stage.description}
-                    </p>
-                  </div>
-
-                  {/* Floating Belief & Habit Bubbles from Diagram */}
-                  <div className="flex flex-wrap gap-2 z-10 py-1">
-                    {stage.floatingBubbles.map((bubble, bIdx) => (
-                      <span
-                        key={bIdx}
-                        className={`bubble-${stage.id} inline-flex items-center text-[10px] sm:text-xs font-rounded font-medium px-3 py-1 rounded-full bg-zinc-900/90 text-zinc-300 border border-zinc-700/80 shadow-sm transition-all duration-300 hover:scale-105 hover:text-white hover:border-[#FF02E8]`}
-                      >
-                        {bubble}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Interactive App UI Preview Card */}
-                  <div className="relative p-4 sm:p-5 rounded-2xl bg-black/60 border border-zinc-800/90 backdrop-blur-md z-10 space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2.5">
+                  {/* In-App Interface Preview Card (Shows the app at this stage) */}
+                  <div className="relative p-4 sm:p-5 rounded-2xl bg-black/75 border border-zinc-800/90 backdrop-blur-xl z-10 space-y-3 shadow-xl">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
                       <div className="flex items-center gap-2.5">
                         <div
                           className="size-7 rounded-lg flex items-center justify-center text-white"
@@ -485,47 +468,44 @@ export default function Timeline({
                         >
                           <IconComp className="size-4" style={{ color: stage.accentColor }} />
                         </div>
-                        <h4 className="font-heading font-bold text-xs sm:text-sm text-white uppercase tracking-wider">
-                          {stage.appMockup.cardTitle}
-                        </h4>
+                        <div>
+                          <p className="text-[9px] font-mono uppercase tracking-wider text-zinc-400">
+                            {stage.appCard.badge}
+                          </p>
+                          <h4 className="font-heading font-bold text-xs sm:text-sm text-white uppercase tracking-wider">
+                            {stage.appCard.title}
+                          </h4>
+                        </div>
                       </div>
 
                       <span className="flex items-center gap-1.5 text-[10px] font-mono text-[#30D158]">
                         <span className="size-1.5 rounded-full bg-[#30D158] animate-pulse" />
-                        LIVE NATIVE
+                        LIVE APP
                       </span>
                     </div>
 
                     {/* App Telemetry Metrics Grid */}
                     <div className="grid grid-cols-3 gap-2">
-                      {stage.appMockup.metrics.map((m, mIdx) => (
+                      {stage.appCard.items.map((item, mIdx) => (
                         <div
                           key={mIdx}
-                          className="p-2 sm:p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/60 space-y-1"
+                          className="p-2 sm:p-2.5 rounded-xl bg-zinc-900/70 border border-zinc-800 space-y-1"
                         >
-                          <p className="text-[10px] font-mono uppercase text-zinc-400 truncate">
-                            {m.label}
+                          <p className="text-[9px] sm:text-[10px] font-mono uppercase text-zinc-400 truncate">
+                            {item.label}
                           </p>
                           <p className="text-xs sm:text-sm font-bold text-white truncate">
-                            {m.value}
+                            {item.value}
                           </p>
                         </div>
                       ))}
                     </div>
 
-                    {/* Footer Insight Quote */}
-                    <div className="pt-1 flex items-center justify-between text-[11px] font-mono text-zinc-400">
-                      <span className="italic truncate text-zinc-300">
-                        "{stage.appMockup.quote}"
-                      </span>
-                    </div>
+                    {/* Caption quote */}
+                    <p className="text-[10px] sm:text-[11px] font-mono text-zinc-400 italic truncate pt-0.5">
+                      "{stage.appCard.caption}"
+                    </p>
                   </div>
-
-                  {/* Ambient Stage Corner Glow */}
-                  <div
-                    className="absolute -bottom-8 -right-8 w-48 h-48 rounded-full blur-[80px] opacity-15 pointer-events-none"
-                    style={{ backgroundColor: stage.accentColor }}
-                  />
                 </div>
               );
             })}
