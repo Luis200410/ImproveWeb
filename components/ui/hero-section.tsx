@@ -38,16 +38,16 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
   );
 }
 
-/* AnimatedV component: 3 distinct steps: 1) II coming together, 2) the bars separate, 3) the V */
+/* AnimatedV component: 3 distinct steps with progressive cross-fade into V */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
-  // Step 1: "II" (0s - 1.0s) -> Step 2: "separate" (1.0s - 2.2s) -> Step 3: "V" (2.2s+)
+  // Step 1: "II" (0s - 1.0s) -> Step 2: "separate" (1.0s - 2.6s) -> Step 3: "V" (2.6s+)
   const [step, setStep] = React.useState<"II" | "separate" | "V">("II");
 
   React.useEffect(() => {
-    // Beat 1 -> Beat 2 at 1.0s
+    // Beat 1 (II clap) -> Beat 2 (bars separate) at 1.0s
     const t1 = setTimeout(() => setStep("separate"), 1000);
-    // Beat 2 -> Beat 3 at 2.2s
-    const t2 = setTimeout(() => setStep("V"), 2200);
+    // Beat 2 -> Final lock at 2.6s (after progressive cross-fade has fully completed)
+    const t2 = setTimeout(() => setStep("V"), 2600);
 
     return () => {
       clearTimeout(t1);
@@ -60,15 +60,14 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
+        Progressively fades in as the separating bars reach the V position.
       */}
       <span
-        className={cn(
-          "transition-opacity duration-300",
-          step === "V" ? "opacity-100" : "opacity-0"
-        )}
         style={{
           color,
           textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+          opacity: step === "V" ? 1 : step === "II" ? 0 : undefined,
+          animation: step === "separate" ? "v-progressive-fade 1.6s ease-in-out forwards" : undefined,
         }}
       >
         V
@@ -97,13 +96,13 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         </span>
       )}
 
-      {/* STEP 2: The bars separate outward diagonally into the V position */}
+      {/* STEP 2: The bars separate outward diagonally and smoothly cross-fade into V */}
       {step === "separate" && (
         <span
           className="absolute inset-0 pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left bar: drops outward to left (\) */}
+          {/* Left bar: drops outward to left (\) and fades out as V fades in */}
           <span
             className="animate-separate-left absolute inset-0"
             style={{
@@ -115,7 +114,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             V
           </span>
 
-          {/* Right bar: drops outward to right (/) */}
+          {/* Right bar: drops outward to right (/) and fades out as V fades in */}
           <span
             className="animate-separate-right absolute inset-0"
             style={{
@@ -154,28 +153,58 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
           animation: clap-right 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
-        /* STEP 2: The bars you separate */
+        /* Progressive fade-in of the real V */
+        @keyframes v-progressive-fade {
+          0%, 45% {
+            opacity: 0;
+          }
+          85%, 100% {
+            opacity: 1;
+          }
+        }
+
+        /* STEP 2: The bars separate and progressively hand over to V */
         @keyframes separate-left {
           0% {
             transform: translateX(-0.015em) rotate(16deg);
+            opacity: 1;
+          }
+          50% {
+            transform: translateX(-0.008em) rotate(8deg);
+            opacity: 1;
+          }
+          85% {
+            transform: translateX(0) rotate(0deg);
+            opacity: 0.15;
           }
           100% {
             transform: translateX(0) rotate(0deg);
+            opacity: 0;
           }
         }
         @keyframes separate-right {
           0% {
             transform: translateX(0.015em) rotate(-16deg);
+            opacity: 1;
+          }
+          50% {
+            transform: translateX(0.008em) rotate(-8deg);
+            opacity: 1;
+          }
+          85% {
+            transform: translateX(0) rotate(0deg);
+            opacity: 0.15;
           }
           100% {
             transform: translateX(0) rotate(0deg);
+            opacity: 0;
           }
         }
         .animate-separate-left {
-          animation: separate-left 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: separate-left 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-separate-right {
-          animation: separate-right 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: separate-right 1.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
