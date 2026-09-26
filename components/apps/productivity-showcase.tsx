@@ -229,7 +229,7 @@ const PILLARS: PillarSection[] = [
   {
     number: '04',
     kicker: 'GOAL EXECUTION',
-    title: 'FOUR BIG GOALS. NOTHING ELSE.',
+    title: "Define the goal. Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them.",
     copy: 'Big dreams die when they stay big. You pick four major goals for the year. Improve breaks them down into 15-minute daily micro-steps. Check off today’s tiny step, and the big outcome takes care of itself.',
     badge: 'Four Bigs Framework',
     icon: Target,
