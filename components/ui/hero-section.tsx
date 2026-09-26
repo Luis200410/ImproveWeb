@@ -38,7 +38,7 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: displays two "I" letters that come together horizontally as "II" and then drop diagonally from top to form "V" */
+/* AnimatedV component: displays two "I" letters that come together horizontally as "II" and then drop diagonally outward from top to form "V" */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
@@ -60,7 +60,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "75% 85%",
+              transformOrigin: "bottom right",
             }}
           >
             I
@@ -70,7 +70,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "25% 85%",
+              transformOrigin: "bottom left",
             }}
           >
             I
@@ -99,7 +99,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(-0.03em) translateY(0) rotate(0deg);
           }
           100% {
-            transform: translateX(-0.05em) translateY(0.04em) rotate(18deg);
+            transform: translateX(-0.02em) translateY(0.04em) rotate(-18deg);
           }
         }
         @keyframes v-right-stage {
@@ -113,7 +113,7 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(0.03em) translateY(0) rotate(0deg);
           }
           100% {
-            transform: translateX(0.05em) translateY(0.04em) rotate(-18deg);
+            transform: translateX(0.02em) translateY(0.04em) rotate(18deg);
           }
         }
         .animate-v-left {
