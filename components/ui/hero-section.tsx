@@ -221,8 +221,9 @@ interface SubheadSegment {
 }
 
 const SUBHEAD_SEGMENTS: SubheadSegment[] = [
-  { text: "a ", isKey: false },
-  { text: "powerful ecosystem", isKey: true },
+  { text: "ONE", isKey: true },
+  { text: " powerful ", isKey: false },
+  { text: "Ecosystem", isKey: true },
   { text: " that connects your ", isKey: false },
   { text: "Knowledge", isKey: true },
   { text: ", ", isKey: false },
@@ -236,11 +237,11 @@ const SUBHEAD_SEGMENTS: SubheadSegment[] = [
   { text: ", ", isKey: false },
   { text: "Relationships", isKey: true },
   { text: " and ", isKey: false },
-  { text: "mind", isKey: true },
+  { text: "Mind", isKey: true },
   { text: ", giving you the ", isKey: false },
-  { text: "clarity", isKey: true },
+  { text: "Clarity", isKey: true },
   { text: " to act with ", isKey: false },
-  { text: "absolute intention", isKey: true },
+  { text: "Absolute Intention", isKey: true },
   { text: ".", isKey: false },
 ];
 
