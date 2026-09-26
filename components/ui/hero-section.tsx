@@ -15,7 +15,15 @@ export const IMPROVE_COLORS = [
   { letter: "E", color: "#efb219", name: "Money" },
 ];
 
-export function ColorfulImprove({ className, glow = false }: { className?: string; glow?: boolean }) {
+export function ColorfulImprove({
+  className,
+  glow = false,
+  onComplete,
+}: {
+  className?: string;
+  glow?: boolean;
+  onComplete?: () => void;
+}) {
   return (
     <span className={cn("inline-flex items-center tracking-tight", className)}>
       {IMPROVE_COLORS.map(({ letter, color }, index) => (
@@ -28,7 +36,7 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
           className="inline-block transition-transform duration-300 hover:scale-105"
         >
           {letter === "V" ? (
-            <AnimatedV color={color} glow={glow} />
+            <AnimatedV color={color} glow={glow} onComplete={onComplete} />
           ) : (
             letter
           )}
@@ -39,7 +47,15 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
 }
 
 /* AnimatedV component: 1) II comes together, 2) the bars fall all the way into V, 3) the V */
-function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
+function AnimatedV({
+  color,
+  glow,
+  onComplete,
+}: {
+  color: string;
+  glow?: boolean;
+  onComplete?: () => void;
+}) {
   // Step 1: "II" (0s - 1.0s) -> Step 2: "bars" (1.0s - 2.5s) -> Step 3: "V" (2.5s+)
   const [step, setStep] = React.useState<"II" | "bars" | "V">("II");
 
@@ -47,13 +63,16 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
     // At 1.0s, transition from held II to the falling bars
     const t1 = setTimeout(() => setStep("bars"), 1000);
     // At 2.5s, the bars have fully fallen into V, seamlessly lock to V
-    const t2 = setTimeout(() => setStep("V"), 2500);
+    const t2 = setTimeout(() => {
+      setStep("V");
+      onComplete?.();
+    }, 2500);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, []);
+  }, [onComplete]);
 
   return (
     <span
@@ -192,6 +211,81 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   );
 }
 
+/* Subhead below IMPROVE with progressive bolding across key words */
+function ProgressiveSubhead({ start }: { start: boolean }) {
+  const [boldIndex, setBoldIndex] = React.useState(-1);
+
+  React.useEffect(() => {
+    if (!start) return;
+
+    // Small initial pause after V completes before progressive bolding begins
+    const startTimeout = setTimeout(() => {
+      setBoldIndex(0);
+    }, 350);
+
+    return () => clearTimeout(startTimeout);
+  }, [start]);
+
+  React.useEffect(() => {
+    if (boldIndex < 0 || boldIndex >= 9) return;
+
+    // Step to the next key word in smooth cadence
+    const timer = setTimeout(() => {
+      setBoldIndex((prev) => prev + 1);
+    }, 240);
+
+    return () => clearTimeout(timer);
+  }, [boldIndex]);
+
+  const isB = (idx: number) => boldIndex >= idx;
+
+  return (
+    <p className="text-lg sm:text-xl text-zinc-400 leading-relaxed max-w-3xl mx-auto font-normal animate-in fade-in slide-in-from-bottom-4 duration-700">
+      a{" "}
+      <span className={cn("transition-colors duration-500", isB(0) ? "font-bold text-white" : "text-zinc-400")}>
+        powerful ecosystem
+      </span>{" "}
+      that connects your{" "}
+      <span className={cn("transition-colors duration-500", isB(1) ? "font-bold text-white" : "text-zinc-400")}>
+        Knowledge
+      </span>
+      ,{" "}
+      <span className={cn("transition-colors duration-500", isB(2) ? "font-bold text-white" : "text-zinc-400")}>
+        Finances
+      </span>
+      ,{" "}
+      <span className={cn("transition-colors duration-500", isB(3) ? "font-bold text-white" : "text-zinc-400")}>
+        Body
+      </span>
+      ,{" "}
+      <span className={cn("transition-colors duration-500", isB(4) ? "font-bold text-white" : "text-zinc-400")}>
+        Productivity
+      </span>
+      ,{" "}
+      <span className={cn("transition-colors duration-500", isB(5) ? "font-bold text-white" : "text-zinc-400")}>
+        Work
+      </span>
+      ,{" "}
+      <span className={cn("transition-colors duration-500", isB(6) ? "font-bold text-white" : "text-zinc-400")}>
+        Relationships
+      </span>{" "}
+      and{" "}
+      <span className={cn("transition-colors duration-500", isB(7) ? "font-bold text-white" : "text-zinc-400")}>
+        mind
+      </span>
+      , giving you the{" "}
+      <span className={cn("transition-colors duration-500", isB(8) ? "font-bold text-white" : "text-zinc-400")}>
+        clarity
+      </span>{" "}
+      to act with{" "}
+      <span className={cn("transition-colors duration-500", isB(9) ? "font-bold text-white" : "text-zinc-400")}>
+        absolute intention
+      </span>
+      .
+    </p>
+  );
+}
+
 
 
 interface ManifestoStep {
@@ -259,9 +353,18 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
   ({ className, onIntroComplete, ...props }, ref) => {
     // phase: "manifesto" | "final" (single unified final frame)
     const [phase, setPhase] = React.useState<"manifesto" | "final">("manifesto");
+    const [headlineComplete, setHeadlineComplete] = React.useState(false);
     const [stepIndex, setStepIndex] = React.useState(0);
     const [displayText, setDisplayText] = React.useState("");
     const [isDeleting, setIsDeleting] = React.useState(false);
+
+    // Fallback timer to ensure subhead progressive bolding starts even on direct navigation/hot-reload
+    React.useEffect(() => {
+      if (phase === "final") {
+        const timer = setTimeout(() => setHeadlineComplete(true), 2700);
+        return () => clearTimeout(timer);
+      }
+    }, [phase]);
 
     // Skip handler (immediately advance to final frame)
     const handleSkip = React.useCallback(() => {
@@ -372,26 +475,17 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
           </div>
         )}
 
-        {/* Single Unified Final Frame: Use IMPROVE. + Subhead + Copy */}
+        {/* Single Unified Final Frame: IMPROVE + Subhead below */}
         {phase === "final" && (
           <div className="min-h-[80vh] w-full flex flex-col items-center justify-center text-center px-6 py-20 animate-in fade-in zoom-in-95 duration-700">
             <div className="max-w-4xl mx-auto flex flex-col items-center">
-              {/* Sentence at the top */}
-              <p className="text-sm sm:text-base md:text-lg font-medium tracking-[0.25em] uppercase text-zinc-400 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
-                Purpose in mind. Intention in motion.
-              </p>
-
-              {/* The Headline: Use IMPROVE. (with individual pillar colors) */}
+              {/* The Headline: IMPROVE (with individual pillar colors) */}
               <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 sm:mb-8 selection:bg-white selection:text-black">
-
-                <ColorfulImprove glow={false} />
-
+                <ColorfulImprove glow={false} onComplete={() => setHeadlineComplete(true)} />
               </h1>
 
-              {/* Copy section */}
-              <p className="text-lg sm:text-xl text-zinc-400 leading-relaxed max-w-3xl mx-auto font-normal animate-in fade-in slide-in-from-bottom-4 duration-700">
-                IMPROVE is a powerful ecosystem that connects your Knowledge, Finances, Body, Productivity, Work, Relationships and mind, giving you the clarity to act with absolute intention.
-              </p>
+              {/* Only the subhead below IMPROVE, with progressive bolding of key words */}
+              <ProgressiveSubhead start={headlineComplete} />
             </div>
           </div>
         )}
