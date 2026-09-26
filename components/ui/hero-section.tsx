@@ -38,14 +38,21 @@ export function ColorfulImprove({ className, glow = false }: { className?: strin
   );
 }
 
-/* AnimatedV component: two sticks clap into II, then fall continuously all the way into V */
+/* AnimatedV component: 1) II comes together, 2) the bars fall all the way into V, 3) the V */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
-  const [animating, setAnimating] = React.useState(true);
+  // Step 1: "II" (0s - 1.0s) -> Step 2: "bars" (1.0s - 2.5s) -> Step 3: "V" (2.5s+)
+  const [step, setStep] = React.useState<"II" | "bars" | "V">("II");
 
   React.useEffect(() => {
-    // 2600ms total fluid sequence
-    const timer = setTimeout(() => setAnimating(false), 2600);
-    return () => clearTimeout(timer);
+    // At 1.0s, transition from held II to the falling bars
+    const t1 = setTimeout(() => setStep("bars"), 1000);
+    // At 2.5s, the bars have fully fallen into V, seamlessly lock to V
+    const t2 = setTimeout(() => setStep("V"), 2500);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   return (
@@ -56,113 +63,124 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       {/* 
         The real in-flow V: 
         Guarantees 100% perfect font baseline, cap height, width, and line height with 'O' and 'E'.
-        Fluidly fades in right as the sticks reach their final V position.
       */}
       <span
         style={{
           color,
           textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-          opacity: animating ? undefined : 1,
-          animation: animating ? "v-final-fade 2.6s ease-in-out forwards" : undefined,
+          opacity: step === "V" ? 1 : 0,
         }}
       >
         V
       </span>
 
-      {/* The two sticks: one continuous unbroken motion from start to finish */}
-      {animating && (
+      {/* STEP 1: Two 'I' letters coming together into 'II' in the center */}
+      {step === "II" && (
         <span
           className="absolute inset-0 flex justify-center pointer-events-none select-none"
           aria-hidden="true"
         >
-          {/* Left stick */}
+          {/* Left I */}
           <span
-            className="animate-stick-left absolute"
-            style={{
-              color,
-              fontStyle: "normal",
-              transformOrigin: "50% 90%",
-            }}
+            className="animate-clap-left absolute"
+            style={{ color, fontStyle: "normal" }}
           >
             I
           </span>
 
-          {/* Right stick */}
+          {/* Right I */}
           <span
-            className="animate-stick-right absolute"
-            style={{
-              color,
-              fontStyle: "normal",
-              transformOrigin: "50% 90%",
-            }}
+            className="animate-clap-right absolute"
+            style={{ color, fontStyle: "normal" }}
           >
             I
           </span>
         </span>
       )}
 
+      {/* STEP 2: The bars that FALL all the way until forming the complete V */}
+      {step === "bars" && (
+        <span
+          className="absolute inset-0 pointer-events-none select-none"
+          aria-hidden="true"
+        >
+          {/* Left bar: falls all the way into the left leg of V */}
+          <span
+            className="animate-bar-fall-left absolute inset-0"
+            style={{
+              color,
+              clipPath: "polygon(0 0, 50.5% 0, 50.5% 100%, 0 100%)",
+              transformOrigin: "50% 88%",
+            }}
+          >
+            V
+          </span>
+
+          {/* Right bar: falls all the way into the right leg of V */}
+          <span
+            className="animate-bar-fall-right absolute inset-0"
+            style={{
+              color,
+              clipPath: "polygon(49.5% 0, 100% 0, 100% 100%, 49.5% 100%)",
+              transformOrigin: "50% 88%",
+            }}
+          >
+            V
+          </span>
+        </span>
+      )}
+
       <style jsx>{`
-        /* Fluid reveal of native V right as sticks hit the full V position */
-        @keyframes v-final-fade {
-          0%, 82% {
-            opacity: 0;
-          }
-          92%, 100% {
-            opacity: 1;
-          }
-        }
-
-        /* Left stick: slides to center, hugs as II, then falls all the way outward into V */
-        @keyframes v-stick-left {
+        /* STEP 1: II coming together and holding */
+        @keyframes clap-left {
           0% {
-            transform: translateX(-0.24em) rotate(0deg);
-            opacity: 1;
+            transform: translateX(-0.24em);
           }
-          /* Phase 1: Meet in center as II and hold */
-          32%, 50% {
-            transform: translateX(-0.035em) rotate(0deg);
-            opacity: 1;
-          }
-          /* Phase 2: Fall continuously outward to the left until fully forming V */
-          88% {
-            transform: translateX(-0.05em) rotate(-18deg);
-            opacity: 1;
-          }
-          /* Phase 3: Fluid handoff to real V */
-          100% {
-            transform: translateX(-0.05em) rotate(-18deg);
-            opacity: 0;
+          45%, 100% {
+            transform: translateX(-0.04em);
           }
         }
-
-        /* Right stick: slides to center, hugs as II, then falls all the way outward into V */
-        @keyframes v-stick-right {
+        @keyframes clap-right {
           0% {
-            transform: translateX(0.24em) rotate(0deg);
-            opacity: 1;
+            transform: translateX(0.24em);
           }
-          /* Phase 1: Meet in center as II and hold */
-          32%, 50% {
-            transform: translateX(0.035em) rotate(0deg);
-            opacity: 1;
+          45%, 100% {
+            transform: translateX(0.04em);
           }
-          /* Phase 2: Fall continuously outward to the right until fully forming V */
-          88% {
-            transform: translateX(0.05em) rotate(18deg);
-            opacity: 1;
-          }
-          /* Phase 3: Fluid handoff to real V */
-          100% {
-            transform: translateX(0.05em) rotate(18deg);
-            opacity: 0;
-          }
+        }
+        .animate-clap-left {
+          animation: clap-left 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .animate-clap-right {
+          animation: clap-right 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
 
-        .animate-stick-left {
-          animation: v-stick-left 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        /* STEP 2: The bars that FALL all the way into the V */
+        @keyframes bar-fall-left {
+          0% {
+            transform: translateX(-0.015em) rotate(16deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(0) rotate(0deg);
+            opacity: 1;
+          }
         }
-        .animate-stick-right {
-          animation: v-stick-right 2.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        @keyframes bar-fall-right {
+          0% {
+            transform: translateX(0.015em) rotate(-16deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(0) rotate(0deg);
+            opacity: 1;
+          }
+        }
+        .animate-bar-fall-left {
+          animation: bar-fall-left 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        .animate-bar-fall-right {
+          animation: bar-fall-right 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
