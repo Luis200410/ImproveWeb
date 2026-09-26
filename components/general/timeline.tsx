@@ -684,13 +684,7 @@ export default function Timeline({
     >
       {/* ══════════ PINNED SECTION TITLE: "Block The Noise" ══════════ */}
       {/* Sized with exact massive headline size requested */}
-      <div className="absolute top-10 sm:top-14 md:top-18 left-0 right-0 z-30 text-center pointer-events-none px-4 sm:px-8">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-2 shadow-lg">
-          <Sparkles className="size-3.5 text-[#FF02E8]" />
-          <span className="text-[10px] sm:text-xs font-mono font-bold tracking-widest uppercase text-zinc-300">
-            NEURO-ARCHITECTURE OF PERFORMANCE
-          </span>
-        </div>
+      <div className="absolute top-12 sm:top-16 md:top-20 left-0 right-0 z-30 text-center pointer-events-none px-4 sm:px-8">
         <h2 className="title-huge text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase tracking-tight text-white leading-[0.90] max-w-5xl mx-auto">
           {sectionTitle}
         </h2>
