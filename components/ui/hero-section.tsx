@@ -102,41 +102,41 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            transform: translateX(-0.24em) rotate(0deg);
+            transform: translateX(-0.18em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into a single massive centered I (solid overlap) */
+          /* Stage 1: Slide to center from left and hug (forming left half of massive I) */
           30%, 48% {
-            transform: translateX(0.11em) rotate(0deg);
+            transform: translateX(-0.035em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 2: Top drops outward to the left diagonal leg of V (\) */
           82% {
-            transform: translateX(-0.025em) rotate(-16deg);
+            transform: translateX(-0.055em) rotate(-16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(-0.025em) rotate(-16deg);
+            transform: translateX(-0.055em) rotate(-16deg);
             opacity: 0;
           }
         }
         @keyframes v-right-stage {
           0% {
-            transform: translateX(0.24em) rotate(0deg);
+            transform: translateX(0.18em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into a single massive centered I (solid overlap) */
+          /* Stage 1: Slide to center from right and hug (forming right half of massive I) */
           30%, 48% {
-            transform: translateX(-0.11em) rotate(0deg);
+            transform: translateX(0.035em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 2: Top drops outward to the right diagonal leg of V (/) */
           82% {
-            transform: translateX(0.025em) rotate(16deg);
+            transform: translateX(0.055em) rotate(16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(0.025em) rotate(16deg);
+            transform: translateX(0.055em) rotate(16deg);
             opacity: 0;
           }
         }
