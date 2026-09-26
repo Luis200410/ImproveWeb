@@ -38,89 +38,78 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: displays two "I" letters that come together horizontally as "II" and then drop diagonally outward from top to form "V" */
+/* AnimatedV component: displays two "I" letters that merge into a single massive thick "I", then drop top outward to form "V" */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    // Lock into final solid V after animation completes
-    const timer = setTimeout(() => setShowII(false), 1350);
+    // Lock into final clean V glyph after animation
+    const timer = setTimeout(() => setShowII(false), 1400);
     return () => clearTimeout(timer);
   }, []);
 
-  return (
-    <span className="inline-block relative" style={{ minWidth: "0.65em" }}>
-      {/* Invisible V placeholder guarantees exact width, baseline, and vertical placement */}
-      <span className="opacity-0 pointer-events-none select-none">V</span>
+  if (!showII) {
+    return <>V</>;
+  }
 
-      {showII ? (
-        <span className="absolute inset-0 flex items-center justify-center">
-          <span
-            className="animate-v-left inline-block"
-            style={{
-              color,
-              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "bottom right",
-            }}
-          >
-            I
-          </span>
-          <span
-            className="animate-v-right inline-block"
-            style={{
-              color,
-              textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-              transformOrigin: "bottom left",
-            }}
-          >
-            I
-          </span>
-        </span>
-      ) : (
-        <span
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            color,
-            textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
-          }}
-        >
-          V
-        </span>
-      )}
+  return (
+    <span className="inline-flex items-center justify-center relative align-baseline">
+      {/* Left I */}
+      <span
+        className="animate-v-left inline-block"
+        style={{
+          color,
+          textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+          transformOrigin: "bottom right",
+        }}
+      >
+        I
+      </span>
+      {/* Right I */}
+      <span
+        className="animate-v-right inline-block"
+        style={{
+          color,
+          textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+          transformOrigin: "bottom left",
+          marginLeft: "-0.22em",
+        }}
+      >
+        I
+      </span>
+
       <style jsx>{`
         @keyframes v-left-stage {
           0% {
-            transform: translateX(-0.25em) translateY(0) rotate(0deg);
+            transform: translateX(-0.18em) rotate(0deg);
           }
-          35% {
-            transform: translateX(-0.03em) translateY(0) rotate(0deg);
+          /* Phase 1: Slide to center & merge into ONE massive thick "I" */
+          35%, 55% {
+            transform: translateX(0.11em) rotate(0deg);
           }
-          50% {
-            transform: translateX(-0.03em) translateY(0) rotate(0deg);
-          }
+          /* Phase 2: Top opens OUTWARD to form left diagonal leg of V (\) */
           100% {
-            transform: translateX(-0.02em) translateY(0.04em) rotate(-18deg);
+            transform: translateX(-0.02em) rotate(-22deg);
           }
         }
         @keyframes v-right-stage {
           0% {
-            transform: translateX(0.25em) translateY(0) rotate(0deg);
+            transform: translateX(0.18em) rotate(0deg);
           }
-          35% {
-            transform: translateX(0.03em) translateY(0) rotate(0deg);
+          /* Phase 1: Slide to center & merge into ONE massive thick "I" */
+          35%, 55% {
+            transform: translateX(-0.11em) rotate(0deg);
           }
-          50% {
-            transform: translateX(0.03em) translateY(0) rotate(0deg);
-          }
+          /* Phase 2: Top opens OUTWARD to form right diagonal leg of V (/) */
           100% {
-            transform: translateX(0.02em) translateY(0.04em) rotate(18deg);
+            transform: translateX(0.02em) rotate(22deg);
           }
         }
         .animate-v-left {
-          animation: v-left-stage 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-left-stage 1.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
         .animate-v-right {
-          animation: v-right-stage 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+          animation: v-right-stage 1.35s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </span>
