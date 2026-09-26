@@ -352,13 +352,13 @@ export function ProductivityShowcase() {
         <CollectionSurfer 
           headerKicker="GOAL EXECUTION FRAMEWORK" 
           headerTitle="Define the goal."
-          headerDescription="Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them."
+          headerDescription="Your 4 Yearly Targets live in your Second Brain. IMPROVE automatically reverse-engineers those Macro Goals into Actionable Tasks, embedding those specific tasks directly inside the Daily Habits required to achieve them."
         />
       </section>
 
       {/* 2. Timeline GSAP Section with Pinned Title Header */}
       <Timeline 
-        sectionTitle="ENGINEERED FOR PEAK DEEP WORK"
+        sectionTitle="Block The Noise"
         title="PRODUCT ROADMAP"
         periodLabel="2020 - 2026 ROADMAP"
         activeColor="#FF02E8"

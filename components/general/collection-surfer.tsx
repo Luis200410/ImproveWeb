@@ -105,9 +105,13 @@ export function TypewriterDescription({
   const parsedSegments: TextSegment[] = React.useMemo(() => {
     if (!text) return [];
     const keyPhrases = [
-      "4 yearly targets",
+      "4 Yearly Targets",
       "Second Brain",
       "IMPROVE",
+      "Macro Goals",
+      "Actionable Tasks",
+      "Daily Habits",
+      "4 yearly targets",
       "macro goals",
       "actionable tasks",
       "daily habits",
@@ -181,7 +185,7 @@ export function CollectionSurfer({
   variant = "magnetic",
   headerKicker = "GOAL EXECUTION FRAMEWORK",
   headerTitle = "Define the goal.",
-  headerDescription = "Your 4 yearly targets live in your Second Brain. IMPROVE automatically reverse-engineers those macro goals into actionable tasks, embedding those specific tasks directly inside the daily habits required to achieve them.",
+  headerDescription = "Your 4 Yearly Targets live in your Second Brain. IMPROVE automatically reverse-engineers those Macro Goals into Actionable Tasks, embedding those specific tasks directly inside the Daily Habits required to achieve them.",
 }: CollectionSurferProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 

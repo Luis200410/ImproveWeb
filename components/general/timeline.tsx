@@ -182,7 +182,7 @@ const allJourneyItems: JourneyItem[] = [
 });
 
 export default function Timeline({
-  sectionTitle = "ENGINEERED FOR PEAK DEEP WORK",
+  sectionTitle = "Block The Noise",
   title = "Product Storyline",
   periodLabel = "2020-2026",
   textColor = "var(--color-foreground, #ffffff)",

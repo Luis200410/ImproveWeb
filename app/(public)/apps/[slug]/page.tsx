@@ -1,5 +1,4 @@
-import React from 'react'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { getAppBySlug, APPS_DATA } from '@/lib/apps-data'
 import Link from 'next/link'
 import { ArrowRight, Sparkles, CheckCircle2, TrendingUp, Shield, Cpu, Activity, Brain, Wallet, Briefcase, Users, Compass, Crown } from 'lucide-react'
@@ -35,6 +34,11 @@ export async function generateStaticParams() {
 
 export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const { slug } = await params
+
+  if (slug === 'execution-productivity') {
+    redirect('/apps/productivity')
+  }
+
   const app = getAppBySlug(slug)
 
   if (!app) {
