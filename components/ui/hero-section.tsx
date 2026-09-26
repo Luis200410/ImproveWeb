@@ -38,33 +38,36 @@ export function ColorfulImprove({ className, glow = true }: { className?: string
   );
 }
 
-/* AnimatedV component: displays two "I" letters that clap together and then transform into a "V" */
+/* AnimatedV component: displays two "I" letters that come together horizontally as "II" and then drop diagonally from top to form "V" */
 function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
   const [showII, setShowII] = React.useState(true);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => setShowII(false), 800); // duration matches animation
+    // Keep 2-stage animation active for 1.4s then lock into solid V glyph
+    const timer = setTimeout(() => setShowII(false), 1300);
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <>
       {showII ? (
-        <span className="inline-flex items-center" style={{ gap: '0.1em' }}>
+        <span className="inline-flex items-center relative justify-center" style={{ width: '0.7em', height: '1em' }}>
           <span
-            className="inline-block animate-clap-left"
+            className="absolute animate-v-left"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+              transformOrigin: "bottom right",
             }}
           >
             I
           </span>
           <span
-            className="inline-block animate-clap-right"
+            className="absolute animate-v-right"
             style={{
               color,
               textShadow: glow ? `0 0 35px ${color}66, 0 0 70px ${color}33` : undefined,
+              transformOrigin: "bottom left",
             }}
           >
             I
@@ -81,24 +84,45 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
         </span>
       )}
       <style jsx>{`
-        @keyframes clap-left {
-          0% { transform: translateX(0) rotate(0deg); }
-          100% { transform: translateX(0.2em) rotate(-45deg); }
+        @keyframes v-left-stage {
+          0% {
+            transform: translateX(-0.3em) rotate(0deg);
+          }
+          35% {
+            transform: translateX(-0.04em) rotate(0deg);
+          }
+          50% {
+            transform: translateX(-0.04em) rotate(0deg);
+          }
+          100% {
+            transform: translateX(-0.08em) rotate(18deg);
+          }
         }
-        @keyframes clap-right {
-          0% { transform: translateX(0) rotate(0deg); }
-          100% { transform: translateX(-0.2em) rotate(45deg); }
+        @keyframes v-right-stage {
+          0% {
+            transform: translateX(0.3em) rotate(0deg);
+          }
+          35% {
+            transform: translateX(0.04em) rotate(0deg);
+          }
+          50% {
+            transform: translateX(0.04em) rotate(0deg);
+          }
+          100% {
+            transform: translateX(0.08em) rotate(-18deg);
+          }
         }
-        .animate-clap-left {
-          animation: clap-left 0.8s forwards ease-in-out;
+        .animate-v-left {
+          animation: v-left-stage 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
-        .animate-clap-right {
-          animation: clap-right 0.8s forwards ease-in-out;
+        .animate-v-right {
+          animation: v-right-stage 1.3s cubic-bezier(0.25, 1, 0.5, 1) forwards;
         }
       `}</style>
     </>
   );
 }
+
 
 
 interface ManifestoStep {
