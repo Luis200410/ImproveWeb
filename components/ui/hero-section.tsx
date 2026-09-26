@@ -105,18 +105,18 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(-0.24em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into a single massive centered I */
+          /* Stage 1: Clap together into a single massive centered I (solid overlap) */
           30%, 48% {
-            transform: translateX(0.03em) rotate(0deg);
+            transform: translateX(0.07em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 2: Top drops outward to the left diagonal leg of V (\) */
           82% {
-            transform: translateX(-0.1em) rotate(-16deg);
+            transform: translateX(-0.065em) rotate(-16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(-0.1em) rotate(-16deg);
+            transform: translateX(-0.065em) rotate(-16deg);
             opacity: 0;
           }
         }
@@ -125,18 +125,18 @@ function AnimatedV({ color, glow }: { color: string; glow?: boolean }) {
             transform: translateX(0.24em) rotate(0deg);
             opacity: 1;
           }
-          /* Stage 1: Clap together into a single massive centered I */
+          /* Stage 1: Clap together into a single massive centered I (solid overlap) */
           30%, 48% {
-            transform: translateX(-0.03em) rotate(0deg);
+            transform: translateX(-0.07em) rotate(0deg);
             opacity: 1;
           }
           /* Stage 2: Top drops outward to the right diagonal leg of V (/) */
           82% {
-            transform: translateX(0.1em) rotate(16deg);
+            transform: translateX(0.065em) rotate(16deg);
             opacity: 1;
           }
           100% {
-            transform: translateX(0.1em) rotate(16deg);
+            transform: translateX(0.065em) rotate(16deg);
             opacity: 0;
           }
         }
