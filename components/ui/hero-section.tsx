@@ -3,6 +3,12 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Quote } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 // Official 7 colors of the IMPROVE ecosystem pillars & logo
 export const IMPROVE_COLORS = [
@@ -54,7 +60,7 @@ export function ColorfulImprove({
 }
 
 /* AnimatedV component: 1) II comes together, 2) the bars fall all the way into V, 3) the V */
-function AnimatedV({
+export function AnimatedV({
   color,
   glow,
   onComplete,
@@ -375,10 +381,12 @@ const MANIFESTO_STEPS: ManifestoStep[] = [
 
 export interface HeroSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   onIntroComplete?: () => void;
+  onPhaseChange?: (phase: "manifesto" | "final") => void;
+  renderTitleSlot?: React.ReactNode;
 }
 
 const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
-  ({ className, onIntroComplete, ...props }, ref) => {
+  ({ className, onIntroComplete, onPhaseChange, renderTitleSlot, ...props }, ref) => {
     // phase: "manifesto" | "final" (single unified final frame)
     const [phase, setPhase] = React.useState<"manifesto" | "final">("manifesto");
     const [headlineComplete, setHeadlineComplete] = React.useState(false);
@@ -389,16 +397,21 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
     // Fallback timer to ensure subhead progressive bolding starts even on direct navigation/hot-reload
     React.useEffect(() => {
       if (phase === "final") {
-        const timer = setTimeout(() => setHeadlineComplete(true), 2700);
+        const timer = setTimeout(() => {
+          setHeadlineComplete(true);
+          onIntroComplete?.();
+        }, 2700);
         return () => clearTimeout(timer);
       }
-    }, [phase]);
+    }, [phase, onIntroComplete]);
 
-    // Skip handler (immediately advance to final frame)
+    // Skip handler (immediately advance to final frame and unlock)
     const handleSkip = React.useCallback(() => {
       setPhase("final");
+      onPhaseChange?.("final");
+      setHeadlineComplete(true);
       onIntroComplete?.();
-    }, [onIntroComplete]);
+    }, [onIntroComplete, onPhaseChange]);
 
     // Keyboard listener to skip on Escape
     React.useEffect(() => {
@@ -448,29 +461,26 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
             // All 5 lines finished -> Snap straight into the single unified final frame!
             timer = setTimeout(() => {
               setPhase("final");
-              onIntroComplete?.();
+              onPhaseChange?.("final");
             }, currentStep.pauseAfterDelete);
           }
         }
       }
 
       return () => clearTimeout(timer);
-    }, [phase, stepIndex, displayText, isDeleting, onIntroComplete]);
+    }, [phase, stepIndex, displayText, isDeleting, onIntroComplete, onPhaseChange]);
 
     const currentStep = MANIFESTO_STEPS[stepIndex];
 
     return (
       <section
         ref={ref}
-        className={cn("relative w-full flex items-center justify-center overflow-hidden", className)}
+        className={cn("relative w-full flex items-center justify-center overflow-hidden min-h-[calc(100vh-6.25rem)]", className)}
         {...props}
       >
         {/* Frame 1: Manifesto Typewriter with Huge Background Quote Symbol */}
         {phase === "manifesto" && (
-          <div className="relative min-h-[85vh] w-full flex flex-col items-center justify-center text-center px-6">
-            {/* Huge background quotation mark with a lot of opacity */}
-
-
+          <div className="relative min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-6">
             {/* The Typing Sentence */}
             <div className="relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight min-h-[1.5em] flex items-center justify-center max-w-5xl mx-auto">
               <span
@@ -503,19 +513,29 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
           </div>
         )}
 
-        {/* Single Unified Final Frame: Top sentence + IMPROVE + Typed subhead */}
+        {/* Single Unified Final Frame: Top sentence + IMPROVE Slot + Typed subhead */}
         {phase === "final" && (
-          <div className="min-h-[80vh] w-full flex flex-col items-center justify-center text-center px-6 py-20 animate-in fade-in zoom-in-95 duration-700">
+          <div className="min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-6 py-12 animate-in fade-in zoom-in-95 duration-700">
             <div className="max-w-4xl mx-auto flex flex-col items-center">
               {/* Top sentence that stays */}
               <p className="text-sm sm:text-base md:text-lg font-medium tracking-[0.25em] uppercase text-zinc-400 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
                 Purpose in mind. Intention in motion.
               </p>
 
-              {/* The Headline: IMPROVE (with individual pillar colors) */}
-              <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 sm:mb-8 selection:bg-white selection:text-black">
-                <ColorfulImprove glow={false} onComplete={() => setHeadlineComplete(true)} />
-              </h1>
+              {/* Title Slot: If external renderTitleSlot is provided, render it; otherwise render fallback */}
+              {renderTitleSlot ? (
+                renderTitleSlot
+              ) : (
+                <h1 className="hero-improve-heading will-change-transform text-6xl sm:text-8xl md:text-9xl font-black tracking-tight mb-6 sm:mb-8 selection:bg-white selection:text-black">
+                  <ColorfulImprove
+                    glow={false}
+                    onComplete={() => {
+                      setHeadlineComplete(true);
+                      onIntroComplete?.();
+                    }}
+                  />
+                </h1>
+              )}
 
               {/* Typed subhead below IMPROVE with progressive bolding of key words */}
               <TypewriterSubhead start={headlineComplete} />
