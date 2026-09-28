@@ -7,7 +7,7 @@ import Timeline from '@/components/general/timeline'
 
 export function ProductivityShowcase() {
   return (
-    <div className="w-full bg-[var(--bg)] text-[var(--label)] border-t border-[var(--separator)]">
+    <div className="w-full bg-transparent text-[var(--label)] border-t border-[var(--separator)]">
       {/* 1. Goal Execution Framework CollectionSurfer 3D Experience */}
       <section className="w-full">
         <CollectionSurfer 

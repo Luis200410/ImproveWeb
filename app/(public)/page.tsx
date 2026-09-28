@@ -8,7 +8,7 @@ export default function Home() {
   const [introComplete, setIntroComplete] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+    <div className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black">
       {/* First Frame: Manifesto Typewriter into Final Hero Frame */}
       <HeroSection onIntroComplete={() => setIntroComplete(true)} />
 

@@ -479,8 +479,7 @@ export default function JellyfishDrift({ centerMode = "logo" }: { centerMode?: "
         height: "80vh",
         width: "100%",
         overflow: "hidden",
-        background:
-          "radial-gradient(125% 120% at 50% 28%, #0C0714 0%, #07050A 46%, #050307 74%, #020104 100%)",
+        background: "transparent",
         fontFamily: SANS,
       }}
     >

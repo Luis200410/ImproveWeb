@@ -48,7 +48,7 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
   const AppIcon = iconMap[app.iconName] || Sparkles
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--label)] selection:bg-[var(--indigo)] selection:text-white pt-8">
+    <div className="min-h-screen bg-transparent text-[var(--label)] selection:bg-[var(--indigo)] selection:text-white pt-8">
       {/* Brand Identity & Overview Hero Showcase */}
       <AppHeroShowcase app={app} />
 

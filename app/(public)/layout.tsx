@@ -1,4 +1,5 @@
 import { Navigation } from '@/components/navigation'
+import { CircuitBackground } from '@/components/general/circuit-background'
 
 export default function PublicLayout({
   children,
@@ -6,12 +7,14 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--label)] flex flex-col justify-between">
+    <div className="min-h-screen bg-black text-[var(--label)] flex flex-col justify-between relative selection:bg-white/20">
+      {/* Universal Interconnected Smooth Circuit Background */}
+      <CircuitBackground />
       <Navigation />
-      <main className="pt-25 flex-grow">
+      <main className="pt-25 flex-grow relative z-10">
         {children}
       </main>
-      <footer className="border-t border-[var(--separator)] py-8 px-6 text-center text-sm text-[var(--label-2)]">
+      <footer className="border-t border-[var(--separator)] py-8 px-6 text-center text-sm text-[var(--label-2)] relative z-10 bg-black/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <span className="font-bold text-[var(--label)] tracking-widest uppercase">IMPROVE</span> — Complete Integrity Framework

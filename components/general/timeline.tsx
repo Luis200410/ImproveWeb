@@ -518,7 +518,7 @@ export default function Timeline({
     <section
       ref={sectionRef}
       id="behavioral-architecture"
-      className="w-full h-screen relative overflow-hidden bg-[#050308] text-white border-t border-zinc-900 select-none flex flex-col justify-between items-center py-4 sm:py-6 md:py-8"
+      className="w-full h-screen relative overflow-hidden bg-[#050308]/90 backdrop-blur-sm text-white border-t border-zinc-900 select-none flex flex-col justify-between items-center py-4 sm:py-6 md:py-8"
     >
       {/* ══════════ SECTION TITLE: "Block The Noise" (FITS FIRST FRAME) ══════════ */}
       <div className="w-full text-center px-4 pt-2 sm:pt-4 z-30 pointer-events-none shrink-0">
