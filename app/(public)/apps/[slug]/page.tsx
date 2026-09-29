@@ -6,6 +6,7 @@ import { SecondBrainProductivitySuite } from '@/components/landing/second-brain-
 import { ProductivityShowcase } from '@/components/apps/productivity-showcase'
 import { AppHeroShowcase } from '@/components/apps/app-hero-showcase'
 import { OtherDedicatedAppsDock } from '@/components/apps/other-dedicated-apps-dock'
+import CTAWithVerticalMarquee from '@/components/general/cta-with-text-marquee'
 
 
 
@@ -113,7 +114,12 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
         </section>
       )}
 
-      {/* 4. Switch Between Other Apps via Apple-Style Dock */}
+      {/* 4. Dedicated Pricing & Tier Showcase with App Accent Color */}
+      <section className="w-full border-t border-[var(--separator)]">
+        <CTAWithVerticalMarquee app={app} />
+      </section>
+
+      {/* 5. Switch Between Other Apps via Apple-Style Dock */}
       <OtherDedicatedAppsDock currentSlug={app.slug} />
     </div>
   )

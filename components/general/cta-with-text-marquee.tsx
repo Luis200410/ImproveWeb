@@ -109,6 +109,8 @@ function VerticalMarquee({
   );
 }
 
+import type { AppIdentity } from "@/lib/apps-data";
+
 type PlanType = "free" | "productivity" | "ecosystem";
 
 interface PlanDetails {
@@ -122,64 +124,89 @@ interface PlanDetails {
   features: string[];
 }
 
-const plans: Record<PlanType, PlanDetails> = {
-  free: {
-    id: "free",
-    name: "Free Plan",
-    badge: "Starter",
-    price: "FREE",
-    period: "forever",
-    subtitle: "Essential focus and habit tracking tools for personal productivity.",
-    buttonText: "LEAVE THE NOISE BEHIND →",
-    features: [
-      "Basic Focus Timer",
-      "Daily Task Lists",
-      "Habit Tracking Basics",
-      "Essential Reminders",
-      "Single Device Access",
-      "Community Support",
-    ],
-  },
-  productivity: {
-    id: "productivity",
-    name: "Productivity App",
-    badge: "Most Popular",
-    price: "$7",
-    period: "per month",
-    subtitle: "Full power of the Productivity App with OS-level blocking & energy curve sync.",
-    buttonText: "UNLOCK PRODUCTIVITY PRO →",
-    features: [
-      "Full iOS System App Blocker",
-      "Apple Calendar Sync",
-      "Biological Energy Tracking",
-      "Smart Time-Boxing",
-      "Deep Focus Strict Mode",
-      "Advanced Analytics",
-      "Home & Lockscreen Widgets",
-    ],
-  },
-  ecosystem: {
-    id: "ecosystem",
-    name: "Improve Ecosystem",
-    badge: "Best Value",
-    price: "$40",
-    period: "per month",
-    subtitle: "Unlimited access to all premium apps across the entire Improve product line.",
-    buttonText: "ACCESS WHOLE ECOSYSTEM →",
-    features: [
-      "All 8+ Premium Improve Apps",
-      "Productivity App Pro",
-      "Fitness & Habit Suite Pro",
-      "Mindfulness & Journaling Pro",
-      "Finance & Budgeting Pro",
-      "Real-time Cloud Sync",
-      "Priority 24/7 Support",
-      "Family Sharing Included",
-    ],
-  },
-};
+interface CTAWithVerticalMarqueeProps {
+  app?: AppIdentity;
+  accentColor?: string;
+}
 
-export default function CTAWithVerticalMarquee() {
+export default function CTAWithVerticalMarquee({
+  app,
+  accentColor,
+}: CTAWithVerticalMarqueeProps = {}) {
+  const brandColor = accentColor || app?.accentHex || "#FF02E8";
+  const appDisplayName = app ? `${app.singleWord} App` : "Productivity App";
+  const appSubtitle = app
+    ? `Full power of ${app.name} with on-device local execution.`
+    : "Full power of the Productivity App with OS-level blocking & energy curve sync.";
+  const appButtonText = `UNLOCK ${app ? app.singleWord : "PRODUCTIVITY"} PRO →`;
+
+  const appFeaturesList = app
+    ? [
+        ...app.features.map((f) => f.title),
+        "Full iOS System Integration",
+        "Apple Calendar Two-Way Sync",
+        "Biological Energy Tracking",
+        "Deep Focus Strict Mode",
+        "Home & Lockscreen Widgets",
+      ]
+    : [
+        "Full iOS System App Blocker",
+        "Apple Calendar Sync",
+        "Biological Energy Tracking",
+        "Smart Time-Boxing",
+        "Deep Focus Strict Mode",
+        "Advanced Analytics",
+        "Home & Lockscreen Widgets",
+      ];
+
+  const plans: Record<PlanType, PlanDetails> = {
+    free: {
+      id: "free",
+      name: "Free Plan",
+      badge: "Starter",
+      price: "FREE",
+      period: "forever",
+      subtitle: "Essential focus and habit tracking tools for personal productivity.",
+      buttonText: "LEAVE THE NOISE BEHIND →",
+      features: [
+        "Basic Focus Timer",
+        "Daily Task Lists",
+        "Habit Tracking Basics",
+        "Essential Reminders",
+        "Single Device Access",
+        "Community Support",
+      ],
+    },
+    productivity: {
+      id: "productivity",
+      name: appDisplayName,
+      badge: "Most Popular",
+      price: "$7",
+      period: "per month",
+      subtitle: appSubtitle,
+      buttonText: appButtonText,
+      features: appFeaturesList,
+    },
+    ecosystem: {
+      id: "ecosystem",
+      name: "Improve Ecosystem",
+      badge: "Best Value",
+      price: "$40",
+      period: "per month",
+      subtitle: "Unlimited access to all premium apps across the entire Improve product line.",
+      buttonText: "ACCESS WHOLE ECOSYSTEM →",
+      features: [
+        "All 8+ Premium Improve Apps",
+        `${app ? app.singleWord : "Productivity"} App Pro`,
+        "Fitness & Habit Suite Pro",
+        "Mindfulness & Journaling Pro",
+        "Finance & Budgeting Pro",
+        "Real-time Cloud Sync",
+        "Priority 24/7 Support",
+        "Family Sharing Included",
+      ],
+    },
+  };
   const [activeIndex, setActiveIndex] = useState<number>(0); // Default to FREE plan like screenshot
   const marqueeRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
@@ -256,10 +283,10 @@ export default function CTAWithVerticalMarquee() {
       onTouchEnd={handleTouchEnd}
       className="relative min-h-[90vh] bg-[#07050A] text-white flex flex-col items-center justify-between px-6 py-16 overflow-hidden border-t border-zinc-900 select-none scroll-mt-20"
     >
-      {/* Background ambient purple glow */}
+      {/* Background ambient glow */}
       <div
         className="pointer-events-none absolute top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full opacity-20 blur-[180px] transition-all duration-700"
-        style={{ backgroundColor: "#6B21A8" }}
+        style={{ backgroundColor: brandColor }}
       />
 
       {/* Main Carousel Container */}
@@ -281,17 +308,21 @@ export default function CTAWithVerticalMarquee() {
                   {/* Left Content Column */}
                   <div className="space-y-6 max-w-xl relative">
 
-                    {/* Watermark in button color #FF02E8, tailored scaling per plan */}
+                    {/* Watermark in app brand color, tailored scaling per plan */}
                     <div className="relative pt-6 pb-2">
                       <div
                         className={cn(
-                          "absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none text-[#FF02E8] drop-shadow-[0_0_12px_rgba(255,2,232,0.25)] opacity-100 transition-all duration-500 whitespace-nowrap origin-left",
+                          "absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none opacity-100 transition-all duration-500 whitespace-nowrap origin-left",
                           item.id === "free"
                             ? "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7rem] sm:text-[11rem] md:text-[14rem] lg:text-[16rem] scale-x-[1.14]"
                             : item.id === "productivity"
                               ? "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7rem] sm:text-[11rem] md:text-[14rem] lg:text-[16rem] scale-x-[1.14]"
                               : "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7.3rem] sm:text-[11.1rem] md:text-[14.1rem] lg:text-[16.3rem] scale-x-[1.06]"
                         )}
+                        style={{
+                          color: brandColor,
+                          textShadow: `0 0 16px ${brandColor}40`,
+                        }}
                       >
                         {item.price}
                       </div>
@@ -313,9 +344,9 @@ export default function CTAWithVerticalMarquee() {
                       <button
                         className="group relative px-7 py-3.5 rounded-full font-bold text-xs md:text-sm tracking-wider uppercase overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center"
                         style={{
-                          backgroundColor: "#FF02E8",
+                          backgroundColor: brandColor,
                           color: "#FFFFFF",
-                          boxShadow: "0 0 25px rgba(255, 2, 232, 0.6)",
+                          boxShadow: `0 0 25px ${brandColor}60`,
                         }}
                       >
                         <span className="relative z-10 flex items-center space-x-2">
@@ -381,8 +412,9 @@ export default function CTAWithVerticalMarquee() {
                 <span
                   className={cn(
                     "text-[10px] font-bold tracking-tight",
-                    isActive ? "text-[#FF02E8]" : "text-zinc-500"
+                    isActive ? "" : "text-zinc-500"
                   )}
+                  style={{ color: isActive ? brandColor : undefined }}
                 >
                   {item.price === "FREE" ? "Free" : `${item.price}/mo`}
                 </span>

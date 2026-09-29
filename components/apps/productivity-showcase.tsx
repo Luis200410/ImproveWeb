@@ -22,10 +22,6 @@ export function ProductivityShowcase() {
         sectionTitle="Block The Noise"
       />
 
-      {/* Bottom Marquee CTA Section */}
-      <section className="w-full border-t border-[var(--separator)]">
-        <CTAWithVerticalMarquee />
-      </section>
     </div>
   )
 }

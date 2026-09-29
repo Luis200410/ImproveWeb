@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { HeroSection, AnimatedV } from '@/components/ui/hero-section';
 import CircularSplitRoll from '@/components/landing/circular-split-roll';
+import { StorySection } from '@/components/landing/story-section';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -219,18 +220,21 @@ export default function Home() {
       },
     });
 
-    // ScrollTrigger 2: Scroll off title when leaving ecosystem into the footer
+    // ScrollTrigger 2: Smoothly fades/scrolls off title when leaving Frame 2 so it NEVER appears in Frame 3
     let stExit: ScrollTrigger | null = null;
     if (ecoEl) {
       stExit = ScrollTrigger.create({
         trigger: ecoEl,
         start: 'bottom bottom',
-        end: 'bottom top',
+        end: 'bottom top+=150',
         scrub: true,
         onUpdate: (self) => {
           if (self.progress > 0) {
-            titleEl.style.transform = `translateY(${-self.progress * 140}px) scale(0.84)`;
-            titleEl.style.opacity = `${Math.max(0, 1 - self.progress * 1.5)}`;
+            titleEl.style.transform = `translateY(${-self.progress * 150}px) scale(${0.84 - self.progress * 0.1})`;
+            titleEl.style.opacity = `${Math.max(0, 1 - self.progress * 1.6)}`;
+          } else {
+            titleEl.style.opacity = '1';
+            titleEl.style.transform = 'scale(0.84)';
           }
         },
       });
@@ -251,7 +255,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black relative">
-      {/* THE ONE AND ONLY UNIFIED IMPROVE TITLE (never duplicate) */}
+      {/* THE ONE AND ONLY UNIFIED IMPROVE TITLE (Only active in Frame 1 and Frame 2) */}
       <div
         ref={titleContainerRef}
         id="unified-improve-title"
@@ -304,7 +308,7 @@ export default function Home() {
         />
       </div>
 
-      {/* 3D App Ecosystem Roll (reveals once intro finishes) */}
+      {/* Frame 2: 3D App Ecosystem Roll (reveals once intro finishes) */}
       <section
         id="ecosystem"
         ref={ecosystemRef}
@@ -313,6 +317,16 @@ export default function Home() {
         }`}
       >
         <CircularSplitRoll onActiveChange={handleActiveChange} />
+      </section>
+
+      {/* Frame 3: The Architecture / Blueprint (The Problem, The Ecosystem, The Sanctuary, The Investment) */}
+      <section
+        id="story"
+        className={`w-full relative bg-black transition-opacity duration-700 ${
+          introComplete ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      >
+        <StorySection />
       </section>
     </div>
   );
