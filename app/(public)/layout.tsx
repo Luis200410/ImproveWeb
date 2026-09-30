@@ -24,6 +24,7 @@ export default function PublicLayout({
             <a href="/pricing" className="hover:text-[var(--label)] transition-colors">Pricing</a>
             <a href="/privacy" className="hover:text-[var(--label)] transition-colors">Privacy & Consent</a>
             <a href="/terms" className="hover:text-[var(--label)] transition-colors">Terms of Service</a>
+            <a href="/refund" className="hover:text-[var(--label)] transition-colors">Refund Policy</a>
             <a href="/blog" className="hover:text-[var(--label)] transition-colors">Blog</a>
             <a href="/login" className="hover:text-[var(--label)] transition-colors">Sign In</a>
           </div>
