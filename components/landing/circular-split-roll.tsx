@@ -344,6 +344,142 @@ export default function CircularSplitRoll({
       return () => ctx.revert();
     });
 
+    // Mobile Phone Media Query (<640px): Dedicated vertical 3D wheel
+    mm.add("(max-width: 639px)", () => {
+      const ctx = gsap.context(() => {
+        const leftNodes = gsap.utils.toArray(
+          ".circular-scroll-showcase__left-item"
+        ) as HTMLElement[];
+        const rightNodes = gsap.utils.toArray(
+          ".circular-scroll-showcase__right-item"
+        ) as HTMLElement[];
+
+        gsap.set([...leftNodes, ...rightNodes], { opacity: 1 });
+
+        const radiusY = Math.min(Math.max(window.innerHeight * 0.22, 110), 150);
+        const currentActiveIndexRef = { current: 0 };
+
+        const render = (progress: number, isAct = false) => {
+          const clampedProgress = gsap.utils.clamp(0, 1, progress);
+          const currentVirtualIndex = clampedProgress * (total - 1);
+          const nearestIndex = Math.round(currentVirtualIndex);
+          currentActiveIndexRef.current = nearestIndex;
+          setActiveIndex(nearestIndex);
+          onActiveChangeRef.current?.(nearestIndex, isAct);
+
+          leftNodes.forEach((node, index) => {
+            const diff = index - currentVirtualIndex;
+            let wrappedDiff = diff % total;
+            if (wrappedDiff > total / 2) wrappedDiff -= total;
+            if (wrappedDiff < -total / 2) wrappedDiff += total;
+
+            const angle = (wrappedDiff / total) * Math.PI * 2;
+            const y = Math.sin(angle) * (radiusY * 0.55);
+            const depth = Math.cos(angle);
+
+            const isVisible = depth > -0.15;
+            const focus = Math.max(0, depth);
+            const scale = gsap.utils.interpolate(0.75, 1.0, Math.pow(focus, 1.8));
+            const opacity = isVisible
+              ? gsap.utils.interpolate(0.08, 1.0, Math.pow(focus, 2.4))
+              : 0;
+
+            gsap.set(node, {
+              xPercent: -50,
+              yPercent: -50,
+              x: 0,
+              y,
+              scale,
+              opacity,
+              zIndex: Math.round(depth * 50 + 50),
+              pointerEvents: isVisible && focus > 0.6 ? "auto" : "none",
+            });
+          });
+
+          rightNodes.forEach((node, index) => {
+            const diff = index - currentVirtualIndex;
+            let wrappedDiff = diff % total;
+            if (wrappedDiff > total / 2) wrappedDiff -= total;
+            if (wrappedDiff < -total / 2) wrappedDiff += total;
+
+            const angle = (wrappedDiff / total) * Math.PI * 2;
+            const y = Math.sin(angle) * radiusY;
+            const depth = Math.cos(angle);
+
+            const isVisible = depth > -0.15;
+            const focus = Math.max(0, depth);
+            const scale = gsap.utils.interpolate(0.7, 1.0, Math.pow(focus, 1.8));
+            const opacity = isVisible
+              ? gsap.utils.interpolate(0.08, 1.0, Math.pow(focus, 2.4))
+              : 0;
+
+            gsap.set(node, {
+              xPercent: -50,
+              yPercent: -50,
+              x: 0,
+              y,
+              scale,
+              opacity,
+              zIndex: Math.round(depth * 50 + 50),
+              pointerEvents: isVisible && focus > 0.6 ? "auto" : "none",
+            });
+
+            const cardInner = node.querySelector<HTMLElement>(".card-inner-box");
+            if (cardInner) {
+              const item = safeItems[index];
+              if (focus > 0.85) {
+                cardInner.style.borderColor = `${item.accentHex}dd`;
+                cardInner.style.boxShadow = `0 0 28px ${item.accentHex}55, 0 12px 30px rgba(0,0,0,0.85)`;
+              } else {
+                cardInner.style.borderColor = "rgba(255, 255, 255, 0.12)";
+                cardInner.style.boxShadow = "0 8px 20px rgba(0,0,0,0.5)";
+              }
+            }
+          });
+        };
+
+        render(0);
+
+        const st = ScrollTrigger.create({
+          trigger: rootRef.current,
+          start: "top top",
+          end: `+=${sectionHeight * 0.9}%`,
+          pin: stickyRef.current,
+          pinSpacing: true,
+          scrub: typeof scrub === "number" ? scrub : 0.8,
+          invalidateOnRefresh: true,
+          onToggle: (self) => {
+            const isAct = self.isActive;
+            setIsRollActive(isAct);
+            onActiveChangeRef.current?.(currentActiveIndexRef.current, isAct);
+          },
+          onUpdate: (self) => {
+            const isAct = self.isActive;
+            setIsRollActive(isAct);
+            render(self.progress, isAct);
+          },
+        });
+
+        scrollTriggerRef.current = st;
+
+        const onResize = () => {
+          if (st) {
+            render(st.progress);
+            st.refresh();
+          }
+        };
+
+        window.addEventListener("resize", onResize);
+        return () => {
+          window.removeEventListener("resize", onResize);
+          st.kill();
+          scrollTriggerRef.current = null;
+        };
+      }, rootRef);
+
+      return () => ctx.revert();
+    });
+
     return () => mm.revert();
   }, [safeItems, total, sectionHeight, scrub]);
 
@@ -356,26 +492,26 @@ export default function CircularSplitRoll({
         "--css-card-height": `${cardHeight}px`,
       } as React.CSSProperties}
     >
-      {/* 3D Roll Carousel Section for Desktop / Tablet */}
+      {/* 3D Roll Carousel Section for Desktop, Tablet, and Mobile */}
       <div
         ref={stickyRef}
         className={`relative h-screen w-full overflow-hidden flex flex-col justify-between items-center ${
-          reducedMotion ? "hidden" : "max-sm:hidden"
+          reducedMotion ? "hidden" : "block"
         }`}
       >
-        {/* Spacious Two-Column Showcase - Perfectly sized to fit in ONE frame */}
-        <div className="relative mx-auto flex h-full w-full max-w-[94vw] 2xl:max-w-[1440px] items-center justify-between px-6 sm:px-12 pt-26 pb-8">
-          {/* Left Column: BIIIIIIG App Titles with Typewriter Taglines */}
-          <div className="relative flex h-full w-[48%] items-center justify-center">
-            <div className="relative h-[65vh] w-full flex items-center justify-center">
+        {/* Responsive Showcase - Stacked on Mobile, Two-Column on Tablet/Desktop */}
+        <div className="relative mx-auto flex h-full w-full max-w-[94vw] 2xl:max-w-[1440px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 pt-20 sm:pt-26 pb-12 sm:pb-8 gap-2 sm:gap-0">
+          {/* Top/Left Column: App Titles with Typewriter Taglines */}
+          <div className="relative flex h-[26vh] sm:h-full w-full sm:w-[48%] items-center justify-center">
+            <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
               {safeItems.map((item, idx) => (
                 <Link
                   key={item.id}
                   href={`/apps/${item.slug}`}
                   className="circular-scroll-showcase__left-item absolute left-1/2 top-1/2 w-full origin-center whitespace-nowrap text-center will-change-[transform,opacity] transition-colors cursor-pointer group"
                 >
-                  {/* App Title - Perfectly scaled */}
-                  <div className="flex items-center justify-center gap-2.5 sm:gap-3">
+                  {/* App Title - Responsive scaling */}
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
                     <span
                       className="text-xs sm:text-sm md:text-base font-mono font-bold align-middle transition-colors"
                       style={{ color: item.accentHex }}
@@ -383,7 +519,7 @@ export default function CircularSplitRoll({
                       {item.number}
                     </span>
                     <span
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight transition-colors group-hover:text-[var(--hover-accent)]"
+                      className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight transition-colors group-hover:text-[var(--hover-accent)]"
                       style={
                         {
                           "--hover-accent": item.accentHex,
@@ -406,18 +542,18 @@ export default function CircularSplitRoll({
             </div>
           </div>
 
-          {/* Right Column: Cards with LITERALLY JUST THE LOGO IMAGE (smaller to fit in one frame) */}
-          <div className="relative flex h-full w-[48%] items-center justify-center">
-            <div className="relative h-[65vh] w-full flex items-center justify-center">
+          {/* Bottom/Right Column: Cards with Logo Image */}
+          <div className="relative flex h-[40vh] sm:h-full w-full sm:w-[48%] items-center justify-center">
+            <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
               {safeItems.map((item) => (
                 <Link
                   key={item.id}
                   href={`/apps/${item.slug}`}
-                  className="circular-scroll-showcase__right-item absolute left-1/2 top-1/2 h-(--css-card-height,230px) w-(--css-card-width,210px) origin-center will-change-[transform,opacity] cursor-pointer group"
+                  className="circular-scroll-showcase__right-item absolute left-1/2 top-1/2 h-[175px] w-[160px] sm:h-(--css-card-height,230px) sm:w-(--css-card-width,210px) origin-center will-change-[transform,opacity] cursor-pointer group"
                 >
-                  {/* Clean Container: LITERALLY JUST THE IMAGE */}
+                  {/* Clean Container */}
                   <div
-                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[24px] bg-[#0c0a14]/95 border border-white/15 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-2xl group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-6"
+                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-[#0c0a14]/95 border border-white/15 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-2xl group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
                   >
                     <img
                       src={item.logoUrl}
@@ -433,7 +569,7 @@ export default function CircularSplitRoll({
         </div>
 
         {/* Step Dots Indicator (Bottom Center) */}
-        <div className="absolute bottom-4 sm:bottom-5 left-0 right-0 z-30 flex justify-center items-center gap-2.5">
+        <div className="absolute bottom-4 sm:bottom-5 left-0 right-0 z-30 flex justify-center items-center gap-2 sm:gap-2.5">
           {safeItems.map((item, idx) => {
             const isActive = idx === activeIndex;
             return (
@@ -442,8 +578,8 @@ export default function CircularSplitRoll({
                 onClick={() => scrollToItem(idx)}
                 className={`transition-all duration-300 rounded-full cursor-pointer ${
                   isActive
-                    ? "w-8 h-2 opacity-100 shadow-[0_0_12px_currentColor]"
-                    : "w-2 h-2 opacity-30 hover:opacity-70 bg-white"
+                    ? "w-6 sm:w-8 h-1.5 sm:h-2 opacity-100 shadow-[0_0_12px_currentColor]"
+                    : "w-1.5 sm:w-2 h-1.5 sm:h-2 opacity-30 hover:opacity-70 bg-white"
                 }`}
                 style={{
                   backgroundColor: isActive ? item.accentHex : undefined,
@@ -453,38 +589,6 @@ export default function CircularSplitRoll({
               />
             );
           })}
-        </div>
-      </div>
-
-      {/* Responsive Grid View for Mobile / Small Displays */}
-      <div
-        className={`w-full px-5 py-12 max-sm:px-4 max-sm:py-8 ${
-          reducedMotion ? "block" : "hidden max-sm:block"
-        }`}
-      >
-
-        <div className="mx-auto grid w-full max-w-md grid-cols-1 sm:grid-cols-2 gap-4">
-          {safeItems.map((item) => (
-            <Link
-              key={item.id}
-              href={`/apps/${item.slug}`}
-              className="w-full group cursor-pointer"
-            >
-              <div
-                className="relative aspect-[16/9] w-full overflow-hidden rounded-[20px] bg-[#0c0a14] border border-white/15 p-4 flex items-center justify-center shadow-xl transition-all duration-300 hover:border-white/40"
-                style={{
-                  boxShadow: `0 0 0 1px ${item.accentHex}22`,
-                }}
-              >
-                <img
-                  src={item.logoUrl}
-                  alt={item.alt}
-                  className="block h-full max-h-14 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
-                  draggable="false"
-                />
-              </div>
-            </Link>
-          ))}
         </div>
       </div>
     </section>

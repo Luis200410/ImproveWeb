@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, CSSProperties, ReactNode } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from "framer-motion";
 import {
   Flame,
@@ -395,6 +395,72 @@ function BrokenFocusStage({ isGoalsStep }: { isGoalsStep?: boolean }) {
   );
 }
 
+interface TextHighlightRule {
+  phrase: string;
+  className?: string;
+  style?: CSSProperties;
+}
+
+function renderTypewriterText(
+  fullText: string,
+  charCount: number,
+  rules: TextHighlightRule[] = []
+): ReactNode {
+  if (charCount <= 0) return null;
+
+  const intervals: { start: number; end: number; rule: TextHighlightRule }[] = [];
+  for (const rule of rules) {
+    if (!rule.phrase) continue;
+    let searchFrom = 0;
+    while (searchFrom < fullText.length) {
+      const idx = fullText.indexOf(rule.phrase, searchFrom);
+      if (idx === -1) break;
+      intervals.push({ start: idx, end: idx + rule.phrase.length, rule });
+      searchFrom = idx + rule.phrase.length;
+    }
+  }
+
+  intervals.sort((a, b) => a.start - b.start);
+
+  const segments: { start: number; end: number; rule?: TextHighlightRule }[] = [];
+  let currentPos = 0;
+
+  for (const interval of intervals) {
+    if (interval.start > currentPos) {
+      segments.push({ start: currentPos, end: interval.start });
+    }
+    const segStart = Math.max(currentPos, interval.start);
+    if (interval.end > segStart) {
+      segments.push({ start: segStart, end: interval.end, rule: interval.rule });
+      currentPos = interval.end;
+    }
+  }
+
+  if (currentPos < fullText.length) {
+    segments.push({ start: currentPos, end: fullText.length });
+  }
+
+  return (
+    <>
+      {segments.map((seg, sIdx) => {
+        if (charCount <= seg.start) return null;
+        const visibleSlice = fullText.slice(seg.start, Math.min(seg.end, charCount));
+        if (!visibleSlice) return null;
+
+        if (seg.rule) {
+          return (
+            <span key={sIdx} className={seg.rule.className} style={seg.rule.style}>
+              {visibleSlice}
+            </span>
+          );
+        }
+
+        return <span key={sIdx}>{visibleSlice}</span>;
+      })}
+    </>
+  );
+}
+
 function ChapterOneAnimatedContent({ accentColor, active }: { accentColor: string; active: boolean }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [displayText, setDisplayText] = useState("");
@@ -471,89 +537,51 @@ function ChapterOneAnimatedContent({ accentColor, active }: { accentColor: strin
     return () => clearTimeout(timer);
   }, [active, stepIndex, displayText, isDeleting]);
 
+  const currentStep = TYPEWRITER_STEPS[stepIndex] || TYPEWRITER_STEPS[0];
+  const rules: TextHighlightRule[] = (() => {
+    switch (stepIndex) {
+      case 0:
+        return [
+          {
+            phrase: "split across a dozen different subscriptions",
+            className: "font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 1:
+        return [{ phrase: currentStep.text, className: "text-red-400 font-semibold" }];
+      case 2:
+        return [{ phrase: currentStep.text, className: "text-amber-400 font-semibold" }];
+      case 3:
+        return [{ phrase: currentStep.text, className: "text-rose-400 font-semibold" }];
+      case 4:
+        return [
+          { phrase: "drain your wallet", className: "text-white font-bold" },
+          {
+            phrase: "breaks your focus",
+            className: "font-bold underline decoration-red-500/50 underline-offset-4",
+            style: { color: accentColor },
+          },
+        ];
+      case 5:
+        return [
+          {
+            phrase: "disconnected",
+            className: "font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]",
+            style: { color: accentColor },
+          },
+        ];
+      default:
+        return [];
+    }
+  })();
+
   return (
     <div className="space-y-6">
       {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
       <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
         <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {stepIndex === 0 && (
-            <span>
-              {displayText
-                .split(/(split across a dozen different subscriptions)/g)
-                .map((part, i) =>
-                  part === "split across a dozen different subscriptions" ? (
-                    <span
-                      key={i}
-                      className="font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]"
-                      style={{ color: accentColor }}
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
-          {stepIndex === 1 && (
-            <span className="text-red-400 font-semibold">{displayText}</span>
-          )}
-
-          {stepIndex === 2 && (
-            <span className="text-amber-400 font-semibold">{displayText}</span>
-          )}
-
-          {stepIndex === 3 && (
-            <span className="text-rose-400 font-semibold">{displayText}</span>
-          )}
-
-          {stepIndex === 4 && (
-            <span>
-              {displayText
-                .replace("drain your wallet", "§DRAIN§")
-                .replace("breaks your focus", "§FOCUS§")
-                .split(/(§DRAIN§|§FOCUS§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§DRAIN§") {
-                    return <strong key={idx} className="text-white font-bold">drain your wallet</strong>;
-                  }
-                  if (chunk === "§FOCUS§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-red-500/50 underline-offset-4"
-                        style={{ color: accentColor }}
-                      >
-                        breaks your focus
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 5 && (
-            <span>
-              {displayText
-                .split(/(disconnected)/g)
-                .map((part, i) =>
-                  part === "disconnected" ? (
-                    <span
-                      key={i}
-                      className="font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]"
-                      style={{ color: accentColor }}
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
+          {renderTypewriterText(currentStep.text, displayText.length, rules)}
           <span
             className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
             style={{ backgroundColor: accentColor }}
@@ -813,13 +841,62 @@ const INTERCONNECT_SEGMENTS = [
 ];
 
 const CORE_CONDUITS = [
-  { d: "M 50 68 Q 160 145 350 145", color: "#cc0000" },
-  { d: "M 150 68 Q 230 145 350 145", color: "#6f1bd3" },
-  { d: "M 250 68 L 350 145", color: "#ff02e8" },
-  { d: "M 350 68 L 350 145", color: "#2254f5" },
-  { d: "M 450 68 L 350 145", color: "#43b752" },
-  { d: "M 550 68 L 350 145", color: "#ff6900" },
-  { d: "M 650 68 Q 540 145 350 145", color: "#efb219" },
+  {
+    id: "cond-0",
+    pillarLetter: "I",
+    color: "#cc0000",
+    glowColor: "rgba(204, 0, 0, 0.8)",
+    x: 50,
+    d: "M 50 68 C 50 135, 230 165, 350 155",
+  },
+  {
+    id: "cond-1",
+    pillarLetter: "M",
+    color: "#6f1bd3",
+    glowColor: "rgba(111, 27, 211, 0.8)",
+    x: 150,
+    d: "M 150 68 C 150 130, 260 160, 350 155",
+  },
+  {
+    id: "cond-2",
+    pillarLetter: "P",
+    color: "#ff02e8",
+    glowColor: "rgba(255, 2, 232, 0.85)",
+    x: 250,
+    d: "M 250 68 C 250 125, 305 158, 350 155",
+  },
+  {
+    id: "cond-3",
+    pillarLetter: "R",
+    color: "#2254f5",
+    glowColor: "rgba(34, 84, 245, 0.85)",
+    x: 350,
+    d: "M 350 68 L 350 155",
+  },
+  {
+    id: "cond-4",
+    pillarLetter: "O",
+    color: "#43b752",
+    glowColor: "rgba(67, 183, 82, 0.85)",
+    x: 450,
+    d: "M 450 68 C 450 125, 395 158, 350 155",
+  },
+  {
+    id: "cond-5",
+    pillarLetter: "V",
+    color: "#ff6900",
+    glowColor: "rgba(255, 105, 0, 0.85)",
+    x: 550,
+    d: "M 550 68 C 550 130, 440 160, 350 155",
+  },
+  {
+    id: "cond-6",
+    pillarLetter: "E",
+    color: "#efb219",
+    glowColor: "rgba(239, 178, 25, 0.85)",
+    x: 650,
+    d: "M 650 68 C 650 135, 470 165, 350 155",
+  },
 ];
 
 const CHAPTER_TWO_STEPS: TypewriterStep[] = [
@@ -843,7 +920,7 @@ const CHAPTER_TWO_STEPS: TypewriterStep[] = [
     // Beat 2: Interconnections appear one by one like a reactor!
     text: "These are not separate silos. They are deeply interconnected.",
     typeSpeed: 48,
-    pauseAtEnd: 3600,
+    pauseAtEnd: 4200,
     deleteSpeed: 20,
     pauseAfterDelete: 450,
   },
@@ -878,7 +955,7 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [visibleNodesCount, setVisibleNodesCount] = useState(0);
-  const [connectedSegmentsCount, setConnectedSegmentsCount] = useState(0);
+  const [connectionStage, setConnectionStage] = useState(0);
 
   // Reveal the 7 logo apps slowly one by one in exact order to spell IMPROVE as their names are typed!
   useEffect(() => {
@@ -905,22 +982,22 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
   // Animate interconnections ONE BY ONE during Step 2 ("deeply interconnected")!
   useEffect(() => {
     if (stepIndex < 2) {
-      setConnectedSegmentsCount(0);
+      setConnectionStage(0);
     } else if (stepIndex === 2) {
-      // Connect segments 0 to 5 one by one (1-6), then conduits to core (7), then core ignition (8)!
-      setConnectedSegmentsCount(1);
+      // Connect each app one by one into the ecosystem and core (1 to 7), then full reactor ignition (8)!
+      setConnectionStage(1);
       const timers: NodeJS.Timeout[] = [];
       for (let i = 2; i <= 8; i++) {
         timers.push(
           setTimeout(() => {
-            setConnectedSegmentsCount(i);
+            setConnectionStage(i);
           }, (i - 1) * 440)
         );
       }
       return () => timers.forEach(clearTimeout);
     } else {
       // Step 3 onwards: all interconnections remain fully charged
-      setConnectedSegmentsCount(8);
+      setConnectionStage(8);
     }
   }, [stepIndex]);
 
@@ -931,7 +1008,7 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
       setDisplayText("");
       setIsDeleting(false);
       setVisibleNodesCount(0);
-      setConnectedSegmentsCount(0);
+      setConnectionStage(0);
     }
   }, [active]);
 
@@ -981,164 +1058,77 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
   const isHabitSyncActive = stepIndex === 4;
   const isTotalAlignment = stepIndex === 5;
 
+  const currentStep = CHAPTER_TWO_STEPS[stepIndex] || CHAPTER_TWO_STEPS[0];
+  const rules: TextHighlightRule[] = (() => {
+    switch (stepIndex) {
+      case 0:
+        return [
+          {
+            phrase: "single, conscious ecosystem",
+            className: "font-semibold drop-shadow-[0_0_12px_rgba(255,2,232,0.5)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 1:
+        return ECOSYSTEM_PILLARS.map((pillar) => ({
+          phrase: pillar.name,
+          className: "font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]",
+          style: { color: pillar.color },
+        }));
+      case 2:
+        return [
+          {
+            phrase: "deeply interconnected",
+            className: "font-bold underline decoration-fuchsia-500/60 underline-offset-4 drop-shadow-[0_0_16px_rgba(255,2,232,0.7)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 3:
+        return [
+          {
+            phrase: "central nervous system",
+            className: "font-bold underline decoration-fuchsia-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
+            style: { color: "#ff02e8" },
+          },
+          {
+            phrase: "automatically routing data",
+            className: "font-bold drop-shadow-[0_0_12px_rgba(255,105,0,0.6)]",
+            style: { color: "#ff6900" },
+          },
+        ];
+      case 4:
+        return [
+          { phrase: "Productivity", className: "font-bold", style: { color: "#ff02e8" } },
+          { phrase: "Body", className: "font-bold", style: { color: "#43b752" } },
+          {
+            phrase: "Zero app switching required",
+            className: "text-white font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]",
+          },
+        ];
+      case 5:
+        return [
+          {
+            phrase: "Conscious Control",
+            className: "font-bold drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "One unified system",
+            className: "font-bold drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
+            style: { color: accentColor },
+          },
+        ];
+      default:
+        return [];
+    }
+  })();
+
   return (
     <div className="space-y-6">
       {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
       <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
         <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {stepIndex === 0 && (
-            <span>
-              {displayText
-                .split(/(single, conscious ecosystem)/g)
-                .map((part, i) =>
-                  part === "single, conscious ecosystem" ? (
-                    <span
-                      key={i}
-                      className="font-semibold drop-shadow-[0_0_12px_rgba(255,2,232,0.5)]"
-                      style={{ color: accentColor }}
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
-          {stepIndex === 1 && (
-            <span>
-              {displayText
-                .split(/(Relationships|Mind|Productivity|Work|Body|Second Brain|Money)/g)
-                .map((part, i) => {
-                  const pillar = ECOSYSTEM_PILLARS.find((p) => p.name === part);
-                  if (pillar) {
-                    return (
-                      <span
-                        key={i}
-                        className="font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]"
-                        style={{ color: pillar.color }}
-                      >
-                        {part}
-                      </span>
-                    );
-                  }
-                  return <span key={i}>{part}</span>;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 2 && (
-            <span>
-              {displayText
-                .split(/(deeply interconnected)/g)
-                .map((part, i) =>
-                  part === "deeply interconnected" ? (
-                    <span
-                      key={i}
-                      className="font-bold underline decoration-fuchsia-500/60 underline-offset-4 drop-shadow-[0_0_16px_rgba(255,2,232,0.7)]"
-                      style={{ color: accentColor }}
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
-          {stepIndex === 3 && (
-            <span>
-              {displayText
-                .replace("central nervous system", "§NERVOUS§")
-                .replace("automatically routing data", "§ROUTING§")
-                .split(/(§NERVOUS§|§ROUTING§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§NERVOUS§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-fuchsia-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]"
-                        style={{ color: "#ff02e8" }}
-                      >
-                        central nervous system
-                      </span>
-                    );
-                  }
-                  if (chunk === "§ROUTING§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_12px_rgba(255,105,0,0.6)]"
-                        style={{ color: "#ff6900" }}
-                      >
-                        automatically routing data
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 4 && (
-            <span>
-              {displayText
-                .replace("Productivity", "§PROD§")
-                .replace("Body", "§BODY§")
-                .replace("Zero app switching required", "§ZERO§")
-                .split(/(§PROD§|§BODY§|§ZERO§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§PROD§") {
-                    return (
-                      <span key={idx} className="font-bold" style={{ color: "#ff02e8" }}>
-                        Productivity
-                      </span>
-                    );
-                  }
-                  if (chunk === "§BODY§") {
-                    return (
-                      <span key={idx} className="font-bold" style={{ color: "#43b752" }}>
-                        Body
-                      </span>
-                    );
-                  }
-                  if (chunk === "§ZERO§") {
-                    return (
-                      <strong key={idx} className="text-white font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]">
-                        Zero app switching required
-                      </strong>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 5 && (
-            <span>
-              {displayText
-                .replace("Conscious Control", "§CONSCIOUS§")
-                .replace("One unified system", "§UNIFIED§")
-                .split(/(§CONSCIOUS§|§UNIFIED§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§CONSCIOUS§" || chunk === "§UNIFIED§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]"
-                        style={{ color: accentColor }}
-                      >
-                        {chunk === "§CONSCIOUS§" ? "Conscious Control" : "One unified system"}
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
+          {renderTypewriterText(currentStep.text, displayText.length, rules)}
           <span
             className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
             style={{ backgroundColor: accentColor }}
@@ -1154,32 +1144,51 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative min-h-[190px] sm:min-h-[220px] rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-black/70 backdrop-blur-xl p-4 sm:p-6 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.9)] flex items-center justify-center"
+            className="relative w-full overflow-visible flex items-center justify-center pt-2 pb-4"
           >
             {/* Ambient radial glow */}
             <div
-              className="pointer-events-none absolute inset-0 opacity-25 blur-3xl transition-opacity duration-700"
+              className="pointer-events-none absolute inset-0 opacity-30 blur-3xl transition-opacity duration-700"
               style={{
                 background: isReactorActive
-                  ? "radial-gradient(circle at 50% 50%, #ff02e8 0%, #ff6900 35%, transparent 70%)"
-                  : "radial-gradient(circle at 50% 50%, #ffffff10 0%, transparent 60%)",
+                  ? "radial-gradient(circle at 50% 65%, #ff02e8 0%, #2254f5 30%, #ff6900 55%, transparent 75%)"
+                  : "radial-gradient(circle at 50% 45%, #ffffff12 0%, transparent 60%)",
               }}
             />
 
             {/* Interconnection Lines & Reactor Core SVG Canvas */}
             <svg
-              className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
-              viewBox="0 0 700 180"
+              className="w-full h-auto max-w-[700px] overflow-visible select-none pointer-events-none"
+              viewBox="0 0 700 200"
               preserveAspectRatio="xMidYMid meet"
             >
               <defs>
-                <filter id="reactorGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="4.5" result="blur" />
+                <filter id="reactorGlow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="5" result="blur1" />
+                  <feGaussianBlur stdDeviation="2" result="blur2" />
                   <feMerge>
-                    <feMergeNode in="blur" />
+                    <feMergeNode in="blur1" />
+                    <feMergeNode in="blur2" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
+
+                <radialGradient id="coreFusionGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                  <stop offset="40%" stopColor="#ff02e8" stopOpacity="0.85" />
+                  <stop offset="75%" stopColor="#2254f5" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
+                </radialGradient>
+
+                <linearGradient id="cnsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#ff02e8" />
+                  <stop offset="100%" stopColor="#ff6900" />
+                </linearGradient>
+
+                <linearGradient id="habitGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#ff02e8" />
+                  <stop offset="100%" stopColor="#43b752" />
+                </linearGradient>
 
                 {INTERCONNECT_SEGMENTS.map((seg) => (
                   <linearGradient key={seg.gradId} id={seg.gradId} x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1189,59 +1198,151 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
                 ))}
               </defs>
 
-              {/* 1. Sequential Inter-Node Horizontal Connections (One by One) */}
+              {/* 1. Subtle Guide Track behind adjacent logos */}
+              {INTERCONNECT_SEGMENTS.map((seg) => (
+                <line
+                  key={`track-${seg.id}`}
+                  x1={seg.x1}
+                  y1="48"
+                  x2={seg.x2}
+                  y2="48"
+                  stroke="rgba(255,255,255,0.06)"
+                  strokeWidth="1.5"
+                  strokeDasharray="3 6"
+                />
+              ))}
+
+              {/* 2. Sequential Inter-Node Horizontal Connections (One by One) */}
               {INTERCONNECT_SEGMENTS.map((seg, sIdx) => {
-                if (connectedSegmentsCount <= sIdx) return null;
+                const isSegmentActive = connectionStage >= sIdx + 2;
+                if (!isSegmentActive) return null;
                 return (
                   <g key={seg.id}>
-                    {/* Background faint line */}
-                    <line
-                      x1={seg.x1}
-                      y1="60"
-                      x2={seg.x2}
-                      y2="60"
-                      stroke="rgba(255,255,255,0.15)"
-                      strokeWidth="2"
-                    />
-                    {/* Glowing plasma laser segment drawing in smoothly */}
+                    {/* Ambient laser glow */}
                     <motion.line
                       x1={seg.x1}
-                      y1="60"
+                      y1="48"
                       x2={seg.x2}
-                      y2="60"
+                      y2="48"
                       stroke={`url(#${seg.gradId})`}
-                      strokeWidth="3"
-                      strokeDasharray="8 10"
+                      strokeWidth="4.5"
+                      strokeOpacity="0.38"
+                      strokeLinecap="round"
+                      filter="url(#reactorGlow)"
                       initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1, strokeDashoffset: [0, -36] }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                    />
+                    {/* Core crisp laser beam */}
+                    <motion.line
+                      x1={seg.x1}
+                      y1="48"
+                      x2={seg.x2}
+                      y2="48"
+                      stroke={`url(#${seg.gradId})`}
+                      strokeWidth="2.2"
+                      strokeOpacity="0.95"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
+                    />
+                    {/* Flowing photon particles */}
+                    <motion.line
+                      x1={seg.x1}
+                      y1="48"
+                      x2={seg.x2}
+                      y2="48"
+                      stroke="#ffffff"
+                      strokeWidth="2"
+                      strokeDasharray="4 16"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 0.85, strokeDashoffset: [0, -40] }}
                       transition={{
                         pathLength: { duration: 0.45, ease: "easeOut" },
+                        opacity: { duration: 0.3 },
                         strokeDashoffset: { duration: 1.2, repeat: Infinity, ease: "linear" },
                       }}
-                      filter="url(#reactorGlow)"
                     />
                   </g>
                 );
               })}
 
-              {/* 2. Central Nervous System Overhead Arc: Productivity (250) <-> Second Brain (550) */}
-              {connectedSegmentsCount >= 6 && (
+              {/* 3. The 7 Conduits Streaming One by One into Central Reactor Core */}
+              {CORE_CONDUITS.map((cond, cIdx) => {
+                const isConduitActive = connectionStage > cIdx;
+                if (!isConduitActive) return null;
+
+                return (
+                  <g key={cond.id}>
+                    {/* Ambient glow conduit */}
+                    <motion.path
+                      d={cond.d}
+                      fill="none"
+                      stroke={cond.color}
+                      strokeWidth="5"
+                      strokeOpacity="0.4"
+                      strokeLinecap="round"
+                      filter="url(#reactorGlow)"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                    {/* Crisp laser beam */}
+                    <motion.path
+                      d={cond.d}
+                      fill="none"
+                      stroke={cond.color}
+                      strokeWidth="2.2"
+                      strokeOpacity="0.95"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                    {/* Streaming photon energy dash packet */}
+                    <motion.path
+                      d={cond.d}
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeDasharray="4 22"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{
+                        pathLength: 1,
+                        opacity: 0.9,
+                        strokeDashoffset: [0, -52],
+                      }}
+                      transition={{
+                        pathLength: { duration: 0.52, ease: "easeOut" },
+                        opacity: { duration: 0.3 },
+                        strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: "linear" },
+                      }}
+                    />
+
+                  </g>
+                );
+              })}
+
+              {/* 4. Central Nervous System Overhead Arc: Productivity (250) <-> Second Brain (550) */}
+              {connectionStage >= 8 && (
                 <g>
                   <path
-                    d="M 250 38 Q 400 -18 550 38"
+                    d="M 250 25 C 310 4, 490 4, 550 25"
                     fill="none"
                     stroke="rgba(255, 2, 232, 0.2)"
                     strokeWidth="2"
                   />
                   <motion.path
-                    d="M 250 38 Q 400 -18 550 38"
+                    d="M 250 25 C 310 4, 490 4, 550 25"
                     fill="none"
-                    stroke={isNervousSystemActive ? "#ff02e8" : "rgba(255, 2, 232, 0.6)"}
+                    stroke="url(#cnsGrad)"
                     strokeWidth={isNervousSystemActive ? "3.5" : "2"}
-                    strokeDasharray="8 10"
-                    animate={{ strokeDashoffset: [0, -36] }}
+                    strokeDasharray="6 8"
+                    animate={{ strokeDashoffset: [0, -32] }}
                     transition={{
-                      duration: isNervousSystemActive ? 0.8 : 1.5,
+                      duration: isNervousSystemActive ? 0.7 : 1.4,
                       repeat: Infinity,
                       ease: "linear",
                     }}
@@ -1250,24 +1351,24 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
                 </g>
               )}
 
-              {/* 3. Habit & Workout Sync Under-Arc: Productivity (250) <-> Body (450) */}
-              {connectedSegmentsCount >= 6 && (
+              {/* 5. Habit & Workout Sync Under-Arc: Productivity (250) <-> Body (450) */}
+              {connectionStage >= 8 && (
                 <g>
                   <path
-                    d="M 250 82 Q 350 140 450 82"
+                    d="M 250 68 C 290 115, 410 115, 450 68"
                     fill="none"
                     stroke="rgba(67, 183, 82, 0.2)"
                     strokeWidth="2"
                   />
                   <motion.path
-                    d="M 250 82 Q 350 140 450 82"
+                    d="M 250 68 C 290 115, 410 115, 450 68"
                     fill="none"
-                    stroke={isHabitSyncActive ? "#43b752" : "rgba(67, 183, 82, 0.6)"}
+                    stroke="url(#habitGrad)"
                     strokeWidth={isHabitSyncActive ? "3.5" : "2"}
-                    strokeDasharray="8 10"
-                    animate={{ strokeDashoffset: [0, -36] }}
+                    strokeDasharray="6 8"
+                    animate={{ strokeDashoffset: [0, -32] }}
                     transition={{
-                      duration: isHabitSyncActive ? 0.8 : 1.5,
+                      duration: isHabitSyncActive ? 0.7 : 1.4,
                       repeat: Infinity,
                       ease: "linear",
                     }}
@@ -1276,134 +1377,117 @@ function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: strin
                 </g>
               )}
 
-              {/* 4. Conduits streaming from all 7 nodes down to Central Fusion Core */}
-              {connectedSegmentsCount >= 7 && (
-                <g>
-                  {CORE_CONDUITS.map((cond, cIdx) => (
-                    <motion.path
-                      key={cIdx}
-                      d={cond.d}
-                      fill="none"
-                      stroke={cond.color}
-                      strokeWidth="1.8"
-                      strokeOpacity="0.75"
-                      strokeDasharray="6 8"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1, strokeDashoffset: [0, -28] }}
-                      transition={{
-                        pathLength: { duration: 0.5, ease: "easeOut" },
-                        strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: "linear" },
-                      }}
-                    />
-                  ))}
+              {/* 6. Central Fusion Reactor Core at (350, 155) */}
+              {connectionStage >= 1 && (
+                <g transform="translate(350, 155)">
+                  {/* Base Core Flare */}
+                  <circle
+                    r={connectionStage >= 8 ? 26 : 14}
+                    fill="url(#coreFusionGrad)"
+                    filter="url(#reactorGlow)"
+                    opacity={connectionStage >= 8 ? 0.95 : 0.45}
+                  />
+
+                  {/* Stage 8: Full Ignition Shockwaves & Quantum Containment Rings */}
+                  {connectionStage >= 8 && (
+                    <>
+                      {/* Expanding Shockwave 1 */}
+                      <motion.circle
+                        r="14"
+                        fill="none"
+                        stroke="#ff02e8"
+                        strokeWidth="1.5"
+                        animate={{ r: [14, 55], opacity: [0.85, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+                      />
+                      {/* Expanding Shockwave 2 */}
+                      <motion.circle
+                        r="14"
+                        fill="none"
+                        stroke="#06b6d4"
+                        strokeWidth="1.2"
+                        animate={{ r: [14, 55], opacity: [0.75, 0] }}
+                        transition={{ duration: 2, repeat: Infinity, delay: 1, ease: "easeOut" }}
+                      />
+                      {/* Rotating Gyroscopic Tech Ring */}
+                      <motion.circle
+                        r="27"
+                        fill="none"
+                        stroke="rgba(255, 2, 232, 0.65)"
+                        strokeWidth="1.8"
+                        strokeDasharray="5 7"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                      />
+                      {/* Counter-Rotating Containment Ring */}
+                      <motion.circle
+                        r="18"
+                        fill="none"
+                        stroke="rgba(34, 84, 245, 0.75)"
+                        strokeWidth="1.8"
+                        strokeDasharray="4 5"
+                        animate={{ rotate: -360 }}
+                        transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+                      />
+                    </>
+                  )}
+
+                  {/* Center Plasma Nucleus */}
+                  <circle
+                    r={connectionStage >= 8 ? 10 : 7}
+                    fill="#ffffff"
+                    filter="url(#reactorGlow)"
+                  />
+                  <circle
+                    r={connectionStage >= 8 ? 6 : 4}
+                    fill="#ffffff"
+                  />
                 </g>
               )}
 
-              {/* 5. Central Fusion Reactor Core at (350, 140) */}
-              {connectedSegmentsCount >= 8 && (
-                <g transform="translate(350, 140)">
-                  {/* Expanding reactor pulse wave */}
-                  <motion.circle
-                    r="30"
-                    fill="none"
-                    stroke="#ff02e8"
-                    strokeWidth="1.5"
-                    animate={{ r: [10, 42], opacity: [0.8, 0] }}
-                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-                  />
-                  {/* Rotating outer ring */}
-                  <motion.circle
-                    r="22"
-                    fill="none"
-                    stroke="rgba(255, 2, 232, 0.6)"
-                    strokeWidth="2"
-                    strokeDasharray="6 6"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  />
-                  {/* Rotating inner ring */}
-                  <motion.circle
-                    r="14"
-                    fill="none"
-                    stroke="rgba(255, 105, 0, 0.8)"
-                    strokeWidth="2"
-                    strokeDasharray="4 4"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  />
-                  {/* Glowing core diode */}
-                  <circle r="6" fill="#ffffff" filter="url(#reactorGlow)" />
-                </g>
-              )}
-            </svg>
-
-            {/* 7 Logo Nodes: Just the Logos, nothing else! Appearing slowly one by one */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-4 md:gap-6 relative z-10 w-full items-center">
+              {/* 5. The 7 Ecosystem Pillar Logos - Rendered directly in SVG coordinates so they scale and lock with the conduits on phones and tablets */}
               {ECOSYSTEM_PILLARS.map((pillar, idx) => {
                 const isVisible = visibleNodesCount > idx;
+                const isConduitActive = connectionStage > idx;
                 const isHighlighted =
                   (isNervousSystemActive && pillar.isNervousSystem) ||
                   (isHabitSyncActive && (pillar.letter === "P" || pillar.letter === "O")) ||
                   isTotalAlignment;
 
+                if (!isVisible) return null;
+
                 return (
-                  <div key={pillar.letter} className="flex flex-col items-center justify-center">
-                    <AnimatePresence>
-                      {isVisible && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.3, y: 28 }}
-                          animate={{
-                            opacity: 1,
-                            scale: isHighlighted ? 1.12 : 1,
-                            y: 0,
-                          }}
-                          exit={{ opacity: 0, scale: 0.3 }}
-                          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-                          className="relative flex items-center justify-center"
-                        >
-                          {/* Frosted Glass Logo Pod: ONLY the Logo, Nothing Else */}
-                          <div
-                            className={`w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl sm:rounded-3xl border flex items-center justify-center bg-black/75 backdrop-blur-md relative overflow-hidden transition-all shadow-xl ${
-                              isHighlighted ? "ring-2 shadow-[0_0_30px]" : ""
-                            }`}
-                            style={{
-                              borderColor: isReactorActive ? `${pillar.color}90` : "rgba(255,255,255,0.18)",
-                              boxShadow:
-                                isHighlighted || isReactorActive
-                                  ? `0 0 25px ${pillar.glowColor}`
-                                  : undefined,
-                            }}
-                          >
-                            {/* Ambient inner color glow */}
-                            <div
-                              className="absolute inset-0 opacity-20 pointer-events-none"
-                              style={{ backgroundColor: pillar.color }}
-                            />
-
-                            {/* App Logo SVG */}
-                            <img
-                              src={pillar.logoSrc}
-                              alt={pillar.name}
-                              className="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 object-contain relative z-10 drop-shadow-md select-none pointer-events-none"
-                            />
-
-                            {/* Reactor Active Beacon Ping */}
-                            {isReactorActive && (
-                              <motion.div
-                                className="absolute inset-0 rounded-2xl sm:rounded-3xl border pointer-events-none"
-                                style={{ borderColor: pillar.color }}
-                                animate={{ scale: [1, 1.18, 1], opacity: [0.4, 0.9, 0.4] }}
-                                transition={{ duration: 2.2, repeat: Infinity, delay: idx * 0.25 }}
-                              />
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <motion.g
+                    key={pillar.letter}
+                    initial={{ opacity: 0, scale: 0.3 }}
+                    animate={{
+                      opacity: 1,
+                      scale: isHighlighted ? 1.18 : 1,
+                    }}
+                    exit={{ opacity: 0, scale: 0.3 }}
+                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      transformOrigin: `${pillar.xCoord}px 48px`,
+                    }}
+                  >
+                    <image
+                      href={pillar.logoSrc}
+                      x={pillar.xCoord - 24}
+                      y={48 - 24}
+                      width="48"
+                      height="48"
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{
+                        filter:
+                          isHighlighted || isConduitActive || isReactorActive
+                            ? `drop-shadow(0 0 16px ${pillar.glowColor}) drop-shadow(0 0 5px ${pillar.color})`
+                            : "drop-shadow(0 4px 10px rgba(0,0,0,0.8))",
+                      }}
+                    />
+                  </motion.g>
                 );
               })}
-            </div>
+            </svg>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1453,10 +1537,9 @@ const SANCTUARY_ENCLAVES = [
     subtitle: "Encrypted Ledger",
     color: "#eab308",
     glowColor: "rgba(234, 179, 8, 0.6)",
-    icon: (
-      <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z" />
-      </svg>
+    xCoord: 70,
+    paths: (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z" />
     ),
   },
   {
@@ -1465,10 +1548,9 @@ const SANCTUARY_ENCLAVES = [
     subtitle: "Private Journal",
     color: "#a855f7",
     glowColor: "rgba(168, 85, 247, 0.6)",
-    icon: (
-      <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
+    xCoord: 210,
+    paths: (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
     ),
   },
   {
@@ -1478,12 +1560,13 @@ const SANCTUARY_ENCLAVES = [
     subtitle: "Apple Intelligence",
     color: "#22c55e",
     glowColor: "rgba(34, 197, 94, 0.8)",
-    icon: (
-      <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    xCoord: 350,
+    paths: (
+      <>
         <rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="2" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 9h6v6H9z" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3" />
-      </svg>
+      </>
     ),
   },
   {
@@ -1492,10 +1575,9 @@ const SANCTUARY_ENCLAVES = [
     subtitle: "Habit Engine",
     color: "#22c55e",
     glowColor: "rgba(34, 197, 94, 0.6)",
-    icon: (
-      <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-      </svg>
+    xCoord: 490,
+    paths: (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
     ),
   },
   {
@@ -1504,10 +1586,9 @@ const SANCTUARY_ENCLAVES = [
     subtitle: "Local Second Brain",
     color: "#f97316",
     glowColor: "rgba(249, 115, 22, 0.6)",
-    icon: (
-      <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-      </svg>
+    xCoord: 630,
+    paths: (
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     ),
   },
 ];
@@ -1591,122 +1672,67 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
   const isShieldActive = stepIndex >= 2;
   const isVaultLocked = stepIndex === 3;
 
+  const currentStep = CHAPTER_THREE_STEPS[stepIndex] || CHAPTER_THREE_STEPS[0];
+  const rules: TextHighlightRule[] = (() => {
+    switch (stepIndex) {
+      case 0:
+        return [
+          {
+            phrase: "closed, local system",
+            className: "font-semibold drop-shadow-[0_0_14px_rgba(34,197,94,0.6)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 1:
+        return [
+          {
+            phrase: "Apple Intelligence and Siri",
+            className: "font-bold underline decoration-emerald-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "zero external AI bills",
+            className: "font-bold drop-shadow-[0_0_12px_rgba(6,182,212,0.6)]",
+            style: { color: "#06b6d4" },
+          },
+        ];
+      case 2:
+        return [
+          {
+            phrase: "no third-party databases",
+            className: "font-bold underline decoration-emerald-500/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "no one selling your information",
+            className: "font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 3:
+        return [
+          {
+            phrase: "strictly yours",
+            className: "font-bold drop-shadow-[0_0_16px_rgba(34,197,94,0.8)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "completely private",
+            className: "font-bold drop-shadow-[0_0_16px_rgba(34,197,94,0.8)]",
+            style: { color: accentColor },
+          },
+        ];
+      default:
+        return [];
+    }
+  })();
+
   return (
     <div className="space-y-6">
       {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
       <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
         <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {stepIndex === 0 && (
-            <span>
-              {displayText
-                .split(/(closed, local system)/g)
-                .map((part, i) =>
-                  part === "closed, local system" ? (
-                    <span
-                      key={i}
-                      className="font-semibold drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]"
-                      style={{ color: accentColor }}
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
-          {stepIndex === 1 && (
-            <span>
-              {displayText
-                .replace("Apple Intelligence and Siri", "§AI§")
-                .replace("zero external AI bills", "§BILLS§")
-                .split(/(§AI§|§BILLS§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§AI§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-emerald-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]"
-                        style={{ color: accentColor }}
-                      >
-                        Apple Intelligence and Siri
-                      </span>
-                    );
-                  }
-                  if (chunk === "§BILLS§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_12px_rgba(6,182,212,0.6)]"
-                        style={{ color: "#06b6d4" }}
-                      >
-                        zero external AI bills
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 2 && (
-            <span>
-              {displayText
-                .replace("no third-party databases", "§NODB§")
-                .replace("no one selling your information", "§NOSELL§")
-                .split(/(§NODB§|§NOSELL§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§NODB§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-emerald-500/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]"
-                        style={{ color: accentColor }}
-                      >
-                        no third-party databases
-                      </span>
-                    );
-                  }
-                  if (chunk === "§NOSELL§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]"
-                        style={{ color: accentColor }}
-                      >
-                        no one selling your information
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 3 && (
-            <span>
-              {displayText
-                .replace("strictly yours", "§YOURS§")
-                .replace("completely private", "§PRIVATE§")
-                .split(/(§YOURS§|§PRIVATE§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§YOURS§" || chunk === "§PRIVATE§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_16px_rgba(34,197,94,0.8)]"
-                        style={{ color: accentColor }}
-                      >
-                        {chunk === "§YOURS§" ? "strictly yours" : "completely private"}
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
+          {renderTypewriterText(currentStep.text, displayText.length, rules)}
           <span
             className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
             style={{ backgroundColor: accentColor }}
@@ -1722,7 +1748,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 24 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative min-h-[190px] sm:min-h-[220px] rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-black/75 backdrop-blur-xl p-4 sm:p-6 overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.9)] flex items-center justify-center"
+            className="relative w-full overflow-visible flex items-center justify-center pt-2 pb-4"
           >
             {/* Ambient radial glow */}
             <div
@@ -1738,7 +1764,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
 
             {/* Neural Circuitry & Threat Deflection Shield SVG Canvas */}
             <svg
-              className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+              className="w-full h-auto max-w-[700px] overflow-visible select-none pointer-events-none"
               viewBox="0 0 700 180"
               preserveAspectRatio="xMidYMid meet"
             >
@@ -1766,10 +1792,10 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
               {/* 1. Closed-Loop Local Neural Conduits connecting Enclaves to Core (x=350, y=60) */}
               {isNeuralActive && (
                 <g>
-                  {/* Left bus: Finances (100) -> Thoughts (220) -> Core (350) */}
-                  <line x1="100" y1="60" x2="350" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
+                  {/* Left bus: Finances (70) -> Thoughts (210) -> Core (350) */}
+                  <line x1="70" y1="60" x2="350" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
                   <motion.line
-                    x1="100"
+                    x1="70"
                     y1="60"
                     x2="350"
                     y2="60"
@@ -1781,12 +1807,12 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                     filter="url(#sanctuaryGlow)"
                   />
 
-                  {/* Right bus: Knowledge (600) -> Routines (480) -> Core (350) */}
-                  <line x1="350" y1="60" x2="600" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
+                  {/* Right bus: Core (350) -> Routines (490) -> Knowledge (630) */}
+                  <line x1="350" y1="60" x2="630" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
                   <motion.line
                     x1="350"
                     y1="60"
-                    x2="600"
+                    x2="630"
                     y2="60"
                     stroke="url(#neuralLineGrad)"
                     strokeWidth="2.5"
@@ -1803,7 +1829,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                 <g>
                   {/* Hexagonal Forcefield Perimeter Arc */}
                   <motion.path
-                    d="M 80 24 Q 350 -16 620 24"
+                    d="M 60 26 Q 350 -14 640 26"
                     fill="none"
                     stroke="#22c55e"
                     strokeWidth="3"
@@ -1813,7 +1839,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                     filter="url(#sanctuaryGlow)"
                   />
                   <path
-                    d="M 80 24 Q 350 -16 620 24"
+                    d="M 60 26 Q 350 -14 640 26"
                     fill="none"
                     stroke="rgba(34, 197, 94, 0.25)"
                     strokeWidth="8"
@@ -1821,9 +1847,9 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
 
                   {/* Incoming external tracker threat 1 striking from top-left */}
                   <motion.line
-                    x1="160"
+                    x1="130"
                     y1="-15"
-                    x2="230"
+                    x2="190"
                     y2="10"
                     stroke="#ef4444"
                     strokeWidth="2.5"
@@ -1833,7 +1859,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                   />
                   {/* Deflection Impact Spark 1 */}
                   <motion.circle
-                    cx="230"
+                    cx="190"
                     cy="10"
                     r="8"
                     fill="none"
@@ -1845,9 +1871,9 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
 
                   {/* Incoming external tracker threat 2 striking from top-right */}
                   <motion.line
-                    x1="540"
+                    x1="570"
                     y1="-15"
-                    x2="470"
+                    x2="510"
                     y2="10"
                     stroke="#ef4444"
                     strokeWidth="2.5"
@@ -1857,7 +1883,7 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                   />
                   {/* Deflection Impact Spark 2 */}
                   <motion.circle
-                    cx="470"
+                    cx="510"
                     cy="10"
                     r="8"
                     fill="none"
@@ -1866,20 +1892,6 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                     animate={{ r: [3, 16], opacity: [1, 0] }}
                     transition={{ duration: 1, repeat: Infinity, ease: "easeOut", delay: 0.3 }}
                   />
-
-                  {/* Shield Status Badge in SVG */}
-                  <text
-                    x="350"
-                    y="14"
-                    textAnchor="middle"
-                    fill="#22c55e"
-                    fontSize="9"
-                    fontFamily="monospace"
-                    fontWeight="bold"
-                    letterSpacing="1.5"
-                  >
-                    ● 100% LOCAL SHIELD • ZERO DATA LEAKAGE
-                  </text>
                 </g>
               )}
 
@@ -1917,78 +1929,52 @@ function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: str
                   />
                 </g>
               )}
-            </svg>
 
-            {/* 5 Enclaves: 4 Local Vaults + Central On-Device Neural Core */}
-            <div className="grid grid-cols-5 gap-2 sm:gap-4 md:gap-6 relative z-10 w-full items-center">
+              {/* 4. The 5 Enclaves: Local Vaults & Central Neural Core - Rendered in SVG coordinates so they scale and lock with the bus lines on phones and tablets */}
               {SANCTUARY_ENCLAVES.map((enc, idx) => {
                 const isVisible = visibleEnclavesCount > idx;
                 const isHighlight = isVaultLocked || (isShieldActive && enc.isCore);
+                if (!isVisible) return null;
+
+                const scale = enc.isCore ? 1.75 : 1.4;
+                const offset = 12 * scale;
 
                 return (
-                  <div key={enc.id} className="flex flex-col items-center justify-center">
-                    <AnimatePresence>
-                      {isVisible && (
-                        <motion.div
-                          initial={{ opacity: 0, scale: 0.3, y: 28 }}
-                          animate={{
-                            opacity: 1,
-                            scale: isHighlight ? 1.08 : 1,
-                            y: 0,
-                          }}
-                          exit={{ opacity: 0, scale: 0.3 }}
-                          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                          className="relative flex flex-col items-center justify-center"
-                        >
-                          {/* Frosted Enclave Pod */}
-                          <div
-                            className={`w-13 h-13 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-2xl sm:rounded-3xl border flex items-center justify-center bg-black/75 backdrop-blur-md relative overflow-hidden transition-all shadow-xl ${
-                              isHighlight ? "ring-2 shadow-[0_0_30px]" : ""
-                            }`}
-                            style={{
-                              borderColor: isShieldActive ? `${enc.color}90` : "rgba(255,255,255,0.18)",
-                              boxShadow:
-                                isHighlight || isShieldActive
-                                  ? `0 0 25px ${enc.glowColor}`
-                                  : undefined,
-                            }}
-                          >
-                            {/* Ambient inner glow */}
-                            <div
-                              className="absolute inset-0 opacity-20 pointer-events-none"
-                              style={{ backgroundColor: enc.color }}
-                            />
-
-                            {/* Enclave Icon */}
-                            <div className="relative z-10 drop-shadow-md">
-                              {enc.icon}
-                            </div>
-
-                            {/* Lock Ping in Step 3 */}
-                            {isVaultLocked && (
-                              <motion.div
-                                className="absolute inset-0 rounded-2xl sm:rounded-3xl border pointer-events-none"
-                                style={{ borderColor: enc.color }}
-                                animate={{ scale: [1, 1.18, 1], opacity: [0.4, 0.9, 0.4] }}
-                                transition={{ duration: 2.2, repeat: Infinity, delay: idx * 0.25 }}
-                              />
-                            )}
-                          </div>
-
-                          {/* Minimal Label below */}
-                          <span className="text-[10px] sm:text-xs font-mono font-bold text-white mt-2 truncate max-w-[85px] sm:max-w-none block text-center">
-                            {enc.name}
-                          </span>
-                          <span className="hidden sm:block text-[9px] font-mono text-zinc-400 truncate max-w-[85px] sm:max-w-none text-center">
-                            {enc.subtitle}
-                          </span>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  <motion.g
+                    key={enc.id}
+                    initial={{ opacity: 0, scale: 0.3 }}
+                    animate={{
+                      opacity: 1,
+                      scale: isHighlight ? 1.15 : 1,
+                    }}
+                    exit={{ opacity: 0, scale: 0.3 }}
+                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                    style={{ transformOrigin: `${enc.xCoord}px 60px` }}
+                  >
+                    <g
+                      transform={`translate(${enc.xCoord - offset}, ${60 - offset}) scale(${scale})`}
+                      style={{
+                        filter:
+                          isHighlight || isShieldActive
+                            ? `drop-shadow(0 0 16px ${enc.glowColor}) drop-shadow(0 0 4px ${enc.color})`
+                            : "drop-shadow(0 2px 8px rgba(0,0,0,0.8))",
+                      }}
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke={enc.color}
+                        strokeWidth="2"
+                      >
+                        {enc.paths}
+                      </svg>
+                    </g>
+                  </motion.g>
                 );
               })}
-            </div>
+            </svg>
           </motion.div>
         )}
       </AnimatePresence>
@@ -2184,143 +2170,78 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
     return () => clearTimeout(timer);
   }, [active, stepIndex, displayText, isDeleting]);
 
+  const currentStep = CHAPTER_FOUR_STEPS[stepIndex] || CHAPTER_FOUR_STEPS[0];
+  const rules: TextHighlightRule[] = (() => {
+    switch (stepIndex) {
+      case 0:
+        return [
+          {
+            phrase: "chaotic web of single-purpose subscriptions",
+            className: "font-semibold text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
+          },
+        ];
+      case 1:
+        return [
+          {
+            phrase: "Free Core",
+            className: "font-bold underline decoration-amber-400/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "without paying a single dollar",
+            className: "font-bold underline decoration-amber-400/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
+            style: { color: accentColor },
+          },
+        ];
+      case 2:
+        return [
+          {
+            phrase: "a la carte",
+            className: "font-bold underline decoration-amber-400/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "$7 each",
+            className: "font-bold drop-shadow-[0_0_14px_rgba(245,158,11,0.8)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "lifetime access",
+            className: "font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)] text-emerald-400",
+          },
+        ];
+      case 3:
+        return [
+          {
+            phrase: "$40",
+            className: "font-bold drop-shadow-[0_0_16px_rgba(245,158,11,0.8)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "entire IMPROVE ecosystem",
+            className: "font-bold drop-shadow-[0_0_16px_rgba(245,158,11,0.8)]",
+            style: { color: accentColor },
+          },
+          {
+            phrase: "zero recurring AI bills",
+            className: "font-bold drop-shadow-[0_0_14px_rgba(6,182,212,0.8)] text-cyan-400",
+          },
+          {
+            phrase: "lifetime alignment",
+            className: "font-bold text-white underline decoration-amber-400 underline-offset-4",
+          },
+        ];
+      default:
+        return [];
+    }
+  })();
+
   return (
     <div className="space-y-6">
       {/* Typewritten Line: Types out and backspaces letter-by-letter */}
       <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
         <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {stepIndex === 0 && (
-            <span>
-              {displayText
-                .split(/(chaotic web of single-purpose subscriptions)/g)
-                .map((part, i) =>
-                  part === "chaotic web of single-purpose subscriptions" ? (
-                    <span
-                      key={i}
-                      className="font-semibold text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]"
-                    >
-                      {part}
-                    </span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
-            </span>
-          )}
-
-          {stepIndex === 1 && (
-            <span>
-              {displayText
-                .replace("Free Core", "§FREE§")
-                .replace("without paying a single dollar", "§DOLLAR§")
-                .split(/(§FREE§|§DOLLAR§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§FREE§" || chunk === "§DOLLAR§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-amber-400/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]"
-                        style={{ color: accentColor }}
-                      >
-                        {chunk === "§FREE§" ? "Free Core" : "without paying a single dollar"}
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 2 && (
-            <span>
-              {displayText
-                .replace("a la carte", "§ALACARTE§")
-                .replace("$7 each", "§SEVEN§")
-                .replace("lifetime access", "§LIFETIME§")
-                .split(/(§ALACARTE§|§SEVEN§|§LIFETIME§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§ALACARTE§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold underline decoration-amber-400/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]"
-                        style={{ color: accentColor }}
-                      >
-                        a la carte
-                      </span>
-                    );
-                  }
-                  if (chunk === "§SEVEN§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_14px_rgba(245,158,11,0.8)]"
-                        style={{ color: accentColor }}
-                      >
-                        $7 each
-                      </span>
-                    );
-                  }
-                  if (chunk === "§LIFETIME§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)] text-emerald-400"
-                      >
-                        lifetime access
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
-          {stepIndex === 3 && (
-            <span>
-              {displayText
-                .replace("$40", "§FORTY§")
-                .replace("entire IMPROVE ecosystem", "§ECOSYSTEM§")
-                .replace("zero recurring AI bills", "§NOBILLS§")
-                .replace("lifetime alignment", "§ALIGN§")
-                .split(/(§FORTY§|§ECOSYSTEM§|§NOBILLS§|§ALIGN§)/g)
-                .map((chunk, idx) => {
-                  if (chunk === "§FORTY§" || chunk === "§ECOSYSTEM§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_16px_rgba(245,158,11,0.8)]"
-                        style={{ color: accentColor }}
-                      >
-                        {chunk === "§FORTY§" ? "$40" : "entire IMPROVE ecosystem"}
-                      </span>
-                    );
-                  }
-                  if (chunk === "§NOBILLS§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold drop-shadow-[0_0_14px_rgba(6,182,212,0.8)] text-cyan-400"
-                      >
-                        zero recurring AI bills
-                      </span>
-                    );
-                  }
-                  if (chunk === "§ALIGN§") {
-                    return (
-                      <span
-                        key={idx}
-                        className="font-bold text-white underline decoration-amber-400 underline-offset-4"
-                      >
-                        lifetime alignment
-                      </span>
-                    );
-                  }
-                  return chunk;
-                })}
-            </span>
-          )}
-
+          {renderTypewriterText(currentStep.text, displayText.length, rules)}
           <span
             className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
             style={{ backgroundColor: accentColor }}
@@ -2347,20 +2268,20 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
                 {MINI_CTA_PLANS.map((item) => (
                   <div
                     key={item.id}
-                    className="w-full flex-shrink-0 grid grid-cols-1 md:grid-cols-2 gap-6 items-center min-w-full px-1"
+                    className="w-full flex-shrink-0 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center min-w-full px-0.5 sm:px-1"
                   >
                     {/* Left Column: Watermark + Title + Subtitle + Button */}
-                    <div className="space-y-4 relative max-w-xl">
-                      <div className="relative pt-6 pb-2">
+                    <div className="space-y-3 sm:space-y-4 relative max-w-xl">
+                      <div className="relative pt-4 sm:pt-6 pb-1 sm:pb-2">
                         {/* Watermark in #FF02E8 */}
                         <div
-                          className="absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none text-[#FF02E8] drop-shadow-[0_0_12px_rgba(255,2,232,0.25)] opacity-100 whitespace-nowrap origin-left -top-6 sm:-top-8 -left-1 text-7xl sm:text-8xl md:text-9xl transition-all duration-500"
+                          className="absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none text-[#FF02E8] drop-shadow-[0_0_12px_rgba(255,2,232,0.25)] opacity-100 whitespace-nowrap origin-left -top-4 sm:-top-7 -left-1 text-5xl sm:text-7xl md:text-8xl lg:text-9xl transition-all duration-500"
                         >
                           {item.price}
                         </div>
 
-                        <div className="relative z-10 pt-8 sm:pt-10 space-y-1.5">
-                          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+                        <div className="relative z-10 pt-6 sm:pt-10 space-y-1 sm:space-y-1.5">
+                          <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
                             Outgrow The Chaos
                           </h3>
                           <p className="text-xs sm:text-sm font-normal text-zinc-300 leading-relaxed">
@@ -2374,9 +2295,9 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
                       </div>
 
                       {/* Call to Action Button */}
-                      <div className="pt-1 relative z-10">
+                      <div className="pt-0.5 sm:pt-1 relative z-10">
                         <button
-                          className="group relative px-6 py-2.5 rounded-full font-bold text-xs tracking-wider uppercase overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center text-white"
+                          className="group relative px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-[11px] sm:text-xs tracking-wider uppercase overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center text-white"
                           style={{
                             backgroundColor: "#FF02E8",
                             boxShadow: "0 0 20px rgba(255, 2, 232, 0.6)",
@@ -2388,13 +2309,13 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
                     </div>
 
                     {/* Right Column: Clean Vertical Marquee */}
-                    <div className="relative h-[160px] flex items-center justify-start overflow-hidden">
-                      <div className="relative w-full h-full pl-2 sm:pl-4">
+                    <div className="relative h-[120px] sm:h-[150px] flex items-center justify-start overflow-hidden">
+                      <div className="relative w-full h-full pl-1 sm:pl-4">
                         <MiniVerticalMarquee key={item.id} speed={18} className="h-full">
                           {item.features.map((feature, fIdx) => (
                             <div
                               key={fIdx}
-                              className="text-base sm:text-lg tracking-tight py-2 text-left transition-all duration-300 origin-left text-zinc-300 hover:text-white"
+                              className="text-sm sm:text-base md:text-lg tracking-tight py-1.5 sm:py-2 text-left transition-all duration-300 origin-left text-zinc-300 hover:text-white"
                             >
                               <span>{feature}</span>
                             </div>
@@ -2402,10 +2323,10 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
                         </MiniVerticalMarquee>
 
                         {/* Top gradient vignette */}
-                        <div className="pointer-events-none absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
+                        <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 sm:h-10 bg-gradient-to-b from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
 
                         {/* Bottom gradient vignette */}
-                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
+                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 sm:h-10 bg-gradient-to-t from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
                       </div>
                     </div>
                   </div>
@@ -2414,22 +2335,22 @@ function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: stri
             </div>
 
             {/* Bottom Switching Tabs with Name + Price/mo - Exactly like Productivity CTA */}
-            <div className="mt-5 pt-4 border-t border-zinc-900 grid grid-cols-3 gap-2 relative z-10">
+            <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-zinc-900 grid grid-cols-3 gap-1.5 sm:gap-2 relative z-10">
               {MINI_CTA_PLANS.map((plan, idx) => {
                 const isActive = activePlanIdx === idx;
                 return (
                   <button
                     key={plan.id}
                     onClick={() => setManualPlanIdx(idx)}
-                    className={`relative py-2.5 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5 ${
+                    className={`relative py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5 ${
                       isActive
                         ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
                         : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
                     }`}
                   >
-                    <span>{plan.name}</span>
+                    <span className="truncate w-full text-center">{plan.name}</span>
                     <span
-                      className={`text-[10px] font-bold tracking-tight ${
+                      className={`text-[9px] sm:text-[10px] font-bold tracking-tight ${
                         isActive ? "text-[#FF02E8]" : "text-zinc-500"
                       }`}
                     >

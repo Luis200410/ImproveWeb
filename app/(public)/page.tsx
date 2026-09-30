@@ -266,7 +266,7 @@ export default function Home() {
           transition: introPhase === 'final' ? 'opacity 0.6s ease' : 'none',
         }}
       >
-        <h1 className="text-6xl sm:text-8xl md:text-9xl font-black tracking-tight leading-none inline-flex items-center justify-center selection:bg-white selection:text-black">
+        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-none inline-flex items-center justify-center selection:bg-white selection:text-black">
           {IMPROVE_LETTERS.map((item, idx) => (
             <span
               key={idx}
@@ -301,7 +301,7 @@ export default function Home() {
             <div
               id="hero-title-slot"
               ref={slotRef}
-              className="h-20 sm:h-28 md:h-36 mb-6 sm:mb-8 w-full flex items-center justify-center pointer-events-none select-none"
+              className="h-16 sm:h-24 md:h-32 lg:h-36 mb-4 sm:mb-8 w-full flex items-center justify-center pointer-events-none select-none"
               aria-hidden="true"
             />
           }
