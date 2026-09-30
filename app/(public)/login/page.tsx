@@ -213,17 +213,63 @@ export default function LoginPage() {
                             </form>
                         </motion.div>
 
-                        {/* Trust Indicators */}
+                        {/* Security Guarantees & Doubts Resolved */}
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 1 }}
-                            className="mt-8 text-center space-y-2"
+                            className="mt-10 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-4"
                         >
-                            <div className="flex items-center justify-center gap-4 text-xs text-white/30">
-                                <span>🔒 Secure Login</span>
+                            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                                <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-emerald-400">
+                                    <span>🔒 Zero-Knowledge Security & Privacy</span>
+                                </div>
+                                <Link 
+                                    href="/privacy" 
+                                    className="text-[11px] font-mono text-[var(--label-2)] hover:text-white underline transition-colors"
+                                >
+                                    Full Privacy Hub &rarr;
+                                </Link>
+                            </div>
+
+                            <div className="space-y-3 text-xs text-[var(--label-2)]">
+                                <div className="p-3 rounded-xl bg-white/[0.01] border border-white/5 space-y-1">
+                                    <div className="font-semibold text-white flex items-center gap-1.5">
+                                        <span>• Zero First-Party Storage</span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-white/60">
+                                        Your entries, habits, and notes are never stored on a centralized developer database. Content lives in your encrypted device sandbox and private Apple iCloud account.
+                                    </p>
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-white/[0.01] border border-white/5 space-y-1">
+                                    <div className="font-semibold text-white flex items-center gap-1.5">
+                                        <span>• Financial Data & Bank Protection</span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-white/60">
+                                        IMPROVE Money never holds or sees your bank passwords. Communication travels through an in-memory stateless proxy with zero transaction or balance logging.
+                                    </p>
+                                </div>
+
+                                <div className="p-3 rounded-xl bg-white/[0.01] border border-white/5 space-y-1">
+                                    <div className="font-semibold text-white flex items-center gap-1.5">
+                                        <span>• App Store 5.1.1(v) Instant Deletion</span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-white/60">
+                                        You have total sovereignty. Deleting your account from app settings instantly purges local files and permanently revokes third-party tokens.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="pt-2 flex flex-wrap items-center justify-center gap-3 text-[11px] font-mono text-[var(--label-3)]">
+                                <span>Dedicated App Policies:</span>
+                                <Link href="/privacy/money-wealth" className="hover:text-amber-400 transition-colors">Money</Link>
                                 <span>•</span>
-                                <span>✓ Encrypted</span>
+                                <Link href="/privacy/productivity" className="hover:text-fuchsia-400 transition-colors">Productivity</Link>
+                                <span>•</span>
+                                <Link href="/privacy/body-optimization" className="hover:text-green-400 transition-colors">Body</Link>
+                                <span>•</span>
+                                <Link href="/privacy/second-brain" className="hover:text-orange-400 transition-colors">Second Brain</Link>
                             </div>
                         </motion.div>
                     </motion.div>

@@ -15,11 +15,29 @@ import {
   Layers, 
   ChevronRight,
   RefreshCw,
-  EyeOff
+  EyeOff,
+  HelpCircle,
+  Activity,
+  Brain,
+  Wallet,
+  Briefcase,
+  Users,
+  Compass
 } from "lucide-react";
+import { APPS_DATA } from "@/lib/apps-data";
+
+const iconMap: Record<string, any> = {
+  Activity,
+  Brain,
+  Wallet,
+  Briefcase,
+  Users,
+  Compass,
+  CheckCircle2
+};
 
 export default function PrivacyAndConsentPage() {
-  const [activeTab, setActiveTab] = useState<"privacy" | "plaid" | "terms" | "deletion">("privacy");
+  const [activeTab, setActiveTab] = useState<"privacy" | "plaid" | "terms" | "deletion" | "faq">("privacy");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -27,8 +45,44 @@ export default function PrivacyAndConsentPage() {
       if (hash === "plaid" || hash === "financial-consent") setActiveTab("plaid");
       else if (hash === "terms" || hash === "terms-of-service") setActiveTab("terms");
       else if (hash === "deletion" || hash === "revocation") setActiveTab("deletion");
+      else if (hash === "faq" || hash === "doubts") setActiveTab("faq");
     }
   }, []);
+
+  const globalFaqs = [
+    {
+      q: "Does IMPROVE store my personal notes, habits, or bank credentials on a server?",
+      a: "No. IMPROVE operates a Zero First-Party Database architecture. Your habit records, reflections, and notes are stored strictly on your local device hardware (protected by Apple Class A encryption) and synchronized directly through your private Apple iCloud container. We never possess, see, or store your passwords or banking logins."
+    },
+    {
+      q: "How does IMPROVE Money connect to banks without storing my financial data?",
+      a: "When you link a bank, your credentials are authenticated directly inside Plaid's encrypted dialog. IMPROVE never sees or holds your login credentials. Our Supabase Edge Function acts purely as a stateless, in-memory pass-through bridge to communicate with Plaid. It contains zero database tables, zero user rows, and strictly never logs request payloads, balances, or transactions."
+    },
+    {
+      q: "Do you train AI models on my private journals, thoughts, or budget entries?",
+      a: "Never. All AI summarization, reflection prompts, and habit intelligence run 100% on-device using Apple Neural Engine and CoreML. Your unencrypted personal content is never sent to external AI APIs or used to train public machine learning datasets."
+    },
+    {
+      q: "Do you track my location or sell my data to advertising brokers?",
+      a: "Never. IMPROVE contains zero advertising SDKs, zero third-party tracking pixels (no Facebook, Google Analytics, or data brokers), and we never request or track your advertising identifier (IDFA)."
+    },
+    {
+      q: "How does Sign in with Apple protect my identity?",
+      a: "We authenticate you using Sign in with Apple without capturing your real name or email address. Our edge proxy verifies Apple's cryptographic signature against Apple's public keys (JWKS) and generates a one-way SHA-256 hash of your anonymous Apple subject ID to issue an ephemeral 90-day session token."
+    },
+    {
+      q: "How do I permanently delete my account and revoke third-party permissions?",
+      a: "In full compliance with Apple App Store Guideline 5.1.1(v), you can tap 'Delete Account & Revoke Credentials' inside Settings. This immediately severs your Sign in with Apple tokens, invokes Plaid's /item/remove to destroy all bank API tokens, and purges all local data from your device."
+    },
+    {
+      q: "What happens if I lose or change my iPhone?",
+      a: "Because your data is synchronized via your private Apple iCloud account, signing in with your Apple ID on a new Apple device automatically restores your encrypted habit streaks and settings without passing through any developer server."
+    },
+    {
+      q: "Can my employer, bank, or insurance provider access my IMPROVE records?",
+      a: "No. IMPROVE is a personal consumer application with no corporate administrator portals, employer monitoring integrations, or data sharing with insurers. Your records are completely sovereign to you."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20 font-sans">
@@ -38,9 +92,9 @@ export default function PrivacyAndConsentPage() {
         <div className="absolute top-[40%] right-[10%] w-[40%] h-[35%] bg-emerald-500/10 rounded-full blur-[130px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24">
+      <div className="max-w-6xl mx-auto px-6 pt-32 pb-24 space-y-16">
         {/* Header Badge & Title */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-mono uppercase tracking-wider text-emerald-400">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Complete Integrity & User Sovereignty</span>
@@ -55,55 +109,65 @@ export default function PrivacyAndConsentPage() {
           </p>
 
           <div className="pt-2 text-xs font-mono text-[var(--label-3)]">
-            Last Updated & Verified: September 30, 2026 • Effective Immediately across all IMPROVE Applications
+            Last Updated & Verified: September 30, 2026 • Effective across all IMPROVE Applications
           </div>
         </div>
 
-        {/* Core Principles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-16">
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3">
-              <Database className="w-4 h-4" />
+        {/* 7 Dedicated App Policies Directory */}
+        <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-white/5 pb-4">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Layers className="w-4 h-4 text-emerald-400" />
+                <span>Dedicated App Privacy Specifications</span>
+              </h3>
+              <p className="text-xs text-[var(--label-2)]">
+                Every application in the IMPROVE ecosystem features an audited, dedicated privacy policy:
+              </p>
             </div>
-            <h3 className="font-semibold text-white text-sm">Zero First-Party DB</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              We operate no user databases or data warehouses. Your data is never held on our servers.
-            </p>
+            <span className="text-xs font-mono text-[var(--label-3)]">7 SYSTEM POLICIES</span>
           </div>
 
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center mb-3">
-              <Lock className="w-4 h-4" />
-            </div>
-            <h3 className="font-semibold text-white text-sm">On-Device & iCloud</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              Records are stored locally on your device and synced solely via your personal Apple iCloud account.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center mb-3">
-              <EyeOff className="w-4 h-4" />
-            </div>
-            <h3 className="font-semibold text-white text-sm">Stateless Plaid Proxy</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              Financial data travels in-memory through our edge gateway without logging or retention.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center mb-3">
-              <Trash2 className="w-4 h-4" />
-            </div>
-            <h3 className="font-semibold text-white text-sm">Instant Revocation</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              App Store 5.1.1(v) compliant account deletion and token revocation with a single tap.
-            </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {APPS_DATA.map((app) => {
+              const AppIcon = iconMap[app.iconName] || ShieldCheck;
+              return (
+                <Link
+                  key={app.id}
+                  href={`/privacy/${app.slug}`}
+                  className="group p-4 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.04] hover:border-white/20 transition-all flex flex-col justify-between space-y-3"
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div 
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold"
+                        style={{ backgroundColor: `${app.accentHex}20`, color: app.accentHex }}
+                      >
+                        <AppIcon className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-[var(--label-3)] group-hover:text-white transition-colors">
+                        {app.number}
+                      </span>
+                    </div>
+                    <div className="font-bold text-white text-xs tracking-wider uppercase group-hover:translate-x-0.5 transition-transform">
+                      {app.singleWord}
+                    </div>
+                    <p className="text-[11px] text-[var(--label-2)] line-clamp-2 leading-relaxed">
+                      {app.name}
+                    </p>
+                  </div>
+                  <div className="flex items-center text-[10px] font-mono uppercase tracking-wider text-emerald-400/80 group-hover:text-emerald-400 gap-1">
+                    <span>View Policy</span>
+                    <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-white/[0.03] border border-white/10 max-w-2xl mx-auto mb-12">
+        <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-white/[0.03] border border-white/10 max-w-3xl mx-auto">
           <button
             onClick={() => setActiveTab("privacy")}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all ${
@@ -113,7 +177,7 @@ export default function PrivacyAndConsentPage() {
             }`}
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Privacy Policy</span>
+            <span>General Policy</span>
           </button>
 
           <button
@@ -126,6 +190,18 @@ export default function PrivacyAndConsentPage() {
           >
             <RefreshCw className="w-4 h-4" />
             <span>Financial Consent (Plaid)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("faq")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition-all ${
+              activeTab === "faq"
+                ? "bg-white text-black shadow-lg shadow-white/10 font-bold"
+                : "text-[var(--label-2)] hover:text-white"
+            }`}
+          >
+            <HelpCircle className="w-4 h-4" />
+            <span>Solving Doubts (FAQ)</span>
           </button>
 
           <button
@@ -332,7 +408,42 @@ export default function PrivacyAndConsentPage() {
           </div>
         )}
 
-        {/* TAB 3: TERMS OF SERVICE */}
+        {/* TAB 3: SOLVING DOUBTS (FAQ) */}
+        {activeTab === "faq" && (
+          <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="p-8 rounded-3xl border border-blue-500/20 bg-blue-500/[0.02] backdrop-blur-md space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 font-mono text-xs uppercase tracking-wider">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Security & Trust Transparency</span>
+              </div>
+              <h2 className="text-3xl font-bold text-white tracking-tight">
+                Addressing All Security & Privacy Doubts
+              </h2>
+              <p className="text-sm text-[var(--label-2)] leading-relaxed">
+                Clear, direct answers regarding our cryptography, bank connection model, and sovereign data architecture.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {globalFaqs.map((faq, idx) => (
+                <div 
+                  key={idx}
+                  className="p-6 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.02] transition-colors space-y-3"
+                >
+                  <h3 className="font-bold text-white text-base flex items-start gap-3">
+                    <span className="text-blue-400 font-mono font-bold text-xs mt-1">0{idx + 1}.</span>
+                    <span>{faq.q}</span>
+                  </h3>
+                  <p className="text-xs md:text-sm text-[var(--label-2)] pl-6 leading-relaxed">
+                    {faq.a}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: TERMS OF SERVICE */}
         {activeTab === "terms" && (
           <div className="space-y-10 animate-in fade-in duration-300">
             <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
@@ -396,7 +507,7 @@ export default function PrivacyAndConsentPage() {
           </div>
         )}
 
-        {/* TAB 4: ACCOUNT DELETION & REVOCATION */}
+        {/* TAB 5: ACCOUNT DELETION & REVOCATION */}
         {activeTab === "deletion" && (
           <div className="space-y-10 animate-in fade-in duration-300">
             <div className="p-8 rounded-3xl border border-purple-500/20 bg-purple-500/[0.02] backdrop-blur-md space-y-6">
@@ -468,7 +579,7 @@ export default function PrivacyAndConsentPage() {
         )}
 
         {/* Contact Footer Box */}
-        <div className="mt-16 p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
             <h4 className="text-base font-bold text-white">Have questions about our security or privacy model?</h4>
             <p className="text-xs text-[var(--label-2)]">
