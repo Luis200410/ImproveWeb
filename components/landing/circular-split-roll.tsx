@@ -76,7 +76,7 @@ function TypewriterTagline({
   if (!active || !text) return null;
 
   return (
-    <div className="mt-4 flex items-center justify-center min-h-[2em] max-w-md mx-auto">
+    <div className="mt-1.5 sm:mt-3 flex items-center justify-center min-h-[1.6em] sm:min-h-[2em] max-w-md mx-auto px-2">
       <p className="text-xs sm:text-sm md:text-base font-mono font-medium tracking-normal text-white/80 select-text">
         {displayText}
         <span
@@ -344,7 +344,7 @@ export default function CircularSplitRoll({
       return () => ctx.revert();
     });
 
-    // Mobile Phone Media Query (<640px): Dedicated vertical 3D wheel
+    // Mobile Phone Media Query (<640px): Show ONE by ONE with zero background ghost cards or shadows
     mm.add("(max-width: 639px)", () => {
       const ctx = gsap.context(() => {
         const leftNodes = gsap.utils.toArray(
@@ -354,88 +354,99 @@ export default function CircularSplitRoll({
           ".circular-scroll-showcase__right-item"
         ) as HTMLElement[];
 
-        gsap.set([...leftNodes, ...rightNodes], { opacity: 1 });
+        // Position all nodes centered initially
+        gsap.set([...leftNodes, ...rightNodes], {
+          xPercent: -50,
+          yPercent: -50,
+          x: 0,
+          y: 0,
+        });
 
-        const radiusY = Math.min(Math.max(window.innerHeight * 0.22, 110), 150);
         const currentActiveIndexRef = { current: 0 };
+        const lastActiveIndexRef = { current: -1 };
 
         const render = (progress: number, isAct = false) => {
           const clampedProgress = gsap.utils.clamp(0, 1, progress);
           const currentVirtualIndex = clampedProgress * (total - 1);
           const nearestIndex = Math.round(currentVirtualIndex);
+          const isInitial = lastActiveIndexRef.current === -1;
+          const indexChanged = nearestIndex !== lastActiveIndexRef.current;
+
           currentActiveIndexRef.current = nearestIndex;
           setActiveIndex(nearestIndex);
           onActiveChangeRef.current?.(nearestIndex, isAct);
 
-          leftNodes.forEach((node, index) => {
-            const diff = index - currentVirtualIndex;
-            let wrappedDiff = diff % total;
-            if (wrappedDiff > total / 2) wrappedDiff -= total;
-            if (wrappedDiff < -total / 2) wrappedDiff += total;
+          if (indexChanged || isInitial) {
+            const prevIndex = lastActiveIndexRef.current;
+            lastActiveIndexRef.current = nearestIndex;
 
-            const angle = (wrappedDiff / total) * Math.PI * 2;
-            const y = Math.sin(angle) * (radiusY * 0.55);
-            const depth = Math.cos(angle);
-
-            const isVisible = depth > -0.15;
-            const focus = Math.max(0, depth);
-            const scale = gsap.utils.interpolate(0.75, 1.0, Math.pow(focus, 1.8));
-            const opacity = isVisible
-              ? gsap.utils.interpolate(0.08, 1.0, Math.pow(focus, 2.4))
-              : 0;
-
-            gsap.set(node, {
-              xPercent: -50,
-              yPercent: -50,
-              x: 0,
-              y,
-              scale,
-              opacity,
-              zIndex: Math.round(depth * 50 + 50),
-              pointerEvents: isVisible && focus > 0.6 ? "auto" : "none",
-            });
-          });
-
-          rightNodes.forEach((node, index) => {
-            const diff = index - currentVirtualIndex;
-            let wrappedDiff = diff % total;
-            if (wrappedDiff > total / 2) wrappedDiff -= total;
-            if (wrappedDiff < -total / 2) wrappedDiff += total;
-
-            const angle = (wrappedDiff / total) * Math.PI * 2;
-            const y = Math.sin(angle) * radiusY;
-            const depth = Math.cos(angle);
-
-            const isVisible = depth > -0.15;
-            const focus = Math.max(0, depth);
-            const scale = gsap.utils.interpolate(0.7, 1.0, Math.pow(focus, 1.8));
-            const opacity = isVisible
-              ? gsap.utils.interpolate(0.08, 1.0, Math.pow(focus, 2.4))
-              : 0;
-
-            gsap.set(node, {
-              xPercent: -50,
-              yPercent: -50,
-              x: 0,
-              y,
-              scale,
-              opacity,
-              zIndex: Math.round(depth * 50 + 50),
-              pointerEvents: isVisible && focus > 0.6 ? "auto" : "none",
-            });
-
-            const cardInner = node.querySelector<HTMLElement>(".card-inner-box");
-            if (cardInner) {
-              const item = safeItems[index];
-              if (focus > 0.85) {
-                cardInner.style.borderColor = `${item.accentHex}dd`;
-                cardInner.style.boxShadow = `0 0 28px ${item.accentHex}55, 0 12px 30px rgba(0,0,0,0.85)`;
+            // Only show ONE title at a time. All other titles are completely hidden (autoAlpha: 0)
+            leftNodes.forEach((node, index) => {
+              if (index === nearestIndex) {
+                gsap.to(node, {
+                  opacity: 1,
+                  autoAlpha: 1,
+                  scale: 1,
+                  y: 0,
+                  zIndex: 10,
+                  duration: isInitial ? 0 : 0.32,
+                  ease: "power2.out",
+                  overwrite: true,
+                });
               } else {
-                cardInner.style.borderColor = "rgba(255, 255, 255, 0.12)";
-                cardInner.style.boxShadow = "0 8px 20px rgba(0,0,0,0.5)";
+                const isPrevious = index === prevIndex;
+                gsap.to(node, {
+                  opacity: 0,
+                  autoAlpha: 0,
+                  scale: 0.92,
+                  y: index < nearestIndex ? -14 : 14,
+                  zIndex: 0,
+                  duration: isInitial ? 0 : isPrevious ? 0.22 : 0,
+                  ease: "power2.in",
+                  overwrite: true,
+                });
               }
-            }
-          });
+            });
+
+            // Only show ONE card at a time. All other cards have zero opacity and zero shadow
+            rightNodes.forEach((node, index) => {
+              const cardInner = node.querySelector<HTMLElement>(".card-inner-box");
+              const item = safeItems[index];
+
+              if (index === nearestIndex) {
+                if (cardInner) {
+                  cardInner.style.borderColor = `${item.accentHex}dd`;
+                  cardInner.style.boxShadow = `0 0 32px ${item.accentHex}66, 0 16px 36px rgba(0,0,0,0.85)`;
+                }
+                gsap.to(node, {
+                  opacity: 1,
+                  autoAlpha: 1,
+                  scale: 1,
+                  y: 0,
+                  zIndex: 10,
+                  duration: isInitial ? 0 : 0.35,
+                  ease: "back.out(1.15)",
+                  overwrite: true,
+                });
+              } else {
+                if (cardInner) {
+                  cardInner.style.borderColor = "transparent";
+                  cardInner.style.boxShadow = "none";
+                }
+                const isPrevious = index === prevIndex;
+                gsap.to(node, {
+                  opacity: 0,
+                  autoAlpha: 0,
+                  scale: 0.92,
+                  y: index < nearestIndex ? -20 : 20,
+                  zIndex: 0,
+                  duration: isInitial ? 0 : isPrevious ? 0.22 : 0,
+                  ease: "power2.in",
+                  overwrite: true,
+                });
+              }
+            });
+          }
         };
 
         render(0);
@@ -499,10 +510,10 @@ export default function CircularSplitRoll({
           reducedMotion ? "hidden" : "block"
         }`}
       >
-        {/* Responsive Showcase - Stacked on Mobile, Two-Column on Tablet/Desktop */}
-        <div className="relative mx-auto flex h-full w-full max-w-[94vw] 2xl:max-w-[1440px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 pt-20 sm:pt-26 pb-12 sm:pb-8 gap-2 sm:gap-0">
+        {/* Responsive Showcase - Stacked in Dead Center on Mobile, Two-Column on Tablet/Desktop */}
+        <div className="relative mx-auto flex h-full w-full max-w-[94vw] 2xl:max-w-[1440px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 pt-14 sm:pt-26 pb-12 sm:pb-8 gap-3.5 sm:gap-0">
           {/* Top/Left Column: App Titles with Typewriter Taglines */}
-          <div className="relative flex h-[26vh] sm:h-full w-full sm:w-[48%] items-center justify-center">
+          <div className="relative flex h-[76px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
               {safeItems.map((item, idx) => (
                 <Link
@@ -543,7 +554,7 @@ export default function CircularSplitRoll({
           </div>
 
           {/* Bottom/Right Column: Cards with Logo Image */}
-          <div className="relative flex h-[40vh] sm:h-full w-full sm:w-[48%] items-center justify-center">
+          <div className="relative flex h-[185px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
               {safeItems.map((item) => (
                 <Link
@@ -553,7 +564,7 @@ export default function CircularSplitRoll({
                 >
                   {/* Clean Container */}
                   <div
-                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-[#0c0a14]/95 border border-white/15 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-2xl group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
+                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-[#0c0a14]/95 border border-white/15 sm:shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-2xl group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
                   >
                     <img
                       src={item.logoUrl}
