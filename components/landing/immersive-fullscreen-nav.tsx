@@ -588,13 +588,18 @@ function CustomNavbar({
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-white/10">
+      <div className="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-white/10 gap-3">
         <div className="flex items-center gap-6">
           {socials.map((social, index) => (
             <a key={index} href={social.href} ref={setSocialRef(index)} style={{ opacity: 0, transform: `translateY(${socialOffsetY}px)` }} className="hover:opacity-70 transition-opacity">
               {SOCIAL_ICONS[social.type]}
             </a>
           ))}
+          <div className="flex items-center gap-4 text-[10px] font-mono uppercase tracking-wider text-white/40 border-l border-white/10 pl-6">
+            <Link href="/privacy" onClick={onCloseMenu} className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" onClick={onCloseMenu} className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/refund" onClick={onCloseMenu} className="hover:text-white transition-colors">Refund</Link>
+          </div>
         </div>
         <div className="flex items-center gap-2 opacity-90">
           <ImproveLogo small />
@@ -618,8 +623,10 @@ const NAV_CONFIG: Partial<FullscreenNavProps> = {
 const NAV_CONTENT: Partial<CustomNavbarProps> = {
   links: [
     { label: "IMPROVE", href: "/" },
+    { label: "SYSTEM", href: "/sales" },
     { label: "LEARN", href: "/blog" },
     { label: "INVEST", href: "/pricing" },
+    { label: "PRIVACY", href: "/privacy" },
     { label: "ACCESS", href: "/login" },
   ],
   images: ["/Logo option 3.svg"],

@@ -712,6 +712,7 @@ export default function SalesPage() {
                         <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 text-[10px] uppercase tracking-[0.4em] font-black text-white/20">
                             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Infrastructure</Link>
                             <Link href="/terms" className="hover:text-white transition-colors">Protocol Agreements</Link>
+                            <Link href="/refund" className="hover:text-white transition-colors">Refund Policy</Link>
                             <Link href="/login" className="hover:text-white transition-colors">Neural Credentials</Link>
                         </div>
                         <p className={`${bebas.className} text-white/5 uppercase tracking-[0.8em] text-[10px]`}>

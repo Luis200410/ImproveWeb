@@ -74,8 +74,8 @@ export default function PricingPreview() {
                 </div>
             </main>
 
-            {/* Footer consistent with Home Page */}
-            <footer className="py-12 text-center border-t border-white/5 relative">
+            {/* Inspirational Quote Section */}
+            <div className="py-12 text-center border-t border-white/5 relative">
                 <div className="absolute inset-0 bg-gradient-to-t from-orange-500/[0.02] via-transparent to-transparent pointer-events-none" />
                 <div className="relative z-10 space-y-2">
                     <p className="text-white/20 italic text-[10px] tracking-widest uppercase">
@@ -85,7 +85,7 @@ export default function PricingPreview() {
                         — Aristotle
                     </p>
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }
