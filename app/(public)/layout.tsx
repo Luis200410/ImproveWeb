@@ -18,7 +18,7 @@ export default function PublicLayout({
       <footer className="border-t border-[var(--separator)] py-8 px-6 text-center text-sm text-[var(--label-2)] relative z-50 pointer-events-auto bg-black/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
-            <span className="font-bold text-[var(--label)] tracking-widest uppercase">IMPROVE</span> — Complete Integrity Framework
+            <span className="font-bold text-[var(--label)] tracking-widest uppercase">IMPROVE</span> Complete Integrity Framework
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-xs uppercase tracking-wider text-[var(--label-2)] relative z-50 pointer-events-auto">
             <Link href="/privacy" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Privacy & Consent</Link>
@@ -28,7 +28,7 @@ export default function PublicLayout({
             <Link href="/login" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Sign In</Link>
           </div>
           <div className="text-xs text-[var(--label-3)]">
-            © {new Date().getFullYear()} IMPROVE. All rights reserved.
+            © {new Date().getFullYear()} IMPROVE.
           </div>
         </div>
       </footer>

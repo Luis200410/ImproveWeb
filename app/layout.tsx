@@ -20,8 +20,8 @@ const siteUrl = "https://improve-club.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The Ultimate All-in-One Life Operating System | IMPROVE — Complete Integrity",
-    template: "%s | IMPROVE — Complete Integrity",
+    default: "The Ultimate All-in-One Life Operating System | IMPROVE Complete Integrity",
+    template: "%s | IMPROVE Complete Integrity",
   },
   description:
     "Looking for the best Second Brain or Life Operating System? IMPROVE is the all-in-one productivity framework for mastering your Body, Money, Work, and Mind.",

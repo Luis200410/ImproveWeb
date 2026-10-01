@@ -4,7 +4,7 @@ import { BLOG_POSTS } from "@/lib/blog";
 const siteUrl = "https://improve-club.com";
 
 export const metadata: Metadata = {
-    title: "The Integrity Reports | IMPROVE — Complete Integrity",
+    title: "The Integrity Reports | IMPROVE Complete Integrity",
     description:
         "Deep dives into the systems, psychology, and philosophy of Complete Integrity. Documenting the evolution of human performance through systematic discipline.",
     keywords: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
         canonical: `${siteUrl}/blog`,
     },
     openGraph: {
-        title: "The Integrity Reports — IMPROVE",
+        title: "The Integrity Reports | IMPROVE",
         description:
             "Strategic insights on building a life of Complete Integrity through modern systems and systematic discipline.",
         url: `${siteUrl}/blog`,
@@ -31,13 +31,13 @@ export const metadata: Metadata = {
                 url: `${siteUrl}/blog-og.png`,
                 width: 1200,
                 height: 630,
-                alt: "The Integrity Reports — IMPROVE",
+                alt: "The Integrity Reports | IMPROVE",
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title: "The Integrity Reports — IMPROVE",
+        title: "The Integrity Reports | IMPROVE",
         description: "Documenting human performance through Systematic Discipline.",
         images: [`${siteUrl}/blog-og.png`],
     },

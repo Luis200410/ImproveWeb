@@ -315,7 +315,7 @@ export default async function AppPrivacyPage({ params }: AppPrivacyPageProps) {
         <div className="p-8 rounded-3xl border border-purple-500/20 bg-purple-500/[0.02] backdrop-blur-md space-y-4">
           <div className="flex items-center gap-2 text-purple-400 font-bold text-sm">
             <Trash2 className="w-4 h-4" />
-            <span>App Store Guideline 5.1.1(v) — Complete Data Revocation</span>
+            <span>App Store Guideline 5.1.1(v): Complete Data Revocation</span>
           </div>
           <p className="text-xs text-[var(--label-2)] leading-relaxed">
             Because {profile.appName} stores zero user records on central servers, you possess absolute deletion authority. Tapping <strong>&ldquo;Clear App Data&rdquo;</strong> in Settings immediately wipes local SwiftData stores and purges any connected tokens.
