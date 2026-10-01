@@ -19,7 +19,7 @@ import {
 
 export default function RefundPolicyPage() {
   return (
-    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20 font-sans">
+    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20" style={{ fontFamily: "var(--font-ios)" }}>
       {/* Background Glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-[8%] left-[20%] w-[50%] h-[40%] bg-amber-500/10 rounded-full blur-[150px]" />
@@ -34,7 +34,7 @@ export default function RefundPolicyPage() {
             <span>Fair & Transparent Billing</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white uppercase italic">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
             Refund & <span className="text-white/40">Cancellation</span>
           </h1>
 

@@ -21,8 +21,6 @@ export default function PublicLayout({
             <span className="font-bold text-[var(--label)] tracking-widest uppercase">IMPROVE</span> — Complete Integrity Framework
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-xs uppercase tracking-wider text-[var(--label-2)] relative z-50 pointer-events-auto">
-            <Link href="/sales" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">The System</Link>
-            <Link href="/pricing" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Pricing</Link>
             <Link href="/privacy" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Privacy & Consent</Link>
             <Link href="/terms" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Terms of Service</Link>
             <Link href="/refund" className="hover:text-[var(--label)] transition-colors cursor-pointer py-1">Refund Policy</Link>

@@ -623,9 +623,7 @@ const NAV_CONFIG: Partial<FullscreenNavProps> = {
 const NAV_CONTENT: Partial<CustomNavbarProps> = {
   links: [
     { label: "IMPROVE", href: "/" },
-    { label: "SYSTEM", href: "/sales" },
     { label: "LEARN", href: "/blog" },
-    { label: "INVEST", href: "/pricing" },
     { label: "PRIVACY", href: "/privacy" },
     { label: "ACCESS", href: "/login" },
   ],

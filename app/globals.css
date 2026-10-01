@@ -7,8 +7,8 @@
   --font-ballet: "Ballet", cursive;
   
   /* Update defaults */
-  --font-sans: var(--font-bebas);
-  --font-serif: var(--font-bebas);
+  --font-sans: var(--font-ios);
+  --font-serif: var(--font-ios);
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

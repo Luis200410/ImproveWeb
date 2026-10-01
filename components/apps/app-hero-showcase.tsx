@@ -135,10 +135,10 @@ export function AppHeroShowcase({ app }: AppHeroShowcaseProps) {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/#ecosystem"
                   className="btn-secondary text-xs sm:text-sm uppercase px-8 sm:px-9 py-4 sm:py-4.5 tracking-wider hover:bg-white/10 transition-all"
                 >
-                  <span>View Membership</span>
+                  <span>Explore Ecosystem</span>
                 </Link>
               </motion.div>
 

@@ -85,7 +85,7 @@ export default function PrivacyAndConsentPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20 font-sans">
+    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20" style={{ fontFamily: "var(--font-ios)" }}>
       {/* Background Glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-[5%] left-[20%] w-[50%] h-[40%] bg-blue-600/10 rounded-full blur-[140px]" />
@@ -100,7 +100,7 @@ export default function PrivacyAndConsentPage() {
             <span>Complete Integrity & User Sovereignty</span>
           </div>
           
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white uppercase italic">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
             Privacy & <span className="text-white/40">Consent</span>
           </h1>
 

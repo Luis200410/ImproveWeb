@@ -70,7 +70,7 @@ export default async function AppPrivacyPage({ params }: AppPrivacyPageProps) {
   const AppIcon = iconMap[profile.iconName] || ShieldCheck;
 
   return (
-    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20 font-sans">
+    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20" style={{ fontFamily: "var(--font-ios)" }}>
       {/* Dynamic Background Tint based on App Brand Color */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div 
@@ -114,7 +114,7 @@ export default async function AppPrivacyPage({ params }: AppPrivacyPageProps) {
             <span>{profile.badge}</span>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white uppercase italic">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
             {profile.appName} <span className="text-white/40">Privacy</span>
           </h1>
 
