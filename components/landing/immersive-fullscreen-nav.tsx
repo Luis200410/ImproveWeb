@@ -305,7 +305,7 @@ function FullscreenNav({
 
   return (
     <div ref={rootRef}>
-      <header className={`fixed top-0 left-0 right-0 z-70 flex h-20 items-center justify-between px-4 sm:px-12 backdrop-blur-md bg-black/40 border-b border-white/10 ${headerClassName}`}>
+      <header className={`fixed top-0 left-0 right-0 z-70 flex h-20 items-center justify-between px-4 sm:px-12 backdrop-blur-[8px] bg-white/[0.02] border-b border-white/10 ${headerClassName}`}>
         <Link
           href={brandHref}
           onClick={isOpen ? onCloseMenu : undefined}

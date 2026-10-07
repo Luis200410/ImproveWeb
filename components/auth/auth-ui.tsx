@@ -152,7 +152,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          "flex h-10 w-full rounded-lg border border-zinc-800 bg-zinc-950/80 px-3 py-2 text-sm text-white shadow-sm shadow-black/5 transition-all placeholder:text-zinc-500 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-11 w-full rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2 text-sm text-white shadow-sm shadow-black/10 transition-all placeholder:text-zinc-500 focus:border-white/30 focus:bg-white/[0.07] focus:ring-1 focus:ring-white/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -323,8 +323,8 @@ function AuthFormContainer({
         </Button>
       </div>
 
-      <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-zinc-800">
-        <span className="relative z-10 bg-[#07050A] px-3 text-zinc-500 uppercase tracking-wider text-[11px] font-medium">
+      <div className="relative text-center text-xs my-2 after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-white/10">
+        <span className="relative z-10 px-3 text-zinc-400 uppercase tracking-wider text-[11px] font-medium bg-[#07050A]/70 backdrop-blur-md rounded-full py-0.5 border border-white/5">
           Or continue with
         </span>
       </div>
@@ -336,7 +336,7 @@ function AuthFormContainer({
           console.log("UI: Google button clicked");
           alert("Google sign-in is managed on-device via your Apple or local credentials.");
         }}
-        className="w-full h-11 border-zinc-800 hover:bg-zinc-900 text-zinc-200"
+        className="w-full h-11 border-white/10 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 text-zinc-200"
       >
         <img
           src="https://cdn.21st.dev/assets/mirror/38/38146bfd9eff6dbf0d74771f2e625c70d87d3770e0d080dbb6e50db1d5403f46.svg"
@@ -398,52 +398,12 @@ const appItemVariants: Variants = {
 /**
  * Desktop Brand Showcase:
  * 1. Uses the exact header animation (AnimatedLogoSvg cascading bars)
- * 2. The 7 apps' logos come in ONE BY ONE with spring stagger
- * 3. Animated ambient background orbs & coordinate grid behind
- * 4. Deleted all extraneous badges, mono fonts, and quote blocks
+ * 2. The 7 apps' logos come in ONE BY ONE in a single row
+ * 3. 100% transparent so the circuit background animation travels cleanly behind
  */
 function ImproveBrandShowcase({ isSignIn }: { isSignIn: boolean }) {
   return (
-    <div className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center p-8 lg:p-12 select-none bg-[#050508]">
-      {/* 1. BACKGROUND ANIMATION BEHIND: Neutral deep cool tones + coordinate grid (NO PINK SHADOW) */}
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        {/* Subtle Ambient Indigo Orb (Deep neutral, no pink/magenta) */}
-        <motion.div
-          animate={{
-            scale: [1, 1.15, 1],
-            opacity: [0.12, 0.22, 0.12],
-            x: [0, 20, 0],
-            y: [0, -15, 0],
-          }}
-          transition={{ duration: 14, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          className="absolute -top-24 -right-24 w-[550px] h-[550px] rounded-full blur-[160px] bg-[#1e2a5e]/20"
-        />
-
-        {/* Subtle Deep Slate/Blue Orb */}
-        <motion.div
-          animate={{
-            scale: [1.1, 1, 1.1],
-            opacity: [0.1, 0.2, 0.1],
-            x: [0, -20, 0],
-            y: [0, 20, 0],
-          }}
-          transition={{ duration: 16, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut", delay: 1 }}
-          className="absolute -bottom-24 left-1/4 w-[500px] h-[500px] rounded-full blur-[160px] bg-[#0f172a]/40"
-        />
-
-        {/* Geometric Coordinate Grid Background */}
-        <div className="absolute inset-0 opacity-[0.035]">
-          <svg width="100%" height="100%">
-            <defs>
-              <pattern id="auth-grid-pattern" width="60" height="60" patternUnits="userSpaceOnUse">
-                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="1" />
-                <circle cx="60" cy="0" r="1.5" fill="white" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#auth-grid-pattern)" />
-          </svg>
-        </div>
-      </div>
+    <div className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center p-8 lg:p-12 select-none bg-transparent">
 
       {/* CENTER STAGE:
           1. EXACT HEADER ANIMATION FOR IMPROVE LOGO (NO PINK SHADOW)
@@ -548,7 +508,7 @@ export function AuthUI({
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#07050A] text-white md:grid md:grid-cols-2">
+    <div className="relative w-full min-h-screen text-white md:grid md:grid-cols-2 overflow-hidden bg-transparent">
       <style>{`
         input[type="password"]::-ms-reveal,
         input[type="password"]::-ms-clear {
@@ -556,13 +516,16 @@ export function AuthUI({
         }
       `}</style>
 
-      {/* Left Column: Interactive Form */}
-      <div className="flex min-h-screen items-center justify-center p-6 md:p-10 lg:p-14">
-        <AuthFormContainer isSignIn={isSignIn} onToggle={toggleForm} errorMessage={errorMessage} />
+      {/* Left Column: Interactive Form inside Transparent Glass Container */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
+        {/* Transparent Glass Container — Background Animation Directly Visible Through */}
+        <div className="w-full max-w-[420px] rounded-[32px] border border-white/[0.14] bg-white/[0.02] backdrop-blur-[6px] p-6 sm:p-8 md:p-9 shadow-2xl shadow-black/40">
+          <AuthFormContainer isSignIn={isSignIn} onToggle={toggleForm} errorMessage={errorMessage} />
+        </div>
       </div>
 
-      {/* Right Column: Custom Brand Visual Showcase featuring Header Animation, One-by-One App Logos, and Animated Background */}
-      <div className="hidden md:block relative border-l border-white/10">
+      {/* Right Column: Custom Brand Visual Showcase */}
+      <div className="hidden md:block relative z-10 border-l border-white/[0.08]">
         <ImproveBrandShowcase isSignIn={isSignIn} />
       </div>
     </div>

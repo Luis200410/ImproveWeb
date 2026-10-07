@@ -510,8 +510,8 @@ export default function CircularSplitRoll({
           reducedMotion ? "hidden" : "block"
         }`}
       >
-        {/* Responsive Showcase - Stacked in Dead Center on Mobile, Two-Column on Tablet/Desktop */}
-        <div className="relative mx-auto flex h-full w-full max-w-[94vw] 2xl:max-w-[1440px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 pt-14 sm:pt-26 pb-12 sm:pb-8 gap-3.5 sm:gap-0">
+        {/* Responsive Showcase Cockpit inside ultra-glass container */}
+        <div className="ultra-glass-panel relative mx-auto my-auto flex h-[74vh] max-h-[660px] w-full max-w-[92vw] 2xl:max-w-[1360px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 py-6 sm:py-8 gap-3.5 sm:gap-0 shadow-2xl">
           {/* Top/Left Column: App Titles with Typewriter Taglines */}
           <div className="relative flex h-[76px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
@@ -564,12 +564,12 @@ export default function CircularSplitRoll({
                 >
                   {/* Clean Container */}
                   <div
-                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-[#0c0a14]/95 border border-white/15 sm:shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-2xl group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
+                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-white/[0.025] border border-white/15 sm:shadow-[0_16px_36px_rgba(0,0,0,0.4)] backdrop-blur-[8px] group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
                   >
                     <img
                       src={item.logoUrl}
                       alt={item.alt}
-                      className="pointer-events-none block max-h-[75%] max-w-[75%] select-none object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
+                      className="pointer-events-none block max-h-[75%] max-w-[75%] select-none object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] mix-blend-screen"
                       draggable="false"
                     />
                   </div>

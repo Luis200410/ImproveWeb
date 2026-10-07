@@ -322,7 +322,7 @@ export default function Home() {
       {/* Frame 3: The Architecture / Blueprint (The Problem, The Ecosystem, The Sanctuary, The Investment) */}
       <section
         id="story"
-        className={`w-full relative bg-black transition-opacity duration-700 ${
+        className={`w-full relative bg-transparent transition-opacity duration-700 ${
           introComplete ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >

@@ -249,7 +249,7 @@ export default function CTAWithVerticalMarquee({
       id="pricing"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="relative min-h-[90vh] bg-[#07050A] text-white flex flex-col items-center justify-between px-6 py-16 overflow-hidden border-t border-zinc-900 select-none scroll-mt-20"
+      className="relative min-h-[90vh] bg-transparent text-white flex flex-col items-center justify-between px-6 py-16 overflow-hidden border-t border-white/10 select-none scroll-mt-20"
     >
       {/* Background ambient glow */}
       <div
@@ -346,10 +346,10 @@ export default function CTAWithVerticalMarquee({
                       </VerticalMarquee>
 
                       {/* Top gradient vignette */}
-                      <div className="pointer-events-none absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
+                      <div className="pointer-events-none absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 via-black/20 to-transparent z-10" />
 
                       {/* Bottom gradient vignette */}
-                      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
+                      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-10" />
                     </div>
                   </div>
 
@@ -364,7 +364,7 @@ export default function CTAWithVerticalMarquee({
       {/* Bottom Carousel Controls & View Indicator Bar */}
       <div className="w-full max-w-sm mx-auto pt-6 pb-2 z-20 flex flex-col items-center space-y-4">
         {/* Interactive Plan Tabs */}
-        <div className="grid grid-cols-2 gap-2 w-full bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-zinc-800/80 shadow-2xl">
+        <div className="grid grid-cols-2 gap-2 w-full bg-white/[0.03] backdrop-blur-[8px] p-1.5 rounded-xl border border-white/15 shadow-2xl">
           {planKeys.map((key, idx) => {
             const item = plans[key];
             const isActive = activeIndex === idx;
@@ -375,8 +375,8 @@ export default function CTAWithVerticalMarquee({
                 className={cn(
                   "relative py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5",
                   isActive
-                    ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
+                    ? "bg-white/10 text-white shadow-lg border border-white/20"
+                    : "text-zinc-400 hover:text-white hover:bg-white/5"
                 )}
               >
                 <span>{item.name}</span>

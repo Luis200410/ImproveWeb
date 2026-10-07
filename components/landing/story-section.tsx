@@ -224,7 +224,7 @@ function MotionSceneOne() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-red-950/40 via-black to-zinc-950 border border-red-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-red-500/30 shadow-2xl">
       {/* Background Volumetric Pulse */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.35, 0.15] }}
@@ -321,9 +321,9 @@ function MotionSceneOne() {
                 opacity: 0,
                 transition: { duration: 0.8, ease: "easeIn" },
               }}
-              className="p-6 rounded-3xl border border-white/20 bg-black/80 backdrop-blur-xl flex flex-col items-center gap-3 text-center shadow-2xl max-w-sm absolute"
+              className="p-6 rounded-3xl border border-white/15 bg-white/[0.03] backdrop-blur-[8px] flex flex-col items-center gap-3 text-center shadow-2xl max-w-sm absolute"
             >
-              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/15 backdrop-blur-[6px] flex items-center justify-center">
                 <Sun className="w-8 h-8 text-amber-400 animate-spin" style={{ animationDuration: "14s" }} />
               </div>
               <div className="font-mono text-sm font-bold text-white">7:00 AM • Single Clear Intention</div>
@@ -389,7 +389,7 @@ function MotionSceneOne() {
                       duration: isEjected ? 0.85 : 0.7,
                       ease: isEjected ? "easeIn" : [0.34, 1.4, 0.64, 1],
                     }}
-                    className="p-3.5 rounded-2xl border border-red-500/40 bg-black/90 backdrop-blur-md flex flex-col justify-between space-y-2 shadow-xl relative overflow-hidden"
+                    className="p-3.5 rounded-2xl border border-red-500/30 bg-white/[0.03] backdrop-blur-[8px] flex flex-col justify-between space-y-2 shadow-xl relative overflow-hidden"
                   >
                     <div className="flex items-center justify-between">
                       <div
@@ -508,7 +508,7 @@ function MotionSceneTwo() {
   ];
 
   return (
-    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-fuchsia-950/40 via-black to-zinc-950 border border-fuchsia-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-fuchsia-500/30 shadow-2xl">
       {/* Background Volumetric Magenta Flare */}
       <motion.div
         animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -786,7 +786,7 @@ function MotionSceneTwo() {
           initial={{ opacity: 0, y: 15, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-lg mt-3 p-4 rounded-2xl border bg-black/90 backdrop-blur-xl flex items-center justify-between shadow-2xl"
+          className="w-full max-w-lg mt-3 p-4 rounded-2xl border border-white/15 bg-white/[0.03] backdrop-blur-[8px] flex items-center justify-between shadow-2xl"
           style={{
             borderColor: `${active.color}70`,
             boxShadow: `0 0 35px ${active.color}35`,
@@ -864,7 +864,7 @@ function MotionSceneThree() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-emerald-950/40 via-black to-zinc-950 border border-emerald-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-emerald-500/30 shadow-2xl">
       {/* Background Volumetric Green Flare */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -962,7 +962,7 @@ function MotionSceneThree() {
                 opacity: 0,
                 transition: { duration: 0.8, ease: "easeIn" },
               }}
-              className="p-6 rounded-3xl border border-red-500/50 bg-black/85 backdrop-blur-xl flex flex-col items-center gap-3 text-center shadow-[0_0_50px_rgba(239,68,68,0.3)] max-w-sm absolute z-30"
+              className="p-6 rounded-3xl border border-red-500/40 bg-white/[0.03] backdrop-blur-[8px] flex flex-col items-center gap-3 text-center shadow-[0_0_50px_rgba(239,68,68,0.2)] max-w-sm absolute z-30"
             >
               <div className="w-16 h-16 rounded-2xl bg-red-950/60 border border-red-500 flex items-center justify-center">
                 <Cloud className="w-8 h-8 text-red-400 animate-pulse" />
@@ -1184,7 +1184,7 @@ function MotionSceneFour() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-amber-950/40 via-black to-zinc-950 border border-amber-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-amber-500/30 shadow-2xl">
       {/* Background Volumetric Gold Flare */}
       <motion.div
         animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -1331,7 +1331,7 @@ function MotionSceneFour() {
         {beat >= 2 && (
           <div className="space-y-4">
             {/* Horizon Selector */}
-            <div className="flex items-center justify-between bg-black/80 p-2 rounded-2xl border border-amber-500/30 max-w-md mx-auto w-full">
+            <div className="flex items-center justify-between bg-white/[0.03] backdrop-blur-[8px] p-2 rounded-2xl border border-amber-500/30 max-w-md mx-auto w-full">
               <span className="text-xs font-mono text-zinc-400 px-2 font-bold uppercase">
                 Horizon:
               </span>
@@ -1407,7 +1407,7 @@ function MotionSceneFour() {
             {/* 2 Unified Options: Free Core vs Complete Sovereign System */}
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-3 text-left">
-                <div className="p-3.5 rounded-xl border border-white/10 bg-black/60 flex flex-col justify-between">
+                <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-[8px] flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-mono font-bold text-white">$0 Free Core</span>
@@ -1530,7 +1530,7 @@ export function StorySection() {
   const current = CHAPTERS[activeStep];
 
   return (
-    <div className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white select-none overflow-hidden">
+    <div className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-transparent text-white select-none overflow-hidden">
       {/* Background Chromatic Radial Aura */}
       <div
         className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[650px] rounded-full blur-[220px] opacity-25 transition-colors duration-1000 -z-10"
@@ -1551,8 +1551,8 @@ export function StorySection() {
                 onClick={() => selectStep(idx)}
                 className={`group relative p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer overflow-hidden ${
                   isActive
-                    ? "bg-zinc-900/90 shadow-2xl"
-                    : "bg-zinc-950/40 border-white/10 hover:border-white/20 hover:bg-zinc-900/40"
+                    ? "bg-white/[0.06] backdrop-blur-[8px] shadow-2xl"
+                    : "bg-white/[0.02] border-white/10 hover:border-white/20 hover:bg-white/[0.04] backdrop-blur-[6px]"
                 }`}
                 style={{
                   borderColor: isActive ? chap.accentColor : undefined,

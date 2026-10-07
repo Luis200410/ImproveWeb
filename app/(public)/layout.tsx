@@ -15,7 +15,7 @@ export default function PublicLayout({
       <main className="pt-25 flex-grow relative z-10">
         {children}
       </main>
-      <footer className="border-t border-[var(--separator)] py-8 px-6 text-center text-sm text-[var(--label-2)] relative z-50 pointer-events-auto bg-black/80 backdrop-blur-md">
+      <footer className="border-t border-white/10 py-8 px-6 text-center text-sm text-[var(--label-2)] relative z-50 pointer-events-auto bg-white/[0.02] backdrop-blur-[8px]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div>
             <span className="font-bold text-[var(--label)] tracking-widest uppercase">IMPROVE</span> Complete Integrity Framework

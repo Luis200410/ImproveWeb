@@ -480,27 +480,29 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
       >
         {/* Frame 1: Manifesto Typewriter with Huge Background Quote Symbol */}
         {phase === "manifesto" && (
-          <div className="relative min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-6">
-            {/* The Typing Sentence */}
-            <div className="relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight min-h-[1.5em] flex items-center justify-center max-w-5xl mx-auto">
-              <span
-                className={cn(
-                  "transition-colors duration-300",
-                  currentStep.isBad
-                    ? "text-red-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.7)]"
-                    : "text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
-                )}
-              >
-                {displayText}
-              </span>
-              <span
-                className={cn(
-                  "inline-block w-[3px] h-[1em] ml-2 animate-pulse align-middle",
-                  currentStep.isBad
-                    ? "bg-red-500 shadow-[0_0_12px_#ef4444]"
-                    : "bg-white/90 shadow-[0_0_12px_#ffffff]"
-                )}
-              />
+          <div className="relative min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-4 sm:px-6">
+            <div className="ultra-glass-panel w-full max-w-4xl mx-auto p-8 sm:p-12 md:p-16 flex items-center justify-center">
+              {/* The Typing Sentence */}
+              <div className="relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight min-h-[1.5em] flex items-center justify-center max-w-5xl mx-auto">
+                <span
+                  className={cn(
+                    "transition-colors duration-300",
+                    currentStep.isBad
+                      ? "text-red-500 drop-shadow-[0_0_35px_rgba(239,68,68,0.7)]"
+                      : "text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+                  )}
+                >
+                  {displayText}
+                </span>
+                <span
+                  className={cn(
+                    "inline-block w-[3px] h-[1em] ml-2 animate-pulse align-middle",
+                    currentStep.isBad
+                      ? "bg-red-500 shadow-[0_0_12px_#ef4444]"
+                      : "bg-white/90 shadow-[0_0_12px_#ffffff]"
+                  )}
+                />
+              </div>
             </div>
 
             {/* Subtle skip control */}
@@ -515,8 +517,8 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
 
         {/* Single Unified Final Frame: Top sentence + IMPROVE Slot + Typed subhead */}
         {phase === "final" && (
-          <div className="min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-6 py-12 animate-in fade-in zoom-in-95 duration-700">
-            <div className="max-w-4xl mx-auto flex flex-col items-center">
+          <div className="min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 py-12 animate-in fade-in zoom-in-95 duration-700">
+            <div className="ultra-glass-panel max-w-4xl sm:max-w-5xl mx-auto w-full flex flex-col items-center p-8 sm:p-12 md:p-16 relative z-10">
               {/* Top sentence that stays */}
               <p className="text-sm sm:text-base md:text-lg font-medium tracking-[0.25em] uppercase text-zinc-400 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
                 Purpose in mind. Intention in motion.
