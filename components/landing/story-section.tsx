@@ -1,2724 +1,1703 @@
 "use client";
 
-import { useState, useEffect, useRef, CSSProperties, ReactNode } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useInView } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame,
   CheckSquare,
   DollarSign,
   FileText,
   Bot,
-  Cloud,
+  Calendar,
   Sun,
   Activity,
-  Headphones,
-  BookOpen,
-  Bookmark,
-  Calendar,
-  Zap,
   AlertTriangle,
-  Check,
   ArrowRight,
-  Sparkles,
-  Tag,
+  ShieldCheck,
+  Cpu,
+  ChevronRight,
+  ChevronLeft,
+  Pause,
+  Play,
+  Brain,
+  Cloud,
 } from "lucide-react";
 
-export interface StoryChapter {
+// =========================================================================
+// DATA SPECIFICATIONS
+// =========================================================================
+
+interface ChapterMeta {
   id: string;
   number: string;
   letter: string;
   accentColor: string;
   title: string;
   subtitle: string;
-  explanation: {
-    summary: string;
-    details: string[];
-    callouts?: {
-      title: string;
-      body: string;
-      badge?: string;
-    }[];
-    pricing?: {
-      plan: string;
-      price: string;
-      billing: string;
-      badge?: string;
-      features: string[];
-      highlighted?: boolean;
-    }[];
-  };
+  tagline: string;
 }
 
-export const STORY_CHAPTERS: StoryChapter[] = [
+const CHAPTERS: ChapterMeta[] = [
   {
     id: "problem",
     number: "01",
     letter: "I",
-    accentColor: "#ef4444", // Letter 'I' (Red)
-    title: "The Problem",
-    subtitle: "The Cost of Fragmentation",
-    explanation: {
-      summary:
-        "Right now, your life is likely split across a dozen different subscriptions. Your habits live in one tool, your budget in another, and your daily tasks are lost somewhere in between.",
-      details: [
-        "This fragmentation does not just drain your wallet—it breaks your focus. When your systems are disconnected, your goals become disconnected.",
-      ],
-      callouts: [
-        {
-          title: "The Hidden Tax on Focus",
-          body: "Context switching between 5-10 single-purpose apps drains mental bandwidth and creates friction before you even begin working.",
-          badge: "Fragmented Reality",
-        },
-        {
-          title: "Subscription Fatigue",
-          body: "Paying $10-$20/month for separate habit trackers, note apps, and budget tools costs hundreds of dollars every single year.",
-          badge: "Financial Drain",
-        },
-      ],
-    },
+    accentColor: "#ef4444",
+    title: "THE FRAGMENTATION TRAP",
+    subtitle: "Watch apps swarm, fracture & fly off-screen",
+    tagline: "12 Subscriptions. Constant Friction. Attention Fractured.",
   },
   {
     id: "ecosystem",
     number: "02",
     letter: "P",
-    accentColor: "#ff02e8", // Letter 'P' (Magenta)
-    title: "The Ecosystem",
-    subtitle: "Everything in Alignment",
-    explanation: {
-      summary:
-        "IMPROVE replaces isolated tools with a single, conscious ecosystem built on seven pillars: Second Brain (Knowledge & School), Money, Productivity, Body, Work, Mind, and Relationships.",
-      details: [
-        "These are not separate silos. They are deeply interconnected.",
-        "Your Second Brain and Productivity apps act as the central nervous system, automatically routing data exactly where it needs to go.",
-        "How it breathes together: When you start your daily exercise habit, you do not need to switch apps to find your routine. Productivity syncs seamlessly with the Body app, surfacing your exact exercises right next to your habit timer.",
-        "Conscious Control: The system is designed as a constant meditation on who you are and where you are going. It handles the friction of organization so your mind is free to focus on execution.",
-      ],
-      callouts: [
-        {
-          title: "Central Nervous System",
-          body: "Second Brain + Productivity automatically route your knowledge, habits, and tasks directly to the right pillar without manual triage.",
-          badge: "Automated Routing",
-        },
-        {
-          title: "Zero-Friction Habit Sync",
-          body: "When you start an exercise routine, your workout surfaces directly inside your habit timer. No app switching required.",
-          badge: "Breathes Together",
-        },
-      ],
-    },
+    accentColor: "#ff02e8",
+    title: "THE UNIFIED ARCHITECTURE",
+    subtitle: "Watch the neural core zoom & relay in 3D",
+    tagline: "Everything Syncs Instantly. Zero App-Switching.",
   },
   {
     id: "sanctuary",
     number: "03",
     letter: "O",
-    accentColor: "#22c55e", // Letter 'O' (Green)
-    title: "The Sanctuary",
-    subtitle: "Total Privacy & Local Intelligence",
-    explanation: {
-      summary:
-        "Absolute control over your life requires absolute control over your data. IMPROVE is built as a closed, local system.",
-      details: [
-        "By leveraging on-device frameworks like Apple Intelligence and Siri, the ecosystem gives you powerful, frictionless data capture without the hidden costs of external AI bills.",
-        "There are no third-party databases analyzing your habits. There is no one selling your information. Your finances, your thoughts, and your routines remain strictly yours. Fast, intelligent, and completely private.",
-      ],
-      callouts: [
-        {
-          title: "On-Device Neural Processing",
-          body: "Leveraging Apple Intelligence & local neural engines directly on your machine for zero-latency indexing.",
-          badge: "100% Local",
-        },
-        {
-          title: "Zero Data-Harvesting",
-          body: "Your private financial figures, journal thoughts, and intimate routines never touch a centralized advertising server.",
-          badge: "Sovereignty",
-        },
-      ],
-    },
+    accentColor: "#22c55e",
+    title: "THE SOVEREIGN SANCTUARY",
+    subtitle: "Watch cloud spyware get blasted off-screen",
+    tagline: "Apple Intelligence On-Device. 0 KB/s Cloud Exfiltration.",
   },
   {
     id: "investment",
     number: "04",
     letter: "E",
-    accentColor: "#efb219", // Letter 'E' (Gold)
-    title: "The Investment",
-    subtitle: "System Over Subscriptions",
-    explanation: {
-      summary:
-        "True clarity shouldn't require managing—and paying for—a chaotic web of single-purpose apps.",
-      details: [
-        "You can build your system a la carte, selecting individual IMPROVE modules for $7 each. But the true power of the platform is unlocked in the unified ecosystem.",
-        "For $40, you gain access to the entire IMPROVE suite. All seven pillars seamlessly communicating with one another, plus the local AI tools to frictionlessly populate your data and build your Second Brain—with zero recurring external AI fees. Stop paying for fragmentation and data-harvesting. Invest in total alignment.",
-      ],
-      pricing: [
-        {
-          plan: "A La Carte Modules",
-          price: "$7",
-          billing: "per module / one-time",
-          badge: "Modular",
-          features: [
-            "Pick individual pillars as you need them",
-            "Standalone lifetime access per app",
-            "Local offline storage",
-          ],
-          highlighted: false,
-        },
-        {
-          plan: "The Complete Ecosystem",
-          price: "$40",
-          billing: "entire 7-pillar suite / one-time",
-          badge: "Maximum Value",
-          features: [
-            "All 7 interconnected IMPROVE pillars",
-            "Central nervous system automatic data routing",
-            "Local on-device AI tools with zero recurring fees",
-            "Lifetime updates & continuous ecosystem alignment",
-          ],
-          highlighted: true,
-        },
-      ],
-    },
+    accentColor: "#efb219",
+    title: "THE SOVEREIGN INVESTMENT",
+    subtitle: "Watch the SaaS invoice get sliced in half & ejected",
+    tagline: "Own Your Life Operating System for $40 Once.",
   },
 ];
 
-const SUBSCRIPTION_APPS = [
-  { name: "Habits", price: "$14/mo", icon: Flame, color: "#f87171", border: "border-red-500/30", bg: "bg-red-950/20" },
-  { name: "Tasks", price: "$10/mo", icon: CheckSquare, color: "#fb7185", border: "border-rose-500/30", bg: "bg-rose-950/20" },
-  { name: "Budget", price: "$15/mo", icon: DollarSign, color: "#fbbf24", border: "border-amber-500/30", bg: "bg-amber-950/20" },
-  { name: "Notes", price: "$12/mo", icon: FileText, color: "#38bdf8", border: "border-sky-500/30", bg: "bg-sky-950/20" },
-  { name: "AI Chat", price: "$20/mo", icon: Bot, color: "#34d399", border: "border-emerald-500/30", bg: "bg-emerald-950/20" },
-  { name: "Storage", price: "$10/mo", icon: Cloud, color: "#a78bfa", border: "border-violet-500/30", bg: "bg-violet-950/20" },
-  { name: "Mind", price: "$13/mo", icon: Sun, color: "#f472b6", border: "border-pink-500/30", bg: "bg-pink-950/20" },
-  { name: "Workout", price: "$12/mo", icon: Activity, color: "#fb923c", border: "border-orange-500/30", bg: "bg-orange-950/20" },
-  { name: "Music", price: "$11/mo", icon: Headphones, color: "#4ade80", border: "border-green-500/30", bg: "bg-green-950/20" },
-  { name: "Journal", price: "$8/mo", icon: BookOpen, color: "#60a5fa", border: "border-blue-500/30", bg: "bg-blue-950/20" },
-  { name: "Reading", price: "$10/mo", icon: Bookmark, color: "#c084fc", border: "border-purple-500/30", bg: "bg-purple-950/20" },
-  { name: "Calendar", price: "$12/mo", icon: Calendar, color: "#e879f9", border: "border-fuchsia-500/30", bg: "bg-fuchsia-950/20" },
+const ECOSYSTEM_PILLARS = [
+  { letter: "I", name: "Relationships", subtitle: "Social Capital", color: "#cc0000", glow: "rgba(204, 0, 0, 0.9)", logo: "/RelationShips logo.svg" },
+  { letter: "M", name: "Mind", subtitle: "Mental Clarity", color: "#6f1bd3", glow: "rgba(111, 27, 211, 0.9)", logo: "/mind Logo.svg" },
+  { letter: "P", name: "Productivity", subtitle: "Execution Hub", color: "#ff02e8", glow: "rgba(255, 2, 232, 1)", logo: "/Productivity Logo.svg", isCore: true },
+  { letter: "R", name: "Work", subtitle: "Career Mastery", color: "#2254f5", glow: "rgba(34, 84, 245, 0.9)", logo: "/Work Logo.svg" },
+  { letter: "O", name: "Body", subtitle: "Physical Vitality", color: "#43b752", glow: "rgba(67, 183, 82, 0.9)", logo: "/Body Logo.svg" },
+  { letter: "V", name: "Second Brain", subtitle: "Knowledge Hub", color: "#ff6900", glow: "rgba(255, 105, 0, 0.9)", logo: "/Second Brain Logo.svg", isCore: true },
+  { letter: "E", name: "Money", subtitle: "Wealth Engine", color: "#efb219", glow: "rgba(239, 178, 25, 1)", logo: "/money Logo.svg" },
 ];
 
-interface TypewriterStep {
-  text: string;
-  typeSpeed?: number;
-  pauseAtEnd?: number;
-  deleteSpeed?: number;
-  pauseAfterDelete?: number;
-}
-
-const TYPEWRITER_STEPS: TypewriterStep[] = [
-  {
-    // Step 0: "Right now, your life is likely split across a dozen different subscriptions."
-    // Shows the 12 Animated Subscription Squares!
-    text: "Right now, your life is likely split across a dozen different subscriptions.",
-    typeSpeed: 30,
-    pauseAtEnd: 2400,
-    deleteSpeed: 16,
-    pauseAfterDelete: 350,
-  },
-  {
-    // Step 1: "Your habits live in one tool."
-    // Habit Tool card enters on the left immediately when this sentence is called!
-    text: "Your habits live in one tool.",
-    typeSpeed: 30,
-    pauseAtEnd: 2000,
-    deleteSpeed: 16,
-    pauseAfterDelete: 350,
-  },
-  {
-    // Step 2: "Your budget in another."
-    // Budget App card enters on the right immediately when this sentence is called!
-    text: "Your budget in another.",
-    typeSpeed: 30,
-    pauseAtEnd: 2000,
-    deleteSpeed: 16,
-    pauseAfterDelete: 350,
-  },
-  {
-    // Step 3: "And your daily tasks are lost somewhere in between."
-    // Task List card drops into the middle immediately when this sentence is called!
-    text: "And your daily tasks are lost somewhere in between.",
-    typeSpeed: 30,
-    pauseAtEnd: 2200,
-    deleteSpeed: 16,
-    pauseAfterDelete: 400,
-  },
-  {
-    // Step 4: Consequence 1
-    text: "This fragmentation does not just drain your wallet—it breaks your focus.",
-    typeSpeed: 28,
-    pauseAtEnd: 2400,
-    deleteSpeed: 16,
-    pauseAfterDelete: 380,
-  },
-  {
-    // Step 5: Consequence 2
-    text: "When your systems are disconnected, your goals become disconnected.",
-    typeSpeed: 28,
-    pauseAtEnd: 2800,
-    deleteSpeed: 16,
-    pauseAfterDelete: 600,
-  },
+const FRAGMENTED_TOOLS = [
+  { name: "Habit Tracker", cost: "$14/mo", icon: Flame, color: "#ef4444", status: "AUTO-BILLED $14", ejectDir: { x: -750, y: -400, r: -50 } },
+  { name: "Budget App", cost: "$15/mo", icon: DollarSign, color: "#f59e0b", status: "SYNC CONFLICT", ejectDir: { x: 750, y: -400, r: 45 } },
+  { name: "Task Manager", cost: "$10/mo", icon: CheckSquare, color: "#06b6d4", status: "RATE LIMITED", ejectDir: { x: -800, y: 180, r: -35 } },
+  { name: "Notes App", cost: "$12/mo", icon: FileText, color: "#8b5cf6", status: "DATA SILO", ejectDir: { x: 800, y: 220, r: 40 } },
+  { name: "AI Assistant", cost: "$20/mo", icon: Bot, color: "#10b981", status: "CLOUD LOGGED", ejectDir: { x: -700, y: 500, r: -55 } },
+  { name: "Calendar Tool", cost: "$12/mo", icon: Calendar, color: "#3b82f6", status: "OUT OF SYNC", ejectDir: { x: 700, y: 500, r: 50 } },
+  { name: "Fitness App", cost: "$15/mo", icon: Activity, color: "#f97316", status: "AUTO-BILLED $15", ejectDir: { x: -450, y: -550, r: -65 } },
+  { name: "Meditation", cost: "$13/mo", icon: Sun, color: "#ec4899", status: "PRICE HIKE +25%", ejectDir: { x: 450, y: -550, r: 60 } },
 ];
 
-function BrokenFocusStage({ isGoalsStep }: { isGoalsStep?: boolean }) {
+// =========================================================================
+// KINETIC TEXT WITH ZOOM PUNCH
+// =========================================================================
+function ZoomingHeadline({
+  badge,
+  badgeColor,
+  statusText,
+  titlePrefix,
+  zoomWord,
+  titleSuffix,
+  subtitle,
+}: {
+  badge: string;
+  badgeColor: string;
+  statusText?: string;
+  titlePrefix?: string;
+  zoomWord: string;
+  titleSuffix?: string;
+  subtitle: string;
+}) {
   return (
     <motion.div
-      key={isGoalsStep ? "goals-stage" : "focus-stage"}
-      initial={{ opacity: 0, y: 15, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="space-y-3 pt-1"
+      initial={{ opacity: 0, scale: 0.94, y: 15 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 1.04, y: -10 }}
+      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      className="space-y-1.5"
     >
-      {/* Top Banner Alert */}
-      <div className="flex items-center justify-between px-1 text-xs font-mono">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-          <span className="text-red-400 font-bold uppercase tracking-wider text-[11px]">
-            {isGoalsStep ? "Systems Severed • Goals Disconnected" : "Flow State Compromised • Focus Broken"}
+      <div className="flex items-center gap-2">
+        <span
+          className="px-2.5 py-0.5 rounded-full border font-mono text-[11px] font-bold uppercase tracking-wider"
+          style={{ backgroundColor: `${badgeColor}20`, borderColor: `${badgeColor}40`, color: badgeColor }}
+        >
+          {badge}
+        </span>
+        {statusText && (
+          <span className="text-zinc-500 font-mono text-[11px] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: badgeColor }} />
+            {statusText}
           </span>
-        </div>
-        <div className="text-zinc-400 text-[11px]">
-          Cognitive Tax: <span className="text-red-400 font-bold">{isGoalsStep ? "Zero Alignment" : "Critical Overload"}</span>
-        </div>
+        )}
       </div>
 
-      {/* Main 3-Column Broken Focus Stage */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch">
-        {/* Left Card: 23 min to regain focus */}
-        <motion.div
-          initial={{ opacity: 0, x: -15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="p-4 rounded-2xl border border-red-500/30 bg-red-950/20 backdrop-blur-md flex flex-col justify-between relative overflow-hidden"
+      <div className="text-2xl sm:text-4xl font-black text-white tracking-tight uppercase leading-snug">
+        {titlePrefix && <span>{titlePrefix} </span>}
+        <motion.span
+          initial={{ scale: 0.65, opacity: 0 }}
+          animate={{ scale: [0.65, 1.2, 1], opacity: 1 }}
+          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+          className="inline-block drop-shadow-[0_0_25px_currentColor]"
+          style={{ color: badgeColor }}
         >
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-bold text-red-300">Attention Residue</span>
-              <AlertTriangle className="w-4 h-4 text-red-400 animate-pulse" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white mb-1">
-              23 min
-            </div>
-            <p className="text-xs text-zinc-400 leading-snug">
-              Average time required to regain deep flow after an app switch.
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-red-400/80 mt-3 pt-2 border-t border-red-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-            <span>Constant mental triage</span>
-          </div>
-        </motion.div>
-
-        {/* Center Card: The Fracturing Focus Reticle */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.45, delay: 0.15 }}
-          className="p-4 rounded-2xl border border-red-500/40 bg-black/40 backdrop-blur-md flex flex-col items-center justify-center text-center relative overflow-hidden ring-1 ring-red-500/20 shadow-[0_0_35px_rgba(239,68,68,0.18)]"
-        >
-          {/* Subtle radial glow */}
-          <div className="absolute inset-0 bg-radial from-red-600/15 via-transparent to-transparent pointer-events-none" />
-
-          {/* Fractured Reticle Visual */}
-          <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center my-1">
-            {/* Left shattered half */}
-            <motion.div
-              animate={{
-                x: [-2, -6, -3, -7, -3],
-                rotate: [-2, -6, -3, -5, -2],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute left-0 w-1/2 h-full overflow-hidden flex items-center justify-end pr-0.5 border-r border-red-500/60"
-            >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-red-500/50 flex items-center justify-center">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-red-400/60 border-dashed" />
-              </div>
-            </motion.div>
-
-            {/* Right shattered half */}
-            <motion.div
-              animate={{
-                x: [2, 6, 3, 7, 3],
-                rotate: [2, 6, 3, 5, 2],
-              }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute right-0 w-1/2 h-full overflow-hidden flex items-center justify-start pl-0.5"
-            >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-red-500/50 flex items-center justify-center -ml-8 sm:-ml-10">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-red-400/60 border-dashed" />
-              </div>
-            </motion.div>
-
-            {/* Center jagged lightning crack */}
-            <motion.div
-              animate={{ opacity: [0.6, 1, 0.4, 0.9, 0.6] }}
-              transition={{ duration: 1.2, repeat: Infinity }}
-              className="relative z-10"
-            >
-              <Zap className="w-8 h-8 sm:w-9 sm:h-9 text-red-500 drop-shadow-[0_0_12px_rgba(239,68,68,0.8)]" />
-            </motion.div>
-          </div>
-
-          <span className="text-[11px] font-mono font-bold text-red-400 tracking-wider uppercase mt-1">
-            {isGoalsStep ? "Systems Disconnected" : "Focus Shattered"}
-          </span>
-          <span className="text-[9px] font-mono text-zinc-500">
-            {isGoalsStep ? "Disconnected data breaks execution" : "Siloed apps shatter deep flow"}
-          </span>
-        </motion.div>
-
-        {/* Right Card: -40% Mental Bandwidth */}
-        <motion.div
-          initial={{ opacity: 0, x: 15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4, delay: 0.08 }}
-          className="p-4 rounded-2xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-md flex flex-col justify-between relative overflow-hidden"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-bold text-rose-300">Cognitive Tax</span>
-              <Activity className="w-4 h-4 text-rose-400 animate-pulse" />
-            </div>
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white mb-1">
-              -40%
-            </div>
-            <p className="text-xs text-zinc-400 leading-snug">
-              Drop in productivity caused by managing siloed tools.
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5 text-[10px] font-mono text-rose-400/80 mt-3 pt-2 border-t border-rose-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            <span>Manual double-entry fatigue</span>
-          </div>
-        </motion.div>
+          {zoomWord}
+        </motion.span>
+        {titleSuffix && <span> {titleSuffix}</span>}
       </div>
+
+      <p className="text-xs sm:text-sm font-mono text-zinc-400 max-w-2xl">
+        {subtitle}
+      </p>
     </motion.div>
   );
 }
 
-interface TextHighlightRule {
-  phrase: string;
-  className?: string;
-  style?: CSSProperties;
-}
+// =========================================================================
+// ODOMETER COUNTER
+// =========================================================================
+function KineticOdometer({
+  target,
+  prefix = "",
+  suffix = "",
+  duration = 1400,
+}: {
+  target: number;
+  prefix?: string;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [val, setVal] = useState(0);
 
-function renderTypewriterText(
-  fullText: string,
-  charCount: number,
-  rules: TextHighlightRule[] = []
-): ReactNode {
-  if (charCount <= 0) return null;
+  useEffect(() => {
+    let start: number | null = null;
+    let animId: number;
 
-  const intervals: { start: number; end: number; rule: TextHighlightRule }[] = [];
-  for (const rule of rules) {
-    if (!rule.phrase) continue;
-    let searchFrom = 0;
-    while (searchFrom < fullText.length) {
-      const idx = fullText.indexOf(rule.phrase, searchFrom);
-      if (idx === -1) break;
-      intervals.push({ start: idx, end: idx + rule.phrase.length, rule });
-      searchFrom = idx + rule.phrase.length;
-    }
-  }
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setVal(Math.floor(eased * target));
 
-  intervals.sort((a, b) => a.start - b.start);
+      if (progress < 1) {
+        animId = requestAnimationFrame(animate);
+      }
+    };
 
-  const segments: { start: number; end: number; rule?: TextHighlightRule }[] = [];
-  let currentPos = 0;
-
-  for (const interval of intervals) {
-    if (interval.start > currentPos) {
-      segments.push({ start: currentPos, end: interval.start });
-    }
-    const segStart = Math.max(currentPos, interval.start);
-    if (interval.end > segStart) {
-      segments.push({ start: segStart, end: interval.end, rule: interval.rule });
-      currentPos = interval.end;
-    }
-  }
-
-  if (currentPos < fullText.length) {
-    segments.push({ start: currentPos, end: fullText.length });
-  }
+    animId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animId);
+  }, [target, duration]);
 
   return (
-    <>
-      {segments.map((seg, sIdx) => {
-        if (charCount <= seg.start) return null;
-        const visibleSlice = fullText.slice(seg.start, Math.min(seg.end, charCount));
-        if (!visibleSlice) return null;
-
-        if (seg.rule) {
-          return (
-            <span key={sIdx} className={seg.rule.className} style={seg.rule.style}>
-              {visibleSlice}
-            </span>
-          );
-        }
-
-        return <span key={sIdx}>{visibleSlice}</span>;
-      })}
-    </>
+    <span>
+      {prefix}
+      {val.toLocaleString()}
+      {suffix}
+    </span>
   );
 }
 
-function ChapterOneAnimatedContent({ accentColor, active }: { accentColor: string; active: boolean }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+// =========================================================================
+// SCENE 1: THE FRAGMENTATION TRAP
+// =========================================================================
+function MotionSceneOne() {
+  const [beat, setBeat] = useState(0);
 
-  const [showHabits, setShowHabits] = useState(false);
-  const [showBudget, setShowBudget] = useState(false);
-  const [showTasks, setShowTasks] = useState(false);
-
-  // Instantly trigger each respective card as soon as its sentence is called!
+  // Slower, more deliberate cinematic pacing
   useEffect(() => {
-    if (stepIndex === 0) {
-      setShowHabits(false);
-      setShowBudget(false);
-      setShowTasks(false);
-    } else if (stepIndex === 1) {
-      setShowHabits(true);
-    } else if (stepIndex === 2) {
-      setShowBudget(true);
-    } else if (stepIndex === 3) {
-      setShowTasks(true);
-    }
-  }, [stepIndex]);
-
-  // Reset when active changes (when scrolling away / changing chapter)
-  useEffect(() => {
-    if (!active) {
-      setStepIndex(0);
-      setDisplayText("");
-      setIsDeleting(false);
-      setShowHabits(false);
-      setShowBudget(false);
-      setShowTasks(false);
-    }
-  }, [active]);
-
-  // Main typing and backspacing loop
-  useEffect(() => {
-    if (!active) return;
-
-    const currentStep = TYPEWRITER_STEPS[stepIndex];
-    if (!currentStep) return;
-
-    const targetText = currentStep.text;
-    let timer: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Forward typing
-      if (displayText.length < targetText.length) {
-        timer = setTimeout(() => {
-          setDisplayText(targetText.slice(0, displayText.length + 1));
-        }, currentStep.typeSpeed || 28);
-      } else {
-        // Sentence fully typed out: pause to read, then start backspacing (delete animation)
-        timer = setTimeout(() => {
-          setIsDeleting(true);
-        }, currentStep.pauseAtEnd || 1800);
-      }
-    } else {
-      // Visible backspacing letter-by-letter
-      if (displayText.length > 0) {
-        timer = setTimeout(() => {
-          setDisplayText((prev) => prev.slice(0, -1));
-        }, currentStep.deleteSpeed || 16);
-      } else {
-        // Fully backspaced: pause briefly then advance to next sentence or loop back
-        timer = setTimeout(() => {
-          setStepIndex((prev) => (prev + 1) % TYPEWRITER_STEPS.length);
-          setIsDeleting(false);
-        }, currentStep.pauseAfterDelete || 350);
-      }
-    }
-
-    return () => clearTimeout(timer);
-  }, [active, stepIndex, displayText, isDeleting]);
-
-  const currentStep = TYPEWRITER_STEPS[stepIndex] || TYPEWRITER_STEPS[0];
-  const rules: TextHighlightRule[] = (() => {
-    switch (stepIndex) {
-      case 0:
-        return [
-          {
-            phrase: "split across a dozen different subscriptions",
-            className: "font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 1:
-        return [{ phrase: currentStep.text, className: "text-red-400 font-semibold" }];
-      case 2:
-        return [{ phrase: currentStep.text, className: "text-amber-400 font-semibold" }];
-      case 3:
-        return [{ phrase: currentStep.text, className: "text-rose-400 font-semibold" }];
-      case 4:
-        return [
-          { phrase: "drain your wallet", className: "text-white font-bold" },
-          {
-            phrase: "breaks your focus",
-            className: "font-bold underline decoration-red-500/50 underline-offset-4",
-            style: { color: accentColor },
-          },
-        ];
-      case 5:
-        return [
-          {
-            phrase: "disconnected",
-            className: "font-semibold drop-shadow-[0_0_12px_rgba(239,68,68,0.4)]",
-            style: { color: accentColor },
-          },
-        ];
-      default:
-        return [];
-    }
-  })();
+    const t1 = setTimeout(() => setBeat(1), 1800);  // Cards swarm in, morning card flies off
+    const t2 = setTimeout(() => setBeat(2), 5200);  // Laser slice: cards expelled off-screen
+    const t3 = setTimeout(() => setBeat(3), 8800);  // Mega zoom punch into -$1,764 burn
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
-      <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
-        <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {renderTypewriterText(currentStep.text, displayText.length, rules)}
-          <span
-            className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
-            style={{ backgroundColor: accentColor }}
-          />
-        </p>
-      </div>
+    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-red-950/40 via-black to-zinc-950 border border-red-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+      {/* Background Volumetric Pulse */}
+      <motion.div
+        animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.35, 0.15] }}
+        transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-red-600/30 blur-[130px] pointer-events-none"
+      />
 
-      {/* Dynamic Visual Stage: Step 0 shows the 12 Squares, Steps 1-5 show the 3 Cards */}
-      <div className="relative min-h-[170px]">
+      {/* TOP: Dynamic Headline with Kinetic Zoom Punch */}
+      <div className="relative z-10 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            {[0, 1, 2, 3].map((b) => (
+              <button
+                key={b}
+                onClick={() => setBeat(b)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  beat === b ? "w-6 bg-red-500 shadow-[0_0_8px_#ef4444]" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                }`}
+                title={`Jump to Beat ${b + 1}`}
+              />
+            ))}
+          </div>
+
+          <span className="text-[11px] font-mono text-zinc-500">
+            Beat {beat + 1} of 4 • Fragmentation Analysis
+          </span>
+        </div>
+
         <AnimatePresence mode="wait">
-          {stepIndex === 0 ? (
-            <motion.div
-              key="squares-grid"
-              initial={{ opacity: 0, y: 15, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, y: -10 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="space-y-3 pt-1"
-            >
-              {/* Header status badge for the 12 apps */}
-              <div className="flex items-center justify-between px-1 text-xs font-mono">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-red-400 font-bold uppercase tracking-wider text-[11px]">
-                    12 Isolated Subscriptions
-                  </span>
-                </div>
-                <div className="text-zinc-400 text-[11px]">
-                  Recurring Cost: <span className="text-white font-bold">$147/month</span>
-                </div>
-              </div>
-
-              {/* 12 Animated Squares Grid */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-2.5">
-                {SUBSCRIPTION_APPS.map((app, i) => {
-                  const Icon = app.icon;
-                  return (
-                    <motion.div
-                      key={app.name}
-                      initial={{ opacity: 0, scale: 0.7, y: 15 }}
-                      animate={{
-                        opacity: 1,
-                        scale: 1,
-                        y: [0, i % 2 === 0 ? -3 : 3, 0],
-                      }}
-                      transition={{
-                        opacity: { duration: 0.35, delay: i * 0.03 },
-                        scale: { duration: 0.4, delay: i * 0.03, ease: [0.34, 1.4, 0.64, 1] },
-                        y: { duration: 2.5 + (i % 3) * 0.5, repeat: Infinity, ease: "easeInOut", delay: i * 0.08 },
-                      }}
-                      className={`p-2.5 sm:p-3 rounded-2xl border ${app.border} ${app.bg} backdrop-blur-md relative flex flex-col items-center justify-between text-center group hover:scale-105 transition-all overflow-hidden shadow-lg`}
-                    >
-                      <div className="flex items-center justify-between w-full mb-1">
-                        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" style={{ color: app.color }} />
-                        <span className="text-[9px] font-mono font-bold text-red-300 bg-red-500/20 px-1 py-0.2 rounded border border-red-500/30">
-                          {app.price}
-                        </span>
-                      </div>
-                      <span className="text-[11px] sm:text-xs font-mono font-semibold text-white truncate w-full mt-0.5">
-                        {app.name}
-                      </span>
-                      <span className="text-[9px] text-zinc-500 font-mono tracking-tight">
-                        Disconnected
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          ) : stepIndex === 4 || stepIndex === 5 ? (
-            <BrokenFocusStage isGoalsStep={stepIndex === 5} />
-          ) : (
-            <motion.div
-              key="cards-stage"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1"
-            >
-              {/* 1. Habit Tool (Left column) */}
-              <div className="sm:col-start-1">
-                <AnimatePresence>
-                  {showHabits && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                      className="p-5 rounded-2xl border border-red-500/30 bg-red-950/20 backdrop-blur-sm relative overflow-hidden h-full flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-mono font-bold text-white">Habit Tool</span>
-                          <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
-                            $14/mo
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-zinc-400 mb-4">Streaks trapped in a silo.</p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs font-mono text-red-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                        <span>No link to Daily Tasks</span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* 2. Task List (Middle column: Appears in step 3 and sits in the center!) */}
-              <div className="sm:col-start-2">
-                <AnimatePresence>
-                  {showTasks ? (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.82, y: -18 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      transition={{ duration: 0.55, ease: [0.34, 1.4, 0.64, 1] }}
-                      className="p-5 rounded-2xl border border-rose-500/35 bg-rose-950/25 backdrop-blur-sm relative overflow-hidden h-full flex flex-col justify-between ring-1 ring-rose-500/30 shadow-[0_0_30px_rgba(244,63,94,0.18)]"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-mono font-bold text-white">Task List</span>
-                          <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                            $10/mo
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-zinc-400 mb-4">Deadlines lost in the shuffle.</p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs font-mono text-rose-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                        <span>Manual Double-Entry</span>
-                      </div>
-                    </motion.div>
-                  ) : showBudget ? (
-                    /* Subtle dashed placeholder spot while waiting for "lost somewhere in between" */
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="hidden sm:flex h-full min-h-[130px] rounded-2xl border border-dashed border-white/10 items-center justify-center p-4 text-center"
-                    >
-                      <span className="text-[11px] font-mono text-zinc-600 uppercase tracking-widest">
-                        lost somewhere in between...
-                      </span>
-                    </motion.div>
-                  ) : null}
-                </AnimatePresence>
-              </div>
-
-              {/* 3. Budget App (Right column: Appears in step 2!) */}
-              <div className="sm:col-start-3">
-                <AnimatePresence>
-                  {showBudget && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                      className="p-5 rounded-2xl border border-amber-500/30 bg-amber-950/20 backdrop-blur-sm relative overflow-hidden h-full flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-mono font-bold text-white">Budget App</span>
-                          <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                            $12/mo
-                          </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-zinc-400 mb-4">Expenses split from life goals.</p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs font-mono text-amber-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                        <span>Isolated Database</span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </motion.div>
+          {beat === 0 && (
+            <ZoomingHeadline
+              key="h1-0"
+              badge="01 • THE MORNING CONFLICT"
+              badgeColor="#ef4444"
+              statusText="7:00 AM • UNIFIED INTENTION"
+              titlePrefix="You Wake Up Ready To"
+              zoomWord="CONQUER THE DAY"
+              titleSuffix="With High Clarity"
+              subtitle="Everything starts with a calm, focused intention. Until you unlock your screen."
+            />
+          )}
+          {beat === 1 && (
+            <ZoomingHeadline
+              key="h1-1"
+              badge="01 • SUBSCRIPTION OVERFLOW"
+              badgeColor="#ef4444"
+              statusText="12 APPS ACTIVE"
+              titlePrefix="Then"
+              zoomWord="12 DISCONNECTED APPS"
+              titleSuffix="Demand Your Immediate Attention"
+              subtitle="Habits in one app. Finances in another. Tasks in a third. Your focus is instantly scattered."
+            />
+          )}
+          {beat === 2 && (
+            <ZoomingHeadline
+              key="h1-2"
+              badge="01 • THE COGNITIVE FRACTURE"
+              badgeColor="#ef4444"
+              statusText="FRACTURE LASER ARMED"
+              titlePrefix="Tool Switching Shreds Your Flow:"
+              zoomWord="23 MINUTES LOST"
+              titleSuffix="Per Switch"
+              subtitle="Your brain exhausts its cognitive budget just remembering where critical information lives."
+            />
+          )}
+          {beat === 3 && (
+            <ZoomingHeadline
+              key="h1-3"
+              badge="01 • THE COMPILED BLEED"
+              badgeColor="#ef4444"
+              statusText="ANNUAL SUMMATION"
+              titlePrefix="You Are Paying"
+              zoomWord="-$1,764 EVERY YEAR"
+              titleSuffix="Just To Manage Chaos"
+              subtitle="Zero compounded equity. Zero unified intelligence. Perpetual recurring price hikes."
+            />
           )}
         </AnimatePresence>
       </div>
-    </div>
-  );
-}
-const ECOSYSTEM_PILLARS = [
-  {
-    letter: "I",
-    name: "Relationships",
-    subtitle: "Social Capital",
-    color: "#cc0000",
-    glowColor: "rgba(204, 0, 0, 0.6)",
-    logoSrc: "/RelationShips logo.svg",
-    xCoord: 50,
-  },
-  {
-    letter: "M",
-    name: "Mind",
-    subtitle: "Mental Clarity",
-    color: "#6f1bd3",
-    glowColor: "rgba(111, 27, 211, 0.6)",
-    logoSrc: "/mind Logo.svg",
-    xCoord: 150,
-  },
-  {
-    letter: "P",
-    name: "Productivity",
-    subtitle: "Execution Engine",
-    color: "#ff02e8",
-    glowColor: "rgba(255, 2, 232, 0.7)",
-    logoSrc: "/Productivity Logo.svg",
-    xCoord: 250,
-    isNervousSystem: true,
-  },
-  {
-    letter: "R",
-    name: "Work",
-    subtitle: "Mastery",
-    color: "#2254f5",
-    glowColor: "rgba(34, 84, 245, 0.6)",
-    logoSrc: "/Work Logo.svg",
-    xCoord: 350,
-  },
-  {
-    letter: "O",
-    name: "Body",
-    subtitle: "Physical Health",
-    color: "#43b752",
-    glowColor: "rgba(67, 183, 82, 0.6)",
-    logoSrc: "/Body Logo.svg",
-    xCoord: 450,
-  },
-  {
-    letter: "V",
-    name: "Second Brain",
-    subtitle: "Knowledge Vault",
-    color: "#ff6900",
-    glowColor: "rgba(255, 105, 0, 0.7)",
-    logoSrc: "/Second Brain Logo.svg",
-    xCoord: 550,
-    isNervousSystem: true,
-  },
-  {
-    letter: "E",
-    name: "Money",
-    subtitle: "Wealth & Freedom",
-    color: "#efb219",
-    glowColor: "rgba(239, 178, 25, 0.6)",
-    logoSrc: "/money Logo.svg",
-    xCoord: 650,
-  },
-];
 
-const INTERCONNECT_SEGMENTS = [
-  { id: "seg-0", x1: 50, x2: 150, gradId: "segGrad-0", color1: "#cc0000", color2: "#6f1bd3" },
-  { id: "seg-1", x1: 150, x2: 250, gradId: "segGrad-1", color1: "#6f1bd3", color2: "#ff02e8" },
-  { id: "seg-2", x1: 250, x2: 350, gradId: "segGrad-2", color1: "#ff02e8", color2: "#2254f5" },
-  { id: "seg-3", x1: 350, x2: 450, gradId: "segGrad-3", color1: "#2254f5", color2: "#43b752" },
-  { id: "seg-4", x1: 450, x2: 550, gradId: "segGrad-4", color1: "#43b752", color2: "#ff6900" },
-  { id: "seg-5", x1: 550, x2: 650, gradId: "segGrad-5", color1: "#ff6900", color2: "#efb219" },
-];
-
-const CORE_CONDUITS = [
-  {
-    id: "cond-0",
-    pillarLetter: "I",
-    color: "#cc0000",
-    glowColor: "rgba(204, 0, 0, 0.8)",
-    x: 50,
-    d: "M 50 68 C 50 135, 230 165, 350 155",
-  },
-  {
-    id: "cond-1",
-    pillarLetter: "M",
-    color: "#6f1bd3",
-    glowColor: "rgba(111, 27, 211, 0.8)",
-    x: 150,
-    d: "M 150 68 C 150 130, 260 160, 350 155",
-  },
-  {
-    id: "cond-2",
-    pillarLetter: "P",
-    color: "#ff02e8",
-    glowColor: "rgba(255, 2, 232, 0.85)",
-    x: 250,
-    d: "M 250 68 C 250 125, 305 158, 350 155",
-  },
-  {
-    id: "cond-3",
-    pillarLetter: "R",
-    color: "#2254f5",
-    glowColor: "rgba(34, 84, 245, 0.85)",
-    x: 350,
-    d: "M 350 68 L 350 155",
-  },
-  {
-    id: "cond-4",
-    pillarLetter: "O",
-    color: "#43b752",
-    glowColor: "rgba(67, 183, 82, 0.85)",
-    x: 450,
-    d: "M 450 68 C 450 125, 395 158, 350 155",
-  },
-  {
-    id: "cond-5",
-    pillarLetter: "V",
-    color: "#ff6900",
-    glowColor: "rgba(255, 105, 0, 0.85)",
-    x: 550,
-    d: "M 550 68 C 550 130, 440 160, 350 155",
-  },
-  {
-    id: "cond-6",
-    pillarLetter: "E",
-    color: "#efb219",
-    glowColor: "rgba(239, 178, 25, 0.85)",
-    x: 650,
-    d: "M 650 68 C 650 135, 470 165, 350 155",
-  },
-];
-
-const CHAPTER_TWO_STEPS: TypewriterStep[] = [
-  {
-    // Beat 0: The Architecture Declaration (First frame: ONLY text appears, nothing below)
-    text: "IMPROVE replaces isolated tools with a single, conscious ecosystem built on seven pillars:",
-    typeSpeed: 48,
-    pauseAtEnd: 2600,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 1: The 7 Logos emerge slowly one by one as typed
-    text: "Relationships, Mind, Productivity, Work, Body, Second Brain, and Money.",
-    typeSpeed: 54,
-    pauseAtEnd: 3200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 2: Interconnections appear one by one like a reactor!
-    text: "These are not separate silos. They are deeply interconnected.",
-    typeSpeed: 48,
-    pauseAtEnd: 4200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 3: Central Nervous System active routing
-    text: "Your Second Brain and Productivity apps act as the central nervous system, automatically routing data exactly where it needs to go.",
-    typeSpeed: 44,
-    pauseAtEnd: 3200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 4: Zero-friction Habit Sync
-    text: "When you start an exercise in Productivity, your workout surfaces directly inside Body. Zero app switching required.",
-    typeSpeed: 44,
-    pauseAtEnd: 3200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 5: Total Alignment
-    text: "Conscious Control: One unified system designed for who you are and where you are going.",
-    typeSpeed: 44,
-    pauseAtEnd: 3400,
-    deleteSpeed: 20,
-    pauseAfterDelete: 600,
-  },
-];
-
-function ChapterTwoAnimatedContent({ accentColor, active }: { accentColor: string; active: boolean }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [visibleNodesCount, setVisibleNodesCount] = useState(0);
-  const [connectionStage, setConnectionStage] = useState(0);
-
-  // Reveal the 7 logo apps slowly one by one in exact order to spell IMPROVE as their names are typed!
-  useEffect(() => {
-    if (stepIndex === 0) {
-      setVisibleNodesCount(0);
-    } else if (stepIndex === 1) {
-      let count = 0;
-      if (displayText.includes("Relationships")) count = 1;
-      if (displayText.includes("Mind")) count = 2;
-      if (displayText.includes("Productivity")) count = 3;
-      if (displayText.includes("Work")) count = 4;
-      if (displayText.includes("Body")) count = 5;
-      if (displayText.includes("Second Brain")) count = 6;
-      if (displayText.includes("Money")) count = 7;
-
-      // Once revealed, nodes stay visible even while backspacing!
-      setVisibleNodesCount((prev) => Math.max(prev, count));
-    } else {
-      // Step 2 onwards: All 7 apps remain permanently on screen!
-      setVisibleNodesCount(7);
-    }
-  }, [stepIndex, displayText]);
-
-  // Animate interconnections ONE BY ONE during Step 2 ("deeply interconnected")!
-  useEffect(() => {
-    if (stepIndex < 2) {
-      setConnectionStage(0);
-    } else if (stepIndex === 2) {
-      // Connect each app one by one into the ecosystem and core (1 to 7), then full reactor ignition (8)!
-      setConnectionStage(1);
-      const timers: NodeJS.Timeout[] = [];
-      for (let i = 2; i <= 8; i++) {
-        timers.push(
-          setTimeout(() => {
-            setConnectionStage(i);
-          }, (i - 1) * 440)
-        );
-      }
-      return () => timers.forEach(clearTimeout);
-    } else {
-      // Step 3 onwards: all interconnections remain fully charged
-      setConnectionStage(8);
-    }
-  }, [stepIndex]);
-
-  // Reset when active changes
-  useEffect(() => {
-    if (!active) {
-      setStepIndex(0);
-      setDisplayText("");
-      setIsDeleting(false);
-      setVisibleNodesCount(0);
-      setConnectionStage(0);
-    }
-  }, [active]);
-
-  // Main typing and backspacing loop
-  useEffect(() => {
-    if (!active) return;
-
-    const currentStep = CHAPTER_TWO_STEPS[stepIndex];
-    if (!currentStep) return;
-
-    const targetText = currentStep.text;
-    let timer: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Forward typing
-      if (displayText.length < targetText.length) {
-        timer = setTimeout(() => {
-          setDisplayText(targetText.slice(0, displayText.length + 1));
-        }, currentStep.typeSpeed || 28);
-      } else {
-        // Sentence fully typed out: pause to read, then start backspacing
-        timer = setTimeout(() => {
-          setIsDeleting(true);
-        }, currentStep.pauseAtEnd || 2200);
-      }
-    } else {
-      // Visible backspacing letter-by-letter
-      if (displayText.length > 0) {
-        timer = setTimeout(() => {
-          setDisplayText((prev) => prev.slice(0, -1));
-        }, currentStep.deleteSpeed || 16);
-      } else {
-        // Fully backspaced: pause briefly then advance to next sentence or loop back
-        timer = setTimeout(() => {
-          setStepIndex((prev) => (prev + 1) % CHAPTER_TWO_STEPS.length);
-          setIsDeleting(false);
-        }, currentStep.pauseAfterDelete || 350);
-      }
-    }
-
-    return () => clearTimeout(timer);
-  }, [active, stepIndex, displayText, isDeleting]);
-
-  // Reactor state flags
-  const isReactorActive = stepIndex >= 2;
-  const isNervousSystemActive = stepIndex === 3;
-  const isHabitSyncActive = stepIndex === 4;
-  const isTotalAlignment = stepIndex === 5;
-
-  const currentStep = CHAPTER_TWO_STEPS[stepIndex] || CHAPTER_TWO_STEPS[0];
-  const rules: TextHighlightRule[] = (() => {
-    switch (stepIndex) {
-      case 0:
-        return [
-          {
-            phrase: "single, conscious ecosystem",
-            className: "font-semibold drop-shadow-[0_0_12px_rgba(255,2,232,0.5)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 1:
-        return ECOSYSTEM_PILLARS.map((pillar) => ({
-          phrase: pillar.name,
-          className: "font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]",
-          style: { color: pillar.color },
-        }));
-      case 2:
-        return [
-          {
-            phrase: "deeply interconnected",
-            className: "font-bold underline decoration-fuchsia-500/60 underline-offset-4 drop-shadow-[0_0_16px_rgba(255,2,232,0.7)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 3:
-        return [
-          {
-            phrase: "central nervous system",
-            className: "font-bold underline decoration-fuchsia-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
-            style: { color: "#ff02e8" },
-          },
-          {
-            phrase: "automatically routing data",
-            className: "font-bold drop-shadow-[0_0_12px_rgba(255,105,0,0.6)]",
-            style: { color: "#ff6900" },
-          },
-        ];
-      case 4:
-        return [
-          { phrase: "Productivity", className: "font-bold", style: { color: "#ff02e8" } },
-          { phrase: "Body", className: "font-bold", style: { color: "#43b752" } },
-          {
-            phrase: "Zero app switching required",
-            className: "text-white font-bold drop-shadow-[0_0_12px_rgba(255,255,255,0.5)]",
-          },
-        ];
-      case 5:
-        return [
-          {
-            phrase: "Conscious Control",
-            className: "font-bold drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "One unified system",
-            className: "font-bold drop-shadow-[0_0_12px_rgba(255,2,232,0.6)]",
-            style: { color: accentColor },
-          },
-        ];
-      default:
-        return [];
-    }
-  })();
-
-  return (
-    <div className="space-y-6">
-      {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
-      <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
-        <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {renderTypewriterText(currentStep.text, displayText.length, rules)}
-          <span
-            className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
-            style={{ backgroundColor: accentColor }}
-          />
-        </p>
-      </div>
-
-      {/* Frame 1: Nothing appears below the text. When stepIndex >= 1: Logo stage fades in */}
-      <AnimatePresence>
-        {stepIndex >= 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full overflow-visible flex items-center justify-center pt-2 pb-4"
-          >
-            {/* Ambient radial glow */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-30 blur-3xl transition-opacity duration-700"
-              style={{
-                background: isReactorActive
-                  ? "radial-gradient(circle at 50% 65%, #ff02e8 0%, #2254f5 30%, #ff6900 55%, transparent 75%)"
-                  : "radial-gradient(circle at 50% 45%, #ffffff12 0%, transparent 60%)",
+      {/* CENTER STAGE: Physical Influx & Dramatic Off-Screen Ejections */}
+      <div className="relative flex-1 flex flex-col items-center justify-center my-4 z-10 overflow-visible">
+        {/* BEAT 0: Peaceful Morning Card (Flies Off-Screen on Beat 1) */}
+        <AnimatePresence>
+          {beat === 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{
+                x: -800, // FLIES HARD OFF-SCREEN TO THE LEFT
+                y: -120,
+                rotate: -45,
+                scale: 0.25,
+                opacity: 0,
+                transition: { duration: 0.8, ease: "easeIn" },
               }}
+              className="p-6 rounded-3xl border border-white/20 bg-black/80 backdrop-blur-xl flex flex-col items-center gap-3 text-center shadow-2xl max-w-sm absolute"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+                <Sun className="w-8 h-8 text-amber-400 animate-spin" style={{ animationDuration: "14s" }} />
+              </div>
+              <div className="font-mono text-sm font-bold text-white">7:00 AM • Single Clear Intention</div>
+              <p className="text-xs text-zinc-400 font-mono">
+                Everything is quiet and calm... until your subscription suite wakes up.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* BEAT 1 & 2: 8 Subscription Cards Influx -> Half Fly Off-Screen! */}
+        {beat >= 1 && beat <= 2 && (
+          <div className="w-full max-w-2xl relative">
+            {/* Red Laser Crack Beam that triggers the card ejection */}
+            {beat === 2 && (
+              <motion.div
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{
+                  scaleX: 1,
+                  opacity: [0, 1, 0.9],
+                  boxShadow: ["0 0 0px #ef4444", "0 0 45px #ef4444", "0 0 15px #ef4444"],
+                }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] bg-red-500 z-30 pointer-events-none"
+              />
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 relative z-10">
+              {FRAGMENTED_TOOLS.map((tool, idx) => {
+                const Icon = tool.icon;
+                const isEjected = beat === 2 && idx % 2 === 0;
+
+                return (
+                  <motion.div
+                    key={tool.name}
+                    initial={{
+                      opacity: 0,
+                      x: idx % 2 === 0 ? -500 : 500, // Flying in from outer screen boundaries
+                      y: idx < 4 ? -400 : 400,
+                      scale: 0.2,
+                      rotate: idx % 2 === 0 ? -30 : 30,
+                    }}
+                    animate={
+                      isEjected
+                        ? {
+                            // CARD FLIES OFF-SCREEN!
+                            x: tool.ejectDir.x,
+                            y: tool.ejectDir.y,
+                            rotate: tool.ejectDir.r,
+                            scale: 0.25,
+                            opacity: 0,
+                          }
+                        : {
+                            opacity: 1,
+                            x: 0,
+                            y: beat === 2 ? (idx % 2 === 0 ? -12 : 12) : 0,
+                            scale: beat === 2 ? 1.05 : 1,
+                            rotate: beat === 2 ? (idx % 2 === 0 ? -6 : 6) : 0,
+                          }
+                    }
+                    transition={{
+                      delay: isEjected ? 0.08 * idx : idx * 0.08,
+                      duration: isEjected ? 0.85 : 0.7,
+                      ease: isEjected ? "easeIn" : [0.34, 1.4, 0.64, 1],
+                    }}
+                    className="p-3.5 rounded-2xl border border-red-500/40 bg-black/90 backdrop-blur-md flex flex-col justify-between space-y-2 shadow-xl relative overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: `${tool.color}25`, border: `1px solid ${tool.color}60` }}
+                      >
+                        <Icon className="w-4 h-4" style={{ color: tool.color }} />
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-red-400 bg-red-950/90 px-2 py-0.5 rounded border border-red-500/40">
+                        {tool.cost}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-mono font-bold text-white block truncate">
+                        {tool.name}
+                      </span>
+                      <div className="flex items-center gap-1 mt-1 text-[9px] font-mono text-red-400 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                        <span className="truncate">{tool.status}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* BEAT 3: DRAMATIC CAMERA ZOOM PUNCH INTO THE FINANCIAL BURNOUT */}
+        {beat === 3 && (
+          <motion.div
+            initial={{ scale: 0.15, opacity: 0, y: 120 }}
+            animate={{ scale: [0.15, 1.25, 1], opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="p-6 sm:p-8 rounded-3xl border-2 border-red-500 bg-gradient-to-br from-red-950/80 via-black to-zinc-950 backdrop-blur-2xl flex flex-col items-center text-center shadow-[0_0_80px_rgba(239,68,68,0.5)] max-w-lg w-full relative z-20"
+          >
+            <motion.div
+              animate={{ scale: [1, 1.35, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY }}
+              className="absolute inset-0 rounded-3xl border border-red-500 pointer-events-none"
             />
 
-            {/* Interconnection Lines & Reactor Core SVG Canvas */}
-            <svg
-              className="w-full h-auto max-w-[700px] overflow-visible select-none pointer-events-none"
-              viewBox="0 0 700 200"
-              preserveAspectRatio="xMidYMid meet"
-            >
-              <defs>
-                <filter id="reactorGlow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feGaussianBlur stdDeviation="5" result="blur1" />
-                  <feGaussianBlur stdDeviation="2" result="blur2" />
-                  <feMerge>
-                    <feMergeNode in="blur1" />
-                    <feMergeNode in="blur2" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
+            <div className="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/60 flex items-center justify-center mb-3">
+              <AlertTriangle className="w-8 h-8 text-red-400 animate-bounce" />
+            </div>
 
-                <radialGradient id="coreFusionGrad" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                  <stop offset="40%" stopColor="#ff02e8" stopOpacity="0.85" />
-                  <stop offset="75%" stopColor="#2254f5" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="transparent" stopOpacity="0" />
-                </radialGradient>
+            <div className="text-xs font-mono font-bold text-red-300 uppercase tracking-widest mb-1">
+              COMPOUNDED ANNUAL SUBSCRIPTION LOSS
+            </div>
 
-                <linearGradient id="cnsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ff02e8" />
-                  <stop offset="100%" stopColor="#ff6900" />
-                </linearGradient>
+            <div className="text-4xl sm:text-6xl font-black font-mono text-red-400 drop-shadow-[0_0_25px_rgba(239,68,68,1)] my-2">
+              -<KineticOdometer target={1764} prefix="$" suffix="/yr" duration={1400} />
+            </div>
 
-                <linearGradient id="habitGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#ff02e8" />
-                  <stop offset="100%" stopColor="#43b752" />
-                </linearGradient>
-
-                {INTERCONNECT_SEGMENTS.map((seg) => (
-                  <linearGradient key={seg.gradId} id={seg.gradId} x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor={seg.color1} stopOpacity="1" />
-                    <stop offset="100%" stopColor={seg.color2} stopOpacity="1" />
-                  </linearGradient>
-                ))}
-              </defs>
-
-              {/* 1. Subtle Guide Track behind adjacent logos */}
-              {INTERCONNECT_SEGMENTS.map((seg) => (
-                <line
-                  key={`track-${seg.id}`}
-                  x1={seg.x1}
-                  y1="48"
-                  x2={seg.x2}
-                  y2="48"
-                  stroke="rgba(255,255,255,0.06)"
-                  strokeWidth="1.5"
-                  strokeDasharray="3 6"
-                />
-              ))}
-
-              {/* 2. Sequential Inter-Node Horizontal Connections (One by One) */}
-              {INTERCONNECT_SEGMENTS.map((seg, sIdx) => {
-                const isSegmentActive = connectionStage >= sIdx + 2;
-                if (!isSegmentActive) return null;
-                return (
-                  <g key={seg.id}>
-                    {/* Ambient laser glow */}
-                    <motion.line
-                      x1={seg.x1}
-                      y1="48"
-                      x2={seg.x2}
-                      y2="48"
-                      stroke={`url(#${seg.gradId})`}
-                      strokeWidth="4.5"
-                      strokeOpacity="0.38"
-                      strokeLinecap="round"
-                      filter="url(#reactorGlow)"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.45, ease: "easeOut" }}
-                    />
-                    {/* Core crisp laser beam */}
-                    <motion.line
-                      x1={seg.x1}
-                      y1="48"
-                      x2={seg.x2}
-                      y2="48"
-                      stroke={`url(#${seg.gradId})`}
-                      strokeWidth="2.2"
-                      strokeOpacity="0.95"
-                      strokeLinecap="round"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.45, ease: "easeOut" }}
-                    />
-                    {/* Flowing photon particles */}
-                    <motion.line
-                      x1={seg.x1}
-                      y1="48"
-                      x2={seg.x2}
-                      y2="48"
-                      stroke="#ffffff"
-                      strokeWidth="2"
-                      strokeDasharray="4 16"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={{ pathLength: 1, opacity: 0.85, strokeDashoffset: [0, -40] }}
-                      transition={{
-                        pathLength: { duration: 0.45, ease: "easeOut" },
-                        opacity: { duration: 0.3 },
-                        strokeDashoffset: { duration: 1.2, repeat: Infinity, ease: "linear" },
-                      }}
-                    />
-                  </g>
-                );
-              })}
-
-              {/* 3. The 7 Conduits Streaming One by One into Central Reactor Core */}
-              {CORE_CONDUITS.map((cond, cIdx) => {
-                const isConduitActive = connectionStage > cIdx;
-                if (!isConduitActive) return null;
-
-                return (
-                  <g key={cond.id}>
-                    {/* Ambient glow conduit */}
-                    <motion.path
-                      d={cond.d}
-                      fill="none"
-                      stroke={cond.color}
-                      strokeWidth="5"
-                      strokeOpacity="0.4"
-                      strokeLinecap="round"
-                      filter="url(#reactorGlow)"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                    {/* Crisp laser beam */}
-                    <motion.path
-                      d={cond.d}
-                      fill="none"
-                      stroke={cond.color}
-                      strokeWidth="2.2"
-                      strokeOpacity="0.95"
-                      strokeLinecap="round"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
-                    />
-                    {/* Streaming photon energy dash packet */}
-                    <motion.path
-                      d={cond.d}
-                      fill="none"
-                      stroke="#ffffff"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeDasharray="4 22"
-                      initial={{ pathLength: 0, opacity: 0 }}
-                      animate={{
-                        pathLength: 1,
-                        opacity: 0.9,
-                        strokeDashoffset: [0, -52],
-                      }}
-                      transition={{
-                        pathLength: { duration: 0.52, ease: "easeOut" },
-                        opacity: { duration: 0.3 },
-                        strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: "linear" },
-                      }}
-                    />
-
-                  </g>
-                );
-              })}
-
-              {/* 4. Central Nervous System Overhead Arc: Productivity (250) <-> Second Brain (550) */}
-              {connectionStage >= 8 && (
-                <g>
-                  <path
-                    d="M 250 25 C 310 4, 490 4, 550 25"
-                    fill="none"
-                    stroke="rgba(255, 2, 232, 0.2)"
-                    strokeWidth="2"
-                  />
-                  <motion.path
-                    d="M 250 25 C 310 4, 490 4, 550 25"
-                    fill="none"
-                    stroke="url(#cnsGrad)"
-                    strokeWidth={isNervousSystemActive ? "3.5" : "2"}
-                    strokeDasharray="6 8"
-                    animate={{ strokeDashoffset: [0, -32] }}
-                    transition={{
-                      duration: isNervousSystemActive ? 0.7 : 1.4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    filter="url(#reactorGlow)"
-                  />
-                </g>
-              )}
-
-              {/* 5. Habit & Workout Sync Under-Arc: Productivity (250) <-> Body (450) */}
-              {connectionStage >= 8 && (
-                <g>
-                  <path
-                    d="M 250 68 C 290 115, 410 115, 450 68"
-                    fill="none"
-                    stroke="rgba(67, 183, 82, 0.2)"
-                    strokeWidth="2"
-                  />
-                  <motion.path
-                    d="M 250 68 C 290 115, 410 115, 450 68"
-                    fill="none"
-                    stroke="url(#habitGrad)"
-                    strokeWidth={isHabitSyncActive ? "3.5" : "2"}
-                    strokeDasharray="6 8"
-                    animate={{ strokeDashoffset: [0, -32] }}
-                    transition={{
-                      duration: isHabitSyncActive ? 0.7 : 1.4,
-                      repeat: Infinity,
-                      ease: "linear",
-                    }}
-                    filter="url(#reactorGlow)"
-                  />
-                </g>
-              )}
-
-              {/* 6. Central Fusion Reactor Core at (350, 155) */}
-              {connectionStage >= 1 && (
-                <g transform="translate(350, 155)">
-                  {/* Base Core Flare */}
-                  <circle
-                    r={connectionStage >= 8 ? 26 : 14}
-                    fill="url(#coreFusionGrad)"
-                    filter="url(#reactorGlow)"
-                    opacity={connectionStage >= 8 ? 0.95 : 0.45}
-                  />
-
-                  {/* Stage 8: Full Ignition Shockwaves & Quantum Containment Rings */}
-                  {connectionStage >= 8 && (
-                    <>
-                      {/* Expanding Shockwave 1 */}
-                      <motion.circle
-                        r="14"
-                        fill="none"
-                        stroke="#ff02e8"
-                        strokeWidth="1.5"
-                        animate={{ r: [14, 55], opacity: [0.85, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                      />
-                      {/* Expanding Shockwave 2 */}
-                      <motion.circle
-                        r="14"
-                        fill="none"
-                        stroke="#06b6d4"
-                        strokeWidth="1.2"
-                        animate={{ r: [14, 55], opacity: [0.75, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 1, ease: "easeOut" }}
-                      />
-                      {/* Rotating Gyroscopic Tech Ring */}
-                      <motion.circle
-                        r="27"
-                        fill="none"
-                        stroke="rgba(255, 2, 232, 0.65)"
-                        strokeWidth="1.8"
-                        strokeDasharray="5 7"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                      />
-                      {/* Counter-Rotating Containment Ring */}
-                      <motion.circle
-                        r="18"
-                        fill="none"
-                        stroke="rgba(34, 84, 245, 0.75)"
-                        strokeWidth="1.8"
-                        strokeDasharray="4 5"
-                        animate={{ rotate: -360 }}
-                        transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
-                      />
-                    </>
-                  )}
-
-                  {/* Center Plasma Nucleus */}
-                  <circle
-                    r={connectionStage >= 8 ? 10 : 7}
-                    fill="#ffffff"
-                    filter="url(#reactorGlow)"
-                  />
-                  <circle
-                    r={connectionStage >= 8 ? 6 : 4}
-                    fill="#ffffff"
-                  />
-                </g>
-              )}
-
-              {/* 5. The 7 Ecosystem Pillar Logos - Rendered directly in SVG coordinates so they scale and lock with the conduits on phones and tablets */}
-              {ECOSYSTEM_PILLARS.map((pillar, idx) => {
-                const isVisible = visibleNodesCount > idx;
-                const isConduitActive = connectionStage > idx;
-                const isHighlighted =
-                  (isNervousSystemActive && pillar.isNervousSystem) ||
-                  (isHabitSyncActive && (pillar.letter === "P" || pillar.letter === "O")) ||
-                  isTotalAlignment;
-
-                if (!isVisible) return null;
-
-                return (
-                  <motion.g
-                    key={pillar.letter}
-                    initial={{ opacity: 0, scale: 0.3 }}
-                    animate={{
-                      opacity: 1,
-                      scale: isHighlighted ? 1.18 : 1,
-                    }}
-                    exit={{ opacity: 0, scale: 0.3 }}
-                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                    style={{
-                      transformOrigin: `${pillar.xCoord}px 48px`,
-                    }}
-                  >
-                    <image
-                      href={pillar.logoSrc}
-                      x={pillar.xCoord - 24}
-                      y={48 - 24}
-                      width="48"
-                      height="48"
-                      preserveAspectRatio="xMidYMid meet"
-                      style={{
-                        filter:
-                          isHighlighted || isConduitActive || isReactorActive
-                            ? `drop-shadow(0 0 16px ${pillar.glowColor}) drop-shadow(0 0 5px ${pillar.color})`
-                            : "drop-shadow(0 4px 10px rgba(0,0,0,0.8))",
-                      }}
-                    />
-                  </motion.g>
-                );
-              })}
-            </svg>
+            <p className="text-xs sm:text-sm font-mono text-zinc-300 max-w-sm mt-1">
+              12 disconnected tools. 23 minutes lost per context switch. Zero compounding equity.
+            </p>
           </motion.div>
         )}
-      </AnimatePresence>
+      </div>
+
+      {/* BOTTOM STAGE: Real-time Attention Meter */}
+      <div className="relative z-10 pt-2 border-t border-red-500/20">
+        <div className="flex items-center justify-between text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <Brain className="w-4 h-4 text-red-400" />
+            <span className="text-zinc-400">Cognitive Focus State:</span>
+            <span className="text-white font-bold">
+              {beat >= 2 ? "19% (Attention Shredded)" : "100% Focused"}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setBeat((b) => (b + 1) % 4)}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 hover:bg-red-900/60 transition-all cursor-pointer text-[11px]"
+          >
+            <span>Next Beat ({beat + 1}/4)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-const CHAPTER_THREE_STEPS: TypewriterStep[] = [
-  {
-    // Beat 0: The Sovereign Declaration (First frame: ONLY text appears, nothing below)
-    text: "Absolute control over your life requires absolute control over your data. IMPROVE is built as a closed, local system.",
-    typeSpeed: 48,
-    pauseAtEnd: 2600,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 1: On-device neural processing & Apple Intelligence
-    text: "By leveraging on-device frameworks like Apple Intelligence and Siri, data is processed directly on your machine with zero external AI bills.",
-    typeSpeed: 48,
-    pauseAtEnd: 3200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 2: Zero third-party databases / active threat deflection shield
-    text: "There are no third-party databases analyzing your habits. There is no one selling your information.",
-    typeSpeed: 48,
-    pauseAtEnd: 3200,
-    deleteSpeed: 20,
-    pauseAfterDelete: 450,
-  },
-  {
-    // Beat 3: Impenetrable local sanctuary
-    text: "Your finances, your thoughts, and your routines remain strictly yours. Fast, intelligent, and completely private.",
-    typeSpeed: 46,
-    pauseAtEnd: 3400,
-    deleteSpeed: 20,
-    pauseAfterDelete: 600,
-  },
-];
+// =========================================================================
+function MotionSceneTwo() {
+  const [beat, setBeat] = useState(0);
+  const [focusedPillar, setFocusedPillar] = useState(2); // Focus on Productivity
 
-const SANCTUARY_ENCLAVES = [
-  {
-    id: "finances",
-    name: "Finances",
-    subtitle: "Encrypted Ledger",
-    color: "#eab308",
-    glowColor: "rgba(234, 179, 8, 0.6)",
-    xCoord: 70,
-    paths: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V6m0 8v2m0-10C6.477 6 2 10.477 2 16s4.477 10 10 10 10-4.477 10-10S17.523 6 12 6z" />
-    ),
-  },
-  {
-    id: "thoughts",
-    name: "Thoughts",
-    subtitle: "Private Journal",
-    color: "#a855f7",
-    glowColor: "rgba(168, 85, 247, 0.6)",
-    xCoord: 210,
-    paths: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-    ),
-  },
-  {
-    id: "neural-core",
-    isCore: true,
-    name: "Neural Core",
-    subtitle: "Apple Intelligence",
-    color: "#22c55e",
-    glowColor: "rgba(34, 197, 94, 0.8)",
-    xCoord: 350,
-    paths: (
-      <>
-        <rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" strokeWidth="2" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 9h6v6H9z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3" />
-      </>
-    ),
-  },
-  {
-    id: "routines",
-    name: "Routines",
-    subtitle: "Habit Engine",
-    color: "#22c55e",
-    glowColor: "rgba(34, 197, 94, 0.6)",
-    xCoord: 490,
-    paths: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    ),
-  },
-  {
-    id: "knowledge",
-    name: "Knowledge",
-    subtitle: "Local Second Brain",
-    color: "#f97316",
-    glowColor: "rgba(249, 115, 22, 0.6)",
-    xCoord: 630,
-    paths: (
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-    ),
-  },
-];
-
-function ChapterThreeAnimatedContent({ accentColor, active }: { accentColor: string; active: boolean }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [visibleEnclavesCount, setVisibleEnclavesCount] = useState(0);
-
-  // Stagger in the enclaves in Step 1
+  // Slower, more deliberate pacing
   useEffect(() => {
-    if (stepIndex === 0) {
-      setVisibleEnclavesCount(0);
-    } else if (stepIndex === 1) {
-      setVisibleEnclavesCount(1);
-      const timers: NodeJS.Timeout[] = [];
-      for (let i = 2; i <= 5; i++) {
-        timers.push(
-          setTimeout(() => {
-            setVisibleEnclavesCount(i);
-          }, (i - 1) * 320)
-        );
-      }
-      return () => timers.forEach(clearTimeout);
-    } else {
-      setVisibleEnclavesCount(5);
-    }
-  }, [stepIndex]);
+    const t1 = setTimeout(() => setBeat(1), 1800);  // Radial expansion
+    const t2 = setTimeout(() => setBeat(2), 5200);  // Focused pillar mega-punch
+    const t3 = setTimeout(() => setBeat(3), 8800);  // Unified bus lock
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
 
-  // Reset when active changes
-  useEffect(() => {
-    if (!active) {
-      setStepIndex(0);
-      setDisplayText("");
-      setIsDeleting(false);
-      setVisibleEnclavesCount(0);
-    }
-  }, [active]);
+  const active = ECOSYSTEM_PILLARS[focusedPillar];
 
-  // Main typing and backspacing loop
-  useEffect(() => {
-    if (!active) return;
-
-    const currentStep = CHAPTER_THREE_STEPS[stepIndex];
-    if (!currentStep) return;
-
-    const targetText = currentStep.text;
-    let timer: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Forward typing
-      if (displayText.length < targetText.length) {
-        timer = setTimeout(() => {
-          setDisplayText(targetText.slice(0, displayText.length + 1));
-        }, currentStep.typeSpeed || 46);
-      } else {
-        timer = setTimeout(() => {
-          setIsDeleting(true);
-        }, currentStep.pauseAtEnd || 2800);
-      }
-    } else {
-      // Visible backspacing letter-by-letter
-      if (displayText.length > 0) {
-        timer = setTimeout(() => {
-          setDisplayText((prev) => prev.slice(0, -1));
-        }, currentStep.deleteSpeed || 20);
-      } else {
-        timer = setTimeout(() => {
-          setStepIndex((prev) => (prev + 1) % CHAPTER_THREE_STEPS.length);
-          setIsDeleting(false);
-        }, currentStep.pauseAfterDelete || 450);
-      }
-    }
-
-    return () => clearTimeout(timer);
-  }, [active, stepIndex, displayText, isDeleting]);
-
-  // Sanctuary state flags
-  const isNeuralActive = stepIndex >= 1;
-  const isShieldActive = stepIndex >= 2;
-  const isVaultLocked = stepIndex === 3;
-
-  const currentStep = CHAPTER_THREE_STEPS[stepIndex] || CHAPTER_THREE_STEPS[0];
-  const rules: TextHighlightRule[] = (() => {
-    switch (stepIndex) {
-      case 0:
-        return [
-          {
-            phrase: "closed, local system",
-            className: "font-semibold drop-shadow-[0_0_14px_rgba(34,197,94,0.6)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 1:
-        return [
-          {
-            phrase: "Apple Intelligence and Siri",
-            className: "font-bold underline decoration-emerald-500/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(34,197,94,0.6)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "zero external AI bills",
-            className: "font-bold drop-shadow-[0_0_12px_rgba(6,182,212,0.6)]",
-            style: { color: "#06b6d4" },
-          },
-        ];
-      case 2:
-        return [
-          {
-            phrase: "no third-party databases",
-            className: "font-bold underline decoration-emerald-500/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "no one selling your information",
-            className: "font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 3:
-        return [
-          {
-            phrase: "strictly yours",
-            className: "font-bold drop-shadow-[0_0_16px_rgba(34,197,94,0.8)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "completely private",
-            className: "font-bold drop-shadow-[0_0_16px_rgba(34,197,94,0.8)]",
-            style: { color: accentColor },
-          },
-        ];
-      default:
-        return [];
-    }
-  })();
+  // Exact coordinates for a balanced 7-pillar celestial constellation:
+  // Center is (340, 160), Radius R = 115
+  const PILLAR_COORDS = [
+    { x: 340, y: 45, labelX: 340, labelY: 16, anchor: "middle" },      // 0: Relationships (Top / 12 o'clock)
+    { x: 432, y: 88, labelX: 476, labelY: 88, anchor: "start" },       // 1: Mind (Top-Right)
+    { x: 454, y: 186, labelX: 498, labelY: 186, anchor: "start" },     // 2: Productivity (Right)
+    { x: 390, y: 264, labelX: 412, labelY: 300, anchor: "start" },     // 3: Work (Bottom-Right)
+    { x: 290, y: 264, labelX: 268, labelY: 300, anchor: "end" },       // 4: Body (Bottom-Left)
+    { x: 226, y: 186, labelX: 182, labelY: 186, anchor: "end" },       // 5: Second Brain (Left)
+    { x: 248, y: 88, labelX: 204, labelY: 88, anchor: "end" },        // 6: Money (Top-Left)
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Typewritten Line: Types out and backspaces letter-by-letter one sentence at a time */}
-      <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
-        <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {renderTypewriterText(currentStep.text, displayText.length, rules)}
-          <span
-            className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
-            style={{ backgroundColor: accentColor }}
-          />
-        </p>
+    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-fuchsia-950/40 via-black to-zinc-950 border border-fuchsia-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+      {/* Background Volumetric Magenta Flare */}
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
+        transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-fuchsia-600/30 blur-[130px] pointer-events-none"
+      />
+
+      {/* TOP: Dynamic Headline with Kinetic Zoom Punch */}
+      <div className="relative z-10 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            {[0, 1, 2, 3].map((b) => (
+              <button
+                key={b}
+                onClick={() => setBeat(b)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  beat === b ? "w-6 bg-fuchsia-500 shadow-[0_0_8px_#ff02e8]" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                }`}
+                title={`Jump to Beat ${b + 1}`}
+              />
+            ))}
+          </div>
+
+          <span className="text-[11px] font-mono text-zinc-500">
+            Beat {beat + 1} of 4 • Unified Core Architecture
+          </span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {beat === 0 && (
+            <ZoomingHeadline
+              key="h2-0"
+              badge="02 • SYSTEMIC GENESIS"
+              badgeColor="#ff02e8"
+              statusText="IGNITING NEURAL CORE"
+              titlePrefix="What If Your Entire Life Shared"
+              zoomWord="ONE NERVOUS SYSTEM?"
+              titleSuffix=""
+              subtitle="One underlying relational database syncing habits, projects, finances, and journal."
+            />
+          )}
+          {beat === 1 && (
+            <ZoomingHeadline
+              key="h2-1"
+              badge="02 • THE 7 SACRED PILLARS"
+              badgeColor="#ff02e8"
+              statusText="RADIAL EXPANSION"
+              titlePrefix="The"
+              zoomWord="7 SOVEREIGN PILLARS"
+              titleSuffix="Launch Into Orbit"
+              subtitle="Relationships. Mind. Productivity. Work. Body. Second Brain. Money."
+            />
+          )}
+          {beat === 2 && (
+            <ZoomingHeadline
+              key={`h2-2-${focusedPillar}`}
+              badge="02 • INSTANTANEOUS CAUSAL RELAY"
+              badgeColor={active.color}
+              statusText={`LIVE: ${active.name.toUpperCase()}`}
+              titlePrefix="Deep Zoom Punch:"
+              zoomWord={active.name.toUpperCase()}
+              titleSuffix="Syncs Real-Time State"
+              subtitle="Update a habit streak, and your calendar, daily tasks & budget adapt in 0ms."
+            />
+          )}
+          {beat === 3 && (
+            <ZoomingHeadline
+              key="h2-3"
+              badge="02 • UNIFIED CLARITY"
+              badgeColor="#ff02e8"
+              statusText="0MS LATENCY LOCKED"
+              titlePrefix="Zero App-Switching:"
+              zoomWord="ZERO COPY-PASTING"
+              titleSuffix="Ever Again"
+              subtitle="Everything operates as one living, compounding life operating system."
+            />
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Frame 1: Nothing appears below the text. When stepIndex >= 1: Sanctuary Neural Shield fades in */}
-      <AnimatePresence>
-        {stepIndex >= 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 24 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full overflow-visible flex items-center justify-center pt-2 pb-4"
-          >
-            {/* Ambient radial glow */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-25 blur-3xl transition-opacity duration-700"
-              style={{
-                background: isVaultLocked
-                  ? "radial-gradient(circle at 50% 50%, #22c55e 0%, #10b981 35%, transparent 70%)"
-                  : isShieldActive
-                  ? "radial-gradient(circle at 50% 50%, #22c55e 0%, #06b6d4 35%, transparent 70%)"
-                  : "radial-gradient(circle at 50% 50%, #ffffff10 0%, transparent 60%)",
-              }}
-            />
+      {/* CENTER STAGE: Majestic 7-Pillar Radial Orbital Architecture */}
+      <div className="relative flex-1 flex flex-col items-center justify-center my-3 z-10">
+        <div className="w-full max-w-[680px] relative">
+          <svg className="w-full h-auto overflow-visible select-none" viewBox="0 0 680 340" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <filter id="scene2ReactorGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="6" result="blur1" />
+                <feGaussianBlur stdDeviation="2" result="blur2" />
+                <feMerge>
+                  <feMergeNode in="blur1" />
+                  <feMergeNode in="blur2" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
 
-            {/* Neural Circuitry & Threat Deflection Shield SVG Canvas */}
-            <svg
-              className="w-full h-auto max-w-[700px] overflow-visible select-none pointer-events-none"
-              viewBox="0 0 700 180"
-              preserveAspectRatio="xMidYMid meet"
+              <linearGradient id="orbitalConduitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#ff02e8" />
+                <stop offset="50%" stopColor="#06b6d4" />
+                <stop offset="100%" stopColor="#efb219" />
+              </linearGradient>
+            </defs>
+
+            {/* Circular Orbital Guide Tracks */}
+            <circle cx="340" cy="160" r="115" stroke="rgba(255,2,232,0.18)" strokeWidth="1.5" strokeDasharray="6 8" fill="none" />
+            <circle cx="340" cy="160" r="65" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="3 6" fill="none" />
+
+            {/* Heptagonal Constellation Perimeter Lines Connecting Adjacent Pillars */}
+            <g stroke="rgba(255,255,255,0.07)" strokeWidth="1.5" strokeDasharray="4 6" fill="none">
+              {PILLAR_COORDS.map((coord, i) => {
+                const next = PILLAR_COORDS[(i + 1) % PILLAR_COORDS.length];
+                return (
+                  <line
+                    key={`hept-${i}`}
+                    x1={coord.x}
+                    y1={coord.y}
+                    x2={next.x}
+                    y2={next.y}
+                  />
+                );
+              })}
+            </g>
+
+            {/* Radial Laser Conduits from Central Core (340, 160) to Each Pillar */}
+            {ECOSYSTEM_PILLARS.map((p, idx) => {
+              const pos = PILLAR_COORDS[idx];
+              const isTarget = focusedPillar === idx && beat >= 2;
+
+              return (
+                <g key={`conduit-${p.letter}`}>
+                  <line
+                    x1="340"
+                    y1="160"
+                    x2={pos.x}
+                    y2={pos.y}
+                    stroke={isTarget ? p.color : "rgba(255,255,255,0.08)"}
+                    strokeWidth={isTarget ? 3.5 : 1}
+                    filter={isTarget ? "url(#scene2ReactorGlow)" : undefined}
+                  />
+
+                  {/* Flowing Data Laser Packet along the radial ray */}
+                  {isTarget && (
+                    <motion.circle
+                      r="6"
+                      fill="#ffffff"
+                      filter="url(#scene2ReactorGlow)"
+                      initial={{ cx: 340, cy: 160 }}
+                      animate={{ cx: pos.x, cy: pos.y }}
+                      transition={{ duration: 0.7, repeat: Number.POSITIVE_INFINITY, ease: "easeOut" }}
+                    />
+                  )}
+                </g>
+              );
+            })}
+
+            {/* Central Fusion Reactor Core physically locked at (340, 160) */}
+            <g transform="translate(340, 160)">
+              <motion.g
+                animate={{
+                  scale: beat === 0 ? [0.3, 1.6, 1] : [1, 1.12, 1],
+                }}
+                transition={{
+                  duration: beat === 0 ? 1.0 : 2.5,
+                  repeat: beat === 0 ? 0 : Number.POSITIVE_INFINITY,
+                  ease: "easeOut",
+                }}
+              >
+                {/* Expanding Shockwaves */}
+                <motion.circle
+                  r="32"
+                  fill="none"
+                  stroke="#ff02e8"
+                  strokeWidth="2"
+                  animate={{ r: [16, 55], opacity: [0.9, 0] }}
+                  transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeOut" }}
+                />
+                <circle r="22" fill="#ff02e8" opacity="0.9" filter="url(#scene2ReactorGlow)" />
+                <circle r="11" fill="#ffffff" />
+                <text x="0" y="3.5" textAnchor="middle" fill="#000000" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                  CORE
+                </text>
+              </motion.g>
+            </g>
+
+            {/* The 7 Sacred Pillars Arranged in Radial Orbit */}
+            {ECOSYSTEM_PILLARS.map((p, idx) => {
+              const pos = PILLAR_COORDS[idx];
+              const isFocused = focusedPillar === idx && beat >= 2;
+              const isOther = beat >= 2 && !isFocused;
+
+              return (
+                <g key={p.letter} transform={`translate(${pos.x}, ${pos.y})`}>
+                  <motion.g
+                    onClick={() => {
+                      setFocusedPillar(idx);
+                      setBeat(2);
+                    }}
+                    className="cursor-pointer"
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{
+                      opacity: beat >= 1 ? (isOther ? 0.45 : 1) : 0,
+                      scale: beat >= 1 ? (isFocused ? 1.35 : isOther ? 0.9 : 1) : 0,
+                    }}
+                    transition={{
+                      delay: idx * 0.08,
+                      duration: 0.7,
+                      ease: [0.34, 1.4, 0.64, 1],
+                    }}
+                  >
+                    {/* Glowing Target Aura for active pillar */}
+                    {isFocused && (
+                      <motion.circle
+                        r="34"
+                        fill="none"
+                        stroke={p.color}
+                        strokeWidth="3"
+                        animate={{ r: [22, 46], opacity: [1, 0] }}
+                        transition={{ duration: 1.4, repeat: Number.POSITIVE_INFINITY }}
+                      />
+                    )}
+
+                    {/* Circular Node Plate */}
+                    <circle
+                      r="22"
+                      fill="#000000"
+                      stroke={isFocused ? p.color : "rgba(255,255,255,0.25)"}
+                      strokeWidth={isFocused ? 3.5 : 1.5}
+                      filter={isFocused ? "url(#scene2ReactorGlow)" : undefined}
+                    />
+
+                    {/* Centered SVG Logo */}
+                    <image
+                      href={p.logo}
+                      x="-16"
+                      y="-16"
+                      width="32"
+                      height="32"
+                      preserveAspectRatio="xMidYMid meet"
+                      style={{
+                        filter: isFocused
+                          ? `drop-shadow(0 0 16px ${p.glow}) drop-shadow(0 0 6px ${p.color})`
+                          : "drop-shadow(0 0 4px rgba(255,255,255,0.2))",
+                      }}
+                    />
+
+                    {/* Pillar Letter Badge */}
+                    <g transform="translate(14, -14)">
+                      <circle r="8" fill={p.color} />
+                      <text x="0" y="3" textAnchor="middle" fill="#ffffff" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                        {p.letter}
+                      </text>
+                    </g>
+
+                    {/* Pillar Label Name in Constellation */}
+                    <text
+                      x={pos.labelX - pos.x}
+                      y={pos.labelY - pos.y}
+                      textAnchor={pos.anchor as any}
+                      fill={isFocused ? p.color : "#a1a1aa"}
+                      fontSize="10"
+                      fontWeight={isFocused ? "bold" : "normal"}
+                      fontFamily="monospace"
+                    >
+                      {p.name}
+                    </text>
+                  </motion.g>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Zoomed Telemetry Inspector Card */}
+        <motion.div
+          key={`telemetry-${active.letter}`}
+          initial={{ opacity: 0, y: 15, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-lg mt-3 p-4 rounded-2xl border bg-black/90 backdrop-blur-xl flex items-center justify-between shadow-2xl"
+          style={{
+            borderColor: `${active.color}70`,
+            boxShadow: `0 0 35px ${active.color}35`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center font-mono font-black text-base text-white shrink-0 shadow-lg"
+              style={{ backgroundColor: active.color }}
             >
+              {active.letter}
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-mono font-bold text-white flex items-center gap-2">
+                <span>{active.name}</span>
+                <span className="text-[11px] text-zinc-400">• {active.subtitle}</span>
+              </div>
+              <div className="text-[11px] font-mono text-zinc-300 mt-0.5">
+                {active.name === "Productivity" && "Daily execution hub → 0ms sync with Second Brain notes & Work tasks"}
+                {active.name === "Body" && "Workout logged → Routine timer closes → Updates recovery score in Mind"}
+                {active.name === "Money" && "Expense entered → Deducted from budget → Linked to Work projects"}
+                {active.name === "Relationships" && "Social check-in logged → Schedules next meeting in Productivity calendar"}
+                {active.name === "Mind" && "Reflection written → Tracks daily mindfulness streak across the system"}
+                {active.name === "Work" && "Deliverable shipped → Updates client invoice & revenue targets in Money"}
+                {active.name === "Second Brain" && "Insight captured → Linked to Work tasks & personal Mind journal"}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-right shrink-0 pl-3 border-l border-white/10">
+            <span className="text-[10px] font-mono text-zinc-500 uppercase block">Bus Relay</span>
+            <span className="text-xs font-mono font-bold" style={{ color: active.color }}>
+              0.12 ms • LIVE
+            </span>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* BOTTOM STAGE: Architecture Controls */}
+      <div className="relative z-10 pt-2 border-t border-fuchsia-500/20">
+        <div className="flex items-center justify-between text-xs font-mono">
+          <div className="text-zinc-400">
+            Click any of the 7 orbital pillars to test instantaneous 3D zoom & bus routing
+          </div>
+
+          <button
+            onClick={() => setBeat((b) => (b + 1) % 4)}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-fuchsia-950/80 border border-fuchsia-500/40 text-fuchsia-300 hover:bg-fuchsia-900/60 transition-all cursor-pointer text-[11px]"
+          >
+            <span>Next Beat ({beat + 1}/4)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// SCENE 3: THE SOVEREIGN SANCTUARY
+// =========================================================================
+function MotionSceneThree() {
+  const [beat, setBeat] = useState(0);
+
+  // Slower, more deliberate pacing
+  useEffect(() => {
+    const t1 = setTimeout(() => setBeat(1), 1800);  // Chip slams, cloud FLIES OFF SCREEN!
+    const t2 = setTimeout(() => setBeat(2), 5200);  // Vaults dock
+    const t3 = setTimeout(() => setBeat(3), 8800);  // Deflection blast
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
+
+  return (
+    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-emerald-950/40 via-black to-zinc-950 border border-emerald-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+      {/* Background Volumetric Green Flare */}
+      <motion.div
+        animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.4, 0.15] }}
+        transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-emerald-600/30 blur-[130px] pointer-events-none"
+      />
+
+      {/* TOP: Dynamic Headline with Kinetic Zoom Punch */}
+      <div className="relative z-10 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            {[0, 1, 2, 3].map((b) => (
+              <button
+                key={b}
+                onClick={() => setBeat(b)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  beat === b ? "w-6 bg-emerald-500 shadow-[0_0_8px_#22c55e]" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                }`}
+                title={`Jump to Beat ${b + 1}`}
+              />
+            ))}
+          </div>
+
+          <span className="text-[11px] font-mono text-zinc-500">
+            Beat {beat + 1} of 4 • Local Hardware Defense
+          </span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {beat === 0 && (
+            <ZoomingHeadline
+              key="h3-0"
+              badge="03 • THE CLOUD INVASION"
+              badgeColor="#22c55e"
+              statusText="SURVEILLANCE DETECTED"
+              titlePrefix="Other Apps Ingest Your Life In"
+              zoomWord="THIRD-PARTY CLOUDS"
+              titleSuffix="Without Your Consent"
+              subtitle="External servers training proprietary models on your personal journals and finances."
+            />
+          )}
+          {beat === 1 && (
+            <ZoomingHeadline
+              key="h3-1"
+              badge="03 • APPLE SILICON SLAM"
+              badgeColor="#22c55e"
+              statusText="M-CHIP ENGAGED"
+              titlePrefix="Apple Silicon Slams The Door:"
+              zoomWord="CLOUD SPYWARE EXPELLED"
+              titleSuffix="Off Your Screen"
+              subtitle="Your data is permanently air-gapped inside your machine's on-device secure enclave."
+            />
+          )}
+          {beat === 2 && (
+            <ZoomingHeadline
+              key="h3-2"
+              badge="03 • ZERO-KNOWLEDGE DOCKING"
+              badgeColor="#22c55e"
+              statusText="4 VAULTS ENCRYPTED"
+              titlePrefix="4 Sacred Vaults"
+              zoomWord="DOCK INTO LOCAL SILICON"
+              titleSuffix="At Hardware Speeds"
+              subtitle="Finances, Journal, Routines, and Second Brain stored in local, self-hosted SQLite."
+            />
+          )}
+          {beat === 3 && (
+            <ZoomingHeadline
+              key="h3-3"
+              badge="03 • ABSOLUTE SOVEREIGNTY"
+              badgeColor="#22c55e"
+              statusText="DEFENSE 100% SECURE"
+              titlePrefix="Forcefield Armed:"
+              zoomWord="0.00 KB/S EXFILTRATION"
+              titleSuffix="Guaranteed Forever"
+              subtitle="External tracking probes shattered on impact. Your digital mind remains completely yours."
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* CENTER STAGE: Chip Slam + Cloud Expelled Off-Screen + Deflections */}
+      <div className="relative flex-1 flex flex-col items-center justify-center my-2 z-10">
+        {/* BEAT 0: Cloud Spyware Card (GETS EXPELLED OFF-SCREEN ON BEAT 1!) */}
+        <AnimatePresence>
+          {beat === 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{
+                // BLASTED HARD OFF THE TOP-RIGHT OF THE SCREEN!
+                x: 850,
+                y: -650,
+                rotate: 65,
+                scale: 0.1,
+                opacity: 0,
+                transition: { duration: 0.8, ease: "easeIn" },
+              }}
+              className="p-6 rounded-3xl border border-red-500/50 bg-black/85 backdrop-blur-xl flex flex-col items-center gap-3 text-center shadow-[0_0_50px_rgba(239,68,68,0.3)] max-w-sm absolute z-30"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-red-950/60 border border-red-500 flex items-center justify-center">
+                <Cloud className="w-8 h-8 text-red-400 animate-pulse" />
+              </div>
+              <div className="font-mono text-sm font-bold text-white">Cloud AI & Data Broker Ingestion</div>
+              <p className="text-xs text-zinc-400 font-mono">
+                Third-party servers training on your personal journal, finances, and habits.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* BEAT 1, 2, 3: Apple Silicon & Air-Gapped Forcefield */}
+        {beat >= 1 && (
+          <div className="w-full max-w-[650px] relative">
+            <svg className="w-full h-auto overflow-visible select-none" viewBox="0 0 650 190" preserveAspectRatio="xMidYMid meet">
               <defs>
-                <filter id="sanctuaryGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
+                <filter id="scene3ShieldGlow" x="-30%" y="-30%" width="160%" height="160%">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
                   <feMerge>
                     <feMergeNode in="blur" />
                     <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
-
-                <linearGradient id="neuralLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#22c55e" stopOpacity="0.8" />
-                  <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0.8" />
-                </linearGradient>
-
-                <linearGradient id="threatVectorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#22c55e" stopOpacity="0.2" />
-                </linearGradient>
               </defs>
 
-              {/* 1. Closed-Loop Local Neural Conduits connecting Enclaves to Core (x=350, y=60) */}
-              {isNeuralActive && (
-                <g>
-                  {/* Left bus: Finances (70) -> Thoughts (210) -> Core (350) */}
-                  <line x1="70" y1="60" x2="350" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
-                  <motion.line
-                    x1="70"
-                    y1="60"
-                    x2="350"
-                    y2="60"
-                    stroke="url(#neuralLineGrad)"
-                    strokeWidth="2.5"
-                    strokeDasharray="6 8"
-                    animate={{ strokeDashoffset: [0, -28] }}
-                    transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-                    filter="url(#sanctuaryGlow)"
+              {/* Hexagonal Forcefield Arc with Zoom Surge */}
+              {beat >= 2 && (
+                <motion.g
+                  initial={{ scale: 0.3, opacity: 0 }}
+                  animate={{ scale: [0.3, 1.2, 1], opacity: 1 }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ transformOrigin: "325px 95px" }}
+                >
+                  <path d="M 60 50 Q 325 -20 590 50" fill="none" stroke="rgba(34, 197, 94, 0.2)" strokeWidth="12" />
+                  <motion.path
+                    d="M 60 50 Q 325 -20 590 50"
+                    fill="none"
+                    stroke="#22c55e"
+                    strokeWidth="4"
+                    strokeDasharray="12 12"
+                    animate={{ strokeDashoffset: [0, -48] }}
+                    transition={{ duration: 1.8, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    filter="url(#scene3ShieldGlow)"
                   />
-
-                  {/* Right bus: Core (350) -> Routines (490) -> Knowledge (630) */}
-                  <line x1="350" y1="60" x2="630" y2="60" stroke="rgba(34,197,94,0.15)" strokeWidth="2" />
-                  <motion.line
-                    x1="350"
-                    y1="60"
-                    x2="630"
-                    y2="60"
-                    stroke="url(#neuralLineGrad)"
-                    strokeWidth="2.5"
-                    strokeDasharray="6 8"
-                    animate={{ strokeDashoffset: [0, 28] }}
-                    transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-                    filter="url(#sanctuaryGlow)"
-                  />
-                </g>
+                </motion.g>
               )}
 
-              {/* 2. Active Threat Deflection Shield (Step 2 & 3) */}
-              {isShieldActive && (
+              {/* Surveillance Probes: Fly in from outside, strike shield, get DEFLECTED OFF-SCREEN! */}
+              {beat >= 3 && (
                 <g>
-                  {/* Hexagonal Forcefield Perimeter Arc */}
-                  <motion.path
-                    d="M 60 26 Q 350 -14 640 26"
+                  {/* Left Probe */}
+                  <motion.line
+                    x1="120"
+                    y1="-30"
+                    x2="190"
+                    y2="28"
+                    stroke="#ef4444"
+                    strokeWidth="3"
+                    strokeDasharray="6 6"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.6, ease: "easeIn" }}
+                  />
+                  <motion.circle
+                    cx="190"
+                    cy="28"
+                    r="6"
                     fill="none"
                     stroke="#22c55e"
                     strokeWidth="3"
-                    strokeDasharray="10 8"
-                    animate={{ strokeDashoffset: [0, -36] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    filter="url(#sanctuaryGlow)"
-                  />
-                  <path
-                    d="M 60 26 Q 350 -14 640 26"
-                    fill="none"
-                    stroke="rgba(34, 197, 94, 0.25)"
-                    strokeWidth="8"
+                    initial={{ r: 4, opacity: 1 }}
+                    animate={{ r: 28, opacity: 0 }}
+                    transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+                    filter="url(#scene3ShieldGlow)"
                   />
 
-                  {/* Incoming external tracker threat 1 striking from top-left */}
+                  {/* Right Probe */}
                   <motion.line
-                    x1="130"
-                    y1="-15"
-                    x2="190"
-                    y2="10"
+                    x1="530"
+                    y1="-30"
+                    x2="460"
+                    y2="28"
                     stroke="#ef4444"
-                    strokeWidth="2.5"
-                    strokeDasharray="4 6"
-                    animate={{ strokeDashoffset: [0, -20] }}
-                    transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                    strokeWidth="3"
+                    strokeDasharray="6 6"
+                    initial={{ pathLength: 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: 0.6, delay: 0.25, ease: "easeIn" }}
                   />
-                  {/* Deflection Impact Spark 1 */}
                   <motion.circle
-                    cx="190"
-                    cy="10"
-                    r="8"
+                    cx="460"
+                    cy="28"
+                    r="6"
                     fill="none"
                     stroke="#22c55e"
-                    strokeWidth="2"
-                    animate={{ r: [3, 16], opacity: [1, 0] }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "easeOut" }}
-                  />
-
-                  {/* Incoming external tracker threat 2 striking from top-right */}
-                  <motion.line
-                    x1="570"
-                    y1="-15"
-                    x2="510"
-                    y2="10"
-                    stroke="#ef4444"
-                    strokeWidth="2.5"
-                    strokeDasharray="4 6"
-                    animate={{ strokeDashoffset: [0, -20] }}
-                    transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                  />
-                  {/* Deflection Impact Spark 2 */}
-                  <motion.circle
-                    cx="510"
-                    cy="10"
-                    r="8"
-                    fill="none"
-                    stroke="#22c55e"
-                    strokeWidth="2"
-                    animate={{ r: [3, 16], opacity: [1, 0] }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "easeOut", delay: 0.3 }}
+                    strokeWidth="3"
+                    initial={{ r: 4, opacity: 1 }}
+                    animate={{ r: 28, opacity: 0 }}
+                    transition={{ duration: 0.8, delay: 0.85, ease: "easeOut" }}
+                    filter="url(#scene3ShieldGlow)"
                   />
                 </g>
               )}
 
-              {/* 3. Central Cryptographic Vault Lock Rings at (350, 60) */}
-              {isVaultLocked && (
-                <g transform="translate(350, 60)">
-                  {/* Expanding cryptographic security radar pulse */}
-                  <motion.circle
-                    r="32"
-                    fill="none"
-                    stroke="#22c55e"
-                    strokeWidth="1.5"
-                    animate={{ r: [16, 48], opacity: [0.8, 0] }}
-                    transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-                  />
-                  {/* Rotating security cipher ring */}
-                  <motion.circle
-                    r="24"
-                    fill="none"
-                    stroke="rgba(34, 197, 94, 0.7)"
-                    strokeWidth="2"
-                    strokeDasharray="6 4"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  />
-                  {/* Counter-rotating cipher ring */}
-                  <motion.circle
-                    r="16"
-                    fill="none"
-                    stroke="rgba(6, 182, 212, 0.8)"
-                    strokeWidth="2"
-                    strokeDasharray="4 4"
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                  />
-                </g>
-              )}
+              {/* Motherboard Bus */}
+              <line x1="80" y1="95" x2="570" y2="95" stroke="rgba(34,197,94,0.15)" strokeWidth="3" />
+              <motion.line
+                x1="80"
+                y1="95"
+                x2="570"
+                y2="95"
+                stroke="#22c55e"
+                strokeWidth="2.5"
+                strokeDasharray="8 10"
+                animate={{ strokeDashoffset: [0, -36] }}
+                transition={{ duration: 1.6, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                filter="url(#scene3ShieldGlow)"
+              />
 
-              {/* 4. The 5 Enclaves: Local Vaults & Central Neural Core - Rendered in SVG coordinates so they scale and lock with the bus lines on phones and tablets */}
-              {SANCTUARY_ENCLAVES.map((enc, idx) => {
-                const isVisible = visibleEnclavesCount > idx;
-                const isHighlight = isVaultLocked || (isShieldActive && enc.isCore);
-                if (!isVisible) return null;
-
-                const scale = enc.isCore ? 1.75 : 1.4;
-                const offset = 12 * scale;
-
-                return (
-                  <motion.g
-                    key={enc.id}
-                    initial={{ opacity: 0, scale: 0.3 }}
-                    animate={{
-                      opacity: 1,
-                      scale: isHighlight ? 1.15 : 1,
-                    }}
-                    exit={{ opacity: 0, scale: 0.3 }}
-                    transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                    style={{ transformOrigin: `${enc.xCoord}px 60px` }}
-                  >
-                    <g
-                      transform={`translate(${enc.xCoord - offset}, ${60 - offset}) scale(${scale})`}
-                      style={{
-                        filter:
-                          isHighlight || isShieldActive
-                            ? `drop-shadow(0 0 16px ${enc.glowColor}) drop-shadow(0 0 4px ${enc.color})`
-                            : "drop-shadow(0 2px 8px rgba(0,0,0,0.8))",
-                      }}
-                    >
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke={enc.color}
-                        strokeWidth="2"
-                      >
-                        {enc.paths}
-                      </svg>
-                    </g>
-                  </motion.g>
-                );
-              })}
-            </svg>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-const CHAPTER_FOUR_STEPS: TypewriterStep[] = [
-  {
-    text: "True clarity shouldn't require managing—and paying for—a chaotic web of single-purpose subscriptions.",
-    typeSpeed: 46,
-    deleteSpeed: 18,
-    pauseAtEnd: 3000,
-    pauseAfterDelete: 500,
-  },
-  {
-    text: "Start with our Free Core: fundamental focus timers, habits, and daily planning without paying a single dollar.",
-    typeSpeed: 46,
-    deleteSpeed: 18,
-    pauseAtEnd: 3200,
-    pauseAfterDelete: 450,
-  },
-  {
-    text: "Need specific superpowers? Pick individual IMPROVE pillars a la carte for just $7 each with lifetime access.",
-    typeSpeed: 46,
-    deleteSpeed: 18,
-    pauseAtEnd: 3200,
-    pauseAfterDelete: 450,
-  },
-  {
-    text: "For $40, unlock the entire IMPROVE ecosystem: all 7 pillars interconnected, zero recurring AI bills, and lifetime alignment.",
-    typeSpeed: 46,
-    deleteSpeed: 18,
-    pauseAtEnd: 3400,
-    pauseAfterDelete: 500,
-  },
-];
-
-interface MiniCtaPlan {
-  id: string;
-  name: string;
-  price: string;
-  buttonText: string;
-  features: string[];
-}
-
-const MINI_CTA_PLANS: MiniCtaPlan[] = [
-  {
-    id: "free",
-    name: "Free Plan",
-    price: "FREE",
-    buttonText: "LEAVE THE NOISE BEHIND →",
-    features: [
-      "Basic Focus Timer",
-      "Daily Task Lists",
-      "Habit Tracking Basics",
-      "Essential Reminders",
-      "Single Device Access",
-      "Community Support",
-    ],
-  },
-  {
-    id: "each_app",
-    name: "Each App",
-    price: "$7",
-    buttonText: "UNLOCK ANY APP →",
-    features: [
-      "Pick Any 1 Individual Improve App",
-      "Productivity App Pro ($7/mo)",
-      "Body Optimization Pro ($7/mo)",
-      "Second Brain Pro ($7/mo)",
-      "Money & Wealth Pro ($7/mo)",
-      "Work Mastery Pro ($7/mo)",
-      "Mind & Clarity Pro ($7/mo)",
-      "Relationships Pro ($7/mo)",
-      "Full iOS System App Blocker",
-      "Apple Calendar Two-Way Sync",
-      "Biological Energy Tracking",
-    ],
-  },
-  {
-    id: "ecosystem",
-    name: "Improve Ecosystem",
-    price: "$40",
-    buttonText: "ACCESS WHOLE ECOSYSTEM →",
-    features: [
-      "All 8+ Premium Improve Apps",
-      "Productivity App Pro",
-      "Fitness & Habit Suite Pro",
-      "Mindfulness & Journaling Pro",
-      "Finance & Budgeting Pro",
-      "Real-time Cloud Sync",
-      "Priority 24/7 Support",
-      "Family Sharing Included",
-    ],
-  },
-];
-
-function MiniVerticalMarquee({
-  children,
-  speed = 18,
-  className,
-}: {
-  children: React.ReactNode;
-  speed?: number;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`group flex flex-col overflow-hidden ${className || ""}`}
-      style={{ "--duration": `${speed}s` } as React.CSSProperties}
-    >
-      <div className="flex shrink-0 flex-col animate-marquee-vertical group-hover:[animation-play-state:paused]">
-        {children}
-      </div>
-      <div
-        className="flex shrink-0 flex-col animate-marquee-vertical group-hover:[animation-play-state:paused]"
-        aria-hidden="true"
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ChapterFourAnimatedContent({ accentColor, active }: { accentColor: string; active: boolean }) {
-  const [stepIndex, setStepIndex] = useState(0);
-  const [displayText, setDisplayText] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [manualPlanIdx, setManualPlanIdx] = useState<number | null>(null);
-
-  // Sync selected plan with typewriter step, unless manually clicked for that step
-  useEffect(() => {
-    setManualPlanIdx(null);
-  }, [stepIndex]);
-
-  const activePlanIdx =
-    manualPlanIdx !== null
-      ? manualPlanIdx
-      : stepIndex === 1
-      ? 0
-      : stepIndex === 2
-      ? 1
-      : stepIndex === 3
-      ? 2
-      : 0;
-
-  // Reset when active state toggles
-  useEffect(() => {
-    if (!active) {
-      setStepIndex(0);
-      setDisplayText("");
-      setIsDeleting(false);
-      setManualPlanIdx(null);
-    }
-  }, [active]);
-
-  // Main typing and backspacing loop
-  useEffect(() => {
-    if (!active) return;
-
-    const currentStep = CHAPTER_FOUR_STEPS[stepIndex];
-    if (!currentStep) return;
-
-    const targetText = currentStep.text;
-    let timer: NodeJS.Timeout;
-
-    if (!isDeleting) {
-      // Forward typing
-      if (displayText.length < targetText.length) {
-        timer = setTimeout(() => {
-          setDisplayText(targetText.slice(0, displayText.length + 1));
-        }, currentStep.typeSpeed || 46);
-      } else {
-        timer = setTimeout(() => {
-          setIsDeleting(true);
-        }, currentStep.pauseAtEnd || 3000);
-      }
-    } else {
-      // Backspacing letter-by-letter
-      if (displayText.length > 0) {
-        timer = setTimeout(() => {
-          setDisplayText((prev) => prev.slice(0, -1));
-        }, currentStep.deleteSpeed || 18);
-      } else {
-        timer = setTimeout(() => {
-          setStepIndex((prev) => (prev + 1) % CHAPTER_FOUR_STEPS.length);
-          setIsDeleting(false);
-        }, currentStep.pauseAfterDelete || 450);
-      }
-    }
-
-    return () => clearTimeout(timer);
-  }, [active, stepIndex, displayText, isDeleting]);
-
-  const currentStep = CHAPTER_FOUR_STEPS[stepIndex] || CHAPTER_FOUR_STEPS[0];
-  const rules: TextHighlightRule[] = (() => {
-    switch (stepIndex) {
-      case 0:
-        return [
-          {
-            phrase: "chaotic web of single-purpose subscriptions",
-            className: "font-semibold text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
-          },
-        ];
-      case 1:
-        return [
-          {
-            phrase: "Free Core",
-            className: "font-bold underline decoration-amber-400/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "without paying a single dollar",
-            className: "font-bold underline decoration-amber-400/50 underline-offset-4 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]",
-            style: { color: accentColor },
-          },
-        ];
-      case 2:
-        return [
-          {
-            phrase: "a la carte",
-            className: "font-bold underline decoration-amber-400/60 underline-offset-4 drop-shadow-[0_0_14px_rgba(245,158,11,0.7)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "$7 each",
-            className: "font-bold drop-shadow-[0_0_14px_rgba(245,158,11,0.8)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "lifetime access",
-            className: "font-bold drop-shadow-[0_0_14px_rgba(34,197,94,0.7)] text-emerald-400",
-          },
-        ];
-      case 3:
-        return [
-          {
-            phrase: "$40",
-            className: "font-bold drop-shadow-[0_0_16px_rgba(245,158,11,0.8)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "entire IMPROVE ecosystem",
-            className: "font-bold drop-shadow-[0_0_16px_rgba(245,158,11,0.8)]",
-            style: { color: accentColor },
-          },
-          {
-            phrase: "zero recurring AI bills",
-            className: "font-bold drop-shadow-[0_0_14px_rgba(6,182,212,0.8)] text-cyan-400",
-          },
-          {
-            phrase: "lifetime alignment",
-            className: "font-bold text-white underline decoration-amber-400 underline-offset-4",
-          },
-        ];
-      default:
-        return [];
-    }
-  })();
-
-  return (
-    <div className="space-y-6">
-      {/* Typewritten Line: Types out and backspaces letter-by-letter */}
-      <div className="min-h-[4.8em] sm:min-h-[3.6em] flex items-center">
-        <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-          {renderTypewriterText(currentStep.text, displayText.length, rules)}
-          <span
-            className="inline-block w-[2px] h-[1em] ml-1 align-middle animate-pulse"
-            style={{ backgroundColor: accentColor }}
-          />
-        </p>
-      </div>
-
-      {/* Frame 1: Nothing appears below the text. When stepIndex >= 1: Scaled-Down Productivity CTA reveals */}
-      <AnimatePresence>
-        {stepIndex >= 1 && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative select-none pt-2"
-          >
-            {/* Sliding Carousel Track: Exact smooth sliding animation as Productivity CTA */}
-            <div className="relative overflow-hidden w-full z-10">
-              <div
-                className="flex transition-transform duration-700 ease-in-out w-full"
-                style={{ transform: `translateX(-${activePlanIdx * 100}%)` }}
+              {/* Central Apple Silicon Chip: Slams Down from Above! */}
+              <motion.g
+                transform="translate(325, 95)"
+                initial={{ y: -450, scale: 2.5 }}
+                animate={{ y: 0, scale: 1 }}
+                transition={{ duration: 0.75, ease: [0.34, 1.4, 0.64, 1] }}
               >
-                {MINI_CTA_PLANS.map((item) => (
-                  <div
-                    key={item.id}
-                    className="w-full flex-shrink-0 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center min-w-full px-0.5 sm:px-1"
+                <rect
+                  x="-22"
+                  y="-22"
+                  width="44"
+                  height="44"
+                  rx="10"
+                  fill="#052e16"
+                  stroke="#22c55e"
+                  strokeWidth="2.5"
+                  filter="url(#scene3ShieldGlow)"
+                />
+                <text x="0" y="5" textAnchor="middle" fill="#ffffff" fontSize="10" fontWeight="bold" fontFamily="monospace">
+                  M-CHIP
+                </text>
+              </motion.g>
+
+              {/* 4 Private Vaults Flying In From Left & Right */}
+              {[
+                { name: "Finances", color: "#eab308", x: 90, fromX: -350 },
+                { name: "Journal", color: "#a855f7", x: 210, fromX: -250 },
+                { name: "Routines", color: "#22c55e", x: 440, fromX: 250 },
+                { name: "Second Brain", color: "#f97316", x: 560, fromX: 350 },
+              ].map((vault, i) => (
+                <motion.g
+                  key={vault.name}
+                  initial={{ opacity: 0, x: vault.fromX }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + i * 0.12, duration: 0.65, ease: [0.34, 1.4, 0.64, 1] }}
+                  transform={`translate(${vault.x}, 95)`}
+                >
+                  <circle r="20" fill="#000000" stroke={vault.color} strokeWidth="2.5" filter="url(#scene3ShieldGlow)" />
+                  <circle r="7" fill={vault.color} />
+                  <text x="0" y="38" textAnchor="middle" fill="#d4d4d8" fontSize="10" fontFamily="monospace" fontWeight="bold">
+                    {vault.name}
+                  </text>
+                </motion.g>
+              ))}
+            </svg>
+          </div>
+        )}
+
+        {/* Live Telemetry Banner */}
+        <div className="w-full max-w-lg mt-2 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-xs font-mono text-emerald-300 shadow-xl">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Air-Gapped: Outbound Cloud Leak Rate = 0.00 KB/s</span>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM STAGE: Controls */}
+      <div className="relative z-10 pt-2 border-t border-emerald-500/20">
+        <div className="flex items-center justify-between text-xs font-mono">
+          <span className="text-zinc-400">
+            100% On-Device Neural Processing • AES-256-GCM Hardware Vault
+          </span>
+
+          <button
+            onClick={() => setBeat((b) => (b + 1) % 4)}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 transition-all cursor-pointer text-[11px]"
+          >
+            <span>Next Beat ({beat + 1}/4)</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =========================================================================
+// SCENE 4: THE SOVEREIGN INVESTMENT
+// =========================================================================
+function MotionSceneFour() {
+  const [beat, setBeat] = useState(0);
+  const [horizon, setHorizon] = useState<1 | 3 | 5>(3);
+
+  const oldSaaS = 180 * 12 * horizon;
+  const sovereignCost = 40;
+  const savedCash = oldSaaS - sovereignCost;
+
+  // Slower, more deliberate pacing
+  useEffect(() => {
+    const t1 = setTimeout(() => setBeat(1), 1800);  // Invoice sliced & ejected
+    const t2 = setTimeout(() => setBeat(2), 5200);  // Golden Medallion mega-zoom
+    const t3 = setTimeout(() => setBeat(3), 8800);  // Retained capital explodes
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
+
+  return (
+    <div className="relative w-full min-h-[600px] rounded-3xl bg-gradient-to-b from-amber-950/40 via-black to-zinc-950 border border-amber-500/30 overflow-hidden flex flex-col justify-between p-6 sm:p-8 shadow-2xl">
+      {/* Background Volumetric Gold Flare */}
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
+        transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-amber-600/30 blur-[130px] pointer-events-none"
+      />
+
+      {/* TOP: Dynamic Headline with Kinetic Zoom Punch */}
+      <div className="relative z-10 space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            {[0, 1, 2, 3].map((b) => (
+              <button
+                key={b}
+                onClick={() => setBeat(b)}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  beat === b ? "w-6 bg-amber-400 shadow-[0_0_8px_#efb219]" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                }`}
+                title={`Jump to Beat ${b + 1}`}
+              />
+            ))}
+          </div>
+
+          <span className="text-[11px] font-mono text-zinc-500">
+            Beat {beat + 1} of 4 • Lifetime Equity Calculator
+          </span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          {beat === 0 && (
+            <ZoomingHeadline
+              key="h4-0"
+              badge="04 • THE SAAS RENTAL TRAP"
+              badgeColor="#efb219"
+              statusText="10-YEAR ESTIMATION"
+              titlePrefix="The Subscription Economy Wants You To"
+              zoomWord="RENT YOUR OWN LIFE"
+              titleSuffix="Forever"
+              subtitle="$180 every month compounding relentlessly into over $10,800 every single decade."
+            />
+          )}
+          {beat === 1 && (
+            <ZoomingHeadline
+              key="h4-1"
+              badge="04 • SUBSCRIPTION EJECTION"
+              badgeColor="#efb219"
+              statusText="INVOICE EXTINGUISHED"
+              titlePrefix="Laser Guillotine Slice:"
+              zoomWord="$10,800 EXPELLED"
+              titleSuffix="Off Your Life For Good"
+              subtitle="No monthly charges. No held-hostage data. No sudden price hikes."
+            />
+          )}
+          {beat === 2 && (
+            <ZoomingHeadline
+              key="h4-2"
+              badge="04 • SOVEREIGN LICENSE UNLOCKED"
+              badgeColor="#efb219"
+              statusText="LIFETIME ACCESS"
+              titlePrefix="Own The Entire Platform:"
+              zoomWord="$40 ONCE FOR LIFE"
+              titleSuffix="Perpetual Access"
+              subtitle="All 7 pillars. Zero cloud dependency. Free local updates forever."
+            />
+          )}
+          {beat === 3 && (
+            <ZoomingHeadline
+              key="h4-3"
+              badge="04 • COMPOUNDING CAPITAL"
+              badgeColor="#22c55e"
+              statusText="EQUITY SECURED"
+              titlePrefix="Retain An Extra"
+              zoomWord={`+$${savedCash.toLocaleString()}`}
+              titleSuffix="In Your Bank Account"
+              subtitle="The single highest-ROI investment in your personal productivity and wealth."
+            />
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* CENTER STAGE: Invoice Sliced & Ejected Off-Screen + Sovereign Medallion Zoom Punch */}
+      <div className="relative flex-1 flex flex-col justify-center my-3 z-10 space-y-4">
+        {/* BEAT 0 & 1: THE INVOICE GETS SLICED IN HALF AND EXPELLED OFF-SCREEN! */}
+        {beat <= 1 && (
+          <div className="relative flex flex-col items-center justify-center py-6">
+            {/* Top Half of Invoice (Flies UP off-screen!) */}
+            <motion.div
+              initial={{ y: 0, opacity: 1 }}
+              animate={
+                beat === 1
+                  ? {
+                      y: -700, // FLIES OFF THE TOP!
+                      x: -300,
+                      rotate: -35,
+                      opacity: 0,
+                    }
+                  : { y: 0, opacity: 1 }
+              }
+              transition={{ duration: 0.8, ease: "easeIn" }}
+              className="w-full max-w-md p-4 rounded-t-2xl border-t border-x border-red-500 bg-red-950/80 backdrop-blur-md text-center"
+            >
+              <div className="text-xs font-mono font-bold text-red-400 uppercase tracking-wider">
+                SaaS Subscription Rental Invoice
+              </div>
+              <div className="text-3xl sm:text-4xl font-black font-mono text-red-300">
+                $10,800.00 DUE
+              </div>
+            </motion.div>
+
+            {/* Slicing Laser Beam */}
+            {beat === 1 && (
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1, boxShadow: "0 0 35px #ef4444" }}
+                transition={{ duration: 0.45 }}
+                className="w-full max-w-lg h-[3px] bg-red-500 z-30"
+              />
+            )}
+
+            {/* Bottom Half of Invoice (Flies DOWN off-screen!) */}
+            <motion.div
+              initial={{ y: 0, opacity: 1 }}
+              animate={
+                beat === 1
+                  ? {
+                      y: 700, // FLIES OFF THE BOTTOM!
+                      x: 300,
+                      rotate: 35,
+                      opacity: 0,
+                    }
+                  : { y: 0, opacity: 1 }
+              }
+              transition={{ duration: 0.8, ease: "easeIn" }}
+              className="w-full max-w-md p-4 rounded-b-2xl border-b border-x border-red-500 bg-red-950/80 backdrop-blur-md text-center"
+            >
+              <div className="text-[11px] font-mono text-zinc-400">
+                Recurring monthly charges indefinitely • Zero equity retained
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* BEAT 2 & 3: GOLDEN MEDALLION MEGA-ZOOM & WEALTH ENGINE */}
+        {beat >= 2 && (
+          <div className="space-y-4">
+            {/* Horizon Selector */}
+            <div className="flex items-center justify-between bg-black/80 p-2 rounded-2xl border border-amber-500/30 max-w-md mx-auto w-full">
+              <span className="text-xs font-mono text-zinc-400 px-2 font-bold uppercase">
+                Horizon:
+              </span>
+              <div className="flex items-center gap-1.5">
+                {([1, 3, 5] as const).map((yr) => (
+                  <button
+                    key={yr}
+                    onClick={() => setHorizon(yr)}
+                    className={`px-3.5 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer ${
+                      horizon === yr
+                        ? "bg-amber-400 text-black shadow-lg scale-105"
+                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                    }`}
                   >
-                    {/* Left Column: Watermark + Title + Subtitle + Button */}
-                    <div className="space-y-3 sm:space-y-4 relative max-w-xl">
-                      <div className="relative pt-4 sm:pt-6 pb-1 sm:pb-2">
-                        {/* Watermark in #FF02E8 */}
-                        <div
-                          className="absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none text-[#FF02E8] drop-shadow-[0_0_12px_rgba(255,2,232,0.25)] opacity-100 whitespace-nowrap origin-left -top-4 sm:-top-7 -left-1 text-5xl sm:text-7xl md:text-8xl lg:text-9xl transition-all duration-500"
-                        >
-                          {item.price}
-                        </div>
-
-                        <div className="relative z-10 pt-6 sm:pt-10 space-y-1 sm:space-y-1.5">
-                          <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                            Outgrow The Chaos
-                          </h3>
-                          <p className="text-xs sm:text-sm font-normal text-zinc-300 leading-relaxed">
-                            {item.id === "each_app"
-                              ? "Pick any individual IMPROVE app for $7/mo. Full OS-level power & sync."
-                              : item.id === "free"
-                              ? "Fix your foundation. Essential focus and habit tracking tools."
-                              : "Unlimited access to all premium apps across the entire Improve product line."}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Call to Action Button */}
-                      <div className="pt-0.5 sm:pt-1 relative z-10">
-                        <button
-                          className="group relative px-5 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold text-[11px] sm:text-xs tracking-wider uppercase overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-xl flex items-center justify-center text-white"
-                          style={{
-                            backgroundColor: "#FF02E8",
-                            boxShadow: "0 0 20px rgba(255, 2, 232, 0.6)",
-                          }}
-                        >
-                          <span>{item.buttonText}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Right Column: Clean Vertical Marquee */}
-                    <div className="relative h-[120px] sm:h-[150px] flex items-center justify-start overflow-hidden">
-                      <div className="relative w-full h-full pl-1 sm:pl-4">
-                        <MiniVerticalMarquee key={item.id} speed={18} className="h-full">
-                          {item.features.map((feature, fIdx) => (
-                            <div
-                              key={fIdx}
-                              className="text-sm sm:text-base md:text-lg tracking-tight py-1.5 sm:py-2 text-left transition-all duration-300 origin-left text-zinc-300 hover:text-white"
-                            >
-                              <span>{feature}</span>
-                            </div>
-                          ))}
-                        </MiniVerticalMarquee>
-
-                        {/* Top gradient vignette */}
-                        <div className="pointer-events-none absolute top-0 left-0 right-0 h-8 sm:h-10 bg-gradient-to-b from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
-
-                        {/* Bottom gradient vignette */}
-                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 sm:h-10 bg-gradient-to-t from-[#07050A] via-[#07050A]/80 to-transparent z-10" />
-                      </div>
-                    </div>
-                  </div>
+                    {yr} Year{yr > 1 ? "s" : ""}
+                  </button>
                 ))}
               </div>
             </div>
 
-            {/* Bottom Switching Tabs with Name + Price/mo - Exactly like Productivity CTA */}
-            <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-zinc-900 grid grid-cols-3 gap-1.5 sm:gap-2 relative z-10">
-              {MINI_CTA_PLANS.map((plan, idx) => {
-                const isActive = activePlanIdx === idx;
-                return (
-                  <button
-                    key={plan.id}
-                    onClick={() => setManualPlanIdx(idx)}
-                    className={`relative py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5 ${
-                      isActive
-                        ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
-                    }`}
-                  >
-                    <span className="truncate w-full text-center">{plan.name}</span>
-                    <span
-                      className={`text-[9px] sm:text-[10px] font-bold tracking-tight ${
-                        isActive ? "text-[#FF02E8]" : "text-zinc-500"
-                      }`}
-                    >
-                      {plan.price === "FREE" ? "Free" : `${plan.price}/mo`}
-                    </span>
-                  </button>
-                );
-              })}
+            {/* Center Stage: Sovereign Medallion with Camera Mega-Zoom */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              {/* Left: SaaS Strikethrough */}
+              <div className="p-4 rounded-2xl border border-red-500/30 bg-red-950/25 space-y-1.5 text-left relative overflow-hidden">
+                <span className="text-[10px] font-mono uppercase text-red-400 font-bold block">
+                  {horizon}-Year SaaS Bleed
+                </span>
+                <div className="text-2xl sm:text-3xl font-black font-mono text-red-400/80 line-through">
+                  $<KineticOdometer target={oldSaaS} duration={1000} />
+                </div>
+                <p className="text-[11px] text-zinc-400">
+                  Recurring subscription rent permanently extinguished.
+                </p>
+              </div>
+
+              {/* Center: Golden 3D Medallion Zoom Punch */}
+              <div className="flex flex-col items-center justify-center text-center py-1 relative">
+                <motion.div
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: [0, 2.3, 1], opacity: 1 }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.8)] border-2 border-amber-200 text-black font-black font-mono text-3xl relative z-10 overflow-hidden cursor-pointer"
+                >
+                  $40
+                  <span className="text-[8px] font-mono uppercase tracking-widest text-black/90 font-bold -mt-1">
+                    LIFETIME
+                  </span>
+                  <motion.div
+                    animate={{ x: ["-100%", "200%"] }}
+                    transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -skew-x-12 pointer-events-none"
+                  />
+                </motion.div>
+                <span className="text-xs font-mono font-bold text-amber-300 mt-2 uppercase tracking-wider">
+                  One-Time Sovereign License
+                </span>
+              </div>
+
+              {/* Right: Retained Capital Burst */}
+              <div className="p-4 rounded-2xl border border-emerald-500/40 bg-emerald-950/25 space-y-1.5 text-left relative overflow-hidden">
+                <span className="text-[10px] font-mono uppercase text-emerald-400 font-bold block">
+                  Retained Capital
+                </span>
+                <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-300 drop-shadow-[0_0_15px_rgba(34,197,94,0.8)]">
+                  +<KineticOdometer target={savedCash} prefix="$" duration={1100} />
+                </div>
+                <p className="text-[11px] text-zinc-300">
+                  100% of this money remains in your bank account forever.
+                </p>
+              </div>
             </div>
-          </motion.div>
+
+            {/* 2 Unified Options: Free Core vs Complete Sovereign System */}
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-3 text-left">
+                <div className="p-3.5 rounded-xl border border-white/10 bg-black/60 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-mono font-bold text-white">$0 Free Core</span>
+                      <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-white/10 text-zinc-300">Starter</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 font-mono leading-relaxed">
+                      Daily tasks, habits & focus timer. 100% offline & forever free.
+                    </p>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-white/5 text-[9px] font-mono text-zinc-500">
+                    Always Free Foundation
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-amber-400/60 bg-amber-400/10 shadow-[0_0_20px_rgba(245,158,11,0.25)] flex flex-col justify-between relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-mono font-bold text-amber-300">$40 Complete System</span>
+                      <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">Unified</span>
+                    </div>
+                    <p className="text-[10px] text-zinc-200 font-mono leading-relaxed">
+                      All 7 interconnected pillars unified. Zero loose subscriptions.
+                    </p>
+                  </div>
+                  <div className="mt-2 pt-2 border-t border-amber-400/20 text-[9px] font-mono text-amber-300/80 flex items-center justify-between">
+                    <span>One-Time Sovereign License</span>
+                    <span className="text-amber-300 font-bold">0ms Sync</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center py-0.5">
+                <span className="text-[10px] font-mono text-zinc-400 tracking-wide">
+                  ⚡ All 7 systems are permanently interconnected — we do not sell loose fragmented apps.
+                </span>
+              </div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
+
+      {/* BOTTOM STAGE: Call To Action */}
+      <div className="relative z-10 pt-3 border-t border-amber-500/20 flex items-center justify-between">
+        <span className="text-[11px] font-mono text-zinc-400">
+          Single investment • No recurring credit card charges
+        </span>
+        <button className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-400 text-black font-mono text-xs font-bold uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(239,178,25,0.6)] cursor-pointer">
+          <span>CLAIM SOVEREIGN ACCESS</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 }
 
+// =========================================================================
+// MAIN EXPORT: STORY SECTION
+// =========================================================================
 export function StorySection() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isFrameInView = useInView(containerRef, { amount: 0.25 });
+  const [activeStep, setActiveStep] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [progress, setProgress] = useState(0);
 
-  // Mouse position for magnetic effect on the large background number
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
+  // Slower, more spacious 13-second duration per chapter
+  const STEP_DURATION = 13000;
 
-  const springConfig = { damping: 25, stiffness: 200 };
-  const x = useSpring(mouseX, springConfig);
-  const y = useSpring(mouseY, springConfig);
-
-  // Transform for parallax on the large number
-  const numberX = useTransform(x, [-200, 200], [-20, 20]);
-  const numberY = useTransform(y, [-200, 200], [-10, 10]);
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (rect) {
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      mouseX.set(e.clientX - centerX);
-      mouseY.set(e.clientY - centerY);
+  // Rock-solid deterministic wall-clock timer that strictly advances 0 -> 1 -> 2 -> 3 -> 0
+  useEffect(() => {
+    if (!isAutoPlaying) {
+      setProgress(0);
+      return;
     }
+
+    setProgress(0);
+    const startTime = Date.now();
+    let isCancelled = false;
+
+    const interval = setInterval(() => {
+      if (isCancelled) return;
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min((elapsed / STEP_DURATION) * 100, 100);
+      setProgress(pct);
+
+      if (elapsed >= STEP_DURATION) {
+        clearInterval(interval);
+        if (!isCancelled) {
+          setDirection(1);
+          setActiveStep((curr) => (curr + 1) % CHAPTERS.length);
+        }
+      }
+    }, 50);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+    };
+  }, [isAutoPlaying, activeStep]);
+
+  const selectStep = (idx: number) => {
+    if (idx === activeStep) return;
+    setDirection(idx > activeStep ? 1 : -1);
+    setActiveStep(idx);
+    setProgress(0);
   };
 
-  const goNext = () => setActiveIndex((prev) => (prev + 1) % STORY_CHAPTERS.length);
-  const goPrev = () => setActiveIndex((prev) => (prev - 1 + STORY_CHAPTERS.length) % STORY_CHAPTERS.length);
+  const goNext = () => {
+    setDirection(1);
+    setActiveStep((curr) => (curr + 1) % CHAPTERS.length);
+    setProgress(0);
+  };
 
-  // Arrow key navigation when section is in view
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isFrameInView) return;
-      if (e.key === "ArrowRight") goNext();
-      if (e.key === "ArrowLeft") goPrev();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isFrameInView]);
+  const goPrev = () => {
+    setDirection(-1);
+    setActiveStep((curr) => (curr - 1 + CHAPTERS.length) % CHAPTERS.length);
+    setProgress(0);
+  };
 
-  const current = STORY_CHAPTERS[activeIndex];
+  const current = CHAPTERS[activeStep];
 
   return (
-    <div className="relative flex items-center justify-center min-h-[90vh] py-20 sm:py-24 px-6 overflow-hidden select-none bg-black text-white">
-      {/* Background ambient radial glow matching active section color */}
+    <div className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-black text-white select-none overflow-hidden">
+      {/* Background Chromatic Radial Aura */}
       <div
-        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full blur-[160px] opacity-15 transition-colors duration-1000 -z-10"
+        className="pointer-events-none absolute top-1/4 left-1/2 -translate-x-1/2 w-[850px] h-[650px] rounded-full blur-[220px] opacity-25 transition-colors duration-1000 -z-10"
         style={{ backgroundColor: current.accentColor }}
       />
 
-      <div
-        ref={containerRef}
-        className="relative w-full max-w-5xl mx-auto z-10"
-        onMouseMove={handleMouseMove}
-      >
-        {/* Oversized index number - positioned to bleed off left edge with parallax, taking the section letter color */}
-        <motion.div
-          className="absolute -left-8 sm:-left-12 top-1/3 -translate-y-1/2 text-[18rem] sm:text-[24rem] md:text-[28rem] font-black select-none pointer-events-none leading-none tracking-tighter -z-10"
-          style={{ x: numberX, y: numberY }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={activeIndex}
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(10px)" }}
-              animate={{ opacity: 0.22, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="block font-mono"
-              style={{
-                color: current.accentColor,
-                textShadow: `0 0 100px ${current.accentColor}55`,
-              }}
-            >
-              {current.number}
-            </motion.span>
-          </AnimatePresence>
-        </motion.div>
-
-        {/* Main content - asymmetric layout from the pasted frame */}
-        <div className="relative flex flex-col md:flex-row">
-          
-          {/* Left column - vertical text & progress bar */}
-          <div className="flex md:flex-col items-center justify-between md:justify-center pr-0 md:pr-12 md:border-r border-white/10 mb-6 md:mb-0">
-            <motion.span
-              className="text-xs font-mono text-zinc-400 tracking-widest uppercase hidden md:block"
-              style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-            >
-              IMPROVE • 0{activeIndex + 1}
-            </motion.span>
-
-            {/* Progress line (horizontal on mobile, vertical on desktop) */}
-            <div className="relative h-1.5 md:h-36 w-24 md:w-[2px] bg-white/10 my-2 md:mt-8 overflow-hidden rounded-full">
-              {/* Mobile horizontal fill */}
-              <motion.div
-                className="md:hidden absolute top-0 left-0 h-full"
-                animate={{
-                  width: `${((activeIndex + 1) / STORY_CHAPTERS.length) * 100}%`,
-                  backgroundColor: current.accentColor,
+      <div className="relative w-full max-w-5xl mx-auto space-y-6 z-10">
+        
+        {/* ========================================================= */}
+        {/* TOP: 4-STEP SELECTOR TABS WITH DYNAMIC PROGRESS BARS      */}
+        {/* ========================================================= */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {CHAPTERS.map((chap, idx) => {
+            const isActive = activeStep === idx;
+            return (
+              <button
+                key={chap.id}
+                onClick={() => selectStep(idx)}
+                className={`group relative p-3.5 rounded-2xl border text-left transition-all duration-300 cursor-pointer overflow-hidden ${
+                  isActive
+                    ? "bg-zinc-900/90 shadow-2xl"
+                    : "bg-zinc-950/40 border-white/10 hover:border-white/20 hover:bg-zinc-900/40"
+                }`}
+                style={{
+                  borderColor: isActive ? chap.accentColor : undefined,
+                  boxShadow: isActive ? `0 0 30px ${chap.accentColor}30` : undefined,
                 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              />
-              {/* Desktop vertical fill */}
-              <motion.div
-                className="hidden md:block absolute top-0 left-0 w-full origin-top"
-                animate={{
-                  height: `${((activeIndex + 1) / STORY_CHAPTERS.length) * 100}%`,
-                  backgroundColor: current.accentColor,
-                }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              />
-            </div>
-          </div>
-
-          {/* Center - Top Half (Headers & Controls) + Bottom Half (Reactive Copy without container) */}
-          <div className="flex-1 pl-0 md:pl-12 py-2 sm:py-6">
-            
-            {/* Top Half: Larger Title, Subtitle, and Sliding Hover Navigation Buttons */}
-            <div className="flex items-start justify-between flex-wrap gap-6 mb-8 sm:mb-10 pb-6 border-b border-white/10">
-              <div className="flex-1 min-w-[280px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeIndex}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -15 }}
-                    transition={{ duration: 0.35 }}
-                  >
-                    {/* LARGER TEXT: The Main Title */}
-                    <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-none mb-3 drop-shadow-[0_2px_15px_rgba(0,0,0,0.9)]">
-                      {current.title}
-                    </h2>
-
-                    {/* Subtitle in the letter's accent color */}
-                    <h3
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]"
-                      style={{ color: current.accentColor }}
-                    >
-                      {current.subtitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Navigation with the exact sliding hover effect from the pasted frame */}
-              <div className="flex items-center gap-3 self-end sm:self-auto">
-                <motion.button
-                  onClick={goPrev}
-                  className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/20 bg-white/[0.03] hover:bg-white/10 flex items-center justify-center overflow-hidden transition-colors cursor-pointer"
-                  whileTap={{ scale: 0.95 }}
-                  aria-label="Previous chapter"
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-white"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {/* Active Dynamic Progress Line */}
+                {isActive && (
+                  <div
+                    className="absolute top-0 left-0 h-[2.5px] transition-all"
+                    style={{
+                      width: `${progress}%`,
+                      backgroundColor: chap.accentColor,
+                      boxShadow: `0 0 10px ${chap.accentColor}`,
+                    }}
                   />
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    className="relative z-10 text-white group-hover:text-black transition-colors"
+                )}
+
+                <div className="flex items-center justify-between mb-1.5">
+                  <span
+                    className="text-xs font-mono font-bold"
+                    style={{ color: isActive ? chap.accentColor : "#71717a" }}
                   >
-                    <path
-                      d="M10 12L6 8L10 4"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </motion.button>
-
-                <motion.button
-                  onClick={goNext}
-                  className="group relative w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/20 bg-white/[0.03] hover:bg-white/10 flex items-center justify-center overflow-hidden transition-colors cursor-pointer"
-                  whileTap={{ scale: 0.95 }}
-                  aria-label="Next chapter"
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-white"
-                    initial={{ x: "100%" }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    className="relative z-10 text-white group-hover:text-black transition-colors"
+                    0{idx + 1}
+                  </span>
+                  <span
+                    className="w-5 h-5 rounded-md flex items-center justify-center font-mono text-[10px] font-bold"
+                    style={{
+                      backgroundColor: isActive ? `${chap.accentColor}25` : "rgba(255,255,255,0.05)",
+                      color: isActive ? chap.accentColor : "#a1a1aa",
+                    }}
                   >
-                    <path
-                      d="M6 4L10 8L6 12"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </motion.button>
-              </div>
-            </div>
+                    {chap.letter}
+                  </span>
+                </div>
 
-            {/* Bottom Half: Detailed Reactive Copy (NO CONTAINER BOX so background shows through) */}
-            <div className="relative w-full">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeIndex}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="space-y-6"
-                >
-                  {/* CHAPTER 01 gets the dedicated Typewriter & Fragmentation Animation */}
-                  {activeIndex === 0 ? (
-                    <ChapterOneAnimatedContent
-                      accentColor={current.accentColor}
-                      active={isFrameInView && activeIndex === 0}
-                    />
-                  ) : activeIndex === 1 ? (
-                    /* CHAPTER 02 gets the dedicated Typewriter, 7-App IMPROVE Assembly & Reactor Fusion Core */
-                    <ChapterTwoAnimatedContent
-                      accentColor={current.accentColor}
-                      active={isFrameInView && activeIndex === 1}
-                    />
-                  ) : activeIndex === 2 ? (
-                    /* CHAPTER 03 gets the dedicated Typewriter, On-Device Neural Intelligence & Sanctuary Vault */
-                    <ChapterThreeAnimatedContent
-                      accentColor={current.accentColor}
-                      active={isFrameInView && activeIndex === 2}
-                    />
-                  ) : activeIndex === 3 ? (
-                    /* CHAPTER 04 gets the dedicated Typewriter & Scaled-Down Productivity CTA Pricing Showcase */
-                    <ChapterFourAnimatedContent
-                      accentColor={current.accentColor}
-                      active={isFrameInView && activeIndex === 3}
-                    />
-                  ) : (
-                    <>
-                      {/* Summary Lead for other chapters */}
-                      <p className="text-lg sm:text-xl md:text-2xl text-white font-medium leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-                        {current.explanation.summary}
-                      </p>
-
-                      {/* Detailed Explanation Paragraphs */}
-                      <div className="space-y-3.5 text-zinc-300 text-sm sm:text-base md:text-lg leading-relaxed font-normal">
-                        {current.explanation.details.map((paragraph, pIdx) => (
-                          <p key={pIdx}>
-                            {paragraph}
-                          </p>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Callout Cards for other chapters (Ultra-Clean Glass so Background shows through) */}
-                  {activeIndex > 3 && current.explanation.callouts && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                      {current.explanation.callouts.map((c, cIdx) => (
-                        <div
-                          key={cIdx}
-                          className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm"
-                        >
-                          {c.badge && (
-                            <span
-                              className="text-[11px] font-mono font-bold uppercase tracking-wider block mb-1.5"
-                              style={{ color: current.accentColor }}
-                            >
-                              {c.badge}
-                            </span>
-                          )}
-                          <h4 className="text-base sm:text-lg font-bold text-white mb-1.5">
-                            {c.title}
-                          </h4>
-                          <p className="text-xs sm:text-sm text-zinc-300 font-normal leading-relaxed">
-                            {c.body}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pricing Cards for later chapters if any */}
-                  {activeIndex > 3 && current.explanation.pricing && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-white/10">
-                      {current.explanation.pricing.map((p, pIdx) => (
-                        <div
-                          key={pIdx}
-                          className={`p-5 rounded-2xl border transition-all backdrop-blur-sm ${
-                            p.highlighted
-                              ? "border-amber-400/50 bg-amber-400/[0.05] shadow-[0_0_35px_rgba(234,179,8,0.15)]"
-                              : "border-white/10 bg-white/[0.02]"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-mono font-bold uppercase text-white tracking-wider">
-                              {p.plan}
-                            </span>
-                            {p.badge && (
-                              <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                                {p.badge}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-baseline gap-2 mb-3">
-                            <span className="text-3xl sm:text-4xl font-black text-white">{p.price}</span>
-                            <span className="text-xs text-zinc-400 font-mono">{p.billing}</span>
-                          </div>
-
-                          <ul className="space-y-1.5 text-xs text-zinc-300 font-normal">
-                            {p.features.map((f, fIdx) => (
-                              <li key={fIdx} className="flex items-center gap-2">
-                                <span
-                                  className="w-1.5 h-1.5 rounded-full"
-                                  style={{ backgroundColor: p.highlighted ? "#facc15" : "#a1a1aa" }}
-                                />
-                                {f}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-          </div>
+                <div className="text-xs sm:text-sm font-bold text-white truncate">
+                  {chap.title}
+                </div>
+                <div className="text-[10px] font-mono text-zinc-400 truncate">
+                  {chap.subtitle}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Bottom ticker from the pasted frame - subtle repeating chapter titles */}
-        <div className="overflow-hidden opacity-[0.08] pointer-events-none mt-12 sm:mt-16">
-          <motion.div
-            className="flex whitespace-nowrap text-5xl sm:text-6xl font-bold tracking-tight text-white font-mono"
-            animate={{ x: [0, -1000] }}
-            transition={{ duration: 25, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-          >
-            {[...Array(8)].map((_, i) => (
-              <span key={i} className="mx-8">
-                {STORY_CHAPTERS.map((t) => t.title).join(" • ")} •
+        {/* ========================================================= */}
+        {/* MAIN STAGE: HIGH-OCTANE CHOREOGRAPHED MOTION VIEWPORT    */}
+        {/* ========================================================= */}
+        <div className="relative">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={`scene-${activeStep}`}
+              custom={direction}
+              initial={{
+                opacity: 0,
+                x: direction * 50,
+                scale: 0.93,
+                filter: "blur(12px)",
+              }}
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: 1,
+                filter: "blur(0px)",
+              }}
+              exit={{
+                opacity: 0,
+                x: direction * -50,
+                scale: 1.06,
+                filter: "blur(12px)",
+              }}
+              transition={{
+                duration: 0.65,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="w-full"
+            >
+              {activeStep === 0 && <MotionSceneOne />}
+              {activeStep === 1 && <MotionSceneTwo />}
+              {activeStep === 2 && <MotionSceneThree />}
+              {activeStep === 3 && <MotionSceneFour />}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Under-Stage Control Bar: Explicit Step Tracker & Navigation */}
+          <div className="flex items-center justify-between mt-4 px-1">
+            <button
+              onClick={goPrev}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back (Step {((activeStep + 3) % 4) + 1})</span>
+            </button>
+
+            {/* Center: Step indicators & Autoplay Status */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-white/10 bg-black/60 hover:bg-white/10 text-[11px] font-mono text-zinc-400 hover:text-white transition-all cursor-pointer"
+              >
+                {isAutoPlaying ? (
+                  <>
+                    <Pause className="w-3 h-3 text-emerald-400" />
+                    <span>Auto-Play: ON</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3 h-3 text-amber-400" />
+                    <span>Auto-Play: OFF</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                {CHAPTERS.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => selectStep(i)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      activeStep === i ? "w-8" : "w-2 bg-white/20 hover:bg-white/40"
+                    }`}
+                    style={{
+                      backgroundColor: activeStep === i ? current.accentColor : undefined,
+                    }}
+                    title={`Go to Step ${i + 1}: ${c.title}`}
+                  />
+                ))}
+              </div>
+
+              <span className="text-[11px] font-mono font-bold text-zinc-400">
+                Step {activeStep + 1} of 4
               </span>
-            ))}
-          </motion.div>
+            </div>
+
+            <button
+              onClick={goNext}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-mono text-xs font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
+              style={{ backgroundColor: current.accentColor }}
+            >
+              <span>Next (Step {((activeStep + 1) % 4) + 1})</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
       </div>

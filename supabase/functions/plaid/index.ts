@@ -65,6 +65,54 @@ Deno.serve(async (req: Request) => {
   // (including ones minted by `sandbox_session`) are rejected in production.
   const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
 
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
+  // Session tokens are bound to the Plaid environment, so sandbox sessions
+  // (including ones minted by `sandbox_session`) are rejected in production.
+  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
+
   // Helper to call Plaid API
   async function callPlaid(endpoint: string, payload: Record<string, unknown>) {
     const url = `${PLAID_BASE_URL}${endpoint}`;

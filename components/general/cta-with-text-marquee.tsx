@@ -111,7 +111,7 @@ function VerticalMarquee({
 
 import type { AppIdentity } from "@/lib/apps-data";
 
-type PlanType = "free" | "productivity" | "ecosystem";
+type PlanType = "free" | "ecosystem";
 
 interface PlanDetails {
   id: PlanType;
@@ -134,80 +134,48 @@ export default function CTAWithVerticalMarquee({
   accentColor,
 }: CTAWithVerticalMarqueeProps = {}) {
   const brandColor = accentColor || app?.accentHex || "#FF02E8";
-  const appDisplayName = app ? `${app.singleWord} App` : "Productivity App";
-  const appSubtitle = app
-    ? `Full power of ${app.name} with on-device local execution.`
-    : "Full power of the Productivity App with OS-level blocking & energy curve sync.";
-  const appButtonText = `UNLOCK ${app ? app.singleWord : "PRODUCTIVITY"} PRO →`;
-
-  const appFeaturesList = app
-    ? [
-        ...app.features.map((f) => f.title),
-        "Full iOS System Integration",
-        "Apple Calendar Two-Way Sync",
-        "Biological Energy Tracking",
-        "Deep Focus Strict Mode",
-        "Home & Lockscreen Widgets",
-      ]
-    : [
-        "Full iOS System App Blocker",
-        "Apple Calendar Sync",
-        "Biological Energy Tracking",
-        "Smart Time-Boxing",
-        "Deep Focus Strict Mode",
-        "Advanced Analytics",
-        "Home & Lockscreen Widgets",
-      ];
 
   const plans: Record<PlanType, PlanDetails> = {
     free: {
       id: "free",
-      name: "Free Plan",
+      name: "Free Core System",
       badge: "Starter",
       price: "FREE",
       period: "forever",
-      subtitle: "Essential focus and habit tracking tools for personal productivity.",
-      buttonText: "LEAVE THE NOISE BEHIND →",
+      subtitle: "Essential daily task capture, habits, and focus timer. 100% private, on-device local storage.",
+      buttonText: "START FREE CORE SYSTEM →",
       features: [
-        "Basic Focus Timer",
-        "Daily Task Lists",
+        "Essential Daily Task Capture",
         "Habit Tracking Basics",
-        "Essential Reminders",
-        "Single Device Access",
-        "Community Support",
+        "Focused Timer & Pomodoro",
+        "Apple Calendar Sync",
+        "100% Offline Local Storage",
+        "Zero Surveillance or Ads",
+        "Interconnected Starter Bus",
       ],
-    },
-    productivity: {
-      id: "productivity",
-      name: appDisplayName,
-      badge: "Most Popular",
-      price: "$7",
-      period: "per month",
-      subtitle: appSubtitle,
-      buttonText: appButtonText,
-      features: appFeaturesList,
     },
     ecosystem: {
       id: "ecosystem",
-      name: "Improve Ecosystem",
-      badge: "Best Value",
+      name: "Complete Sovereign System",
+      badge: "All 7 Pillars",
       price: "$40",
-      period: "per month",
-      subtitle: "Unlimited access to all premium apps across the entire Improve product line.",
-      buttonText: "ACCESS WHOLE ECOSYSTEM →",
+      period: "once for life",
+      subtitle: "The complete unified operating system. All 7 pillars permanently interconnected — zero loose subscriptions.",
+      buttonText: "OWN THE COMPLETE SYSTEM ($40) →",
       features: [
-        "All 8+ Premium Improve Apps",
-        `${app ? app.singleWord : "Productivity"} App Pro`,
-        "Fitness & Habit Suite Pro",
-        "Mindfulness & Journaling Pro",
-        "Finance & Budgeting Pro",
-        "Real-time Cloud Sync",
-        "Priority 24/7 Support",
+        "All 7 Interconnected Pillars",
+        app ? `Full ${app.name} Native Access` : "Full Native System Engines",
+        "Zero Monthly Subscription Rent",
+        "0ms Local Relational Bus",
+        "On-Device Apple Intelligence",
+        "Bi-Directional Knowledge Graph",
+        "Lifetime Engine Updates",
         "Family Sharing Included",
+        "100% Permanent Data Sovereignty",
       ],
     },
   };
-  const [activeIndex, setActiveIndex] = useState<number>(0); // Default to FREE plan like screenshot
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const marqueeRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef<number>(0);
 
@@ -315,9 +283,7 @@ export default function CTAWithVerticalMarquee({
                           "absolute z-0 select-none pointer-events-none font-black tracking-tighter leading-none opacity-100 transition-all duration-500 whitespace-nowrap origin-left",
                           item.id === "free"
                             ? "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7rem] sm:text-[11rem] md:text-[14rem] lg:text-[16rem] scale-x-[1.14]"
-                            : item.id === "productivity"
-                              ? "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7rem] sm:text-[11rem] md:text-[14rem] lg:text-[16rem] scale-x-[1.14]"
-                              : "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7.3rem] sm:text-[11.1rem] md:text-[14.1rem] lg:text-[16.3rem] scale-x-[1.06]"
+                            : "-top-14 sm:-top-22 md:-top-26 lg:-top-30 -left-1 text-[7.3rem] sm:text-[11.1rem] md:text-[14.1rem] lg:text-[16.3rem] scale-x-[1.06]"
                         )}
                         style={{
                           color: brandColor,
@@ -327,14 +293,19 @@ export default function CTAWithVerticalMarquee({
                         {item.price}
                       </div>
 
-                      {/* Foreground Title (Big, One Line) & Subtitle */}
+                      {/* Foreground Title & Subtitle */}
                       <div className="relative z-10 pt-10 sm:pt-16 md:pt-20 lg:pt-22 space-y-3">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-mono text-zinc-300">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
+                          <span>{item.id === "free" ? "Free Core Foundation • 100% Offline" : "All 7 Pillars Unified • Zero Loose Subscriptions"}</span>
+                        </div>
+
                         <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-none drop-shadow-md whitespace-nowrap">
-                          Outgrow The Chaos
+                          {item.id === "free" ? "Start Free Core" : "Own The System"}
                         </h2>
 
                         <p className="text-sm md:text-base font-normal text-zinc-300 tracking-normal leading-relaxed pt-1">
-                          Fix your foundation. Centralize your system and start improving
+                          {item.subtitle}
                         </p>
                       </div>
                     </div>
@@ -391,9 +362,9 @@ export default function CTAWithVerticalMarquee({
       </div>
 
       {/* Bottom Carousel Controls & View Indicator Bar */}
-      <div className="w-full max-w-md mx-auto pt-6 pb-2 z-20 flex flex-col items-center space-y-4">
+      <div className="w-full max-w-sm mx-auto pt-6 pb-2 z-20 flex flex-col items-center space-y-4">
         {/* Interactive Plan Tabs */}
-        <div className="grid grid-cols-3 gap-2 w-full bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-zinc-800/80 shadow-2xl">
+        <div className="grid grid-cols-2 gap-2 w-full bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-zinc-800/80 shadow-2xl">
           {planKeys.map((key, idx) => {
             const item = plans[key];
             const isActive = activeIndex === idx;
@@ -402,7 +373,7 @@ export default function CTAWithVerticalMarquee({
                 key={key}
                 onClick={() => setActiveIndex(idx)}
                 className={cn(
-                  "relative py-2.5 px-2 rounded-lg text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5",
+                  "relative py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-300 flex flex-col items-center justify-center space-y-0.5",
                   isActive
                     ? "bg-zinc-800 text-white shadow-lg border border-zinc-700"
                     : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
@@ -416,7 +387,7 @@ export default function CTAWithVerticalMarquee({
                   )}
                   style={{ color: isActive ? brandColor : undefined }}
                 >
-                  {item.price === "FREE" ? "Free" : `${item.price}/mo`}
+                  {item.price === "FREE" ? "Free Forever" : "$40 Once For Life"}
                 </span>
               </button>
             );
