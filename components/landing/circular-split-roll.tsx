@@ -77,7 +77,7 @@ function TypewriterTagline({
 
   return (
     <div className="mt-1.5 sm:mt-3 flex items-center justify-center min-h-[1.6em] sm:min-h-[2em] max-w-md mx-auto px-2">
-      <p className="text-xs sm:text-sm md:text-base font-mono font-medium tracking-normal text-white/80 select-text">
+      <p className="text-xs sm:text-sm md:text-base font-medium tracking-normal text-white/80 select-text">
         {displayText}
         <span
           className="inline-block w-[3px] h-[1em] ml-1.5 animate-pulse align-middle"
@@ -510,8 +510,8 @@ export default function CircularSplitRoll({
           reducedMotion ? "hidden" : "block"
         }`}
       >
-        {/* Responsive Showcase Cockpit inside ultra-glass container */}
-        <div className="ultra-glass-panel relative mx-auto my-auto flex h-[74vh] max-h-[660px] w-full max-w-[92vw] 2xl:max-w-[1360px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 py-6 sm:py-8 gap-3.5 sm:gap-0 shadow-2xl">
+        {/* Responsive Showcase Cockpit inside access-glass container */}
+        <div className="access-glass relative mx-auto my-auto flex h-[74vh] max-h-[660px] w-full max-w-[92vw] 2xl:max-w-[1360px] flex-col sm:flex-row items-center justify-center sm:justify-between px-4 sm:px-12 py-6 sm:py-8 gap-3.5 sm:gap-0">
           {/* Top/Left Column: App Titles with Typewriter Taglines */}
           <div className="relative flex h-[76px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
@@ -524,7 +524,7 @@ export default function CircularSplitRoll({
                   {/* App Title - Responsive scaling */}
                   <div className="flex items-center justify-center gap-2 sm:gap-3">
                     <span
-                      className="text-xs sm:text-sm md:text-base font-mono font-bold align-middle transition-colors"
+                      className="text-xs sm:text-sm md:text-base font-bold align-middle transition-colors"
                       style={{ color: item.accentHex }}
                     >
                       {item.number}

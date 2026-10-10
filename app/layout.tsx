@@ -20,28 +20,22 @@ const siteUrl = "https://improve-club.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "The Ultimate All-in-One Life Operating System | IMPROVE Complete Integrity",
-    template: "%s | IMPROVE Complete Integrity",
+    default: "IMPROVE | Your Intentional Digital Companion",
+    template: "%s | IMPROVE",
   },
   description:
-    "Looking for the best Second Brain or Life Operating System? IMPROVE is the all-in-one productivity framework for mastering your Body, Money, Work, and Mind.",
+    "Technology was meant to serve you, not distract you. IMPROVE is a digital companion that blocks the noise, builds your habits, and protects your time.",
   keywords: [
-    "All-in-one Life Operating System",
-    "Second Brain Software",
-    "Personal Productivity System",
-    "IMPROVE",
-    "complete integrity",
-    "self improvement system",
-    "productivity framework",
-    "habit tracker system",
-    "life optimization",
-    "excellence",
-    "goal tracking",
-    "body optimization system",
-    "money wealth system",
-    "professional work mastery",
-    "mind clarity tools",
-    "personal growth framework",
+    "Intentional digital companion",
+    "Habit execution engine",
+    "Apple Intelligence productivity",
+    "On-device AI companion",
+    "Deep work system",
+    "App blocking focus timer",
+    "Anti-hustle productivity",
+    "Goal alignment software",
+    "Personal knowledge management",
+    "Private productivity ecosystem",
   ],
   authors: [{ name: "IMPROVE", url: siteUrl }],
   creator: "IMPROVE",
@@ -65,24 +59,24 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteUrl,
-    siteName: "IMPROVE — Complete Integrity",
-    title: "IMPROVE — All-in-One Life Operating System",
+    siteName: "IMPROVE",
+    title: "IMPROVE — Your Intentional Digital Companion.",
     description:
-      "Looking for the best Second Brain or Life Operating System? The all-in-one productivity framework for mastering your Body, Money, Work, and Mind.",
+      "Technology doing exactly what it was always meant to do: serve your intent. Block digital noise, build your habits, and execute your daily targets.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "IMPROVE — Complete Integrity",
+        alt: "IMPROVE — Your Intentional Digital Companion",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "IMPROVE — All-in-One Life Operating System",
+    title: "IMPROVE — A Digital Companion.",
     description:
-      "The ultimate technical framework for Complete Integrity. Master every dimension of your life.",
+      "Define the goal. Block the noise. Execute the habit. Technology built to protect your time, not steal it.",
     images: ["/og-image.png"],
     creator: "@improveclub",
     site: "@improveclub",
@@ -109,11 +103,11 @@ const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "IMPROVE",
-  alternateName: "IMPROVE — Complete Integrity",
+  alternateName: "IMPROVE — Your Intentional Digital Companion",
   url: siteUrl,
   logo: `${siteUrl}/og-image.png`,
   description:
-    "IMPROVE is the ultimate all-in-one Life Operating System. Master your body, wealth, work, productivity, relationships, mind, and legacy within a single Framework.",
+    "IMPROVE is a premium digital companion designed for intent. We replace digital chaos with a quiet, private space for managing habits, work, health, and mind using completely local, on-device AI.",
   sameAs: [],
 };
 
@@ -123,7 +117,7 @@ const jsonLdWebSite = {
   name: "IMPROVE",
   url: siteUrl,
   description:
-    "The all-in-one Life Operating System and Second Brain Software for Complete Integrity.",
+    "An intentional digital companion for your habits, work, health, and mind. Define the goal, block the noise, execute the habit.",
   potentialAction: {
     "@type": "SearchAction",
     target: {
@@ -140,13 +134,22 @@ const jsonLdSoftwareApp = {
   name: "IMPROVE",
   operatingSystem: "Web",
   applicationCategory: "BusinessApplication",
-  offers: {
-    "@type": "Offer",
-    price: "10.00",
-    priceCurrency: "USD",
-  },
+  offers: [
+    {
+      "@type": "Offer",
+      price: "0.00",
+      priceCurrency: "USD",
+      name: "Free Tier",
+    },
+    {
+      "@type": "Offer",
+      price: "40.00",
+      priceCurrency: "USD",
+      name: "Premium",
+    },
+  ],
   description:
-    "The ultimate all-in-one Life Operating System. Eight Systems covering body, money, work, productivity, relationships, mind, legacy, and knowledge.",
+    "A privacy-first digital companion that utilizes local AI to block distractions, build core habits, and drive purposeful execution. Technology meant to serve the user.",
   url: siteUrl,
 };
 

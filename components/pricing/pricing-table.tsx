@@ -152,7 +152,7 @@ export function PricingTable({
           ))}
         </div>
 
-        <div className="ultra-glass-panel overflow-hidden shadow-2xl relative">
+        <div className="access-glass overflow-hidden shadow-2xl relative">
           <div className="overflow-x-auto">
             <div className="min-w-[700px] divide-y divide-white/5">
               <div className="flex items-center p-6 bg-white/[0.02] border-b border-white/10 backdrop-blur-sm">

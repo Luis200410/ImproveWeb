@@ -518,8 +518,8 @@ export function AuthUI({
 
       {/* Left Column: Interactive Form inside Transparent Glass Container */}
       <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
-        {/* Transparent Glass Container — Background Animation Directly Visible Through */}
-        <div className="w-full max-w-[420px] rounded-[32px] border border-white/[0.14] bg-white/[0.02] backdrop-blur-[6px] p-6 sm:p-8 md:p-9 shadow-2xl shadow-black/40">
+        {/* Access-style Darkened Translucent Glass Container */}
+        <div className="access-glass w-full max-w-[420px] p-6 sm:p-8 md:p-9">
           <AuthFormContainer isSignIn={isSignIn} onToggle={toggleForm} errorMessage={errorMessage} />
         </div>
       </div>

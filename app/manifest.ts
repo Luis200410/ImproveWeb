@@ -2,10 +2,10 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "IMPROVE Complete Integrity",
+        name: "IMPROVE",
         short_name: "IMPROVE",
         description:
-            "The all-in-one operating system for Complete Integrity. Master your body, wealth, work, productivity, relationships, mind, and legacy.",
+            "An intentional digital companion for your habits, work, health, and mind. Define the goal, block the noise, execute the habit.",
         start_url: "/",
         display: "standalone",
         background_color: "#000000",

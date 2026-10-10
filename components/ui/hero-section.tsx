@@ -481,7 +481,7 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
         {/* Frame 1: Manifesto Typewriter with Huge Background Quote Symbol */}
         {phase === "manifesto" && (
           <div className="relative min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-4 sm:px-6">
-            <div className="ultra-glass-panel w-full max-w-4xl mx-auto p-8 sm:p-12 md:p-16 flex items-center justify-center">
+            <div className="access-glass w-full max-w-4xl mx-auto p-8 sm:p-12 md:p-16 flex items-center justify-center">
               {/* The Typing Sentence */}
               <div className="relative z-10 text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight min-h-[1.5em] flex items-center justify-center max-w-5xl mx-auto">
                 <span
@@ -518,7 +518,7 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
         {/* Single Unified Final Frame: Top sentence + IMPROVE Slot + Typed subhead */}
         {phase === "final" && (
           <div className="min-h-[calc(100vh-6.25rem)] w-full flex flex-col items-center justify-center text-center px-4 sm:px-6 py-12 animate-in fade-in zoom-in-95 duration-700">
-            <div className="ultra-glass-panel max-w-4xl sm:max-w-5xl mx-auto w-full flex flex-col items-center p-8 sm:p-12 md:p-16 relative z-10">
+            <div className="access-glass max-w-4xl sm:max-w-5xl mx-auto w-full flex flex-col items-center p-8 sm:p-12 md:p-16 relative z-10">
               {/* Top sentence that stays */}
               <p className="text-sm sm:text-base md:text-lg font-medium tracking-[0.25em] uppercase text-zinc-400 mb-4 sm:mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
                 Purpose in mind. Intention in motion.

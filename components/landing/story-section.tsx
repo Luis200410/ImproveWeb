@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame,
@@ -224,7 +225,7 @@ function MotionSceneOne() {
   }, []);
 
   return (
-    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-red-500/30 shadow-2xl">
+    <div className="access-glass relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-red-500/30">
       {/* Background Volumetric Pulse */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.35, 0.15] }}
@@ -451,27 +452,6 @@ function MotionSceneOne() {
           </motion.div>
         )}
       </div>
-
-      {/* BOTTOM STAGE: Real-time Attention Meter */}
-      <div className="relative z-10 pt-2 border-t border-red-500/20">
-        <div className="flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <Brain className="w-4 h-4 text-red-400" />
-            <span className="text-zinc-400">Cognitive Focus State:</span>
-            <span className="text-white font-bold">
-              {beat >= 2 ? "19% (Attention Shredded)" : "100% Focused"}
-            </span>
-          </div>
-
-          <button
-            onClick={() => setBeat((b) => (b + 1) % 4)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-red-950/80 border border-red-500/40 text-red-300 hover:bg-red-900/60 transition-all cursor-pointer text-[11px]"
-          >
-            <span>Next Beat ({beat + 1}/4)</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -508,7 +488,7 @@ function MotionSceneTwo() {
   ];
 
   return (
-    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-fuchsia-500/30 shadow-2xl">
+    <div className="access-glass relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-fuchsia-500/30">
       {/* Background Volumetric Magenta Flare */}
       <motion.div
         animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -824,23 +804,6 @@ function MotionSceneTwo() {
           </div>
         </motion.div>
       </div>
-
-      {/* BOTTOM STAGE: Architecture Controls */}
-      <div className="relative z-10 pt-2 border-t border-fuchsia-500/20">
-        <div className="flex items-center justify-between text-xs font-mono">
-          <div className="text-zinc-400">
-            Click any of the 7 orbital pillars to test instantaneous 3D zoom & bus routing
-          </div>
-
-          <button
-            onClick={() => setBeat((b) => (b + 1) % 4)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-fuchsia-950/80 border border-fuchsia-500/40 text-fuchsia-300 hover:bg-fuchsia-900/60 transition-all cursor-pointer text-[11px]"
-          >
-            <span>Next Beat ({beat + 1}/4)</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -864,7 +827,7 @@ function MotionSceneThree() {
   }, []);
 
   return (
-    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-emerald-500/30 shadow-2xl">
+    <div className="access-glass relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-emerald-500/30">
       {/* Background Volumetric Green Flare */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -1139,23 +1102,6 @@ function MotionSceneThree() {
           </div>
         </div>
       </div>
-
-      {/* BOTTOM STAGE: Controls */}
-      <div className="relative z-10 pt-2 border-t border-emerald-500/20">
-        <div className="flex items-center justify-between text-xs font-mono">
-          <span className="text-zinc-400">
-            100% On-Device Neural Processing • AES-256-GCM Hardware Vault
-          </span>
-
-          <button
-            onClick={() => setBeat((b) => (b + 1) % 4)}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/60 transition-all cursor-pointer text-[11px]"
-          >
-            <span>Next Beat ({beat + 1}/4)</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1184,7 +1130,7 @@ function MotionSceneFour() {
   }, []);
 
   return (
-    <div className="ultra-glass-panel relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-amber-500/30 shadow-2xl">
+    <div className="access-glass relative w-full min-h-[600px] overflow-hidden flex flex-col justify-between p-6 sm:p-8 border border-amber-500/30">
       {/* Background Volumetric Gold Flare */}
       <motion.div
         animate={{ scale: [1, 1.3, 1], opacity: [0.15, 0.4, 0.15] }}
@@ -1450,15 +1396,15 @@ function MotionSceneFour() {
         )}
       </div>
 
-      {/* BOTTOM STAGE: Call To Action */}
-      <div className="relative z-10 pt-3 border-t border-amber-500/20 flex items-center justify-between">
-        <span className="text-[11px] font-mono text-zinc-400">
-          Single investment • No recurring credit card charges
-        </span>
-        <button className="flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-400 text-black font-mono text-xs font-bold uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(239,178,25,0.6)] cursor-pointer">
-          <span>CLAIM SOVEREIGN ACCESS</span>
+      {/* BOTTOM STAGE: Call To Action redirecting to the apps */}
+      <div className="relative z-10 pt-4 flex items-center justify-center">
+        <Link
+          href="#ecosystem"
+          className="flex items-center gap-2 px-8 py-3.5 rounded-full bg-amber-400 text-black text-xs sm:text-sm font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(239,178,25,0.6)] cursor-pointer"
+        >
+          <span>EXPLORE ALL 7 APPS</span>
           <ArrowRight className="w-4 h-4" />
-        </button>
+        </Link>
       </div>
     </div>
   );
@@ -1512,18 +1458,6 @@ export function StorySection() {
     if (idx === activeStep) return;
     setDirection(idx > activeStep ? 1 : -1);
     setActiveStep(idx);
-    setProgress(0);
-  };
-
-  const goNext = () => {
-    setDirection(1);
-    setActiveStep((curr) => (curr + 1) % CHAPTERS.length);
-    setProgress(0);
-  };
-
-  const goPrev = () => {
-    setDirection(-1);
-    setActiveStep((curr) => (curr - 1 + CHAPTERS.length) % CHAPTERS.length);
     setProgress(0);
   };
 
@@ -1638,66 +1572,6 @@ export function StorySection() {
               {activeStep === 3 && <MotionSceneFour />}
             </motion.div>
           </AnimatePresence>
-
-          {/* Under-Stage Control Bar: Explicit Step Tracker & Navigation */}
-          <div className="flex items-center justify-between mt-4 px-1">
-            <button
-              onClick={goPrev}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/10 text-xs font-mono text-zinc-300 hover:text-white transition-all cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Back (Step {((activeStep + 3) % 4) + 1})</span>
-            </button>
-
-            {/* Center: Step indicators & Autoplay Status */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-white/10 bg-black/60 hover:bg-white/10 text-[11px] font-mono text-zinc-400 hover:text-white transition-all cursor-pointer"
-              >
-                {isAutoPlaying ? (
-                  <>
-                    <Pause className="w-3 h-3 text-emerald-400" />
-                    <span>Auto-Play: ON</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3 h-3 text-amber-400" />
-                    <span>Auto-Play: OFF</span>
-                  </>
-                )}
-              </button>
-
-              <div className="flex items-center gap-1.5">
-                {CHAPTERS.map((c, i) => (
-                  <button
-                    key={c.id}
-                    onClick={() => selectStep(i)}
-                    className={`h-2 rounded-full transition-all cursor-pointer ${
-                      activeStep === i ? "w-8" : "w-2 bg-white/20 hover:bg-white/40"
-                    }`}
-                    style={{
-                      backgroundColor: activeStep === i ? current.accentColor : undefined,
-                    }}
-                    title={`Go to Step ${i + 1}: ${c.title}`}
-                  />
-                ))}
-              </div>
-
-              <span className="text-[11px] font-mono font-bold text-zinc-400">
-                Step {activeStep + 1} of 4
-              </span>
-            </div>
-
-            <button
-              onClick={goNext}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl font-mono text-xs font-bold text-black transition-all hover:scale-105 active:scale-95 shadow-md cursor-pointer"
-              style={{ backgroundColor: current.accentColor }}
-            >
-              <span>Next (Step {((activeStep + 1) % 4) + 1})</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
       </div>
