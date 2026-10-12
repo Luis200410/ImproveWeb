@@ -196,6 +196,25 @@ Deno.serve(async (req: Request) => {
     }
 
     // ========================================================
+    // ACTION: fx_rates (public — no user data; ECB daily reference rates)
+    // The app converts foreign-currency transactions into the user's home currency.
+    // ========================================================
+    if (action === "fx_rates") {
+      const base = typeof body.base === "string" && /^[A-Z]{3}$/.test(body.base) ? body.base : "USD";
+      const fxRes = await fetch(`https://api.frankfurter.dev/v1/latest?base=${base}`);
+      if (!fxRes.ok) {
+        logAction(action, fxRes.status);
+        return jsonResponse(
+          { error_code: "FX_UNAVAILABLE", error_message: "Exchange rates are unavailable right now." },
+          502
+        );
+      }
+      const fx = await fxRes.json().catch(() => ({}));
+      logAction(action, 200);
+      return jsonResponse({ base: fx.base ?? base, date: fx.date ?? "", rates: fx.rates ?? {} });
+    }
+
+    // ========================================================
     // AUTHENTICATION CHECK FOR ALL OTHER ACTIONS
     // Requires Authorization: Bearer <session_token>
     // ========================================================
