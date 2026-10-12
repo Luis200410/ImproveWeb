@@ -65,54 +65,6 @@ Deno.serve(async (req: Request) => {
   // (including ones minted by `sandbox_session`) are rejected in production.
   const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
 
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
-  // Session tokens are bound to the Plaid environment, so sandbox sessions
-  // (including ones minted by `sandbox_session`) are rejected in production.
-  const SESSION_ISSUER = `improve-money:${PLAID_ENV}`;
-
   // Helper to call Plaid API
   async function callPlaid(endpoint: string, payload: Record<string, unknown>) {
     const url = `${PLAID_BASE_URL}${endpoint}`;
@@ -293,6 +245,8 @@ Deno.serve(async (req: Request) => {
       } else {
         // NEW ITEM MODE
         plaidPayload.products = ["transactions"];
+        // Debts (cards, student loans, mortgages) when the bank supports them — never blocks Link.
+        plaidPayload.optional_products = ["liabilities"];
         plaidPayload.transactions = { days_requested: 730 };
       }
 
@@ -475,6 +429,43 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({
         accounts: plaidRes.data?.accounts,
         item: plaidRes.data?.item,
+      });
+    }
+
+    // ========================================================
+    // ACTION: get_liabilities (debts: balances, APRs, minimums)
+    // ========================================================
+    if (action === "get_liabilities") {
+      const accessToken = typeof body.access_token === "string" ? body.access_token : "";
+      if (!accessToken) {
+        logAction(action, 400);
+        return jsonResponse(
+          { error_code: "MISSING_FIELD", error_message: "Field 'access_token' is required." },
+          400
+        );
+      }
+
+      const plaidRes = await callPlaid("/liabilities/get", {
+        access_token: accessToken,
+      });
+
+      if (!plaidRes.ok) {
+        logAction(action, plaidRes.status, plaidRes.data?.error_code);
+        return jsonResponse(
+          {
+            error_type: plaidRes.data?.error_type,
+            error_code: plaidRes.data?.error_code,
+            error_message: plaidRes.data?.error_message,
+            display_message: plaidRes.data?.display_message,
+          },
+          plaidRes.status
+        );
+      }
+
+      logAction(action, 200);
+      return jsonResponse({
+        accounts: plaidRes.data?.accounts,
+        liabilities: plaidRes.data?.liabilities,
       });
     }
 
