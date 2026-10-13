@@ -1,25 +1,47 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { 
   RotateCcw, 
-  CreditCard, 
-  Apple, 
-  HelpCircle, 
-  CheckCircle2, 
-  AlertCircle, 
   ExternalLink, 
-  ArrowLeft, 
-  FileText, 
-  ShieldCheck,
-  Clock,
-  Mail
+  Smartphone, 
+  Clock, 
+  Copy, 
+  Check, 
+  Mail, 
+  ShieldCheck, 
+  FileText,
+  ArrowRight
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function RefundPolicyPage() {
+  const [copied, setCopied] = useState(false);
+
+  const plainTextDraft = `Refunds
+
+Improve subscriptions are sold and billed by Apple through the App Store, so Apple handles all refunds. We can't issue refunds directly or see your payment details.
+
+To request a refund, go to reportaproblem.apple.com, sign in with your Apple ID, choose the Improve purchase and select "Request a refund". Apple usually replies within 48 hours.
+
+To stop future charges, cancel in iOS Settings ▸ [your name] ▸ Subscriptions at least 24 hours before your renewal date. You keep Improve until the end of the period you paid for.
+
+Questions about a charge? Email support@improve-club.com and we'll help however we can.`;
+
+  const handleCopyText = async () => {
+    try {
+      await navigator.clipboard.writeText(plainTextDraft);
+      setCopied(true);
+      toast.success("Refund policy text copied to clipboard");
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      toast.error("Failed to copy text");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-[var(--label)] selection:bg-white/20" style={{ fontFamily: "var(--font-ios)" }}>
+    <div className="min-h-screen text-[var(--label)] selection:bg-white/20" style={{ fontFamily: "var(--font-ios)" }}>
       {/* Background Glow */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-[8%] left-[20%] w-[50%] h-[40%] bg-amber-500/10 rounded-full blur-[150px]" />
@@ -29,192 +51,129 @@ export default function RefundPolicyPage() {
       <div className="max-w-4xl mx-auto px-6 pt-32 pb-24 space-y-12">
         {/* Header */}
         <div className="text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs font-mono uppercase tracking-wider text-amber-400">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs uppercase tracking-wider text-amber-400">
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Fair & Transparent Billing</span>
+            <span>Apple App Store Billing</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
-            Refund & <span className="text-white/40">Cancellation</span>
+            Refunds
           </h1>
 
           <p className="text-sm md:text-base text-[var(--label-2)] leading-relaxed max-w-2xl mx-auto">
-            Clear, honest terms regarding subscriptions, cancellations, and refund eligibility across the IMPROVE ecosystem.
+            Improve subscriptions are sold and billed by Apple through the App Store, so Apple handles all refunds. We can&apos;t issue refunds directly or see your payment details.
           </p>
 
-          <div className="text-xs font-mono text-[var(--label-3)]">
-            Effective Date: September 30, 2026 • Version 2.1
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2 text-xs text-[var(--label-3)]">
+            <span>Effective: October 10, 2026</span>
+            <span>•</span>
+            <a href="mailto:support@improve-club.com" className="text-white underline hover:text-amber-400 transition-colors">
+              support@improve-club.com
+            </a>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={handleCopyText}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-xs text-white transition-all active:scale-95 cursor-pointer"
+            >
+              {copied ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? "Copied Plain Text" : "Copy Plain Text"}</span>
+            </button>
           </div>
         </div>
 
-        {/* Quick Summary Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
-              <Apple className="w-4 h-4" />
+        {/* Core Steps Cards */}
+        <div className="space-y-6">
+          {/* Step 1: Requesting a refund */}
+          <div className="access-glass p-8 space-y-4 border border-blue-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                <ExternalLink className="w-4 h-4" />
+              </div>
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                To request a refund
+              </h2>
             </div>
-            <h3 className="font-semibold text-white text-sm">App Store In-App Purchases</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              Managed and refunded directly by Apple per Apple Media Services Terms.
+            <p className="text-sm text-[var(--label-2)] leading-relaxed">
+              Go to{" "}
+              <a 
+                href="https://reportaproblem.apple.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-white font-semibold underline hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+              >
+                <span>reportaproblem.apple.com</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              , sign in with your Apple ID, choose the Improve purchase and select <strong className="text-white">&ldquo;Request a refund&rdquo;</strong>.
             </p>
+            <div className="flex items-center gap-2 text-xs text-blue-400 font-medium">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Apple usually replies within 48 hours.</span>
+            </div>
           </div>
 
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2">
-              <Clock className="w-4 h-4" />
+          {/* Step 2: Stop future charges */}
+          <div className="access-glass p-8 space-y-4 border border-amber-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <Smartphone className="w-4 h-4" />
+              </div>
+              <h2 className="text-xl font-bold text-white tracking-tight">
+                To stop future charges
+              </h2>
             </div>
-            <h3 className="font-semibold text-white text-sm">14-Day Web Guarantee</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              Direct website purchases (Stripe) qualify for a full 14-day money-back guarantee.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] space-y-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2">
-              <RotateCcw className="w-4 h-4" />
+            <div className="space-y-3 text-sm text-[var(--label-2)] leading-relaxed">
+              <p>
+                Cancel in <strong className="text-white">iOS Settings ▸ [your name] ▸ Subscriptions</strong> at least 24 hours before your renewal date.
+              </p>
+              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-xs text-white/80">
+                You keep Improve until the end of the period you paid for. Deleting the app does not cancel an active App Store subscription.
+              </div>
             </div>
-            <h3 className="font-semibold text-white text-sm">Cancel Anytime</h3>
-            <p className="text-xs text-[var(--label-2)] leading-relaxed">
-              No locked contracts. Cancel anytime via your Apple ID Settings with a single tap.
-            </p>
           </div>
         </div>
 
-        {/* Sections */}
-        <div className="space-y-8 text-sm text-[var(--label-2)] leading-relaxed">
-          {/* Section 1: iOS Purchases */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-6 bg-blue-500 rounded-full" />
-              <h2 className="text-2xl font-bold text-white tracking-tight">
-                1. iOS In-App Purchases (App Store)
-              </h2>
+        {/* Quick Links to Terms and Privacy */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Link
+            href="/privacy"
+            className="access-glass p-5 flex items-center justify-between group hover:border-white/20 transition-all"
+          >
+            <div>
+              <div className="text-xs text-[var(--label-3)] uppercase tracking-wider">Privacy Standards</div>
+              <div className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">Privacy Policy</div>
             </div>
-            <div className="space-y-4">
-              <p>
-                Subscriptions or one-time purchases initiated through any of our iOS applications (including <strong className="text-white">IMPROVE Money</strong>, <strong className="text-white">IMPROVE Habits</strong>, or <strong className="text-white">IMPROVE Second Brain</strong>) are processed directly by Apple via StoreKit.
-              </p>
-              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-200 text-xs leading-relaxed">
-                <strong>IMPORTANT APPLE POLICY:</strong> Third-party developers (including IMPROVE) do not have technical or legal access to your payment card details or the authority to issue refunds directly on Apple&apos;s behalf. All App Store refund decisions are handled exclusively by Apple.
-              </div>
-            </div>
+            <ArrowRight className="w-4 h-4 text-white/40 group-hover:translate-x-1 transition-transform" />
+          </Link>
 
-            <div className="pt-2 space-y-3">
-              <h3 className="font-semibold text-white text-sm">
-                How to Request an App Store Refund from Apple:
-              </h3>
-              <ol className="list-decimal pl-5 space-y-2 text-xs text-[var(--label-2)]">
-                <li>
-                  Go to Apple&apos;s official refund portal:{" "}
-                  <a
-                    href="https://reportaproblem.apple.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white underline hover:text-blue-400 font-mono inline-flex items-center gap-1"
-                  >
-                    <span>reportaproblem.apple.com</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </li>
-                <li>Sign in with the <strong className="text-white">Apple ID</strong> used to make the purchase.</li>
-                <li>Under <em>&ldquo;What can we help you with?&rdquo;</em>, select <strong className="text-white">&ldquo;Request a refund&rdquo;</strong>.</li>
-                <li>Choose the reason that best describes your request, select <strong className="text-white">IMPROVE</strong> from your purchased items, and submit.</li>
-              </ol>
-              <p className="text-xs text-[var(--label-3)]">
-                Apple generally reviews and provides an outcome within 24 to 48 hours.
-              </p>
+          <Link
+            href="/terms"
+            className="access-glass p-5 flex items-center justify-between group hover:border-white/20 transition-all"
+          >
+            <div>
+              <div className="text-xs text-[var(--label-3)] uppercase tracking-wider">Service Agreement</div>
+              <div className="text-sm font-bold text-white group-hover:text-amber-400 transition-colors">Terms of Use</div>
             </div>
-          </div>
-
-          {/* Section 2: Direct Website Purchases */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-6 bg-emerald-500 rounded-full" />
-              <h2 className="text-2xl font-bold text-white tracking-tight">
-                2. Direct Web Purchases (14-Day Guarantee)
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <p>
-                If you purchased an IMPROVE membership, license, or lifetime access pass directly on our website (<strong className="text-white">improve-club.com</strong>) processed via Stripe:
-              </p>
-              <div className="border border-white/5 p-4 rounded-xl bg-white/[0.01] space-y-2">
-                <div className="font-semibold text-white flex items-center gap-2 text-xs">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>14-Day Unconditional Money-Back Guarantee</span>
-                </div>
-                <p className="text-xs text-[var(--label-2)]">
-                  If you are not completely satisfied with your web membership for any reason within 14 days of your initial purchase date, email us at{" "}
-                  <a href="mailto:billing@improve-club.com" className="text-white underline font-mono">
-                    billing@improve-club.com
-                  </a>{" "}
-                  with your receipt or purchase email address. We will issue a 100% full refund back to your original payment method, no questions asked.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Subscription Auto-Renewal & Cancellation */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-6 bg-amber-500 rounded-full" />
-              <h2 className="text-2xl font-bold text-white tracking-tight">
-                3. Auto-Renewal & How to Cancel
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <p>
-                Recurring subscriptions renew automatically at the end of each billing cycle (monthly or annually) unless canceled at least <strong className="text-white">24 hours</strong> before the renewal date.
-              </p>
-              
-              <div className="p-4 rounded-xl bg-white/[0.01] border border-white/5 space-y-2">
-                <h4 className="font-semibold text-white text-xs">How to Cancel on iPhone or iPad:</h4>
-                <ol className="list-decimal pl-5 space-y-1.5 text-xs text-[var(--label-2)]">
-                  <li>Open the <strong className="text-white">Settings</strong> app on your device.</li>
-                  <li>Tap your <strong className="text-white">Apple ID Name</strong> at the top.</li>
-                  <li>Tap <strong className="text-white">Subscriptions</strong>.</li>
-                  <li>Find and tap <strong className="text-white">IMPROVE</strong>.</li>
-                  <li>Tap <strong className="text-rose-400">Cancel Subscription</strong>.</li>
-                </ol>
-              </div>
-
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs leading-relaxed space-y-1">
-                <strong>IMPORTANT NOTE ON DELETING THE APP:</strong>
-                <p>
-                  In accordance with Apple App Store rules, deleting the app from your iPhone or deleting your local account <strong>does NOT automatically cancel</strong> your active Apple subscription. You must cancel the subscription in your Apple ID Settings to stop future renewals.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: What Happens When You Cancel */}
-          <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="w-2 h-6 bg-purple-500 rounded-full" />
-              <h2 className="text-2xl font-bold text-white tracking-tight">
-                4. Access Following Cancellation
-              </h2>
-            </div>
-            <p>
-              When you cancel a subscription, your premium features remain fully unlocked until the conclusion of your current paid billing period. After this date, your subscription will not renew, and your account will automatically transition to the basic tier without charging your card.
-            </p>
-          </div>
+            <ArrowRight className="w-4 h-4 text-white/40 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
 
-        {/* Contact Footer */}
-        <div className="p-8 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
+        {/* Contact Footer Card */}
+        <div className="access-glass p-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-1 text-center md:text-left">
-            <h4 className="text-base font-bold text-white">Need assistance with a purchase or billing question?</h4>
+            <h4 className="text-base font-bold text-white">Questions about a charge?</h4>
             <p className="text-xs text-[var(--label-2)]">
-              Our support team answers all billing inquiries within 24 hours.
+              Email us and we&apos;ll help however we can.
             </p>
           </div>
           <a
-            href="mailto:billing@improve-club.com"
-            className="px-5 py-2.5 rounded-xl border border-white/20 bg-white hover:bg-white/90 text-black text-xs font-bold transition-all shadow-md flex items-center gap-2"
+            href="mailto:support@improve-club.com"
+            className="px-5 py-2.5 rounded-xl border border-white/20 bg-white hover:bg-white/90 text-black text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
           >
             <Mail className="w-3.5 h-3.5" />
-            <span>Contact Billing Support</span>
+            <span>support@improve-club.com</span>
           </a>
         </div>
       </div>

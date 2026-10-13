@@ -403,73 +403,65 @@ const appItemVariants: Variants = {
  */
 function ImproveBrandShowcase({ isSignIn }: { isSignIn: boolean }) {
   return (
-    <div className="relative h-full w-full overflow-hidden flex flex-col items-center justify-center p-8 lg:p-12 select-none bg-transparent">
+    <div className="relative w-full h-full overflow-hidden flex flex-col items-center justify-between select-none bg-transparent py-2">
+      {/* 1. Animated Equalizer Logo */}
+      <div className="relative w-36 h-36 sm:w-40 sm:h-40 md:w-44 md:h-44 lg:w-48 lg:h-48 flex items-center justify-center select-none shrink-0">
+        <AnimatedLogoSvg
+          triggerKey={isSignIn ? "auth-signin" : "auth-signup"}
+          duration={1.2}
+          stagger={0.35}
+          startDelay={0.2}
+          startOffset={-650}
+          viewBox="190 60 644 904"
+          interactive={true}
+          className="w-full h-full cursor-pointer hover:scale-105 transition-transform duration-500"
+        />
+      </div>
 
-      {/* CENTER STAGE:
-          1. EXACT HEADER ANIMATION FOR IMPROVE LOGO (NO PINK SHADOW)
-          2. THE 7 APPS IN A SINGLE ROW BY THEMSELVES (NO CONTAINER BOXES, NO DUPLICATE LABELS) COMING IN ONE BY ONE */}
-      <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center space-y-12 my-auto py-6 px-4">
-        {/* Main Header Animated Logo: Free-floating (NO PINK SHADOW) */}
-        <div className="relative flex flex-col items-center">
-          {/* Exact Header Animation: AnimatedLogoSvg with cascading bars */}
-          <div className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 lg:w-72 lg:h-72 flex items-center justify-center select-none">
-            <AnimatedLogoSvg
-              triggerKey={isSignIn ? "auth-signin" : "auth-signup"}
-              duration={1.2}
-              stagger={0.35}
-              startDelay={0.2}
-              startOffset={-650}
-              viewBox="190 60 644 904"
-              interactive={true}
-              className="w-full h-full cursor-pointer"
-            />
-          </div>
+      {/* 2. Heading & Subtitle */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.85, duration: 0.6 }}
+        className="text-center space-y-1.5 shrink-0 my-auto"
+      >
+        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-[0.22em] text-white">
+          IMPROVE
+        </h2>
+        <p className="text-[10px] sm:text-[11px] lg:text-xs uppercase tracking-[0.2em] text-zinc-400 font-medium">
+          7 Interconnected Pillars · Sovereign Operating System
+        </p>
+      </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.85, duration: 0.6 }}
-            className="mt-6 text-center space-y-1.5"
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-[0.2em] text-white">
-              IMPROVE
-            </h2>
-            <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-zinc-400 font-medium">
-              7 Interconnected Pillars · Sovereign Operating System
-            </p>
-          </motion.div>
-        </div>
-
-        {/* 7 App Logos Coming In ONE BY ONE — All in a Single Row, Apps by Themselves (Big & Readable) */}
-        <div className="w-full flex flex-col items-center">
-          <motion.div
-            key={isSignIn ? "apps-in-signin" : "apps-in-signup"}
-            variants={appContainerVariants}
-            initial="hidden"
-            animate="visible"
-            className="flex flex-row flex-nowrap items-center justify-center gap-1 sm:gap-1.5 md:gap-2 lg:gap-2.5 xl:gap-3 w-full max-w-full"
-          >
-            {APPS_ECOSYSTEM.map((app) => (
-              <motion.div
-                key={app.id}
-                variants={appItemVariants}
-                whileHover={{ y: -8, scale: 1.2 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative flex items-center justify-center transition-all cursor-pointer select-none shrink-0"
-                title={app.name}
-              >
-                {/* Pure App Vector Logo — Substantially Bigger, Floating Freely */}
-                <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                  <img
-                    src={app.logo}
-                    alt={`${app.name} Logo`}
-                    className="w-full h-full object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] mix-blend-screen"
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
+      {/* 3. 7 App Logos Row */}
+      <div className="w-full flex flex-col items-center shrink-0 pt-1">
+        <motion.div
+          key={isSignIn ? "apps-in-signin" : "apps-in-signup"}
+          variants={appContainerVariants}
+          initial="hidden"
+          animate="visible"
+          className="flex flex-row flex-nowrap items-center justify-center gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 w-full max-w-full"
+        >
+          {APPS_ECOSYSTEM.map((app) => (
+            <motion.div
+              key={app.id}
+              variants={appItemVariants}
+              whileHover={{ y: -6, scale: 1.15 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative flex items-center justify-center transition-all cursor-pointer select-none shrink-0"
+              title={app.name}
+            >
+              {/* Pure App Vector Logo */}
+              <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                <img
+                  src={app.logo}
+                  alt={`${app.name} Logo`}
+                  className="w-full h-full object-contain filter drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] mix-blend-screen"
+                />
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </div>
   );
@@ -508,7 +500,7 @@ export function AuthUI({
   };
 
   return (
-    <div className="relative w-full min-h-screen text-white md:grid md:grid-cols-2 overflow-hidden bg-transparent">
+    <div className="relative w-full min-h-screen text-white flex items-center justify-center overflow-hidden bg-transparent p-4 sm:p-6 md:p-8 lg:p-12">
       <style>{`
         input[type="password"]::-ms-reveal,
         input[type="password"]::-ms-clear {
@@ -516,17 +508,17 @@ export function AuthUI({
         }
       `}</style>
 
-      {/* Left Column: Interactive Form inside Transparent Glass Container */}
-      <div className="relative z-10 flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12">
-        {/* Access-style Darkened Translucent Glass Container */}
-        <div className="access-glass w-full max-w-[420px] p-6 sm:p-8 md:p-9">
+      {/* Synchronized Twin Containers: Same height, matching geometry, perfectly uniform */}
+      <div className="relative z-10 w-full max-w-5xl xl:max-w-6xl flex flex-col md:flex-row items-stretch justify-center gap-6 lg:gap-8 my-auto">
+        {/* Left Column: Interactive Form inside Access Glass Container */}
+        <div className="access-glass w-full md:w-[410px] lg:w-[430px] shrink-0 p-6 sm:p-8 md:p-9 flex flex-col justify-center">
           <AuthFormContainer isSignIn={isSignIn} onToggle={toggleForm} errorMessage={errorMessage} />
         </div>
-      </div>
 
-      {/* Right Column: Custom Brand Visual Showcase */}
-      <div className="hidden md:block relative z-10 border-l border-white/[0.08]">
-        <ImproveBrandShowcase isSignIn={isSignIn} />
+        {/* Right Column: Custom Brand Visual Showcase inside Matching Access Glass Container with Exact Same Height */}
+        <div className="hidden md:flex access-glass flex-1 p-6 sm:p-8 md:p-10 flex-col items-center justify-center overflow-hidden">
+          <ImproveBrandShowcase isSignIn={isSignIn} />
+        </div>
       </div>
     </div>
   );

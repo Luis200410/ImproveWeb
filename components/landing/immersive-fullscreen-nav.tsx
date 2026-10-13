@@ -624,7 +624,6 @@ const NAV_CONTENT: Partial<CustomNavbarProps> = {
   links: [
     { label: "IMPROVE", href: "/" },
     { label: "LEARN", href: "/blog" },
-    { label: "PRIVACY", href: "/privacy" },
     { label: "ACCESS", href: "/login" },
   ],
   images: ["/Logo option 3.svg"],

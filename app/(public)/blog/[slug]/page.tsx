@@ -1,235 +1,317 @@
-'use client'
+"use client";
 
-import { useParams, useRouter } from 'next/navigation'
-import { BLOG_POSTS } from '@/lib/blog'
-import { Bebas_Neue, Playfair_Display, Inter } from '@/lib/font-shim'
-import { motion, useScroll, useSpring, useTransform } from 'framer-motion'
-import Link from 'next/link'
-import Image from 'next/image'
-import { ArrowLeft, Share2, Printer, MapPin, Sparkles, MoveRight } from 'lucide-react'
-import { useRef } from 'react'
-
-const bebas = Bebas_Neue({ subsets: ['latin'] })
-const playfair = Playfair_Display({ subsets: ['latin'] })
-const inter = Inter({ subsets: ['latin'] })
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { 
+  ArrowLeft, 
+  Share2, 
+  Printer, 
+  Sparkles, 
+  MoveRight, 
+  ArrowUp, 
+  Layers, 
+  Eye, 
+  Clock, 
+  User, 
+  Calendar 
+} from "lucide-react";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { toast } from "sonner";
+import { BLOG_POSTS, BlogPost, getAllMergedPosts, findMergedPost } from "@/lib/blog";
+import { CircularGallery, GalleryItem } from "@/components/blog/circular-gallery";
 
 export default function BlogPostPage() {
-    const params = useParams()
-    const router = useRouter()
-    const slug = params.slug as string
-    const post = BLOG_POSTS.find((p) => p.slug === slug)
+  const params = useParams();
+  const router = useRouter();
+  const slug = params.slug as string;
 
-    const heroRef = useRef(null)
-    const { scrollYProgress } = useScroll({
-        target: heroRef,
-        offset: ["start start", "end start"]
-    })
+  const [post, setPost] = useState<BlogPost | null>(null);
+  const [activeCardId, setActiveCardId] = useState<string | null>(null);
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(BLOG_POSTS);
 
-    const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2])
-    const opacity = useTransform(scrollYProgress, [0, 1], [1, 0])
-    const y = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
-    const { scrollYProgress: contentProgress } = useScroll()
-    const scaleX = useSpring(contentProgress, {
-        stiffness: 100,
-        damping: 30,
-        restDelta: 0.001
-    })
-
-    if (!post) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-black text-white px-6">
-                <div className="text-center">
-                    <h1 className={`${bebas.className} text-6xl mb-8`}>Article Not Found</h1>
-                    <Link href="/blog" className="text-white/40 hover:text-white underline underline-offset-8 transition-colors">
-                        Return to Blog
-                    </Link>
-                </div>
-            </div>
-        )
+  useEffect(() => {
+    // Attempt to load from merged store (API + localStorage + built-ins)
+    const found = findMergedPost(slug) || BLOG_POSTS.find((p) => p.slug === slug);
+    if (found) {
+      setPost(found);
+      if (found.cards && found.cards.length > 0) {
+        setActiveCardId(found.cards[0].id);
+      }
     }
 
-    const nextPost = BLOG_POSTS[(BLOG_POSTS.indexOf(post) + 1) % BLOG_POSTS.length]
-    
-    const postJsonLd = {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": post.title,
-        "description": post.excerpt,
-        "image": post.image,
-        "datePublished": post.date,
-        "author": {
-            "@type": "Person",
-            "name": post.author
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "IMPROVE",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "https://improve-club.com/og-image.png"
-            }
-        },
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": `https://improve-club.com/blog/${post.slug}`
+    // Fetch latest from API
+    fetch("/api/blog/posts")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.posts && Array.isArray(data.posts)) {
+          setAllPosts(data.posts);
+          const apiPost = data.posts.find((p: BlogPost) => p.slug === slug);
+          if (apiPost) {
+            setPost(apiPost);
+          }
         }
-    };
+      })
+      .catch(() => {
+        // Fallback to static
+      });
+  }, [slug]);
 
+  if (!post) {
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black pb-32">
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(postJsonLd) }}
-            />
-            {/* Scroll Progress Bar */}
-            <motion.div
-                className="fixed top-0 left-0 right-0 h-[2px] bg-white z-[110] origin-left"
-                style={{ scaleX }}
-            />
-
-            {/* Navigation Overlay */}
-            <div className="fixed top-24 left-8 z-[100] hidden lg:block">
-                <button 
-                    onClick={() => router.back()}
-                    className="group flex flex-col items-center gap-4 text-white/20 hover:text-white transition-all duration-300"
-                >
-                    <div className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center group-hover:border-white/40 group-hover:-translate-y-1 transition-all duration-300">
-                        <ArrowLeft className="w-4 h-4" />
-                    </div>
-                    <span className="text-[10px] uppercase tracking-[0.3em] [writing-mode:vertical-rl] [text-orientation:mixed]">BACK</span>
-                </button>
-            </div>
-
-            {/* Immersive Hero Header */}
-            <section ref={heroRef} className="relative h-screen w-full flex items-end justify-start overflow-hidden">
-                <motion.div style={{ scale }} className="absolute inset-0">
-                    <Image
-                        src={post.image}
-                        alt={post.title}
-                        fill
-                        className="object-cover opacity-60"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-transparent" />
-                </motion.div>
-                
-                <div className="relative z-10 max-w-7xl mx-auto px-12 pb-32 w-full">
-                    <motion.div
-                        style={{ opacity, y }}
-                        className="space-y-12 max-w-5xl"
-                    >
-                        <div className="flex items-center gap-6">
-                            <motion.div 
-                                initial={{ width: 0 }} 
-                                animate={{ width: 60 }} 
-                                transition={{ delay: 0.5, duration: 1 }} 
-                                className="h-px bg-white/40" 
-                            />
-                            <div className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.6em] text-white/50">
-                                <Sparkles className="w-3 h-3" />
-                                <span>{post.category} Report</span>
-                                <div className="w-1 h-1 bg-white/20 rounded-full" />
-                                <span>{post.date}</span>
-                            </div>
-                        </div>
-
-                        <h1 className={`${playfair.className} text-6xl md:text-[10vw] font-black italic tracking-tighter text-white uppercase italic leading-[0.8] mb-12`}>
-                            {post.title}
-                        </h1>
-
-                        <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-                            <p className="text-xl md:text-2xl text-white/60 max-w-2xl font-light leading-relaxed italic border-l border-white/20 pl-8">
-                                "{post.excerpt}"
-                            </p>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Decorative Scroll Hint */}
-                <div className="absolute bottom-12 right-12 flex flex-col items-center gap-12 opacity-40">
-                    <span className="text-[10px] uppercase tracking-[0.5em] [writing-mode:vertical-rl] [text-orientation:mixed]">SCROLL TO READ</span>
-                    <div className="h-24 w-px bg-gradient-to-b from-white to-transparent" />
-                </div>
-            </section>
-
-            {/* Post Layout */}
-            <div className="max-w-7xl mx-auto px-6 pt-32 lg:pt-48">
-                <div className="grid lg:grid-cols-[1fr_300px] gap-20 xl:gap-40">
-                    
-                    {/* Sidebar left (Desktop) */}
-                    <aside className="hidden lg:block space-y-16">
-                        <section className="space-y-6 sticky top-40">
-                            <h4 className="text-[10px] uppercase tracking-[0.4em] text-white/30 border-b border-white/10 pb-4">Classification</h4>
-                            <div className="space-y-2">
-                                <p className={`${bebas.className} text-2xl`}>{post.author}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">The IMPROVE Protocol</p>
-                            </div>
-
-                            <div className="space-y-2">
-                                <h4 className="text-[10px] uppercase tracking-[0.4em] text-white/30 border-b border-white/10 pb-4">Data Stream</h4>
-                                <p className={`${bebas.className} text-2xl`}>{post.readingTime}</p>
-                                <p className="text-[10px] uppercase tracking-widest text-white/20 font-black">Optimization Logic</p>
-                            </div>
-
-                            <section className="space-y-4 pt-12">
-                                <h4 className="text-[10px] uppercase tracking-[0.4em] text-white/30 border-b border-white/10 pb-4">Distribution</h4>
-                                <div className="flex gap-6">
-                                    <Share2 className="w-5 h-5 text-white/20 hover:text-white cursor-pointer transition-colors" />
-                                    <Printer className="w-5 h-5 text-white/20 hover:text-white cursor-pointer transition-colors" />
-                                    <MapPin className="w-5 h-5 text-white/20 hover:text-white cursor-pointer transition-colors" />
-                                </div>
-                            </section>
-                        </section>
-                    </aside>
-
-                    {/* Main Content */}
-                    <article className="prose prose-invert prose-lg max-w-none 
-                        prose-p:text-white/70 prose-p:text-xl prose-p:leading-relaxed prose-p:mb-12
-                        prose-headings:font-bold prose-headings:tracking-tighter prose-headings:uppercase prose-headings:italic
-                        prose-h2:text-4xl prose-h2:mb-8 prose-h2:mt-24
-                        prose-h3:text-2xl prose-h3:mb-6
-                        prose-blockquote:border-l-2 prose-blockquote:border-white/20 prose-blockquote:italic prose-blockquote:bg-white/5 prose-blockquote:py-8 prose-blockquote:px-12 prose-blockquote:text-white
-                        prose-li:text-white/60 prose-li:mb-4
-                        prose-strong:text-white prose-strong:font-black
-                        selection:bg-white selection:text-black
-                        [&_h2]:tracking-[-0.05em]">
-                        
-                        <div className="whitespace-pre-wrap font-light tracking-wide text-white/80 leading-relaxed">
-                            {post.content}
-                        </div>
-                    </article>
-                </div>
-            </div>
-
-            {/* Immersive Footer / Next Link */}
-            <section className="mt-64 relative min-h-[60vh] flex items-center justify-center overflow-hidden border-t border-white/10">
-                <div className="absolute inset-0 bg-white/[0.02] -z-10" />
-                <div className="max-w-5xl mx-auto px-6 text-center space-y-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="space-y-4"
-                    >
-                        <h4 className={`${bebas.className} text-xl uppercase tracking-[0.8em] text-white/20`}>CONTINUE ANALYSIS</h4>
-                        <Link href={`/blog/${nextPost.slug}`} className="group block py-12">
-                            <span className={`${playfair.className} text-6xl md:text-8xl font-black italic tracking-tighter uppercase inline-block group-hover:scale-105 transition-transform duration-700`}>
-                                {nextPost.title}
-                            </span>
-                            <div className="mt-8 flex justify-center items-center gap-4 text-white/40 group-hover:text-white transition-colors duration-500">
-                                <span className={`${bebas.className} text-lg tracking-[0.4em]`}>NEXT ARTICLE</span>
-                                <MoveRight className="w-5 h-5 group-hover:translate-x-4 transition-transform duration-500" />
-                            </div>
-                        </Link>
-                    </motion.div>
-                </div>
-                
-                {/* Visual Anchor */}
-                <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            </section>
-
+      <div className="min-h-screen flex items-center justify-center bg-black text-white px-6" style={{ fontFamily: "var(--font-ios)" }}>
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-extrabold">Article Not Found</h1>
+          <p className="text-sm text-zinc-400">The requested article could not be located.</p>
+          <div className="pt-4">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 bg-white text-black text-xs font-bold hover:bg-white/90 transition-all"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Blog Hub</span>
+            </Link>
+          </div>
         </div>
-    )
+      </div>
+    );
+  }
+
+  const nextPost = allPosts[(allPosts.indexOf(post) + 1) % allPosts.length] || BLOG_POSTS[0];
+
+  // Convert post.cards into CircularGallery items
+  const galleryItems: GalleryItem[] = (post.cards || []).map((card, idx) => ({
+    id: card.id,
+    common: card.title,
+    binomial: card.subtitle || `Pillar ${idx + 1}`,
+    photo: {
+      url: card.imageUrl,
+      text: card.imageAlt || card.title,
+      by: card.credit || "IMPROVE Research",
+    },
+    content: card.content,
+  }));
+
+  const handleShare = async () => {
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share({
+          title: post.title,
+          text: post.excerpt,
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch {
+      // Ignored
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <div className="min-h-screen text-white selection:bg-white selection:text-black pb-32" style={{ fontFamily: "var(--font-ios)" }}>
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-white z-[110] origin-left shadow-[0_0_12px_rgba(255,255,255,0.7)]"
+        style={{ scaleX }}
+      />
+
+      {/* Floating Back Button (Desktop) */}
+      <div className="fixed top-28 left-8 z-[100] hidden xl:block">
+        <button
+          onClick={() => router.back()}
+          className="group flex flex-col items-center gap-3 text-white/30 hover:text-white transition-all cursor-pointer"
+        >
+          <div className="w-10 h-10 rounded-full border border-white/10 bg-black/60 backdrop-blur-md flex items-center justify-center group-hover:border-white/40 group-hover:-translate-y-1 transition-all">
+            <ArrowLeft className="w-4 h-4" />
+          </div>
+          <span className="text-[10px] uppercase tracking-[0.3em] [writing-mode:vertical-rl] [text-orientation:mixed] font-semibold">
+            BACK
+          </span>
+        </button>
+      </div>
+
+      {/* Article Header Container */}
+      <header className="relative pt-36 pb-12 px-6 max-w-5xl mx-auto text-center space-y-6">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-xs uppercase tracking-wider text-emerald-400">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>{post.category} Focus</span>
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-white max-w-4xl mx-auto">
+          {post.title}
+        </h1>
+
+        <p className="text-base sm:text-lg md:text-xl text-[var(--label-2)] max-w-2xl mx-auto leading-relaxed font-light">
+          {post.excerpt}
+        </p>
+
+        {/* Metadata Row */}
+        <div className="flex flex-wrap items-center justify-center gap-6 pt-4 text-xs text-[var(--label-3)]">
+          <span className="flex items-center gap-1.5">
+            <User className="w-3.5 h-3.5" />
+            <strong className="text-white">{post.author}</strong>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" />
+            <span>{post.date}</span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{post.readingTime}</span>
+          </span>
+          <span>•</span>
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1 text-white hover:text-emerald-400 transition-colors cursor-pointer"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>Share</span>
+          </button>
+        </div>
+      </header>
+
+      {/* TOP 3D CIRCULAR GALLERY (IF POST HAS CARDS) */}
+      {galleryItems.length > 0 && (
+        <section className="relative w-full overflow-hidden my-4">
+          <div className="text-center space-y-2 mb-2">
+            <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-white/50 font-semibold">
+              <Layers className="w-3.5 h-3.5 text-blue-400" />
+              <span>Interactive 3D Visual Gallery • {galleryItems.length} Key Perspectives</span>
+            </div>
+            <p className="text-xs text-[var(--label-3)]">
+              Drag to spin or click any card to focus and jump to its chapter below.
+            </p>
+          </div>
+
+          {/* 3D Rotating Cylinder */}
+          <CircularGallery
+            items={galleryItems}
+            radius={post.galleryRadius || 600}
+            autoRotateSpeed={0.015}
+            activeId={activeCardId || undefined}
+            onItemSelect={(item) => {
+              setActiveCardId(item.id || null);
+              if (item.id) {
+                const el = document.getElementById(`section-${item.id}`);
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }
+            }}
+          />
+        </section>
+      )}
+
+      {/* WRITTEN CONTENT SECTIONS BELOW THE ANIMATION */}
+      <main className="max-w-4xl mx-auto px-6 pt-12 space-y-12">
+        {/* If post has cards, render each card's dedicated written story */}
+        {post.cards && post.cards.length > 0 ? (
+          <div className="space-y-12">
+            {post.cards.map((card, idx) => (
+              <article
+                key={card.id || idx}
+                id={`section-${card.id}`}
+                className="access-glass p-8 sm:p-12 md:p-14 space-y-6 scroll-mt-28 relative overflow-hidden group transition-all duration-300"
+              >
+                {/* Header Badge */}
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-white/10 text-white border border-white/15">
+                      Card {String(idx + 1).padStart(2, "0")} / {String(post.cards?.length).padStart(2, "0")}
+                    </span>
+                    {card.subtitle && (
+                      <span className="text-xs uppercase tracking-widest text-zinc-400 font-medium">
+                        {card.subtitle}
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={scrollToTop}
+                    className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-white/40 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <span>To 3D Gallery</span>
+                    <ArrowUp className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* Card Title */}
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                  {card.title}
+                </h2>
+
+                {/* Media preview thumbnail banner */}
+                {card.imageUrl && (
+                  <div className="relative aspect-[21/9] w-full rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+                    <img
+                      src={card.imageUrl}
+                      alt={card.imageAlt || card.title}
+                      className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-102 transition-all duration-700"
+                    />
+                    {card.credit && (
+                      <span className="absolute bottom-3 right-4 px-2.5 py-1 rounded-md text-[10px] bg-black/70 backdrop-blur-md text-white/60">
+                        {card.credit}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* Written text content */}
+                <div className="text-sm sm:text-base md:text-lg text-[var(--label-2)] leading-relaxed space-y-4 whitespace-pre-wrap font-light">
+                  {card.content}
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          /* Fallback Classic Narrative Content */
+          <article className="access-glass p-8 sm:p-12 md:p-14 space-y-6">
+            <div className="text-base sm:text-lg text-[var(--label-2)] leading-relaxed whitespace-pre-wrap font-light space-y-4">
+              {post.content}
+            </div>
+          </article>
+        )}
+
+        {/* Next Article Card */}
+        <div className="pt-16">
+          <Link
+            href={`/blog/${nextPost.slug}`}
+            className="access-glass p-8 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 group hover:border-white/30 transition-all block"
+          >
+            <div className="space-y-2 text-center sm:text-left">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-white/40 font-bold">
+                CONTINUE ANALYSIS • NEXT ARTICLE
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-white group-hover:text-emerald-400 transition-colors">
+                {nextPost.title}
+              </h3>
+              <p className="text-xs text-[var(--label-2)] line-clamp-1">
+                {nextPost.excerpt}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-white group-hover:translate-x-1.5 transition-transform shrink-0">
+              <span>Read Next</span>
+              <MoveRight className="w-4 h-4" />
+            </div>
+          </Link>
+        </div>
+      </main>
+    </div>
+  );
 }
