@@ -108,80 +108,156 @@ You stop context-switching between twelve different $15/month subscriptions. You
         ]
     },
     {
-        slug: "the-manifesto-complete-integrity",
-        title: "The Manifesto: Complete Integrity",
-        excerpt: "In an age of distraction, we stand for discipline. In an era of mediocrity, we champion Complete Integrity.",
-        date: "2024-03-16",
-        author: "IMPROVE Team",
+        slug: "the-psychology-of-deep-work",
+        title: "The Architecture of Unbroken Focus",
+        excerpt: "Attention is your highest-leverage asset. How biological rhythms, dopamine fasting, and hardware shields build an impenetrable deep work fortress.",
+        date: "2026-10-12",
+        author: "IMPROVE Research",
         category: "Mind",
         image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?q=80&w=2000&auto=format&fit=crop",
         readingTime: "5 min",
-        content: `
-# The Manifesto: Complete Integrity
+        galleryRadius: 620,
+        cards: [
+            {
+                id: "deep-work-card-1",
+                title: "01 · Cognitive Bandwidth",
+                subtitle: "Neurobiology • Attention Economy",
+                imageUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Cognitive Bandwidth",
+                credit: "Unsplash / Neural Bandwidth",
+                content: `### The High Cost of Attention Switching
 
-## The Crisis of Modern Life
-We live in the most prosperous era in human history, yet we are drowning in anxiety, distraction, and unfulfilled potential. The problem is not a lack of information—it's a lack of **systems**.
+Every notification leaves behind an attention residue. Studies show it takes up to 23 minutes to regain deep focus after a single 10-second distraction.
 
-> "The mass of men lead lives of quiet desperation." — Henry David Thoreau
+Protecting cognitive bandwidth means treating your working memory like high-speed L1 cache: reserved exclusively for high-leverage creative execution.`
+            },
+            {
+                id: "deep-work-card-2",
+                title: "02 · The Dopamine Reset",
+                subtitle: "Neurochemistry • Focus Restoration",
+                imageUrl: "https://images.unsplash.com/photo-1518241353330-0f7941c2d9b5?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "The Dopamine Reset",
+                credit: "Unsplash / Stillness",
+                content: `### Calibrating Baseline Motivation
 
-## The Philosophy
-IMPROVE is not just an app. It is a commitment to a way of being. In an age where everything is superficial, we choose depth. In an era of "hacks" and shortcuts, we choose systems that withstand the test of time.
+Modern apps are weaponized behavioral loops engineered to hijack dopamine baselines. When novelty is cheap, deep work feels painful.
 
-### The Path Forward
-1. **Structure**: Clear frameworks that eliminate decision fatigue and create momentum.
-2. **Measurement**: Precise tracking that reveals patterns and enables optimization.
-3. **Integration**: A holistic approach that recognizes all dimensions of life are interconnected.
+By introducing mandatory friction periods and screen time shields, your brain resets its sensitivity to quiet, high-depth problem solving.`
+            },
+            {
+                id: "deep-work-card-3",
+                title: "03 · Monastic Focus Blocks",
+                subtitle: "Execution • Structured Blocks",
+                imageUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Monastic Focus Blocks",
+                credit: "Unsplash / Focus Session",
+                content: `### The 90-Minute Ultradian Rhythm
 
-Complete Integrity is not about being perfect. It is about being whole. It's about ensuring your actions align with your vision across every pillar of your life—Body, Wealth, Work, Productivity, Relationships, Mind, Legacy, and Knowledge.
-        `
+Human cognitive output naturally peaks in 90-minute ultradian cycles. Trying to force 8 straight hours of uninterrupted coding produces diminishing returns and errors.
+
+IMPROVE locks apps into 90-minute sovereign sprints followed by physiological debriefs and walks.`
+            },
+            {
+                id: "deep-work-card-4",
+                title: "04 · Asynchronous State",
+                subtitle: "Workflow • Eliminating Urgency",
+                imageUrl: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Asynchronous State",
+                credit: "Unsplash / Calm Cadence",
+                content: `### Rejecting the Urgency Trap
+
+Real-time communication tools turn knowledge workers into reactive switchboard operators. High-conviction thinkers operate asynchronously.
+
+Batch-processing messages at predetermined windows frees up 6+ hours of uninterrupted flow state every single day.`
+            },
+            {
+                id: "deep-work-card-5",
+                title: "05 · The Flow Gateway",
+                subtitle: "Mind • Sovereign Peak State",
+                imageUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "The Flow Gateway",
+                credit: "Unsplash / Peak Flow",
+                content: `### Where Challenge Meets Skill
+
+Flow occurs at the knife-edge between anxiety and boredom. When clear daily targets pair with zero digital friction, flow is no longer an accidental miracle—it is an engineered habit.`
+            }
+        ]
     },
     {
-        slug: "the-psychology-of-deep-work",
-        title: "The Psychology of Deep Work",
-        excerpt: "How to reclaim your focus and master difficult tasks in a world designed to distract you.",
-        date: "2024-03-12",
-        author: "IMPROVE Team",
-        category: "Productivity",
-        image: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2000&auto=format&fit=crop",
-        readingTime: "8 min",
-        content: `
-# The Psychology of Deep Work
-
-Deep work is the ability to focus without distraction on a cognitively demanding task. It's a skill that allows you to quickly master complicated information and produce better results in less time.
-
-## Why Deep Work Matters
-In our current economy, the ability to perform deep work is becoming increasingly rare at the exact same time it is becoming increasingly valuable. Those who cultivate this skill will thrive.
-
-### How to Implement Deep Work
-- **Schedule Your Sessions**: Treat them like non-negotiable appointments.
-- **Remove Distractions**: Turn off notifications, clear your workspace.
-- **Embrace Boredom**: Train your brain to be okay without constant stimulation.
-
-The IMPROVE Productivity system is designed to facilitate these states of high-intensity focus.
-        `
-    },
-    {
-        slug: "mastering-your-second-brain",
-        title: "Mastering Your Second Brain",
-        excerpt: "Stop relying on your biological memory. Build a digital system that works for you.",
-        date: "2024-03-05",
-        author: "IMPROVE Team",
+        slug: "hardware-enforced-local-intelligence",
+        title: "Hardware-Enforced Local Intelligence",
+        excerpt: "Why the next paradigm of personal software runs 100% on Apple Silicon Neural Engines with zero cloud telemetry.",
+        date: "2026-10-14",
+        author: "IMPROVE Research",
         category: "Knowledge",
-        image: "https://images.unsplash.com/photo-1456324504439-367cee3b3c32?q=80&w=2000&auto=format&fit=crop",
-        readingTime: "6 min",
-        content: `
-# Mastering Your Second Brain
+        image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2000&auto=format&fit=crop",
+        readingTime: "4 min",
+        galleryRadius: 620,
+        cards: [
+            {
+                id: "hardware-card-1",
+                title: "01 · The Silicon Moat",
+                subtitle: "Architecture • Apple Neural Engine",
+                imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "The Silicon Moat",
+                credit: "Unsplash / On-Chip Silicon",
+                content: `### Dedicated Compute Over Surveillance Clouds
 
-Your brain is for having ideas, not for holding them. A Second Brain is a personal system for knowledge management that helps you save and retrieve the ideas, inspirations, and insights you encounter every day.
+Modern smartphone SoCs pack up to 38 TOPS of neural processing power. The historical need to ship private notes to cloud data centers for LLM processing is obsolete.
 
-## The CODE Method
-- **Capture**: Keep what resonates.
-- **Organize**: Put it where it will be useful.
-- **Distill**: Find the essence.
-- **Express**: Put your knowledge to work.
+Local neural execution delivers sub-10ms inference with complete physical sovereignty.`
+            },
+            {
+                id: "hardware-card-2",
+                title: "02 · Zero-Cloud Vectors",
+                subtitle: "Privacy • Embedded Databases",
+                imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Zero Cloud Vectors",
+                credit: "Unsplash / Secure Data Vault",
+                content: `### SQLite & CoreData Vector Sandboxes
 
-By externalizing your thinking, you free up your biological CPU for creative work rather than maintenance.
-        `
+Your journals, reading highlights, and personal reflections are vectorized directly inside the app sandbox using quantized on-device embeddings.
+
+No API keys, no server costs, and zero third-party tracking.`
+            },
+            {
+                id: "hardware-card-3",
+                title: "03 · Edge Intelligence",
+                subtitle: "Latency • Real-Time Habits",
+                imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Edge Intelligence",
+                credit: "Unsplash / Instant Edge",
+                content: `### Offline-First Resilience
+
+Airplane mode is the ultimate productivity environment. Software that breaks without an active Wi-Fi connection is inherently fragile.
+
+IMPROVE functions identically whether you are on a transatlantic flight or in an off-grid cabin.`
+            },
+            {
+                id: "hardware-card-4",
+                title: "04 · Biometric Vaulting",
+                subtitle: "Security • Secure Enclave",
+                imageUrl: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Biometric Vaulting",
+                credit: "Unsplash / Secure Enclave",
+                content: `### Hardware-Level Cryptography
+
+Cryptographic keys never touch memory unencrypted. Face ID and Secure Enclave tokens ensure that even if a device is seized, the integrity of your thought vault remains intact.`
+            },
+            {
+                id: "hardware-card-5",
+                title: "05 · Sovereign Autonomy",
+                subtitle: "Complete Integrity • The Future",
+                imageUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=1200&auto=format&fit=crop",
+                imageAlt: "Sovereign Autonomy",
+                credit: "Unsplash / High Horizon",
+                content: `### Software That Answers Only to You
+
+When software has no advertisers, no cloud subscription rent-seeking, and no user tracking, the incentives align completely with human elevation.
+
+Intentional technology designed to protect your time, sharpen your mind, and build your future.`
+            }
+        ]
     }
 ];
 

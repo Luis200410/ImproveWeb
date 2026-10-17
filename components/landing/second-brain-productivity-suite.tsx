@@ -1083,27 +1083,79 @@ function PricingTabContent() {
         <div className="p-6 sm:p-8 rounded-2xl bg-neutral-950 border border-white/10 space-y-6 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Core Access</span>
-              <span className="px-2.5 py-1 rounded bg-white/5 text-[10px] font-mono text-white">Free Forever</span>
+              <span className="text-xs font-mono text-neutral-400 uppercase tracking-widest">Second Brain Core</span>
+              <span className="px-2.5 py-1 rounded bg-white/5 text-[10px] font-mono text-white">Free Forever · $0</span>
             </div>
             <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
               Free Core Tier
             </h4>
             <p className="text-xs text-neutral-400 leading-relaxed font-light">
-              The fundamental capture, organize, and planning experience is completely usable without paying anything.
+              An uncompromised, local-first note canvas, handwriting engine, and PARA organizer. No account, no credit card, no cloud rent.
             </p>
             <ul className="space-y-2.5 pt-2 text-xs text-neutral-300">
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" /> Local-first note &amp; task capture
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Notes:</strong> unlimited, rich text (A1–A6 headings, bold, lists, highlights)</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" /> Habit tracking &amp; Apple Calendar sync
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Handwriting:</strong> anywhere on the page with Apple Pencil (iPad), shown on iPhone and Mac</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" /> Basic focus sessions &amp; timer
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Pencil &amp; keyboard switch automatically;</strong> double-tap anywhere to type there</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" /> On-device speech transcription
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Paper:</strong> blank, lines or grid</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Full screen note with left column</strong> (name, task, microtasks, resources); open in a new window on iPad/Mac</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Voice notes</strong> in the note&rsquo;s column, with an on-device transcript</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Photos, code blocks, link embeds,</strong> math symbols (type LaTeX)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>&ldquo;/&rdquo; command menu</strong> and keyboard shortcuts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Search</strong> of typed text, titles and voice transcripts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Share the page as a PDF</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Inbox capture:</strong> text, voice, links, photos, files, share sheet, handwriting (iPad)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Manual filing;</strong> captures filed as notes keep everything (audio, photo, ink, file)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Areas (the 7 life categories)</strong> and up to 3 active projects; tasks, microtasks, priorities, due dates, archive</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>In-app Dashboard</strong> (widget board, hold to arrange)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Siri Quick Capture</strong></span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span><strong>Private by design:</strong> on-device AI, nothing sent to us</span>
               </li>
             </ul>
           </div>
@@ -1112,44 +1164,61 @@ function PricingTabContent() {
           </div>
         </div>
 
-        {/* Paid Performer Tier */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-amber-500/10 via-black to-black border border-amber-500/30 space-y-6 flex flex-col justify-between relative overflow-hidden">
+        {/* Paid Improve Tier */}
+        <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-amber-500/10 via-black to-black border-2 border-amber-500/40 space-y-6 flex flex-col justify-between relative overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.15)]">
           <div className="absolute top-0 right-0 p-4">
-            <span className="px-3 py-1 rounded-full bg-amber-500 text-black text-[9px] font-mono font-bold uppercase tracking-widest">
+            <span className="px-3 py-1 rounded-full bg-amber-500 text-black text-[9px] font-mono font-bold uppercase tracking-widest shadow-md">
               Universal Family Pass
             </span>
           </div>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">Full Suite Power</span>
-              <span className="px-2.5 py-1 rounded bg-amber-500/20 text-[10px] font-mono text-amber-300">Performer Tier</span>
+              <span className="text-xs font-mono text-amber-400 uppercase tracking-widest">Full Autonomous Power</span>
+              <span className="px-2.5 py-1 rounded bg-amber-500/20 text-[10px] font-mono text-amber-300">Improve Tier · $40/yr</span>
             </div>
             <h4 className="type-headline text-2xl sm:text-3xl text-[var(--label)] tracking-tight font-bold">
-              The Performer Suite
+              Improve
             </h4>
             <p className="text-xs text-neutral-300 leading-relaxed font-light">
-              Unlocks the complete ecosystem across Second Brain, Productivity, Body, Money, and all companion apps.
+              Unlocks on-device intelligence, handwriting search, multi-device iCloud sync, and seamless calendar day-planning.
             </p>
-            <ul className="space-y-2.5 pt-2 text-xs text-neutral-200">
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-amber-400 shrink-0" /> <strong>All Sibling Apps Unlocked:</strong> Single subscription covers entire suite
+            <ul className="space-y-3.5 pt-2 text-xs text-neutral-200">
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>AI:</strong> Inbox sorting and tagging, Summarize (key points in the column, passages marked on the page), reverse-engineering projects and tasks into steps, AI plans</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-amber-400 shrink-0" /> <strong>Screen-Time Shield:</strong> Continuous per-habit app blocking
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Handwriting to text:</strong> search your handwriting, and Summarize reading it</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-amber-400 shrink-0" /> <strong>On-Device AI Day Planner:</strong> Rolling horizon calendar auto-pacing
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>iCloud sync</strong> across iPhone, iPad and Mac, including handwriting merged between devices</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-amber-400 shrink-0" /> <strong>Deeper Integrations:</strong> Notion, Jira, Email triage sync
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Calendar:</strong> day board, drag to schedule, AI spreads work across days and re-plans missed work, your own sessions stay pinned</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-amber-400 shrink-0" /> <strong>StoreKit Managed:</strong> 100% managed securely by Apple
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Goals &harr; Projects</strong> with Productivity</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Home and Lock Screen</strong> widgets</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Siri &amp; Shortcuts</strong> (all 10 actions)</span>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <Check className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <span><strong>Unlimited projects</strong> (scale across all 7 life areas with zero project caps)</span>
               </li>
             </ul>
           </div>
           <div className="pt-4 border-t border-amber-500/20 text-[11px] font-mono text-amber-400">
-            One subscription · Instant access on iPhone, iPad &amp; Mac.
+            One subscription &middot; Instant access on iPhone, iPad &amp; Mac across all sibling apps.
           </div>
         </div>
       </div>

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { BlogPost, BLOG_POSTS } from "@/lib/blog";
+import { createClient } from "@/utils/supabase/server";
+import { isUserAdmin } from "@/lib/auth-admin";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const POSTS_FILE = path.join(DATA_DIR, "posts.json");
@@ -38,6 +40,16 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!isUserAdmin(user)) {
+      return NextResponse.json(
+        { error: "Unauthorized: Administrator privileges required" },
+        { status: 403 }
+      );
+    }
+
     const post: BlogPost = await req.json();
     if (!post.slug || !post.title) {
       return NextResponse.json({ error: "Title and slug are required" }, { status: 400 });
@@ -62,6 +74,16 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!isUserAdmin(user)) {
+      return NextResponse.json(
+        { error: "Unauthorized: Administrator privileges required" },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const slug = searchParams.get("slug");
     if (!slug) {

@@ -3,6 +3,7 @@ import { getAppBySlug, APPS_DATA } from '@/lib/apps-data'
 import Link from 'next/link'
 import { ArrowRight, Sparkles, CheckCircle2, TrendingUp, Shield, Cpu, Activity, Brain, Wallet, Briefcase, Users, Compass, Crown } from 'lucide-react'
 import { SecondBrainProductivitySuite } from '@/components/landing/second-brain-productivity-suite'
+import { SecondBrainTierComparison } from '@/components/apps/second-brain-tier-comparison'
 import { ProductivityShowcase } from '@/components/apps/productivity-showcase'
 import { AppHeroShowcase } from '@/components/apps/app-hero-showcase'
 import { OtherDedicatedAppsDock } from '@/components/apps/other-dedicated-apps-dock'
@@ -60,13 +61,20 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
 
       {/* 3.5 Interlocking Suite Specification for Second Brain */}
       {app.slug === 'second-brain' && (
-        <section className="py-16 px-6 border-t border-[var(--separator)]">
-          <div className="max-w-7xl mx-auto">
-            <SecondBrainProductivitySuite 
-              initialTab="second-brain" 
-            />
-          </div>
-        </section>
+        <>
+          <section className="py-16 px-6 border-t border-[var(--separator)]">
+            <div className="max-w-7xl mx-auto">
+              <SecondBrainProductivitySuite 
+                initialTab="second-brain" 
+              />
+            </div>
+          </section>
+
+          {/* 3.6 Dedicated Second Brain Free vs Improve Comparison Specification */}
+          <section className="border-t border-[var(--separator)] bg-black/40">
+            <SecondBrainTierComparison />
+          </section>
+        </>
       )}
 
       {/* 3. Core Identity Features Grid */}

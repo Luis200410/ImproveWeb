@@ -26,6 +26,7 @@ interface CircularGalleryProps extends HTMLAttributes<HTMLDivElement> {
   autoRotateSpeed?: number;
   onItemSelect?: (item: GalleryItem, index: number) => void;
   onActiveIndexChange?: (index: number, item: GalleryItem) => void;
+  activeIndex?: number;
   activeId?: string;
 }
 
@@ -38,6 +39,7 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
       autoRotateSpeed = 0.02,
       onItemSelect,
       onActiveIndexChange,
+      activeIndex,
       activeId,
       ...props
     },
@@ -45,13 +47,12 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
   ) => {
     const router = useRouter();
     const [rotation, setRotation] = useState(0);
-    const [isScrolling, setIsScrolling] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const dragStartX = useRef(0);
     const dragStartRotation = useRef(0);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const animationFrameRef = useRef<number | null>(null);
+    const prevActiveIndexRef = useRef<number | undefined>(undefined);
 
     // Auto-calculate optimal 3D cylinder radius based on item count if not explicitly provided
     const radius = React.useMemo(() => {
@@ -63,37 +64,12 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
       return 720;
     }, [userRadius, items.length]);
 
-    // Scroll-driven rotation
+    // Ambient auto-rotation when not interacting (pauses when dragging or explicitly paused or only 1 item)
     useEffect(() => {
-      const handleScroll = () => {
-        setIsScrolling(true);
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
+      if (items.length <= 1) return;
 
-        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const scrollProgress = scrollableHeight > 0 ? window.scrollY / scrollableHeight : 0;
-        const scrollRotation = scrollProgress * 360 * 1.5;
-        setRotation(scrollRotation);
-
-        scrollTimeoutRef.current = setTimeout(() => {
-          setIsScrolling(false);
-        }, 150);
-      };
-
-      window.addEventListener("scroll", handleScroll, { passive: true });
-      return () => {
-        window.removeEventListener("scroll", handleScroll);
-        if (scrollTimeoutRef.current) {
-          clearTimeout(scrollTimeoutRef.current);
-        }
-      };
-    }, []);
-
-    // Ambient auto-rotation when not interacting
-    useEffect(() => {
       const autoRotate = () => {
-        if (!isScrolling && !isPaused && !isDragging) {
+        if (!isPaused && !isDragging) {
           setRotation((prev) => prev + autoRotateSpeed);
         }
         animationFrameRef.current = requestAnimationFrame(autoRotate);
@@ -106,7 +82,7 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
           cancelAnimationFrame(animationFrameRef.current);
         }
       };
-    }, [isScrolling, isPaused, isDragging, autoRotateSpeed]);
+    }, [isPaused, isDragging, autoRotateSpeed, items.length]);
 
     // Drag-to-rotate support
     const handleMouseDown = (e: React.MouseEvent) => {
@@ -153,6 +129,28 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
       setRotation(rotation + diff);
     };
 
+    // Keep ref to latest onActiveIndexChange callback
+    const onActiveIndexChangeRef = useRef(onActiveIndexChange);
+    useEffect(() => {
+      onActiveIndexChangeRef.current = onActiveIndexChange;
+    });
+
+    const lastReportedIndexRef = useRef<number>(-1);
+
+    // Sync external activeIndex if controlled from parent
+    useEffect(() => {
+      if (
+        typeof activeIndex === "number" &&
+        activeIndex >= 0 &&
+        activeIndex < items.length &&
+        prevActiveIndexRef.current !== activeIndex
+      ) {
+        prevActiveIndexRef.current = activeIndex;
+        lastReportedIndexRef.current = activeIndex;
+        rotateToIndex(activeIndex);
+      }
+    }, [activeIndex, items.length]);
+
     // Calculate current front-most active item
     const currentActiveIndex = React.useMemo(() => {
       if (items.length === 0) return 0;
@@ -160,11 +158,18 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
       return Math.round(normalizedRotation / anglePerItem) % items.length;
     }, [rotation, anglePerItem, items.length]);
 
+    // Only fire onActiveIndexChange when the integer index actually changes
     useEffect(() => {
-      if (onActiveIndexChange && items[currentActiveIndex]) {
-        onActiveIndexChange(currentActiveIndex, items[currentActiveIndex]);
+      if (
+        items.length > 0 &&
+        currentActiveIndex >= 0 &&
+        currentActiveIndex < items.length &&
+        lastReportedIndexRef.current !== currentActiveIndex
+      ) {
+        lastReportedIndexRef.current = currentActiveIndex;
+        onActiveIndexChangeRef.current?.(currentActiveIndex, items[currentActiveIndex]);
       }
-    }, [currentActiveIndex, onActiveIndexChange, items]);
+    }, [currentActiveIndex, items.length]);
 
     const handleCardClick = (item: GalleryItem, index: number, isFront: boolean) => {
       rotateToIndex(index);
@@ -178,10 +183,12 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
           router.push(item.href);
           return;
         }
-      } else if (item.id) {
-        // Smooth scroll to card write-up section below
-        const element = document.getElementById(`section-${item.id}`);
-        if (element) {
+      } else {
+        // Smooth scroll to single active card section if available
+        const element =
+          document.getElementById("active-card-section") ||
+          (item.id ? document.getElementById(`section-${item.id}`) : null);
+        if (element && isFront) {
           element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }
@@ -192,7 +199,7 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
     }
 
     return (
-      <div className="relative w-full py-12 select-none" style={{ fontFamily: "var(--font-ios)" }}>
+      <div className="relative w-full py-4 select-none" style={{ fontFamily: "var(--font-ios)" }}>
         {/* Interactive 3D Stage */}
         <div
           ref={ref}
@@ -205,7 +212,7 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUp}
-          className={`relative w-full h-[520px] sm:h-[580px] md:h-[640px] flex items-center justify-center cursor-grab active:cursor-grabbing overflow-hidden ${
+          className={`relative w-full h-[500px] sm:h-[560px] md:h-[620px] flex items-center justify-center cursor-grab active:cursor-grabbing ${
             className || ""
           }`}
           style={{ perspective: "2200px" }}
@@ -226,9 +233,9 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
               const normalizedAngle = Math.abs(
                 relativeAngle > 180 ? 360 - relativeAngle : relativeAngle
               );
-              // Front cards are crisp 100%, back cards fade to ~25%
-              const opacity = Math.max(0.25, 1 - normalizedAngle / 150);
-              const isFront = normalizedAngle < 40;
+              // Front cards are crisp 100%, back cards fade to ~25% (if only 1 item, it's always 100% front)
+              const opacity = items.length <= 1 ? 1 : Math.max(0.25, 1 - normalizedAngle / 150);
+              const isFront = items.length <= 1 ? true : normalizedAngle < 40;
 
               return (
                 <div
@@ -322,60 +329,64 @@ export const CircularGallery = React.forwardRef<HTMLDivElement, CircularGalleryP
         </div>
 
         {/* Floating Controls Toolbar */}
-        <div className="flex items-center justify-center gap-3 pt-6 pb-2">
-          {/* Previous Card */}
-          <button
-            type="button"
-            onClick={() => setRotation((prev) => prev + anglePerItem)}
-            aria-label="Previous card"
-            className="w-9 h-9 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
+        {items.length > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-6 pb-2">
+            {/* Previous Card */}
+            <button
+              type="button"
+              onClick={() => setRotation((prev) => prev + anglePerItem)}
+              aria-label="Previous card"
+              className="w-9 h-9 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
 
-          {/* Pause / Play Auto-Rotation */}
-          <button
-            type="button"
-            onClick={() => setIsPaused((prev) => !prev)}
-            aria-label={isPaused ? "Resume rotation" : "Pause rotation"}
-            className="px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-xs text-white/80 flex items-center gap-1.5 transition-all cursor-pointer"
-          >
-            {isPaused ? <Play className="w-3 h-3 text-emerald-400" /> : <Pause className="w-3 h-3" />}
-            <span className="text-[11px] font-medium">{isPaused ? "Play" : "Pause"}</span>
-          </button>
+            {/* Pause / Play Auto-Rotation */}
+            <button
+              type="button"
+              onClick={() => setIsPaused((prev) => !prev)}
+              aria-label={isPaused ? "Resume rotation" : "Pause rotation"}
+              className="px-3.5 py-1.5 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-xs text-white/80 flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              {isPaused ? <Play className="w-3 h-3 text-emerald-400" /> : <Pause className="w-3 h-3" />}
+              <span className="text-[11px] font-medium">{isPaused ? "Play" : "Pause"}</span>
+            </button>
 
-          {/* Next Card */}
-          <button
-            type="button"
-            onClick={() => setRotation((prev) => prev - anglePerItem)}
-            aria-label="Next card"
-            className="w-9 h-9 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+            {/* Next Card */}
+            <button
+              type="button"
+              onClick={() => setRotation((prev) => prev - anglePerItem)}
+              aria-label="Next card"
+              className="w-9 h-9 rounded-full border border-white/10 bg-white/[0.04] hover:bg-white/[0.12] text-white flex items-center justify-center transition-all cursor-pointer active:scale-95"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* Step Dots Indicator */}
-        <div className="flex items-center justify-center gap-1.5 pt-2">
-          {items.map((item, idx) => {
-            const currentItemIdx =
-              Math.round((-rotation / anglePerItem) % items.length + items.length) % items.length;
-            const isCurrent = currentItemIdx === idx;
-            return (
-              <button
-                key={idx}
-                type="button"
-                onClick={() => rotateToIndex(idx)}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  isCurrent
-                    ? "w-7 h-1.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.7)]"
-                    : "w-1.5 h-1.5 bg-white/20 hover:bg-white/50"
-                }`}
-                aria-label={`Go to card ${idx + 1}`}
-              />
-            );
-          })}
-        </div>
+        {items.length > 1 && (
+          <div className="flex items-center justify-center gap-1.5 pt-2">
+            {items.map((item, idx) => {
+              const currentItemIdx =
+                Math.round((-rotation / anglePerItem) % items.length + items.length) % items.length;
+              const isCurrent = currentItemIdx === idx;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => rotateToIndex(idx)}
+                  className={`transition-all duration-300 rounded-full cursor-pointer ${
+                    isCurrent
+                      ? "w-7 h-1.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.7)]"
+                      : "w-1.5 h-1.5 bg-white/20 hover:bg-white/50"
+                  }`}
+                  aria-label={`Go to card ${idx + 1}`}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   }

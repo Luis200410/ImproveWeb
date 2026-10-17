@@ -181,11 +181,11 @@ export const APPS_DATA: AppIdentity[] = [
     name: 'Second Brain',
     singleWord: 'SECOND BRAIN',
     logoUrl: '/Second Brain Logo.svg',
-    tagline: 'Capture, organize, and plan on your real Apple Calendar',
-    description: 'A calm, organized home for everything on your mind — captured fast, sorted into life areas and projects, broken into doable steps, and scheduled onto your real calendar by an on-device planner.',
+    tagline: 'Handwriting, on-device AI, and calendar day board',
+    description: 'A calm, sovereign home for everything on your mind — rich notes, Apple Pencil handwriting anywhere, offline voice transcripts, on-device AI summarization, and calendar drag-to-schedule day planning.',
     badge: 'SUITE 06 • SECOND BRAIN',
-    heroTitle: 'ON-DEVICE COGNITIVE CORTEX',
-    heroSubtitle: 'Capture frictionless ideas, auto-triage with on-device AI, and schedule tasks directly into your recurring Apple Calendar habit blocks.',
+    heroTitle: 'SOVEREIGN INTELLECTUAL WORKSPACE',
+    heroSubtitle: 'Unlimited rich text, Apple Pencil handwriting anywhere, on-device AI summarization, and an intelligent calendar day board.',
     accentColor: 'from-orange-500 to-amber-500',
     accentHex: '#ff6900',
     bgGradient: 'from-orange-950/40 via-black to-black',
@@ -193,9 +193,10 @@ export const APPS_DATA: AppIdentity[] = [
     iconName: 'Brain',
     imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=1973&auto=format&fit=crop',
     features: [
-      { title: 'Frictionless Voice & OCR Capture', description: 'Record thoughts with on-device speech transcription (no audio leaves phone) or snap photos with instant offline triage.', metrics: '100% On-Device' },
-      { title: 'AI Goal Reverse-Engineering', description: 'Split ambitious tasks into micro-steps or generate entire project roadmaps from just a title and target outcome.', metrics: 'On-Device AI' },
-      { title: 'Plan My Day Calendar Bridge', description: 'Proposes rolling horizon task schedules grouped under active Apple Calendar habit blocks with adaptive recovery.', metrics: 'EventKit Native' }
+      { title: 'Apple Pencil Handwriting & Canvas', description: 'Write anywhere on the page on iPad, rendered on iPhone and Mac. Auto-switches with typing, with blank, lined, or grid paper.', metrics: 'Apple Pencil Native' },
+      { title: 'Full Screen Notes & Voice Transcripts', description: 'A1–A6 rich text, dedicated left column for microtasks and resources, LaTeX math, code blocks, and on-device voice transcription.', metrics: '100% On-Device' },
+      { title: 'Autonomous AI Triage & Reverse-Engineering', description: 'On-device AI sorts and tags your Inbox, summarizes key passages, and splits ambitious projects into doable steps.', metrics: 'Apple Intelligence' },
+      { title: 'Calendar Day Board & Cross-Device Sync', description: 'Drag to schedule with auto-re-planning for missed sessions, merged handwriting sync via iCloud, and all 10 Siri Shortcuts.', metrics: 'EventKit + iCloud' }
     ],
     statSummary: [
       { label: 'Capture Velocity', value: '< 1s', change: 'Instant Inbox' },

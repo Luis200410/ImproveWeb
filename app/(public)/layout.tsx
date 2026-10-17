@@ -8,7 +8,7 @@ export default function PublicLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-black text-[var(--label)] flex flex-col justify-between relative selection:bg-white/20">
+    <div suppressHydrationWarning className="min-h-screen bg-black text-[var(--label)] flex flex-col justify-between relative selection:bg-white/20">
       {/* Universal Interconnected Smooth Circuit Background */}
       <CircuitBackground />
       <Navigation />

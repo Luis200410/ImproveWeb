@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { User } from "@supabase/supabase-js";
+import { createClient } from "@/utils/supabase/client";
+import { isUserAdmin } from "@/lib/auth-admin";
 import { 
   Sparkles, 
   Plus, 
@@ -18,7 +21,12 @@ import {
   ChevronDown,
   Check,
   Sliders,
-  FileText
+  FileText,
+  Shield,
+  ShieldAlert,
+  KeyRound,
+  LogOut,
+  Lock
 } from "lucide-react";
 import { toast } from "sonner";
 import { BlogPost, BlogGalleryCard, BLOG_POSTS, saveStoredCustomPost, deleteStoredCustomPost } from "@/lib/blog";
@@ -43,6 +51,14 @@ function slugify(text: string): string {
 }
 
 export default function BlogAdminPage() {
+  const supabase = React.useMemo(() => createClient(), []);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const [posts, setPosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
@@ -104,8 +120,69 @@ export default function BlogAdminPage() {
   };
 
   useEffect(() => {
-    loadPosts();
-  }, []);
+    let mounted = true;
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!mounted) return;
+      setCurrentUser(user);
+      setAuthChecking(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      setCurrentUser(session?.user ?? null);
+      setAuthChecking(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const isAdmin = isUserAdmin(currentUser);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setIsLoggingIn(true);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: loginPassword,
+      });
+
+      if (error) {
+        setLoginError(error.message || "Failed to authenticate.");
+        return;
+      }
+
+      if (data.user) {
+        setCurrentUser(data.user);
+        if (!isUserAdmin(data.user)) {
+          setLoginError("Access Restricted: This account does not possess administrator clearance.");
+        } else {
+          toast.success("Authenticated as Administrator");
+        }
+      }
+    } catch (err: any) {
+      setLoginError(err?.message || "An unexpected authentication error occurred.");
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleAdminSignOut = async () => {
+    await supabase.auth.signOut();
+    setCurrentUser(null);
+    toast.info("Signed out of administrator session");
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadPosts();
+    }
+  }, [isAdmin]);
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
@@ -252,6 +329,8 @@ export default function BlogAdminPage() {
         toast.success(`Published post "${title}" successfully!`);
         await loadPosts();
         setSelectedSlug(slug);
+      } else if (res.status === 403 || res.status === 401) {
+        toast.error("Unauthorized: Administrator credentials required to publish.");
       } else {
         toast.warning("Saved locally, server sync failed.");
       }
@@ -268,7 +347,11 @@ export default function BlogAdminPage() {
 
     try {
       deleteStoredCustomPost(selectedSlug);
-      await fetch(`/api/blog/posts?slug=${selectedSlug}`, { method: "DELETE" });
+      const res = await fetch(`/api/blog/posts?slug=${selectedSlug}`, { method: "DELETE" });
+      if (res.status === 403 || res.status === 401) {
+        toast.error("Unauthorized: Administrator credentials required to delete.");
+        return;
+      }
       toast.success("Post deleted.");
       await loadPosts();
       handleSelectPostToEdit("");
@@ -289,6 +372,142 @@ export default function BlogAdminPage() {
     },
     content: c.content,
   }));
+
+  // 1. Loading Gate
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 selection:bg-white selection:text-black">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="w-10 h-10 rounded-full border-2 border-emerald-400/20 border-t-emerald-400 animate-spin" />
+          <p className="text-xs uppercase tracking-[0.3em] font-mono text-white/50">
+            Verifying Administrative Session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated Gate -> Login Modal / Gate
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black flex items-center justify-center p-6 relative overflow-hidden" style={{ fontFamily: "var(--font-ios)" }}>
+        {/* Background Atmosphere */}
+        <div className="fixed inset-0 pointer-events-none opacity-20">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+        </div>
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
+
+        <div className="relative z-10 w-full max-w-md p-8 sm:p-10 rounded-[32px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-[0_30px_90px_rgba(0,0,0,0.9)] space-y-8">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-2 shadow-[0_0_30px_rgba(52,211,153,0.2)]">
+              <Shield className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">IMPROVE Studio Gate</h1>
+            <p className="text-xs font-mono uppercase tracking-[0.2em] text-white/40">
+              Administrative Clearance Required
+            </p>
+          </div>
+
+          <form onSubmit={handleAdminLogin} className="space-y-5">
+            {loginError && (
+              <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-xs flex items-center gap-2.5">
+                <ShieldAlert className="w-4 h-4 shrink-0 text-red-400" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-white/50">Admin Email</label>
+              <input
+                type="email"
+                required
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="curator@improve-club.com"
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-white/40 transition-all font-mono"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-mono uppercase tracking-wider text-white/50">Password</label>
+              <input
+                type="password"
+                required
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/10 text-white text-sm focus:outline-none focus:border-white/40 transition-all font-mono"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full py-3.5 rounded-xl bg-white text-black font-semibold text-xs uppercase tracking-widest hover:bg-white/90 active:scale-[0.98] transition-all cursor-pointer shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {isLoggingIn ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <span>Authenticating...</span>
+                </>
+              ) : (
+                <>
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Authenticate Session</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-white/10 text-center">
+            <Link
+              href="/blog"
+              className="text-xs text-white/40 hover:text-white transition-colors font-mono inline-flex items-center gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Public Dispatches</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Authenticated but NOT Admin -> 403 Screen
+  if (currentUser && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6 relative overflow-hidden" style={{ fontFamily: "var(--font-ios)" }}>
+        <div className="relative z-10 w-full max-w-md p-8 sm:p-10 rounded-[32px] border border-red-500/20 bg-white/[0.02] backdrop-blur-2xl shadow-2xl space-y-6 text-center">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 mx-auto shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-bold tracking-tight">403 • Access Restricted</h1>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Authenticated as <span className="text-white font-mono">{currentUser.email}</span>.
+              This user does not possess administrative privileges to edit or publish dispatches.
+            </p>
+          </div>
+
+          <div className="pt-4 flex flex-col gap-3">
+            <button
+              onClick={handleAdminSignOut}
+              className="w-full py-3 rounded-xl border border-white/20 bg-white/[0.05] hover:bg-white/10 text-white text-xs font-mono uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out / Switch Account</span>
+            </button>
+            <Link
+              href="/blog"
+              className="w-full py-3 rounded-xl bg-white text-black font-semibold text-xs font-mono uppercase tracking-wider hover:bg-white/90 transition-all text-center"
+            >
+              Return to Blog
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white pb-32 pt-28 px-4 sm:px-6 md:px-8" style={{ fontFamily: "var(--font-ios)" }}>
@@ -363,6 +582,23 @@ export default function BlogAdminPage() {
                 <ExternalLink className="w-3 h-3" />
               </Link>
             )}
+
+            {/* Admin identity & Sign Out */}
+            <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+              <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono">
+                <Shield className="w-3 h-3 text-emerald-400" />
+                <span className="truncate max-w-[160px]">{currentUser?.email}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleAdminSignOut}
+                title="Sign out of Administrator Session"
+                className="px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-300 text-white/60 text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -463,6 +699,50 @@ export default function BlogAdminPage() {
                     onChange={(e) => setReadingTime(e.target.value)}
                     className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-white/30"
                   />
+                </div>
+
+                <div className="space-y-1.5 md:col-span-2 lg:col-span-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs text-zinc-400 font-medium">Article Cover Image (URL or Asset Path)</label>
+                    <div className="flex items-center gap-1.5 overflow-x-auto">
+                      <span className="text-[10px] text-zinc-500">Presets:</span>
+                      {PHOTO_PRESETS.slice(0, 4).map((p, pIdx) => (
+                        <button
+                          key={pIdx}
+                          type="button"
+                          onClick={() => setCoverImage(p.url)}
+                          className="px-2 py-0.5 rounded text-[10px] bg-white/5 hover:bg-white/10 text-zinc-300 cursor-pointer"
+                        >
+                          {p.label.split("/")[0]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {coverImage ? (
+                      <div className="w-16 h-12 rounded-lg overflow-hidden border border-white/20 shrink-0 bg-black/60 relative">
+                        <img
+                          src={coverImage}
+                          alt="Cover Preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = PHOTO_PRESETS[0].url;
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-12 rounded-lg border border-dashed border-white/20 shrink-0 flex items-center justify-center text-white/30 text-[9px] uppercase">
+                        No Img
+                      </div>
+                    )}
+                    <input
+                      type="text"
+                      value={coverImage}
+                      onChange={(e) => setCoverImage(e.target.value)}
+                      placeholder="e.g. /images/cover.jpg or https://images.unsplash.com/..."
+                      className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-white/30"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5 md:col-span-2 lg:col-span-3">
@@ -603,9 +883,9 @@ export default function BlogAdminPage() {
                         />
                       </div>
 
-                      <div className="sm:col-span-2 md:col-span-3 space-y-1">
+                      <div className="sm:col-span-2 md:col-span-3 space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <label className="text-zinc-400 font-medium">Card Image URL</label>
+                          <label className="text-zinc-400 font-medium">Card Image (URL or Asset Path)</label>
                           <div className="flex items-center gap-1.5 overflow-x-auto">
                             <span className="text-[10px] text-zinc-500">Presets:</span>
                             {PHOTO_PRESETS.slice(0, 3).map((p, pIdx) => (
@@ -620,13 +900,36 @@ export default function BlogAdminPage() {
                             ))}
                           </div>
                         </div>
-                        <input
-                          type="text"
-                          value={card.imageUrl}
-                          onChange={(e) => handleCardFieldChange(idx, "imageUrl", e.target.value)}
-                          placeholder="https://images.unsplash.com/..."
-                          className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-white/30 font-mono text-[11px]"
-                        />
+                        <div className="flex items-center gap-3">
+                          {card.imageUrl ? (
+                            <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/20 shrink-0 bg-black/80 relative shadow-md">
+                              <img
+                                src={card.imageUrl}
+                                alt={card.title || "Card Preview"}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = PHOTO_PRESETS[0].url;
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-14 h-14 rounded-xl border border-dashed border-white/20 shrink-0 flex items-center justify-center text-white/30 text-[9px] uppercase">
+                              No Img
+                            </div>
+                          )}
+                          <div className="flex-1 space-y-1">
+                            <input
+                              type="text"
+                              value={card.imageUrl}
+                              onChange={(e) => handleCardFieldChange(idx, "imageUrl", e.target.value)}
+                              placeholder="e.g. /images/card-1.png or https://images.unsplash.com/..."
+                              className="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-white/30 font-mono text-[11px]"
+                            />
+                            <p className="text-[10px] text-zinc-500">
+                              Paste an image URL, or place image files in <code className="text-zinc-300">/public/images/</code> and type <code className="text-zinc-300">/images/filename.jpg</code>.
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
