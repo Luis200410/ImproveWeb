@@ -4,6 +4,11 @@ import Link from 'next/link'
 import { ArrowRight, Sparkles, CheckCircle2, TrendingUp, Shield, Cpu, Activity, Brain, Wallet, Briefcase, Users, Compass, Crown } from 'lucide-react'
 import { SecondBrainProductivitySuite } from '@/components/landing/second-brain-productivity-suite'
 import { SecondBrainTierComparison } from '@/components/apps/second-brain-tier-comparison'
+import { SecondBrainReverseEngineerMotion } from '@/components/apps/second-brain-reverse-engineer-motion'
+import { SecondBrainCalendarBoardMotion } from '@/components/apps/second-brain-calendar-board-motion'
+import { SecondBrainNotesHandwritingMotion } from '@/components/apps/second-brain-notes-handwriting-motion'
+import { SecondBrainInboxTriageMotion } from '@/components/apps/second-brain-inbox-triage-motion'
+import { SecondBrainProductivityBridgeMotion } from '@/components/apps/second-brain-productivity-bridge-motion'
 import { ProductivityShowcase } from '@/components/apps/productivity-showcase'
 import { AppHeroShowcase } from '@/components/apps/app-hero-showcase'
 import { OtherDedicatedAppsDock } from '@/components/apps/other-dedicated-apps-dock'
@@ -62,6 +67,21 @@ export default async function AppDetailPage({ params }: AppDetailPageProps) {
       {/* 3.5 Interlocking Suite Specification for Second Brain */}
       {app.slug === 'second-brain' && (
         <>
+          {/* 3.4 AI Reverse-Engineering 3D Camera Motion Showcase */}
+          <SecondBrainReverseEngineerMotion />
+
+          {/* 3.4b Calendar Day Board & Adaptive Re-Planning Motion Showcase */}
+          <SecondBrainCalendarBoardMotion />
+
+          {/* 3.4c Handwriting OCR & Smart Note System Motion Showcase */}
+          <SecondBrainNotesHandwritingMotion />
+
+          {/* 3.4d Universal Inbox & Autonomous AI Triage Motion Showcase */}
+          <SecondBrainInboxTriageMotion />
+
+          {/* 3.4e Live Connection to Productivity Focus Motion Showcase */}
+          <SecondBrainProductivityBridgeMotion />
+
           <section className="py-16 px-6 border-t border-[var(--separator)]">
             <div className="max-w-7xl mx-auto">
               <SecondBrainProductivitySuite 

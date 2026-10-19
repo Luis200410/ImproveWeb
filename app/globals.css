@@ -1,10 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Ballet:opsz@16..72&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Ballet:opsz@16..72&family=Caveat:wght@500;600;700&family=Gloria+Hallelujah&display=swap');
 @import "highlight.js/styles/github-dark.css";
 @import "tailwindcss";
 
 @theme {
   --font-bebas: var(--font-ios);
   --font-ballet: var(--font-ios);
+  --font-handwriting: "Caveat", "Gloria Hallelujah", "Bradley Hand", "Noteworthy", cursive;
   
   /* Update defaults to single unified primary typography */
   --font-sans: var(--font-ios);
