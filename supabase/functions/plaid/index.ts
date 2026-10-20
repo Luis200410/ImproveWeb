@@ -385,6 +385,8 @@ Deno.serve(async (req: Request) => {
         const syncPayload: Record<string, unknown> = {
           access_token: accessToken,
           count: 500,
+          // The bank's raw statement text (what a dispute quotes) — shown on the transaction page.
+          options: { include_original_description: true },
         };
         if (currentCursor) {
           syncPayload.cursor = currentCursor;
