@@ -415,6 +415,63 @@ Deno.serve(async (req: Request) => {
     }
 
     // ========================================================
+    // ACTION: institution (bank name, logo PNG base64, brand color — for the account cards)
+    // ========================================================
+    if (action === "institution") {
+      const accessToken = typeof body.access_token === "string" ? body.access_token : "";
+      if (!accessToken) {
+        logAction(action, 400);
+        return jsonResponse(
+          { error_code: "MISSING_FIELD", error_message: "Field 'access_token' is required." },
+          400
+        );
+      }
+
+      const itemRes = await callPlaid("/item/get", { access_token: accessToken });
+      const institutionId = itemRes.data?.item?.institution_id;
+      if (!itemRes.ok || typeof institutionId !== "string") {
+        logAction(action, itemRes.ok ? 404 : itemRes.status, itemRes.data?.error_code);
+        return jsonResponse(
+          {
+            error_type: itemRes.data?.error_type,
+            error_code: itemRes.data?.error_code ?? "NO_INSTITUTION",
+            error_message: itemRes.data?.error_message ?? "This bank has no institution record.",
+            display_message: itemRes.data?.display_message,
+          },
+          itemRes.ok ? 404 : itemRes.status
+        );
+      }
+
+      const instRes = await callPlaid("/institutions/get_by_id", {
+        institution_id: institutionId,
+        country_codes: ["US", "CA", "GB", "IE", "FR", "ES", "NL", "DE", "IT", "PL", "DK", "NO", "SE", "EE", "LT", "LV", "PT", "BE"],
+        options: { include_optional_metadata: true },
+      });
+
+      if (!instRes.ok) {
+        logAction(action, instRes.status, instRes.data?.error_code);
+        return jsonResponse(
+          {
+            error_type: instRes.data?.error_type,
+            error_code: instRes.data?.error_code,
+            error_message: instRes.data?.error_message,
+            display_message: instRes.data?.display_message,
+          },
+          instRes.status
+        );
+      }
+
+      const inst = instRes.data?.institution ?? {};
+      logAction(action, 200);
+      return jsonResponse({
+        institution_id: institutionId,
+        name: inst.name ?? null,
+        logo: inst.logo ?? null,
+        primary_color: inst.primary_color ?? null,
+      });
+    }
+
+    // ========================================================
     // ACTION: get_accounts
     // ========================================================
     if (action === "get_accounts") {
