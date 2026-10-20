@@ -27,6 +27,33 @@ function logAction(action: string, status: number, errorCode?: string) {
   }
 }
 
+// A bank site's apple-touch-icon as base64 PNG (≤ 256 KB), or null. Never throws.
+async function siteIcon(siteUrl: string): Promise<string | null> {
+  let origin: string;
+  try {
+    origin = new URL(siteUrl).origin;
+  } catch {
+    return null;
+  }
+  for (const path of ["/apple-touch-icon.png", "/apple-touch-icon-precomposed.png"]) {
+    try {
+      const res = await fetch(origin + path, { redirect: "follow", signal: AbortSignal.timeout(4000) });
+      const type = res.headers.get("content-type") || "";
+      if (!res.ok || !type.startsWith("image/png")) continue;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      if (bytes.length < 200 || bytes.length > 256 * 1024) continue;
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      }
+      return btoa(binary);
+    } catch {
+      // try the next path
+    }
+  }
+  return null;
+}
+
 // In-memory Apple JWKS cache
 const APPLE_JWKS = jose.createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
 
@@ -462,11 +489,19 @@ Deno.serve(async (req: Request) => {
       }
 
       const inst = instRes.data?.institution ?? {};
+
+      // Plaid has no logo for plenty of banks — fall back to the bank's own home-screen icon.
+      // Fetched here, server-side, so no third-party logo service ever learns which bank the user has.
+      let logo: string | null = typeof inst.logo === "string" && inst.logo ? inst.logo : null;
+      if (!logo && typeof inst.url === "string" && inst.url.startsWith("https://")) {
+        logo = await siteIcon(inst.url);
+      }
+
       logAction(action, 200);
       return jsonResponse({
         institution_id: institutionId,
         name: inst.name ?? null,
-        logo: inst.logo ?? null,
+        logo,
         primary_color: inst.primary_color ?? null,
       });
     }
