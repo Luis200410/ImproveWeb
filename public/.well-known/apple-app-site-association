@@ -1,0 +1,12 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["RCSLHHHTU3.com.improve.money"],
+        "components": [
+          { "/": "/plaid/oauth*", "comment": "Plaid OAuth return into the Money app" }
+        ]
+      }
+    ]
+  }
+}

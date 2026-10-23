@@ -49,6 +49,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Universal links (Plaid OAuth → Money app): iOS wants JSON, no redirect.
+        source: "/.well-known/apple-app-site-association",
+        headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
         // Apply security + SEO headers to all public routes
         source: "/(blog|pricing|sales|register|login)?",
         headers: [
