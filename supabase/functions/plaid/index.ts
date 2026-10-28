@@ -1,4 +1,8 @@
 import * as jose from "npm:jose@^5.9.6";
+import { decode as cborDecode } from "npm:cbor-x@1.6.0";
+import * as x509 from "npm:@peculiar/x509@1.12.3";
+
+x509.cryptoProvider.set(crypto);
 
 // CORS Headers
 const CORS_HEADERS = {
@@ -57,17 +61,113 @@ async function siteIcon(siteUrl: string): Promise<string | null> {
 // In-memory Apple JWKS cache
 const APPLE_JWKS = jose.createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
 
-// Sign in with Apple client ids (the apps' bundle ids) that revoke_apple accepts.
-const APPLE_REVOKE_CLIENT_IDS = new Set([
-  "com.improve.app",
-  "com.improve.secondbrain",
-  "com.improve.productivity",
-  "com.improve.body",
-  "com.improve.relationships",
-  "com.improve.money",
-  "com.improve.work",
-  "com.improve.mind",
-]);
+
+// ========================================================
+// App Attest (Money bank sync — no accounts)
+// The app proves it is the real Money app on a real Apple device: Apple signs an attestation of a
+// Secure Enclave key; we check it here and mint the usual 90-day session. Stateless: the challenge is a
+// short-lived JWT, nothing is stored. Steps follow Apple's "Validating apps that connect to your server".
+// ========================================================
+
+// Apple App Attestation Root CA — https://www.apple.com/certificateauthority/Apple_App_Attestation_Root_CA.pem
+// SHA-256 fingerprint 1C:B9:82:3B:A2:8B:A6:AD:2D:33:A0:06:94:1D:E2:AE:4F:51:3E:F1:D4:E8:31:B9:F7:E0:FA:7B:62:42:C9:32
+const APPLE_APP_ATTEST_ROOT = new x509.X509Certificate(`-----BEGIN CERTIFICATE-----
+MIICITCCAaegAwIBAgIQC/O+DvHN0uD7jG5yH2IXmDAKBggqhkjOPQQDAzBSMSYw
+JAYDVQQDDB1BcHBsZSBBcHAgQXR0ZXN0YXRpb24gUm9vdCBDQTETMBEGA1UECgwK
+QXBwbGUgSW5jLjETMBEGA1UECAwKQ2FsaWZvcm5pYTAeFw0yMDAzMTgxODMyNTNa
+Fw00NTAzMTUwMDAwMDBaMFIxJjAkBgNVBAMMHUFwcGxlIEFwcCBBdHRlc3RhdGlv
+biBSb290IENBMRMwEQYDVQQKDApBcHBsZSBJbmMuMRMwEQYDVQQIDApDYWxpZm9y
+bmlhMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAERTHhmLW07ATaFQIEVwTtT4dyctdh
+NbJhFs/Ii2FdCgAHGbpphY3+d8qjuDngIN3WVhQUBHAoMeQ/cLiP1sOUtgjqK9au
+Yen1mMEvRq9Sk3Jm5X8U62H+xTD3FE9TgS41o0IwQDAPBgNVHRMBAf8EBTADAQH/
+MB0GA1UdDgQWBBSskRBTM72+aEH/pwyp5frq5eWKoTAOBgNVHQ8BAf8EBAMCAQYw
+CgYIKoZIzj0EAwMDaAAwZQIwQgFGnByvsiVbpTKwSga0kP0e8EeDS4+sQmTvb7vn
+53O5+FRXgeLhpJ06ysC5PrOyAjEAp5U4xDgEgllF7En3VcE3iexZZtKeYnpqtijV
+oyFraWVIyd/dganmrduC1bmTBGwD
+-----END CERTIFICATE-----`);
+
+const APP_ATTEST_NONCE_OID = "1.2.840.113635.100.8.2";
+
+function b64ToBytes(b64: string): Uint8Array {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+async function sha256(data: Uint8Array): Promise<Uint8Array> {
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", data));
+}
+
+function concatBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
+  const out = new Uint8Array(a.length + b.length);
+  out.set(a, 0);
+  out.set(b, a.length);
+  return out;
+}
+
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+  return diff === 0;
+}
+
+// Throws (with a short reason) unless `attestationB64` is Apple's attestation of `keyIdB64` for `appId`
+// over `challenge`.
+async function verifyAppAttestation(attestationB64: string, keyIdB64: string, challenge: string, appId: string) {
+  const att = cborDecode(b64ToBytes(attestationB64)) as {
+    fmt?: string;
+    attStmt?: { x5c?: Uint8Array[] };
+    authData?: Uint8Array;
+  };
+  if (att?.fmt !== "apple-appattest") throw new Error("fmt");
+  const x5c = att.attStmt?.x5c ?? [];
+  const authData = att.authData ? new Uint8Array(att.authData) : null;
+  if (x5c.length < 2 || !authData || authData.length < 55) throw new Error("shape");
+
+  // 1. Certificate chain: credential cert ← intermediate ← Apple App Attestation Root CA.
+  const cred = new x509.X509Certificate(new Uint8Array(x5c[0]));
+  const inter = new x509.X509Certificate(new Uint8Array(x5c[1]));
+  const now = new Date();
+  if (!(await inter.verify({ publicKey: APPLE_APP_ATTEST_ROOT.publicKey, date: now }))) throw new Error("chain-root");
+  if (!(await cred.verify({ publicKey: inter.publicKey, date: now }))) throw new Error("chain-inter");
+
+  // 2–4. nonce = SHA256(authData ‖ SHA256(challenge)) must equal the credential cert's nonce extension.
+  const clientDataHash = await sha256(new TextEncoder().encode(challenge));
+  const nonce = await sha256(concatBytes(authData, clientDataHash));
+  const ext = cred.getExtension(APP_ATTEST_NONCE_OID);
+  if (!ext) throw new Error("nonce-ext");
+  const extValue = new Uint8Array(ext.value);
+  // DER: SEQUENCE { [1] { OCTET STRING (32) nonce } } — the nonce is the trailing 32 bytes.
+  if (extValue.length < 34 || extValue[extValue.length - 34] !== 0x04 || extValue[extValue.length - 33] !== 0x20) {
+    throw new Error("nonce-der");
+  }
+  if (!sameBytes(extValue.slice(extValue.length - 32), nonce)) throw new Error("nonce");
+
+  // 5. keyId = SHA256(the credential public key, uncompressed P-256 point).
+  const spki = new Uint8Array(cred.publicKey.rawData);
+  const point = spki.slice(spki.length - 65);
+  const keyId = b64ToBytes(keyIdB64);
+  if (point[0] !== 0x04 || !sameBytes(await sha256(point), keyId)) throw new Error("key-id");
+
+  // 6. rpIdHash = SHA256(TEAMID.bundleid).
+  if (!sameBytes(authData.slice(0, 32), await sha256(new TextEncoder().encode(appId)))) throw new Error("app-id");
+
+  // 7. A fresh key: counter 0.
+  const counter = (authData[33] << 24) | (authData[34] << 16) | (authData[35] << 8) | authData[36];
+  if (counter !== 0) throw new Error("counter");
+
+  // 8. aaguid: production ("appattest" + 7 zero bytes) or development ("appattestdevelop").
+  const aaguid = authData.slice(37, 53);
+  const prod = concatBytes(new TextEncoder().encode("appattest"), new Uint8Array(7));
+  const dev = new TextEncoder().encode("appattestdevelop");
+  if (!sameBytes(aaguid, prod) && !sameBytes(aaguid, dev)) throw new Error("aaguid");
+
+  // 9. credentialId = keyId.
+  const credIdLength = (authData[53] << 8) | authData[54];
+  if (!sameBytes(authData.slice(55, 55 + credIdLength), keyId)) throw new Error("cred-id");
+}
 
 Deno.serve(async (req: Request) => {
   // 1. Handle CORS preflight
@@ -93,7 +193,7 @@ Deno.serve(async (req: Request) => {
   const PLAID_REDIRECT_URI = Deno.env.get("PLAID_REDIRECT_URI");
   const SESSION_SIGNING_KEY = Deno.env.get("SESSION_SIGNING_KEY") || "";
   const APPLE_BUNDLE_ID = Deno.env.get("APPLE_BUNDLE_ID") || "com.improve.money";
-  const APPLE_TEAM_ID = Deno.env.get("APPLE_TEAM_ID") || "";
+  const APPLE_TEAM_ID = Deno.env.get("APPLE_TEAM_ID") || "RCSLHHHTU3";
   const APPLE_KEY_ID = Deno.env.get("APPLE_KEY_ID") || "";
   const APPLE_PRIVATE_KEY = Deno.env.get("APPLE_PRIVATE_KEY") || "";
 
@@ -141,6 +241,8 @@ Deno.serve(async (req: Request) => {
   try {
     // ==========================================
     // ACTION: session (No session token required)
+    // LEGACY: Money builds from before sign-in was removed (Apple identity token). New builds use
+    // attest_challenge + session_attest. Remove once those old builds are gone.
     // ==========================================
     if (action === "session") {
       const appleIdentityToken = typeof body.apple_identity_token === "string" ? body.apple_identity_token : "";
@@ -184,6 +286,79 @@ Deno.serve(async (req: Request) => {
       const expiresAt = nowSeconds + 90 * 24 * 60 * 60;
       const keyBytes = new TextEncoder().encode(SESSION_SIGNING_KEY);
 
+      const session_token = await new jose.SignJWT({ sub })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuer(SESSION_ISSUER)
+        .setIssuedAt(nowSeconds)
+        .setExpirationTime(expiresAt)
+        .sign(keyBytes);
+
+      logAction(action, 200);
+      return jsonResponse({ session_token, expires_at: expiresAt }, 200);
+    }
+
+    // ========================================================
+    // ACTION: attest_challenge (No session token required)
+    // A one-time challenge for App Attest — a 5-minute signed token, so nothing is stored.
+    // ========================================================
+    if (action === "attest_challenge") {
+      if (!SESSION_SIGNING_KEY) {
+        logAction(action, 500);
+        return jsonResponse({ error_code: "CONFIGURATION_ERROR", error_message: "Server configuration error." }, 500);
+      }
+      const random = crypto.getRandomValues(new Uint8Array(32));
+      const challenge = await new jose.SignJWT({ typ: "attest", n: btoa(String.fromCharCode(...random)) })
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuer(SESSION_ISSUER)
+        .setIssuedAt()
+        .setExpirationTime("5m")
+        .sign(new TextEncoder().encode(SESSION_SIGNING_KEY));
+      logAction(action, 200);
+      return jsonResponse({ challenge });
+    }
+
+    // ========================================================
+    // ACTION: session_attest (No session token required)
+    // App Attest attestation → our 90-day session (replaces the Apple-identity-token `session`).
+    // ========================================================
+    if (action === "session_attest") {
+      const keyId = typeof body.key_id === "string" ? body.key_id : "";
+      const attestation = typeof body.attestation === "string" ? body.attestation : "";
+      const challenge = typeof body.challenge === "string" ? body.challenge : "";
+      if (!keyId || !attestation || !challenge) {
+        logAction(action, 400);
+        return jsonResponse(
+          { error_code: "MISSING_FIELD", error_message: "Fields 'key_id', 'attestation' and 'challenge' are required." },
+          400
+        );
+      }
+      if (!SESSION_SIGNING_KEY) {
+        logAction(action, 500);
+        return jsonResponse({ error_code: "CONFIGURATION_ERROR", error_message: "Server configuration error." }, 500);
+      }
+      const keyBytes = new TextEncoder().encode(SESSION_SIGNING_KEY);
+
+      // The challenge must be one we issued in the last 5 minutes.
+      try {
+        const { payload } = await jose.jwtVerify(challenge, keyBytes, { issuer: SESSION_ISSUER });
+        if (payload.typ !== "attest") throw new Error("typ");
+      } catch {
+        logAction(action, 401, "CHALLENGE_INVALID");
+        return jsonResponse({ error_code: "CHALLENGE_INVALID", error_message: "The challenge expired — try again." }, 401);
+      }
+
+      try {
+        await verifyAppAttestation(attestation, keyId, challenge, `${APPLE_TEAM_ID}.${APPLE_BUNDLE_ID}`);
+      } catch (e) {
+        logAction(action, 401, `ATTESTATION_INVALID:${e instanceof Error ? e.message : "unknown"}`);
+        return jsonResponse({ error_code: "ATTESTATION_INVALID", error_message: "This device couldn't be verified." }, 401);
+      }
+
+      // The session subject: SHA-256 of the attested key id (anonymous, per install).
+      const subBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(keyId));
+      const sub = Array.from(new Uint8Array(subBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const expiresAt = nowSeconds + 90 * 24 * 60 * 60;
       const session_token = await new jose.SignJWT({ sub })
         .setProtectedHeader({ alg: "HS256" })
         .setIssuer(SESSION_ISSUER)
@@ -251,111 +426,6 @@ Deno.serve(async (req: Request) => {
       const fx = await fxRes.json().catch(() => ({}));
       logAction(action, 200);
       return jsonResponse({ base: fx.base ?? base, date: fx.date ?? "", rates: fx.rates ?? {} });
-    }
-
-    // ========================================================
-    // ACTION: revoke_apple (App Store Guideline 5.1.1(v)) — No session token required
-    // Every Improve app calls this from Delete Account. The proof is the one-time Sign in with Apple
-    // authorization code itself: it's minutes-lived, single-use, and only redeemable with our key for
-    // the app (client_id) that issued it. Stores nothing.
-    // ========================================================
-    if (action === "revoke_apple") {
-      const authCode = typeof body.authorization_code === "string" ? body.authorization_code : "";
-      const requested = typeof body.client_id === "string" ? body.client_id : "";
-      // The app's bundle id is the Sign in with Apple client_id; only our own apps are accepted.
-      const clientId = APPLE_REVOKE_CLIENT_IDS.has(requested) ? requested : APPLE_BUNDLE_ID;
-      if (!authCode) {
-        logAction(action, 400);
-        return jsonResponse(
-          { error_code: "MISSING_FIELD", error_message: "Field 'authorization_code' is required." },
-          400
-        );
-      }
-
-      if (!APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_PRIVATE_KEY) {
-        logAction(action, 500);
-        return jsonResponse(
-          { error_code: "CONFIGURATION_ERROR", error_message: "Apple revocation credentials not configured." },
-          500
-        );
-      }
-
-      // Build Apple client secret ES256 JWT
-      let clientSecret: string;
-      try {
-        const privateKey = await jose.importPKCS8(APPLE_PRIVATE_KEY, "ES256");
-        clientSecret = await new jose.SignJWT({})
-          .setProtectedHeader({ alg: "ES256", kid: APPLE_KEY_ID })
-          .setIssuer(APPLE_TEAM_ID)
-          .setIssuedAt()
-          .setExpirationTime("5m")
-          .setAudience("https://appleid.apple.com")
-          .setSubject(clientId)
-          .sign(privateKey);
-      } catch {
-        logAction(action, 500);
-        return jsonResponse(
-          { error_code: "APPLE_KEY_ERROR", error_message: "Failed to sign Apple client secret." },
-          500
-        );
-      }
-
-      // 1. Exchange authorization code for refresh token
-      const tokenParams = new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code: authCode,
-        grant_type: "authorization_code",
-      });
-
-      const tokenRes = await fetch("https://appleid.apple.com/auth/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: tokenParams.toString(),
-      });
-
-      const tokenData = await tokenRes.json().catch(() => ({}));
-      if (!tokenRes.ok || !tokenData.refresh_token) {
-        logAction(action, tokenRes.status, tokenData.error);
-        return jsonResponse(
-          {
-            error_type: "APPLE_AUTH_ERROR",
-            error_code: tokenData.error || "TOKEN_EXCHANGE_FAILED",
-            error_message: tokenData.error_description || "Failed to exchange Apple authorization code.",
-          },
-          tokenRes.status >= 400 ? tokenRes.status : 400
-        );
-      }
-
-      // 2. Immediately revoke the refresh token
-      const revokeParams = new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        token: tokenData.refresh_token,
-        token_type_hint: "refresh_token",
-      });
-
-      const revokeRes = await fetch("https://appleid.apple.com/auth/revoke", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: revokeParams.toString(),
-      });
-
-      if (!revokeRes.ok) {
-        const revokeData = await revokeRes.json().catch(() => ({}));
-        logAction(action, revokeRes.status, revokeData.error);
-        return jsonResponse(
-          {
-            error_type: "APPLE_AUTH_ERROR",
-            error_code: revokeData.error || "REVOCATION_FAILED",
-            error_message: "Failed to revoke Apple token.",
-          },
-          revokeRes.status >= 400 ? revokeRes.status : 400
-        );
-      }
-
-      logAction(action, 200);
-      return jsonResponse({ revoked: true });
     }
 
     // ========================================================
