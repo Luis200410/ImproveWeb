@@ -57,6 +57,18 @@ async function siteIcon(siteUrl: string): Promise<string | null> {
 // In-memory Apple JWKS cache
 const APPLE_JWKS = jose.createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
 
+// Sign in with Apple client ids (the apps' bundle ids) that revoke_apple accepts.
+const APPLE_REVOKE_CLIENT_IDS = new Set([
+  "com.improve.app",
+  "com.improve.secondbrain",
+  "com.improve.productivity",
+  "com.improve.body",
+  "com.improve.relationships",
+  "com.improve.money",
+  "com.improve.work",
+  "com.improve.mind",
+]);
+
 Deno.serve(async (req: Request) => {
   // 1. Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -239,6 +251,111 @@ Deno.serve(async (req: Request) => {
       const fx = await fxRes.json().catch(() => ({}));
       logAction(action, 200);
       return jsonResponse({ base: fx.base ?? base, date: fx.date ?? "", rates: fx.rates ?? {} });
+    }
+
+    // ========================================================
+    // ACTION: revoke_apple (App Store Guideline 5.1.1(v)) — No session token required
+    // Every Improve app calls this from Delete Account. The proof is the one-time Sign in with Apple
+    // authorization code itself: it's minutes-lived, single-use, and only redeemable with our key for
+    // the app (client_id) that issued it. Stores nothing.
+    // ========================================================
+    if (action === "revoke_apple") {
+      const authCode = typeof body.authorization_code === "string" ? body.authorization_code : "";
+      const requested = typeof body.client_id === "string" ? body.client_id : "";
+      // The app's bundle id is the Sign in with Apple client_id; only our own apps are accepted.
+      const clientId = APPLE_REVOKE_CLIENT_IDS.has(requested) ? requested : APPLE_BUNDLE_ID;
+      if (!authCode) {
+        logAction(action, 400);
+        return jsonResponse(
+          { error_code: "MISSING_FIELD", error_message: "Field 'authorization_code' is required." },
+          400
+        );
+      }
+
+      if (!APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_PRIVATE_KEY) {
+        logAction(action, 500);
+        return jsonResponse(
+          { error_code: "CONFIGURATION_ERROR", error_message: "Apple revocation credentials not configured." },
+          500
+        );
+      }
+
+      // Build Apple client secret ES256 JWT
+      let clientSecret: string;
+      try {
+        const privateKey = await jose.importPKCS8(APPLE_PRIVATE_KEY, "ES256");
+        clientSecret = await new jose.SignJWT({})
+          .setProtectedHeader({ alg: "ES256", kid: APPLE_KEY_ID })
+          .setIssuer(APPLE_TEAM_ID)
+          .setIssuedAt()
+          .setExpirationTime("5m")
+          .setAudience("https://appleid.apple.com")
+          .setSubject(clientId)
+          .sign(privateKey);
+      } catch {
+        logAction(action, 500);
+        return jsonResponse(
+          { error_code: "APPLE_KEY_ERROR", error_message: "Failed to sign Apple client secret." },
+          500
+        );
+      }
+
+      // 1. Exchange authorization code for refresh token
+      const tokenParams = new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: authCode,
+        grant_type: "authorization_code",
+      });
+
+      const tokenRes = await fetch("https://appleid.apple.com/auth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: tokenParams.toString(),
+      });
+
+      const tokenData = await tokenRes.json().catch(() => ({}));
+      if (!tokenRes.ok || !tokenData.refresh_token) {
+        logAction(action, tokenRes.status, tokenData.error);
+        return jsonResponse(
+          {
+            error_type: "APPLE_AUTH_ERROR",
+            error_code: tokenData.error || "TOKEN_EXCHANGE_FAILED",
+            error_message: tokenData.error_description || "Failed to exchange Apple authorization code.",
+          },
+          tokenRes.status >= 400 ? tokenRes.status : 400
+        );
+      }
+
+      // 2. Immediately revoke the refresh token
+      const revokeParams = new URLSearchParams({
+        client_id: clientId,
+        client_secret: clientSecret,
+        token: tokenData.refresh_token,
+        token_type_hint: "refresh_token",
+      });
+
+      const revokeRes = await fetch("https://appleid.apple.com/auth/revoke", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: revokeParams.toString(),
+      });
+
+      if (!revokeRes.ok) {
+        const revokeData = await revokeRes.json().catch(() => ({}));
+        logAction(action, revokeRes.status, revokeData.error);
+        return jsonResponse(
+          {
+            error_type: "APPLE_AUTH_ERROR",
+            error_code: revokeData.error || "REVOCATION_FAILED",
+            error_message: "Failed to revoke Apple token.",
+          },
+          revokeRes.status >= 400 ? revokeRes.status : 400
+        );
+      }
+
+      logAction(action, 200);
+      return jsonResponse({ revoked: true });
     }
 
     // ========================================================
@@ -614,105 +731,6 @@ Deno.serve(async (req: Request) => {
 
       logAction(action, 200);
       return jsonResponse({ removed: true });
-    }
-
-    // ========================================================
-    // ACTION: revoke_apple (App Store Guideline 5.1.1(v))
-    // ==========================================
-    if (action === "revoke_apple") {
-      const authCode = typeof body.authorization_code === "string" ? body.authorization_code : "";
-      if (!authCode) {
-        logAction(action, 400);
-        return jsonResponse(
-          { error_code: "MISSING_FIELD", error_message: "Field 'authorization_code' is required." },
-          400
-        );
-      }
-
-      if (!APPLE_TEAM_ID || !APPLE_KEY_ID || !APPLE_PRIVATE_KEY) {
-        logAction(action, 500);
-        return jsonResponse(
-          { error_code: "CONFIGURATION_ERROR", error_message: "Apple revocation credentials not configured." },
-          500
-        );
-      }
-
-      // Build Apple client secret ES256 JWT
-      let clientSecret: string;
-      try {
-        const privateKey = await jose.importPKCS8(APPLE_PRIVATE_KEY, "ES256");
-        clientSecret = await new jose.SignJWT({})
-          .setProtectedHeader({ alg: "ES256", kid: APPLE_KEY_ID })
-          .setIssuer(APPLE_TEAM_ID)
-          .setIssuedAt()
-          .setExpirationTime("5m")
-          .setAudience("https://appleid.apple.com")
-          .setSubject(APPLE_BUNDLE_ID)
-          .sign(privateKey);
-      } catch {
-        logAction(action, 500);
-        return jsonResponse(
-          { error_code: "APPLE_KEY_ERROR", error_message: "Failed to sign Apple client secret." },
-          500
-        );
-      }
-
-      // 1. Exchange authorization code for refresh token
-      const tokenParams = new URLSearchParams({
-        client_id: APPLE_BUNDLE_ID,
-        client_secret: clientSecret,
-        code: authCode,
-        grant_type: "authorization_code",
-      });
-
-      const tokenRes = await fetch("https://appleid.apple.com/auth/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: tokenParams.toString(),
-      });
-
-      const tokenData = await tokenRes.json().catch(() => ({}));
-      if (!tokenRes.ok || !tokenData.refresh_token) {
-        logAction(action, tokenRes.status, tokenData.error);
-        return jsonResponse(
-          {
-            error_type: "APPLE_AUTH_ERROR",
-            error_code: tokenData.error || "TOKEN_EXCHANGE_FAILED",
-            error_message: tokenData.error_description || "Failed to exchange Apple authorization code.",
-          },
-          tokenRes.status >= 400 ? tokenRes.status : 400
-        );
-      }
-
-      // 2. Immediately revoke the refresh token
-      const revokeParams = new URLSearchParams({
-        client_id: APPLE_BUNDLE_ID,
-        client_secret: clientSecret,
-        token: tokenData.refresh_token,
-        token_type_hint: "refresh_token",
-      });
-
-      const revokeRes = await fetch("https://appleid.apple.com/auth/revoke", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: revokeParams.toString(),
-      });
-
-      if (!revokeRes.ok) {
-        const revokeData = await revokeRes.json().catch(() => ({}));
-        logAction(action, revokeRes.status, revokeData.error);
-        return jsonResponse(
-          {
-            error_type: "APPLE_AUTH_ERROR",
-            error_code: revokeData.error || "REVOCATION_FAILED",
-            error_message: "Failed to revoke Apple token.",
-          },
-          revokeRes.status >= 400 ? revokeRes.status : 400
-        );
-      }
-
-      logAction(action, 200);
-      return jsonResponse({ revoked: true });
     }
 
     // ========================================================
