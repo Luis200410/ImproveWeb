@@ -1,6 +1,8 @@
 import * as jose from "npm:jose@^5.9.6";
 import { decode as cborDecode } from "npm:cbor-x@1.6.0";
 import * as x509 from "npm:@peculiar/x509@1.12.3";
+import { p256 } from "npm:@noble/curves@1.4.0/p256";
+import { p384 } from "npm:@noble/curves@1.4.0/p384";
 
 x509.cryptoProvider.set(crypto);
 
@@ -113,6 +115,44 @@ function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
+// DER: the full TLV at `offset` → [start, end).
+function derElement(der: Uint8Array, offset: number): [number, number] {
+  let len = der[offset + 1];
+  let header = 2;
+  if (len & 0x80) {
+    const n = len & 0x7f;
+    len = 0;
+    for (let i = 0; i < n; i++) len = (len << 8) | der[offset + 2 + i];
+    header = 2 + n;
+  }
+  return [offset, offset + header + len];
+}
+
+// `cert` was signed by `issuer`. Checked with @noble/curves, not WebCrypto: Apple signs the App Attest
+// credential certificate with a P-384 key over SHA-256, a curve/hash pair Deno's WebCrypto doesn't
+// implement ("Not implemented") — every device failed verification.
+async function signedBy(cert: x509.X509Certificate, issuer: x509.X509Certificate, now: Date): Promise<boolean> {
+  if (now < cert.notBefore || now > cert.notAfter) return false;
+  const der = new Uint8Array(cert.rawData);
+  // Certificate ::= SEQUENCE { tbsCertificate, signatureAlgorithm, signatureValue BIT STRING }
+  const outerHeader = der[1] & 0x80 ? 2 + (der[1] & 0x7f) : 2;
+  const [tbsStart, tbsEnd] = derElement(der, outerHeader);
+  const [, algEnd] = derElement(der, tbsEnd);
+  const [bitStart, bitEnd] = derElement(der, algEnd);
+  const bitHeader = der[bitStart + 1] & 0x80 ? 2 + (der[bitStart + 1] & 0x7f) : 2;
+  const tbs = der.slice(tbsStart, tbsEnd);
+  const sig = der.slice(bitStart + bitHeader + 1, bitEnd);   // skip the unused-bits byte → DER ECDSA signature
+  const hashName = (cert.signatureAlgorithm as { hash?: { name?: string } }).hash?.name ?? "SHA-256";
+  const digest = new Uint8Array(await crypto.subtle.digest(hashName, tbs));
+  const spki = new Uint8Array(issuer.publicKey.rawData);
+  // Uncompressed point at the end of the SubjectPublicKeyInfo: 97 bytes (P-384) or 65 (P-256).
+  const p384Point = spki.slice(spki.length - 97);
+  if (spki.length >= 120 && p384Point[0] === 0x04) {
+    return p384.verify(sig, digest, p384Point, { lowS: false, prehash: false });
+  }
+  return p256.verify(sig, digest, spki.slice(spki.length - 65), { lowS: false, prehash: false });
+}
+
 // Throws (with a short reason) unless `attestationB64` is Apple's attestation of `keyIdB64` for `appId`
 // over `challenge`.
 async function verifyAppAttestation(attestationB64: string, keyIdB64: string, challenge: string, appId: string) {
@@ -130,8 +170,8 @@ async function verifyAppAttestation(attestationB64: string, keyIdB64: string, ch
   const cred = new x509.X509Certificate(new Uint8Array(x5c[0]));
   const inter = new x509.X509Certificate(new Uint8Array(x5c[1]));
   const now = new Date();
-  if (!(await inter.verify({ publicKey: APPLE_APP_ATTEST_ROOT.publicKey, date: now }))) throw new Error("chain-root");
-  if (!(await cred.verify({ publicKey: inter.publicKey, date: now }))) throw new Error("chain-inter");
+  if (!(await signedBy(inter, APPLE_APP_ATTEST_ROOT, now))) throw new Error("chain-root");
+  if (!(await signedBy(cred, inter, now))) throw new Error("chain-inter");
 
   // 2–4. nonce = SHA256(authData ‖ SHA256(challenge)) must equal the credential cert's nonce extension.
   const clientDataHash = await sha256(new TextEncoder().encode(challenge));
