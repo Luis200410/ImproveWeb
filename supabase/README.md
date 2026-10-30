@@ -19,7 +19,7 @@ npx supabase secrets set PLAID_CLIENT_ID="your_plaid_client_id"
 npx supabase secrets set PLAID_SECRET="your_plaid_sandbox_or_production_secret"
 npx supabase secrets set PLAID_ENV="sandbox" # or "production"
 # Optional: redirect URI if configured in Plaid dashboard
-npx supabase secrets set PLAID_REDIRECT_URI="https://improve-club.com/plaid-redirect"
+npx supabase secrets set PLAID_REDIRECT_URI="https://improve-club.com/plaid/oauth"
 
 # 2. Session Signing Key (Random 64-character / 64-byte key)
 # Generate with: openssl rand -hex 32
