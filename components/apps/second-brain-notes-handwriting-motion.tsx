@@ -164,11 +164,27 @@ export function SecondBrainNotesHandwritingMotion() {
         }
       : currentBeat.camera
 
-  // Advance narrative beats automatically
+  const [typedSubtitle, setTypedSubtitle] = useState('')
+
+  useEffect(() => {
+    const fullText = currentBeat.caption
+    setTypedSubtitle('')
+    let i = 0
+    const interval = setInterval(() => {
+      i += 1
+      setTypedSubtitle(fullText.slice(0, i))
+      if (i >= fullText.length) {
+        clearInterval(interval)
+      }
+    }, 28)
+    return () => clearInterval(interval)
+  }, [beatIndex, currentBeat.caption])
+
+  // Advance narrative beats automatically — unhurried pace for clear reading
   useEffect(() => {
     const timer = setTimeout(() => {
       setBeatIndex((prev) => (prev + 1) % BEATS.length)
-    }, currentBeat.duration)
+    }, currentBeat.duration + 900)
     return () => clearTimeout(timer)
   }, [beatIndex, currentBeat.duration])
 
@@ -182,26 +198,37 @@ export function SecondBrainNotesHandwritingMotion() {
   const showSlashMenu = beatIndex === 6
 
   return (
-    <section className="py-10 sm:py-12 px-3 sm:px-6 relative overflow-hidden">
+    <section className="py-6 sm:py-10 px-3 sm:px-6 relative overflow-hidden">
       <div className="max-w-6xl mx-auto">
-        {/* Section Header */}
-        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4 px-1">
+        {/* Section Header Outside Container — Dynamic Beat Title */}
+        <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-4 px-1">
           <div>
-            <p className="kicker text-[#FF6900] mb-1.5 sm:mb-2">
+            <p className="kicker text-[#FF6900] mb-1">
               HYBRID INK, AI SUMMARY & SLASH COMMANDS
             </p>
-            <h3 className="type-title text-2xl sm:text-5xl font-bold uppercase tracking-tight text-white">
-              Handwriting OCR & Smart Note System
-            </h3>
+            <div className="min-h-[32px] sm:min-h-[48px] flex items-center">
+              <AnimatePresence mode="wait">
+                <motion.h3
+                  key={`outside-title-${currentBeat.id}`}
+                  initial={{ opacity: 0, y: -8, filter: 'blur(6px)' }}
+                  animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-display text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-[0.06em] text-white leading-none text-left"
+                >
+                  {currentBeat.bgWord}
+                </motion.h3>
+              </AnimatePresence>
+            </div>
           </div>
           <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white/45">
             {currentBeat.label}
           </p>
         </div>
 
-        {/* Separate Global .access-glass Container */}
+        {/* Separate Global .access-glass Container (Fits in one frame) */}
         <div
-          className="access-glass relative min-h-[620px] sm:min-h-[750px] flex flex-col items-center justify-center overflow-hidden select-none px-3 py-6 sm:px-8 sm:py-10"
+          className="access-glass relative min-h-[540px] sm:min-h-[630px] flex flex-col justify-between overflow-hidden select-none px-3 py-4 sm:px-6 sm:py-6"
           style={{ perspective: '1500px' }}
         >
           {/* Ambient radial glow */}
@@ -213,33 +240,19 @@ export function SecondBrainNotesHandwritingMotion() {
             }}
           />
 
-          {/* GIANT KINETIC TYPOGRAPHY BEHIND THE UI */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={currentBeat.bgWord}
-                initial={{ opacity: 0, scale: 0.88, y: 24, filter: 'blur(12px)' }}
-                animate={{ opacity: 0.06, scale: 1, y: 0, filter: 'blur(0px)' }}
-                exit={{ opacity: 0, scale: 1.08, y: -24, filter: 'blur(12px)' }}
-                transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                className="font-display text-[4.5rem] sm:text-[10rem] md:text-[14rem] uppercase tracking-[-0.04em] text-white whitespace-nowrap leading-none"
-              >
-                {currentBeat.bgWord}
-              </motion.span>
-            </AnimatePresence>
-          </div>
-
-          {/* 3D CAMERA RIG */}
-          <motion.div
-            animate={responsiveCamera}
-            transition={{
-              duration: 0.9,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            style={{ transformStyle: 'preserve-3d' }}
-            className="relative z-10 w-full max-w-[1040px] pb-12 sm:pb-10"
-          >
-            <div className="rounded-[22px] sm:rounded-[26px] bg-[#070709] border border-white/[0.1] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.8)] grid grid-cols-12 min-h-[510px] sm:min-h-[560px]">
+          {/* MAIN STAGE: 3D UI CARD STAGE (ALWAYS PRESENT) */}
+          <div className="relative z-10 w-full flex-1 flex items-center justify-center py-1">
+            {/* 3D CAMERA RIG */}
+            <motion.div
+              animate={responsiveCamera}
+              transition={{
+                duration: 0.9,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              style={{ transformStyle: 'preserve-3d' }}
+              className="relative z-10 w-full max-w-[1040px]"
+            >
+              <div className="rounded-[22px] sm:rounded-[26px] bg-[#070709] border border-white/[0.1] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.8)] grid grid-cols-12 min-h-[510px] sm:min-h-[560px]">
               {/* =================================================================
                   LEFT NOTE INSPECTOR SIDEBAR
                   - On Mobile (<768px): Full-width (col-span-12) during Beats 1, 2, 3
@@ -929,24 +942,15 @@ export function SecondBrainNotesHandwritingMotion() {
                 </div>
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
 
-          {/* BOTTOM CAPTION OVERLAY */}
-          <div className="pointer-events-none absolute bottom-4 sm:bottom-5 inset-x-0 flex justify-center px-4 sm:px-6 z-20">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentBeat.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.35 }}
-                className="rounded-2xl sm:rounded-full bg-black/75 backdrop-blur-md border border-white/12 px-4 sm:px-5 py-2 sm:py-2.5 text-center shadow-lg max-w-[95%]"
-              >
-                <p className="text-[11px] sm:text-sm text-white/90 font-medium tracking-wide leading-snug">
-                  {currentBeat.caption}
-                </p>
-              </motion.div>
-            </AnimatePresence>
+          {/* BOTTOM SUBTITLE — TYPEWRITER TEXT WHILE CARD IS SHOWING */}
+          <div className="relative z-30 w-full flex justify-center pt-3 pb-1 min-h-[36px] items-center pointer-events-none">
+            <p className="text-xs sm:text-base md:text-lg text-white/90 font-medium tracking-wide text-center max-w-2xl leading-snug">
+              {typedSubtitle}
+              <span className="inline-block w-[2px] h-[1em] bg-[#FF6900] ml-1 align-middle animate-pulse" />
+            </p>
           </div>
         </div>
       </div>

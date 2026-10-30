@@ -342,6 +342,7 @@ const BEAT_COPY: Record<
 
 export function SecondBrainReverseEngineerMotion() {
   const [beat, setBeat] = useState<Beat>(0);
+  const [typedSubtitle, setTypedSubtitle] = useState<string>("");
   const [completedMicroTasks, setCompletedMicroTasks] = useState<number>(0);
   const [viewport, setViewport] = useState<"mobile" | "tablet" | "desktop">("desktop");
 
@@ -357,22 +358,37 @@ export function SecondBrainReverseEngineerMotion() {
     return () => window.removeEventListener("resize", updateViewport);
   }, []);
 
-  // Seamless continuous release-video sequence across all 13 beats
+  // Typewriter effect for the bottom subtitle while the card is showing
+  useEffect(() => {
+    const fullText = BEAT_COPY[beat].headline;
+    setTypedSubtitle("");
+    let i = 0;
+    const interval = setInterval(() => {
+      i += 1;
+      setTypedSubtitle(fullText.slice(0, i));
+      if (i >= fullText.length) {
+        clearInterval(interval);
+      }
+    }, 30);
+    return () => clearInterval(interval);
+  }, [beat]);
+
+  // Seamless continuous release-video sequence across all 13 beats — unhurried pace for clear reading
   useEffect(() => {
     const durations: Record<Beat, number> = {
-      0: 2400, // 0: Project Card Overview ("Statistics")
-      1: 3000, // 1: Project Card -> Red Flame clicked -> Commitment Status Popover
-      2: 3000, // 2: Project Card -> Yellow Ring clicked -> Card Status Popover
-      3: 3300, // 3: Project Card -> Tag 1 ("Second...") opens Area Popover
-      4: 3500, // 4: Project Card -> Tag 2 ("Statistics") opens Habit Popover ("No habit - Let scheduler match")
-      5: 3300, // 5: Project Card -> Tag 3 ("Oct 30") opens October 2026 Calendar Popover
-      6: 2700, // 6: Project Card -> Zoom to Telemetry row (All done, 3 Notes, 5 Resources, 3/3 Tasks, 100% bar)
-      7: 3000, // 7: Cut to Giant White AI Sparkle Trigger Button + Tap shockwave
-      8: 2200, // 8: Breakdown Card — Zoom on Task 1 ("Today" / "Mid")
-      9: 3100, // 9: Breakdown Card — Task 2 ("Oct 21") + Priority Level Popover opens ("High ✓", "Mid", "Low")
-      10: 2100, // 10: Breakdown Card — Camera glides to Task 3 ("Oct 22" / "High")
-      11: 2100, // 11: Breakdown Card — Camera glides to Task 4 ("Oct 23" / "High")
-      12: 4800, // 12: Unified Micro-Tasks Frame ("Unit 2 descriptive statistics" + Micro-tasks ticking off from 0/10 0% -> 10/10 100%)
+      0: 3800, // 0: Project Card Overview ("Statistics")
+      1: 4200, // 1: Project Card -> Red Flame clicked -> Commitment Status Popover
+      2: 4200, // 2: Project Card -> Yellow Ring clicked -> Card Status Popover
+      3: 4500, // 3: Project Card -> Tag 1 ("Second...") opens Area Popover
+      4: 4700, // 4: Project Card -> Tag 2 ("Statistics") opens Habit Popover ("No habit - Let scheduler match")
+      5: 4500, // 5: Project Card -> Tag 3 ("Oct 30") opens October 2026 Calendar Popover
+      6: 4000, // 6: Project Card -> Zoom to Telemetry row (All done, 3 Notes, 5 Resources, 3/3 Tasks, 100% bar)
+      7: 4200, // 7: Cut to Giant White AI Sparkle Trigger Button + Tap shockwave
+      8: 3800, // 8: Breakdown Card — Zoom on Task 1 ("Today" / "Mid")
+      9: 4400, // 9: Breakdown Card — Task 2 ("Oct 21") + Priority Level Popover opens ("High ✓", "Mid", "Low")
+      10: 3800, // 10: Breakdown Card — Camera glides to Task 3 ("Oct 22" / "High")
+      11: 3800, // 11: Breakdown Card — Camera glides to Task 4 ("Oct 23" / "High")
+      12: 6000, // 12: Unified Micro-Tasks Frame ("Unit 2 descriptive statistics" + Micro-tasks ticking off from 0/10 0% -> 10/10 100%)
     };
 
     const timer = setTimeout(() => {
@@ -389,11 +405,11 @@ export function SecondBrainReverseEngineerMotion() {
       return;
     }
 
-    const t1 = setTimeout(() => setCompletedMicroTasks(1), 650);
-    const t2 = setTimeout(() => setCompletedMicroTasks(2), 1250);
-    const t3 = setTimeout(() => setCompletedMicroTasks(3), 1850);
-    const t4 = setTimeout(() => setCompletedMicroTasks(4), 2450);
-    const t5 = setTimeout(() => setCompletedMicroTasks(5), 3050);
+    const t1 = setTimeout(() => setCompletedMicroTasks(1), 800);
+    const t2 = setTimeout(() => setCompletedMicroTasks(2), 1600);
+    const t3 = setTimeout(() => setCompletedMicroTasks(3), 2400);
+    const t4 = setTimeout(() => setCompletedMicroTasks(4), 3200);
+    const t5 = setTimeout(() => setCompletedMicroTasks(5), 4000);
 
     return () => {
       clearTimeout(t1);
@@ -493,57 +509,66 @@ export function SecondBrainReverseEngineerMotion() {
   const microTaskRatio = `${completedMicroTasks * 2}/10`;
 
   return (
-    <section className="w-full py-10 sm:py-20 px-3 sm:px-6 flex flex-col items-center justify-center">
-      {/* ═══════════════════════════════════════════════════════════════════
-          OUR GLOBAL ACCESS-GLASS CONTAINER (Matches /register & /login form container)
-         ═══════════════════════════════════════════════════════════════════ */}
-      <div
-        className="access-glass relative w-full max-w-6xl min-h-[580px] sm:min-h-[660px] md:min-h-[720px] overflow-hidden flex flex-col items-center justify-center p-4 sm:p-8 md:p-10"
-        style={{ perspective: "1800px" }}
-      >
-        {/* Ambient Volumetric Orange Glow */}
-        <motion.div
-          animate={{
-            scale: beat === 7 ? [1, 1.35, 1] : 1,
-            opacity: beat === 7 ? 0.26 : 0.12,
-          }}
-          transition={{ duration: 2, ease: "easeInOut" }}
-          className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[520px] h-[300px] sm:h-[420px] bg-[#FF6900] rounded-full blur-[120px] sm:blur-[150px]"
-        />
-
-        {/* ═══════════════════════════════════════════════════════════════════
-            HUGE CINEMATIC KINETIC TITLE BEHIND THE ANIMATION
-           ═══════════════════════════════════════════════════════════════════ */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden z-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeCopy.bgWord}
-              initial={{ opacity: 0, scale: 0.78, filter: "blur(16px)" }}
-              animate={{ opacity: 0.07, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 1.18, filter: "blur(16px)" }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className={`${bebas.className} text-[74px] sm:text-[170px] md:text-[240px] lg:text-[290px] leading-none tracking-tighter text-white select-none whitespace-nowrap`}
-            >
-              {activeCopy.bgWord}
-            </motion.div>
-          </AnimatePresence>
+    <section className="w-full py-6 sm:py-10 px-3 sm:px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Section Header Outside Container — Dynamic Beat Title */}
+        <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2 sm:gap-4 px-1">
+          <div>
+            <p className="kicker text-[#FF6900] mb-1">
+              AI REVERSE-ENGINEERING & MICRO-TASK ENGINE
+            </p>
+            <div className="min-h-[32px] sm:min-h-[48px] flex items-center">
+              <AnimatePresence mode="wait">
+                <motion.h3
+                  key={`outside-title-${beat}`}
+                  initial={{ opacity: 0, y: -8, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, y: 8, filter: "blur(6px)" }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="font-display text-2xl sm:text-4xl md:text-5xl font-black uppercase tracking-[0.06em] text-white leading-none text-left"
+                >
+                  {activeCopy.bgWord}
+                </motion.h3>
+              </AnimatePresence>
+            </div>
+          </div>
+          <p className="text-[11px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white/45">
+            {String(beat + 1).padStart(2, "0")} / 13 · {activeCopy.kicker}
+          </p>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            ONE-BY-ONE FEATURE RELEASE STAGE
+            OUR GLOBAL ACCESS-GLASS CONTAINER (FITS IN ONE FRAME)
            ═══════════════════════════════════════════════════════════════════ */}
-        <div className="relative z-10 w-full h-full flex items-center justify-center pb-16 sm:pb-20">
-          <AnimatePresence mode="wait">
-            {/* ─────────────────────────────────────────────────────────────
-                SCENE 1 (BEATS 0–6): THE PROJECT CARD + ALL 5 ANCHORED POPOVERS
-               ───────────────────────────────────────────────────────────── */}
-            {beat <= 6 && (
-              <motion.div
-                key="scene-project-card-with-popovers"
-                initial={{ opacity: 0, scale: 0.84, filter: "blur(16px)" }}
-                animate={{
-                  opacity: 1,
-                  filter: "blur(0px)",
+        <div
+          className="access-glass relative w-full min-h-[540px] sm:min-h-[600px] md:min-h-[640px] overflow-hidden flex flex-col justify-between p-4 sm:p-6 md:p-8 select-none"
+          style={{ perspective: "1800px" }}
+        >
+          {/* Ambient Volumetric Orange Glow */}
+          <motion.div
+            animate={{
+              scale: beat === 7 ? [1, 1.35, 1] : 1,
+              opacity: beat === 7 ? 0.26 : 0.12,
+            }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[520px] h-[300px] sm:h-[420px] bg-[#FF6900] rounded-full blur-[120px] sm:blur-[150px]"
+          />
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              MAIN STAGE: 3D UI CARD STAGE (ALWAYS PRESENT)
+             ═══════════════════════════════════════════════════════════════════ */}
+          <div className="relative z-10 w-full flex-1 flex items-center justify-center py-2 sm:py-4">
+            <AnimatePresence mode="wait">
+              {/* ─────────────────────────────────────────────────────────────
+                  SCENE 1 (BEATS 0–6): THE PROJECT CARD + ALL 5 ANCHORED POPOVERS
+                 ───────────────────────────────────────────────────────────── */}
+                    {beat <= 6 && (
+                      <motion.div
+                        key="scene-project-card-with-popovers"
+                        initial={{ opacity: 0, scale: 0.84, filter: "blur(16px)" }}
+                        animate={{
+                          opacity: 1,
+                          filter: "blur(0px)",
                   ...getProjectSceneCamera(beat),
                 }}
                 exit={{ opacity: 0, scale: 1.2, filter: "blur(18px)" }}
@@ -1351,32 +1376,18 @@ export function SecondBrainReverseEngineerMotion() {
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
-        </div>
+            </AnimatePresence>
+          </div>
 
-        {/* ═══════════════════════════════════════════════════════════════════
-            BOTTOM CINEMATIC CAPTION OVERLAY
-           ═══════════════════════════════════════════════════════════════════ */}
-        <div className="absolute bottom-6 inset-x-0 z-30 flex flex-col items-center text-center pointer-events-none px-4">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={beat}
-              initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -10, filter: "blur(8px)" }}
-              transition={{ duration: 0.4 }}
-              className="flex flex-col items-center gap-1"
-            >
-              <span className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.3em] text-[#FF6900]">
-                {activeCopy.kicker}
-              </span>
-              <p
-                className={`${bebas.className} text-2xl sm:text-4xl md:text-5xl text-white tracking-wide leading-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.9)]`}
-              >
-                {activeCopy.headline}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+          {/* ═══════════════════════════════════════════════════════════════════
+              BOTTOM SUBTITLE — TYPEWRITER TEXT WHILE CARD IS SHOWING
+             ═══════════════════════════════════════════════════════════════════ */}
+          <div className="relative z-30 w-full flex justify-center pt-3 pb-1 min-h-[36px] items-center pointer-events-none">
+            <p className="text-xs sm:text-base md:text-lg text-white/90 font-medium tracking-wide text-center max-w-2xl leading-snug">
+              {typedSubtitle}
+              <span className="inline-block w-[2px] h-[1em] bg-[#FF6900] ml-1 align-middle animate-pulse" />
+            </p>
+          </div>
         </div>
       </div>
     </section>

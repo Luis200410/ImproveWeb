@@ -73,7 +73,7 @@ const CHAPTERS: ChapterMeta[] = [
     accentColor: "#efb219",
     title: "THE SOVEREIGN INVESTMENT",
     subtitle: "Watch the SaaS invoice get sliced in half & ejected",
-    tagline: "Own Your Life Operating System for $40 Once.",
+    tagline: "Unlock Your Complete Life Operating System for $20/Month.",
   },
 ];
 
@@ -1114,7 +1114,7 @@ function MotionSceneFour() {
   const [horizon, setHorizon] = useState<1 | 3 | 5>(3);
 
   const oldSaaS = 180 * 12 * horizon;
-  const sovereignCost = 40;
+  const sovereignCost = 20 * 12 * horizon;
   const savedCash = oldSaaS - sovereignCost;
 
   // Slower, more deliberate pacing
@@ -1155,7 +1155,7 @@ function MotionSceneFour() {
           </div>
 
           <span className="text-[11px] font-mono text-zinc-500">
-            Beat {beat + 1} of 4 • Lifetime Equity Calculator
+            Beat {beat + 1} of 4 • Equity Savings Calculator
           </span>
         </div>
 
@@ -1169,7 +1169,7 @@ function MotionSceneFour() {
               titlePrefix="The Subscription Economy Wants You To"
               zoomWord="RENT YOUR OWN LIFE"
               titleSuffix="Forever"
-              subtitle="$180 every month compounding relentlessly into over $10,800 every single decade."
+              subtitle="$180 every month across 8 fragmented apps compounding into over $10,800."
             />
           )}
           {beat === 1 && (
@@ -1181,19 +1181,19 @@ function MotionSceneFour() {
               titlePrefix="Laser Guillotine Slice:"
               zoomWord="$10,800 EXPELLED"
               titleSuffix="Off Your Life For Good"
-              subtitle="No monthly charges. No held-hostage data. No sudden price hikes."
+              subtitle="No 8 separate app subscriptions. No held-hostage data. No sudden price hikes."
             />
           )}
           {beat === 2 && (
             <ZoomingHeadline
               key="h4-2"
-              badge="04 • SOVEREIGN LICENSE UNLOCKED"
+              badge="04 • UNIFIED ECOSYSTEM MEMBERSHIP"
               badgeColor="#efb219"
-              statusText="LIFETIME ACCESS"
-              titlePrefix="Own The Entire Platform:"
-              zoomWord="$40 ONCE FOR LIFE"
-              titleSuffix="Perpetual Access"
-              subtitle="All 7 pillars. Zero cloud dependency. Free local updates forever."
+              statusText="ALL 7 PILLARS"
+              titlePrefix="Unlock The Entire Platform:"
+              zoomWord="$20 / MONTH"
+              titleSuffix="Complete Access"
+              subtitle="All 7 pillars unified in one private ecosystem. Zero cloud dependency."
             />
           )}
           {beat === 3 && (
@@ -1321,9 +1321,9 @@ function MotionSceneFour() {
                   transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
                   className="w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex flex-col items-center justify-center shadow-[0_0_50px_rgba(245,158,11,0.8)] border-2 border-amber-200 text-black font-black font-mono text-3xl relative z-10 overflow-hidden cursor-pointer"
                 >
-                  $40
+                  $20
                   <span className="text-[8px] font-mono uppercase tracking-widest text-black/90 font-bold -mt-1">
-                    LIFETIME
+                    MONTHLY
                   </span>
                   <motion.div
                     animate={{ x: ["-100%", "200%"] }}
@@ -1332,7 +1332,7 @@ function MotionSceneFour() {
                   />
                 </motion.div>
                 <span className="text-xs font-mono font-bold text-amber-300 mt-2 uppercase tracking-wider">
-                  One-Time Sovereign License
+                  Unified Monthly Membership
                 </span>
               </div>
 
@@ -1372,15 +1372,15 @@ function MotionSceneFour() {
                   <div className="absolute top-0 right-0 w-16 h-16 bg-amber-400/10 rounded-full blur-xl pointer-events-none" />
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-mono font-bold text-amber-300">$40 Complete System</span>
+                      <span className="text-xs font-mono font-bold text-amber-300">$20/mo Complete System</span>
                       <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">Unified</span>
                     </div>
                     <p className="text-[10px] text-zinc-200 font-mono leading-relaxed">
-                      All 7 interconnected pillars unified. Zero loose subscriptions.
+                      All 7 interconnected pillars unified. One simple monthly plan.
                     </p>
                   </div>
                   <div className="mt-2 pt-2 border-t border-amber-400/20 text-[9px] font-mono text-amber-300/80 flex items-center justify-between">
-                    <span>One-Time Sovereign License</span>
+                    <span>All 7 Pillars Included</span>
                     <span className="text-amber-300 font-bold">0ms Sync</span>
                   </div>
                 </div>

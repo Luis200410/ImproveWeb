@@ -129,11 +129,207 @@ interface CTAWithVerticalMarqueeProps {
   accentColor?: string;
 }
 
+const APP_PRICING_CONFIG: Record<
+  string,
+  {
+    freeSubtitle: string;
+    freeFeatures: string[];
+    ecosystemSubtitle: string;
+    ecosystemFeatures: string[];
+  }
+> = {
+  "second-brain": {
+    freeSubtitle:
+      "Unlimited rich notes, Apple Pencil handwriting canvas, offline voice transcripts, and up to 3 active project trees — 100% on-device.",
+    freeFeatures: [
+      "Unlimited Rich Text & Notes",
+      "Apple Pencil Handwriting Canvas",
+      "Offline Voice Transcription",
+      "Up to 3 Active Project Trees",
+      "Universal Inbox Capture",
+      "100% Offline Local Storage",
+      "Zero Surveillance or Ads",
+    ],
+    ecosystemSubtitle:
+      "Unlock autonomous Apple Intelligence triage, AI project reverse-engineering, unlimited project branches, Calendar Day Board, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Full Second Brain Native Access",
+      "AI Project Reverse-Engineering",
+      "Autonomous Inbox AI Triage",
+      "Calendar Day Board Auto-Replan",
+      "Live Bridge to Productivity Focus",
+      "Unlimited Active Project Trees",
+      "All 10 Siri & Shortcuts Intents",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  productivity: {
+    freeSubtitle:
+      "Essential daily task capture, timeline habit routines, and background-resilient focus timers — 100% private, on-device local storage.",
+    freeFeatures: [
+      "Essential Daily Task Capture",
+      "Habit Tracking Basics",
+      "Focused Timer & Pomodoro",
+      "Apple Calendar EventKit Sync",
+      "100% Offline Local Storage",
+      "Zero Surveillance or Ads",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock automated iOS Screen-Time app blocking, 90-minute ultradian energy matching, live Second Brain checkpoint sync, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Per-Habit Auto App Blocking",
+      "Focus Timer & Live Write-Back",
+      "Flow & Chronotype Intelligence",
+      "Zero Monthly Subscription Rent",
+      "0ms Local Relational Bus",
+      "On-Device Apple Intelligence",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  "body-optimization": {
+    freeSubtitle:
+      "Daily workout logging, hydration & nutrition checklists, and basic Apple HealthKit sleep & activity tracking — 100% private on-device.",
+    freeFeatures: [
+      "Daily Workout & Protocol Logs",
+      "Apple HealthKit Activity Sync",
+      "Sleep Duration & Habit Tracking",
+      "Hydration & Nutrition Checklists",
+      "100% Offline Local Storage",
+      "Zero Health Data Brokers",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock real-time HRV biometric pulse monitoring, CoreML recovery velocity scoring, adaptive protocol stacks, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Biometric Pulse & HRV Monitor",
+      "Recovery Velocity Readiness Score",
+      "Adaptive Protocol Stack Engine",
+      "Chronotype Sync to Productivity",
+      "Zero Monthly Subscription Rent",
+      "On-Device CoreML Synthesis",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  "money-wealth": {
+    freeSubtitle:
+      "Manual expense capture, essential budget envelopes, and recurring subscription tracking — 100% local on-device privacy.",
+    freeFeatures: [
+      "Essential Budget Envelopes",
+      "Manual Expense & Income Logs",
+      "Subscription Renewal Alerts",
+      "Face ID Biometric Vault Lock",
+      "100% Offline Local Storage",
+      "Zero Financial Data Harvesting",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock predictive 90-day cash flow forecasting, stateless Plaid bank sync, adaptive rhythm envelopes, surplus allocation, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Predictive 90-Day Cash Flow Line",
+      "Adaptive Rhythm Envelopes",
+      "Automated Surplus Allocator",
+      "Stateless Read-Only Bank Sync",
+      "Zero Monthly Subscription Rent",
+      "0ms Local Relational Bus",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  "professional-mastery": {
+    freeSubtitle:
+      "Core career milestone tracking, weekly sprint checklists, and deep work hour logging — 100% private in your local iOS sandbox.",
+    freeFeatures: [
+      "Career Milestone Checklists",
+      "Weekly Sprint Review Prompts",
+      "Deep Focus Hour Logging",
+      "Local Deliverable Notes",
+      "100% Offline Local Storage",
+      "Zero Employer Surveillance",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock high-leverage skill roadmaps, automated proof-of-work portfolios, executive project command, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "High-Leverage Skill Roadmaps",
+      "Automated Proof of Work Portfolio",
+      "Executive Project Command",
+      "Direct Second Brain Project Sync",
+      "Zero Monthly Subscription Rent",
+      "On-Device Apple Intelligence",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  "relationships-capital": {
+    freeSubtitle:
+      "Essential contact cadence reminders, personal birthday & milestone logs, and local relationship notes — zero address book uploads.",
+    freeFeatures: [
+      "Core Contact Cadence Reminders",
+      "Birthday & Milestone Logs",
+      "Local Gift & Context Notes",
+      "Zero Address Book Uploads",
+      "100% Offline Local Storage",
+      "Zero Social Graph Harvesting",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock full relational cadence automation, the Context & Gift Memory Vault, Network Influence Heatmaps, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Relational Cadence Tracker",
+      "Context & Gift Memory Vault",
+      "Network Influence Heatmap",
+      "Apple Calendar Touchpoint Sync",
+      "Zero Monthly Subscription Rent",
+      "On-Device Apple Intelligence",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+  "mind-emotions": {
+    freeSubtitle:
+      "Daily evening reflection prompts, basic mood check-ins, and Face ID protected journaling — 100% private on-device storage.",
+    freeFeatures: [
+      "Evening Reflection Prompts",
+      "Daily Mood & Clarity Check-Ins",
+      "Face ID Biometric Journal Lock",
+      "Gratitude & Stoic Note Logs",
+      "100% Offline Local Storage",
+      "Zero Sentiment Profiling",
+      "Interconnected Starter Bus",
+    ],
+    ecosystemSubtitle:
+      "Unlock the Cognitive Bias Shield, Equilibrium Index telemetry, on-device Neural Engine reflection synthesis, and all 7 interconnected pillars.",
+    ecosystemFeatures: [
+      "All 7 Interconnected Pillars",
+      "Evening Mental Debrief Engine",
+      "Cognitive Bias Decision Shield",
+      "Equilibrium & Stability Index",
+      "Body HRV & Stress Correlation",
+      "Zero Monthly Subscription Rent",
+      "On-Device Apple Intelligence",
+      "Lifetime Engine Updates",
+      "100% Permanent Data Sovereignty",
+    ],
+  },
+};
+
 export default function CTAWithVerticalMarquee({
   app,
   accentColor,
 }: CTAWithVerticalMarqueeProps = {}) {
   const brandColor = accentColor || app?.accentHex || "#FF02E8";
+  const slugKey =
+    app?.slug === "execution-productivity" ? "productivity" : app?.slug || "";
+  const customConfig = APP_PRICING_CONFIG[slugKey];
 
   const plans: Record<PlanType, PlanDetails> = {
     free: {
@@ -142,9 +338,11 @@ export default function CTAWithVerticalMarquee({
       badge: "Starter",
       price: "FREE",
       period: "forever",
-      subtitle: "Essential daily task capture, habits, and focus timer. 100% private, on-device local storage.",
+      subtitle:
+        customConfig?.freeSubtitle ||
+        "Essential daily task capture, habits, and focus timer. 100% private, on-device local storage.",
       buttonText: "START FREE CORE SYSTEM →",
-      features: [
+      features: customConfig?.freeFeatures || [
         "Essential Daily Task Capture",
         "Habit Tracking Basics",
         "Focused Timer & Pomodoro",
@@ -158,18 +356,20 @@ export default function CTAWithVerticalMarquee({
       id: "ecosystem",
       name: "Complete Sovereign System",
       badge: "All 7 Pillars",
-      price: "$40",
-      period: "once for life",
-      subtitle: "The complete unified operating system. All 7 pillars permanently interconnected — zero loose subscriptions.",
-      buttonText: "OWN THE COMPLETE SYSTEM ($40) →",
-      features: [
+      price: "$20",
+      period: "per month",
+      subtitle:
+        customConfig?.ecosystemSubtitle ||
+        "The complete unified operating system. All 7 pillars permanently interconnected — one simple $20 monthly membership.",
+      buttonText: "UNLOCK COMPLETE SYSTEM ($20/MO) →",
+      features: customConfig?.ecosystemFeatures || [
         "All 7 Interconnected Pillars",
         app ? `Full ${app.name} Native Access` : "Full Native System Engines",
-        "Zero Monthly Subscription Rent",
+        "All 7 Apps for $20/Month",
         "0ms Local Relational Bus",
         "On-Device Apple Intelligence",
         "Bi-Directional Knowledge Graph",
-        "Lifetime Engine Updates",
+        "Continuous Engine Updates",
         "Family Sharing Included",
         "100% Permanent Data Sovereignty",
       ],
@@ -209,28 +409,31 @@ export default function CTAWithVerticalMarquee({
     if (!marqueeContainer) return;
 
     const updateOpacity = () => {
-      const items = marqueeContainer.querySelectorAll(".marquee-item");
-      const containerRect = marqueeContainer.getBoundingClientRect();
-      const centerY = containerRect.top + containerRect.height / 2;
+      const scrollerBoxes = marqueeContainer.querySelectorAll(".marquee-scroller-box");
+      scrollerBoxes.forEach((box) => {
+        const containerRect = box.getBoundingClientRect();
+        const centerY = containerRect.top + containerRect.height / 2;
+        const maxDistance = containerRect.height / 2 || 1;
+        const items = box.querySelectorAll(".marquee-item");
 
-      items.forEach((item) => {
-        const itemRect = item.getBoundingClientRect();
-        const itemCenterY = itemRect.top + itemRect.height / 2;
-        const distance = Math.abs(centerY - itemCenterY);
-        const maxDistance = containerRect.height / 2;
-        const normalizedDistance = Math.min(distance / maxDistance, 1);
+        items.forEach((item) => {
+          const itemRect = item.getBoundingClientRect();
+          const itemCenterY = itemRect.top + itemRect.height / 2;
+          const distance = Math.abs(centerY - itemCenterY);
+          const normalizedDistance = Math.min(distance / maxDistance, 1);
 
-        // Highlight middle item cleanly like screenshot
-        const opacity = Math.max(0.2, 1 - normalizedDistance * 0.8);
-        (item as HTMLElement).style.opacity = opacity.toString();
+          // Highlight middle item cleanly like screenshot
+          const opacity = Math.max(0.2, 1 - normalizedDistance * 0.8);
+          (item as HTMLElement).style.opacity = opacity.toString();
 
-        if (normalizedDistance < 0.25) {
-          (item as HTMLElement).classList.add("text-white", "font-medium", "scale-105");
-          (item as HTMLElement).classList.remove("text-zinc-400", "font-light");
-        } else {
-          (item as HTMLElement).classList.add("text-zinc-400", "font-light");
-          (item as HTMLElement).classList.remove("text-white", "font-medium", "scale-105");
-        }
+          if (normalizedDistance < 0.25) {
+            (item as HTMLElement).classList.add("text-white", "font-medium", "scale-105");
+            (item as HTMLElement).classList.remove("text-zinc-400", "font-light");
+          } else {
+            (item as HTMLElement).classList.add("text-zinc-400", "font-light");
+            (item as HTMLElement).classList.remove("text-white", "font-medium", "scale-105");
+          }
+        });
       });
     };
 
@@ -257,9 +460,11 @@ export default function CTAWithVerticalMarquee({
         style={{ backgroundColor: brandColor }}
       />
 
-      {/* Main Carousel Container */}
-      <div className="w-full max-w-7xl my-auto relative z-10">
-
+      {/* Main Unified Access-Glass Container */}
+      <div
+        ref={marqueeRef}
+        className="access-glass w-full max-w-7xl my-auto relative z-10 overflow-hidden px-6 sm:px-10 lg:px-14 py-8 sm:py-10"
+      >
         {/* View Slide Track */}
         <div className="relative overflow-hidden w-full">
           <div
@@ -295,11 +500,6 @@ export default function CTAWithVerticalMarquee({
 
                       {/* Foreground Title & Subtitle */}
                       <div className="relative z-10 pt-10 sm:pt-16 md:pt-20 lg:pt-22 space-y-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-mono text-zinc-300">
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: brandColor }} />
-                          <span>{item.id === "free" ? "Free Core Foundation • 100% Offline" : "All 7 Pillars Unified • Zero Loose Subscriptions"}</span>
-                        </div>
-
                         <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-none drop-shadow-md whitespace-nowrap">
                           {item.id === "free" ? "Start Free Core" : "Own The System"}
                         </h2>
@@ -329,11 +529,16 @@ export default function CTAWithVerticalMarquee({
                   </div>
 
                   {/* Right Marquee Column with Features (Left Aligned like reference image) */}
-                  <div
-                    ref={marqueeRef}
-                    className="relative h-[440px] lg:h-[500px] flex items-center justify-start overflow-hidden pl-0 lg:pl-12"
-                  >
-                    <div className="relative w-full h-full pl-4 sm:pl-6">
+                  <div className="marquee-scroller-box relative h-[440px] lg:h-[500px] flex items-center justify-start overflow-hidden pl-0 lg:pl-12">
+                    <div
+                      className="relative w-full h-full pl-4 sm:pl-6"
+                      style={{
+                        maskImage:
+                          "linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%)",
+                        WebkitMaskImage:
+                          "linear-gradient(to bottom, transparent 0%, black 22%, black 78%, transparent 100%)",
+                      }}
+                    >
                       <VerticalMarquee key={item.id} speed={20} className="h-full">
                         {item.features.map((feature, idx) => (
                           <div
@@ -344,12 +549,6 @@ export default function CTAWithVerticalMarquee({
                           </div>
                         ))}
                       </VerticalMarquee>
-
-                      {/* Top gradient vignette */}
-                      <div className="pointer-events-none absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/40 via-black/20 to-transparent z-10" />
-
-                      {/* Bottom gradient vignette */}
-                      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 via-black/20 to-transparent z-10" />
                     </div>
                   </div>
 
@@ -358,7 +557,6 @@ export default function CTAWithVerticalMarquee({
             })}
           </div>
         </div>
-
       </div>
 
       {/* Bottom Carousel Controls & View Indicator Bar */}
@@ -387,7 +585,7 @@ export default function CTAWithVerticalMarquee({
                   )}
                   style={{ color: isActive ? brandColor : undefined }}
                 >
-                  {item.price === "FREE" ? "Free Forever" : "$40 Once For Life"}
+                  {item.price === "FREE" ? "Free Forever" : "$20 / Month"}
                 </span>
               </button>
             );
