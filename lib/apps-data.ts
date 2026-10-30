@@ -497,7 +497,7 @@ export const APPS_PRIVACY_PROFILES: Record<string, AppPrivacyProfile> = {
     iconName: "Wallet",
     summary: "Financial intelligence with strict stateless proxying. Connect your banks via Plaid with zero developer server persistence, zero credential visibility, and total revocation control.",
     permissionsRequired: [
-      { name: "Plaid Financial Integration", purpose: "Secure read-only connection to financial institutions for account balances and transaction sync.", isOptional: false },
+      { name: "Plaid Financial Integration (Bank Sync add-on)", purpose: "Read-only connection to your banks for balances, transactions and debts. Only when you choose to connect a bank — Money works fully with manual, receipt and voice entries.", isOptional: true },
       { name: "Notifications", purpose: "Weekly cash flow updates and budget envelope threshold alerts.", isOptional: false },
       { name: "Face ID / Biometric Lock", purpose: "Protect financial balances and account lists from unauthorized device access.", isOptional: true }
     ],
@@ -522,12 +522,16 @@ export const APPS_PRIVACY_PROFILES: Record<string, AppPrivacyProfile> = {
         answer: "Only on your personal device and inside your private Apple iCloud account. Our Supabase edge function proxy is 100% stateless: it holds zero database tables, zero user rows, and zero cached transactions."
       },
       {
+        question: "What does Plaid collect when I connect a bank?",
+        answer: "Bank sync is powered by Plaid. When you connect a bank, you sign in inside Plaid's own dialog and Plaid receives your bank account and transaction data (financial info) plus an identifier for your connection, so it can keep your accounts in sync. Plaid handles it under its own End User Privacy Policy (plaid.com/legal). IMPROVE itself never stores it on a server — it passes through our stateless proxy straight to your device. That is why the App Store privacy label for Money lists Financial Info and User ID: linked to you, used only for app functionality, never for tracking or advertising."
+      },
+      {
         question: "Can IMPROVE move my money or initiate transfers?",
         answer: "No. IMPROVE Money requests read-only transactions access. It is technically impossible for the application to initiate wires, transfers, or withdrawals."
       },
       {
         question: "How do I permanently disconnect my bank and delete my data?",
-        answer: "Go to Settings > Connected Institutions > Unlink & Delete Data. Our gateway immediately calls Plaid's /item/remove to permanently destroy your access token, and all local transaction history is purged immediately."
+        answer: "In Activity, open the bank's card menu and tap Disconnect. Our gateway immediately calls Plaid's /item/remove, which ends the connection at Plaid and invalidates the access token on your device. You can also revoke access anytime at my.plaid.com."
       }
     ]
   }
