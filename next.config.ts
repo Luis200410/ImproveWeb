@@ -46,12 +46,51 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      // Relationships hangout invites: static pages in public/ (the plan rides after #, never sent here).
+      { source: '/b', destination: '/b/index.html' },
+      { source: '/v', destination: '/v/index.html' },
+    ];
+  },
   async headers() {
     return [
       {
         // Universal links (Plaid OAuth → Money app): iOS wants JSON, no redirect.
         source: "/.well-known/apple-app-site-association",
         headers: [{ key: "Content-Type", value: "application/json" }],
+      },
+      {
+        // Relationships invite + vote pages: never indexed, no referrer.
+        source: "/b",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        // Relationships invite + vote pages: never indexed, no referrer.
+        source: "/b/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        // Relationships invite + vote pages: never indexed, no referrer.
+        source: "/v",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
+      },
+      {
+        // Relationships invite + vote pages: never indexed, no referrer.
+        source: "/v/:path*",
+        headers: [
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+        ],
       },
       {
         // Apply security + SEO headers to all public routes

@@ -2,9 +2,37 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["RCSLHHHTU3.com.improve.money"],
+        "appIDs": [
+          "RCSLHHHTU3.com.improve.money"
+        ],
         "components": [
-          { "/": "/plaid/oauth*", "comment": "Plaid OAuth return into the Money app" }
+          {
+            "/": "/plaid/oauth*",
+            "comment": "Plaid OAuth return into the Money app"
+          }
+        ]
+      },
+      {
+        "appIDs": [
+          "RCSLHHHTU3.com.improve.relationships"
+        ],
+        "components": [
+          {
+            "/": "/b",
+            "comment": "A hangout invite (the plan rides after #)"
+          },
+          {
+            "/": "/b/",
+            "comment": "Same, with a trailing slash"
+          },
+          {
+            "/": "/v",
+            "comment": "A vote a friend texted back"
+          },
+          {
+            "/": "/v/",
+            "comment": "Same, with a trailing slash"
+          }
         ]
       }
     ]

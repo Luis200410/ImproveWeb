@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>Hangout invite · Improve</title>
+<!--
+  Relationships hangout invite. Static: the whole plan is in the link after "#", which browsers never send
+  to this site, so the page reads it here on the friend's phone. Voting opens Messages with a reply to the
+  host carrying a /v# vote link; the host taps it and Relationships records the vote. No server, no storage.
+-->
+<style>
+  :root { --red: #CC0000; --bright: #E83D2E; --bg: #000; --card: #1A1C1F; --text: #fff;
+          --muted: rgba(255,255,255,.62); --faint: rgba(255,255,255,.42); --stroke: rgba(255,255,255,.08);
+          --green: #4DD188; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+         padding: max(20px, env(safe-area-inset-top)) 16px 40px; }
+  main { max-width: 440px; margin: 0 auto; }
+  .pass { border-radius: 15px; padding: 22px; border: 1px solid var(--stroke);
+          background: linear-gradient(135deg, #5C1209, #171717); }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: var(--faint); text-transform: uppercase; }
+  .event { color: var(--bright); font-size: 15px; margin-top: 14px; }
+  h1 { font-size: 28px; line-height: 1.15; margin: 4px 0 8px; letter-spacing: -.5px; }
+  .meta { color: var(--muted); font-size: 15px; }
+  .meta a { color: var(--muted); }
+  .times { margin-top: 18px; display: grid; gap: 10px; }
+  .time { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,.4); border: 1px solid var(--stroke);
+          border-radius: 15px; padding: 14px; }
+  .num { width: 26px; height: 26px; border-radius: 50%; background: var(--red); display: grid; place-items: center;
+         font-weight: 800; font-size: 13px; flex: none; }
+  .when { flex: 1; font-weight: 700; }
+  .votes { color: var(--green); font-size: 13px; font-weight: 700; display: block; }
+  .day { color: var(--muted); font-size: 13px; font-weight: 500; display: block; }
+  button, .btn { font: inherit; font-weight: 700; color: #fff; background: var(--red); border: 0; border-radius: 10px;
+                 padding: 10px 14px; cursor: pointer; text-decoration: none; display: inline-block; white-space: nowrap; }
+  button.secondary, .btn.secondary { background: rgba(255,255,255,.08); border: 1px solid var(--stroke); }
+  .wide { width: 100%; text-align: center; padding: 14px; margin-top: 12px; }
+  label { display: block; margin: 22px 0 6px; color: var(--muted); font-size: 14px; }
+  input { width: 100%; font: inherit; color: #fff; background: var(--card); border: 1px solid var(--stroke);
+          border-radius: 10px; padding: 12px 14px; }
+  .confirmed { color: var(--green); font-weight: 700; margin-top: 16px; }
+  .note { color: var(--faint); font-size: 13px; margin-top: 14px; }
+  .footer { margin-top: 28px; text-align: center; color: var(--faint); font-size: 13px; }
+  .footer a { color: var(--bright); text-decoration: none; font-weight: 600; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <section class="pass" id="pass">
+    <div class="eyebrow">Hangout invite</div>
+    <div class="event" id="host"></div>
+    <h1 id="title"></h1>
+    <div class="meta" id="place"></div>
+    <div class="confirmed hidden" id="confirmed"></div>
+    <div id="nameBox">
+      <label for="name">Your name</label>
+      <input id="name" autocomplete="given-name" placeholder="So they know it's you">
+    </div>
+    <div class="times" id="times"></div>
+  </section>
+
+  <div id="voting">
+    <button class="secondary wide" id="none">None of these work</button>
+    <p class="note" id="how"></p>
+  </div>
+
+  <div id="calendar" class="hidden">
+    <a class="btn wide" id="ics" download="hangout.ics">Add to Calendar</a>
+  </div>
+
+  <section class="pass hidden" id="broken">
+    <h1>This invite link is incomplete</h1>
+    <p class="meta">Ask your friend to send it again.</p>
+  </section>
+
+  <p class="footer">Planned with <a href="https://improve-club.com/">Improve Relationships</a> · private, no account</p>
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var REF = 978307200; // Swift dates are seconds since 2001-01-01
+
+  function decode(value) {
+    var b64 = value.replace(/-/g, "+").replace(/_/g, "/");
+    while (b64.length % 4) b64 += "=";
+    var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
+    return JSON.parse(new TextDecoder().decode(bytes));
+  }
+  function encode(obj) {
+    var bytes = new TextEncoder().encode(JSON.stringify(obj)), bin = "";
+    bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function date(d) { return new Date((REF + d) * 1000); }
+  function fmt(d) {
+    return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text; // never innerHTML: the link is untrusted
+    return e;
+  }
+
+  var plan;
+  try { plan = decode(location.hash.slice(1)); } catch (e) { plan = null; }
+  if (!plan || !Array.isArray(plan.options)) {
+    document.getElementById("pass").classList.add("hidden");
+    document.getElementById("voting").classList.add("hidden");
+    document.getElementById("broken").classList.remove("hidden");
+    return;
+  }
+
+  var host = plan.hostName || "A friend";
+  var title = plan.title || ("Hangout" + (plan.placeName ? " at " + plan.placeName : ""));
+  document.title = title + " · Improve";
+  document.getElementById("host").textContent = host + " invited you";
+  document.getElementById("title").textContent = title;
+
+  var place = document.getElementById("place");
+  if (plan.placeName) {
+    var q = encodeURIComponent(plan.placeName + (plan.city ? ", " + plan.city : ""));
+    var maps = "https://maps.apple.com/?q=" + q + (plan.latitude != null ? "&ll=" + plan.latitude + "," + plan.longitude : "");
+    var a = el("a", null, "📍 " + plan.placeName + (plan.city ? " · " + plan.city : ""));
+    a.href = maps;
+    place.appendChild(a);
+  }
+
+  var nameInput = document.getElementById("name");
+  try { nameInput.value = localStorage.getItem("improve.name") || ""; } catch (e) {}
+  nameInput.addEventListener("change", function () {
+    try { localStorage.setItem("improve.name", nameInput.value.trim()); } catch (e) {}
+  });
+
+  var phone = (plan.hostPhone || "").replace(/[^\d+]/g, "");
+  var android = /android/i.test(navigator.userAgent);
+  function sms(body) {
+    var sep = android ? "?" : "&";
+    return "sms:" + phone + sep + "body=" + encodeURIComponent(body);
+  }
+  function needName() {
+    var n = nameInput.value.trim();
+    if (!n) { nameInput.focus(); nameInput.placeholder = "Add your name first"; }
+    return n;
+  }
+
+  var confirmed = plan.options.filter(function (o) { return o.id === plan.confirmedOptionID; })[0];
+  var times = document.getElementById("times");
+
+  if (confirmed) {
+    var start = date(confirmed.date);
+    document.getElementById("confirmed").textContent = "✓ Confirmed · " + fmt(start);
+    document.getElementById("confirmed").classList.remove("hidden");
+    document.getElementById("voting").classList.add("hidden");
+    document.getElementById("nameBox").classList.add("hidden");
+    var end = new Date(start.getTime() + (plan.durationMinutes || 90) * 60000);
+    function ics(d) { return d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
+    var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Improve//Relationships//EN", "BEGIN:VEVENT",
+      "UID:" + plan.beaconID + "@improve-club.com", "DTSTAMP:" + ics(new Date()), "DTSTART:" + ics(start),
+      "DTEND:" + ics(end), "SUMMARY:" + title.replace(/[,;\\]/g, " "),
+      plan.placeName ? "LOCATION:" + plan.placeName.replace(/[,;\\]/g, " ") : "", "END:VEVENT", "END:VCALENDAR"];
+    var link = document.getElementById("ics");
+    link.href = URL.createObjectURL(new Blob([lines.filter(Boolean).join("\r\n")], { type: "text/calendar" }));
+    document.getElementById("calendar").classList.remove("hidden");
+    return;
+  }
+
+  plan.options.forEach(function (option, i) {
+    var row = el("div", "time");
+    row.appendChild(el("div", "num", String(i + 1)));
+    var d = date(option.date);
+    var when = el("div", "when", d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }));
+    when.appendChild(el("span", "day", d.toLocaleString(undefined, { month: "long", day: "numeric" })));
+    var count = (option.votes || []).length;
+    if (count) when.appendChild(el("span", "votes", count + " can make it"));
+    row.appendChild(when);
+    var btn = el("button", null, "Works for me");
+    btn.addEventListener("click", function () {
+      var n = needName();
+      if (!n) return;
+      var vote = "https://improve-club.com/v#" + encode({ b: plan.beaconID, o: option.id, n: n });
+      location.href = sms(fmt(date(option.date)) + " works for me ✅ — " + n + "\n" + vote);
+    });
+    row.appendChild(btn);
+    times.appendChild(row);
+  });
+
+  document.getElementById("none").addEventListener("click", function () {
+    var n = needName();
+    if (!n) return;
+    location.href = sms("None of these times work for me 😕 — " + n + ". Could we try another day?");
+  });
+
+  document.getElementById("how").textContent = phone
+    ? "Tapping a time opens Messages with your answer to " + host + " — just hit send."
+    : "Tapping a time opens Messages with your answer — send it to " + host + ".";
+})();
+</script>
+</body>
+</html>
