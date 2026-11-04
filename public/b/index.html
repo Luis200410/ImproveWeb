@@ -6,6 +6,11 @@
 <meta name="robots" content="noindex">
 <meta name="referrer" content="no-referrer">
 <title>Hangout invite · Improve</title>
+<meta property="og:title" content="You're invited to a hangout">
+<meta property="og:description" content="See the plan and vote on a time — no app needed.">
+<meta property="og:site_name" content="Improve">
+<meta property="og:image" content="https://improve-club.com/invite-preview.png">
+<meta name="twitter:card" content="summary_large_image">
 <!--
   Relationships hangout invite. Static: the whole plan is in the link after "#", which browsers never send
   to this site, so the page reads it here on the friend's phone. Voting opens Messages with a reply to the
@@ -92,11 +97,6 @@
     var bytes = Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); });
     return JSON.parse(new TextDecoder().decode(bytes));
   }
-  function encode(obj) {
-    var bytes = new TextEncoder().encode(JSON.stringify(obj)), bin = "";
-    bytes.forEach(function (b) { bin += String.fromCharCode(b); });
-    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  }
   function date(d) { return new Date((REF + d) * 1000); }
   function fmt(d) {
     return d.toLocaleString(undefined, { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -108,8 +108,38 @@
     return e;
   }
 
-  var plan;
-  try { plan = decode(location.hash.slice(1)); } catch (e) { plan = null; }
+  // Short links (texts): 2~id~host~title~place~city~lat,lon~voters~minutes~phone~confirmed~times
+  function text(f) { try { return decodeURIComponent((f || "").replace(/\+/g, " ")); } catch (e) { return f || ""; } }
+  function short(hash) {
+    var f = hash.split("~");
+    if (f.length < 12 || f[0] !== "2") return null;
+    var ll = f[6].split(",").map(Number);
+    var options = f[11] ? f[11].split(".").map(function (t) {
+      var b = t.split("-");
+      return { id: b[0], at: new Date(parseInt(b[1], 36) * 60000), count: parseInt(b[2], 10) || 0 };
+    }) : [];
+    var ci = f[10] === "" ? -1 : parseInt(f[10], 10);
+    return { beaconID: f[1], shortID: f[1], hostName: text(f[2]), title: text(f[3]), placeName: text(f[4]),
+             city: text(f[5]), latitude: ll.length === 2 ? ll[0] : null, longitude: ll.length === 2 ? ll[1] : null,
+             voterCount: parseInt(f[7], 10) || 2, durationMinutes: parseInt(f[8], 10) || 90, hostPhone: text(f[9]),
+             options: options, confirmedOptionID: options[ci] ? options[ci].id : null };
+  }
+  // The bubble's full plan (base64url JSON): dates are seconds since 2001, votes are lists.
+  function full(hash) {
+    var p = decode(hash);
+    p.options = (p.options || []).map(function (o) { return { id: o.id, at: date(o.date), count: (o.votes || []).length }; });
+    return p;
+  }
+  // 16 UUID bytes as 22 base64url characters — what the app's vote link expects.
+  function shortID(uuid) {
+    var hex = uuid.replace(/-/g, ""), bin = "";
+    for (var i = 0; i < 32; i += 2) bin += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+
+  var plan, hash = location.hash.slice(1);
+  try { plan = hash.indexOf("2~") === 0 ? short(hash) : full(hash); } catch (e) { plan = null; }
+  if (plan && !plan.shortID && plan.beaconID) { try { plan.shortID = shortID(plan.beaconID); } catch (e) {} }
   if (!plan || !Array.isArray(plan.options)) {
     document.getElementById("pass").classList.add("hidden");
     document.getElementById("voting").classList.add("hidden");
@@ -154,7 +184,7 @@
   var times = document.getElementById("times");
 
   if (confirmed) {
-    var start = date(confirmed.date);
+    var start = confirmed.at;
     document.getElementById("confirmed").textContent = "✓ Confirmed · " + fmt(start);
     document.getElementById("confirmed").classList.remove("hidden");
     document.getElementById("voting").classList.add("hidden");
@@ -174,18 +204,19 @@
   plan.options.forEach(function (option, i) {
     var row = el("div", "time");
     row.appendChild(el("div", "num", String(i + 1)));
-    var d = date(option.date);
+    var d = option.at;
     var when = el("div", "when", d.toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" }));
     when.appendChild(el("span", "day", d.toLocaleString(undefined, { month: "long", day: "numeric" })));
-    var count = (option.votes || []).length;
+    var count = option.count;
     if (count) when.appendChild(el("span", "votes", count + " can make it"));
     row.appendChild(when);
     var btn = el("button", null, "Works for me");
     btn.addEventListener("click", function () {
       var n = needName();
       if (!n) return;
-      var vote = "https://improve-club.com/v#" + encode({ b: plan.beaconID, o: option.id, n: n });
-      location.href = sms(fmt(date(option.date)) + " works for me ✅ — " + n + "\n" + vote);
+      var vote = "https://improve-club.com/v#2~" + plan.shortID + "~" + option.id.slice(0, 8) + "~" +
+        encodeURIComponent(n).replace(/%20/g, "+").replace(/~/g, "%7E");
+      location.href = sms(fmt(option.at) + " works for me ✅ — " + n + "\n" + vote);
     });
     row.appendChild(btn);
     times.appendChild(row);
