@@ -7,8 +7,9 @@
 <meta name="referrer" content="no-referrer">
 <title>Hangout vote · Improve</title>
 <!--
-  A vote a friend texted back. On the host's iPhone this link opens Relationships (universal link) and the
-  vote is recorded there. This page only shows when it's opened anywhere else.
+  A vote a friend texted back. On the host's iPhone this link normally opens Relationships directly
+  (universal link). When it lands in Safari instead, this page hands the same vote to the app through its
+  own scheme (improverelationships://vote#…) — automatically, and with a button in case Safari asks first.
 -->
 <style>
   body { margin: 0; background: #000; color: #fff; padding: 40px 16px;
@@ -17,12 +18,33 @@
          background: linear-gradient(135deg, #5C1209, #171717); }
   h1 { font-size: 24px; margin: 0 0 8px; }
   p { color: rgba(255,255,255,.62); margin: 0; }
+  a.btn { display: block; text-align: center; margin-top: 18px; padding: 14px; border-radius: 10px;
+          background: #CC0000; color: #fff; font-weight: 700; text-decoration: none; }
+  .small { font-size: 13px; color: rgba(255,255,255,.42); margin-top: 14px; }
 </style>
 </head>
 <body>
 <main>
-  <h1>A vote for your hangout</h1>
-  <p>Open this link on the iPhone that sent the invite — Relationships records the vote there.</p>
+  <h1 id="title">A vote for your hangout</h1>
+  <p id="detail">Tap below to record it in Relationships.</p>
+  <a class="btn" id="open" href="#">Record the vote in Relationships</a>
+  <p class="small">Only works on the iPhone that sent the invite. Without Relationships, nothing happens here.</p>
 </main>
+<script>
+(function () {
+  "use strict";
+  var hash = location.hash.slice(1);
+  var parts = hash.split("~");
+  if (parts.length === 4 && parts[0] === "2") {
+    try {
+      var name = decodeURIComponent(parts[3].replace(/\+/g, " "));
+      if (name) document.getElementById("title").textContent = name + " voted";
+    } catch (e) {}
+  }
+  var app = "improverelationships://vote#" + hash;
+  document.getElementById("open").href = app;
+  if (hash) setTimeout(function () { location.href = app; }, 300);
+})();
+</script>
 </body>
 </html>
