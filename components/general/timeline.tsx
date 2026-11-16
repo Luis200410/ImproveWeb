@@ -518,17 +518,18 @@ export default function Timeline({
     <section
       ref={sectionRef}
       id="behavioral-architecture"
-      className="w-full h-screen relative overflow-hidden bg-[#050308]/90 backdrop-blur-sm text-white border-t border-zinc-900 select-none flex flex-col justify-between items-center py-4 sm:py-6 md:py-8"
+      className="w-full h-screen relative overflow-hidden bg-transparent text-white border-t border-white/10 select-none flex flex-col justify-center items-center px-4 sm:px-6 py-6 sm:py-10"
     >
-      {/* ══════════ SECTION TITLE: "Block The Noise" (FITS FIRST FRAME) ══════════ */}
-      <div className="w-full text-center px-4 pt-2 sm:pt-4 z-30 pointer-events-none shrink-0">
-        <h2 className="title-huge text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-none drop-shadow-[0_0_35px_rgba(255,2,232,0.25)]">
-          {sectionTitle}
-        </h2>
-      </div>
+      <div className="access-glass w-full max-w-7xl h-full max-h-[820px] mx-auto relative z-10 overflow-hidden flex flex-col justify-between items-center py-4 sm:py-6 md:py-8 px-4 sm:px-8">
+        {/* ══════════ SECTION TITLE: "Block The Noise" (FITS FIRST FRAME) ══════════ */}
+        <div className="w-full text-center px-4 pt-2 sm:pt-4 z-30 pointer-events-none shrink-0">
+          <h2 className="title-huge text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white leading-none drop-shadow-[0_0_35px_rgba(255,2,232,0.25)]">
+            {sectionTitle}
+          </h2>
+        </div>
 
-      {/* ══════════ THE CINEMATIC CAMERA ZOOM STAGE (DARK THEME) ══════════ */}
-      <div className="w-full flex-1 flex items-center justify-center relative overflow-hidden px-2 sm:px-4">
+        {/* ══════════ THE CINEMATIC CAMERA ZOOM STAGE (DARK THEME) ══════════ */}
+        <div className="w-full flex-1 flex items-center justify-center relative overflow-hidden px-2 sm:px-4">
         <div
           ref={zoomStageRef}
           className="relative w-[92vw] max-w-[1080px] aspect-[1024/551] max-h-[58vh] flex items-center justify-center will-change-transform origin-center transition-shadow"
@@ -902,6 +903,7 @@ export default function Timeline({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

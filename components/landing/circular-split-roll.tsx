@@ -515,66 +515,94 @@ export default function CircularSplitRoll({
           {/* Top/Left Column: App Titles with Typewriter Taglines */}
           <div className="relative flex h-[76px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
-              {safeItems.map((item, idx) => (
-                <Link
-                  key={item.id}
-                  href={`/apps/${item.slug}`}
-                  className="circular-scroll-showcase__left-item absolute left-1/2 top-1/2 w-full origin-center whitespace-nowrap text-center will-change-[transform,opacity] transition-colors cursor-pointer group"
-                >
-                  {/* App Title - Responsive scaling */}
-                  <div className="flex items-center justify-center gap-2 sm:gap-3">
-                    <span
-                      className="text-xs sm:text-sm md:text-base font-bold align-middle transition-colors"
-                      style={{ color: item.accentHex }}
-                    >
-                      {item.number}
-                    </span>
-                    <span
-                      className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight transition-colors group-hover:text-[var(--hover-accent)]"
-                      style={
-                        {
-                          "--hover-accent": item.accentHex,
-                          color: idx === activeIndex ? "#FFFFFF" : undefined,
-                        } as React.CSSProperties
-                      }
-                    >
-                      {item.title}
-                    </span>
-                  </div>
+              {safeItems.map((item, idx) => {
+                const isLive = item.slug === "productivity";
+                const href = isLive ? "/dive" : `/apps/${item.slug}`;
+                return (
+                  <Link
+                    key={item.id}
+                    href={href}
+                    className={`circular-scroll-showcase__left-item absolute left-1/2 top-1/2 w-full origin-center whitespace-nowrap text-center will-change-[transform,opacity] transition-colors cursor-pointer group ${
+                      !isLive ? "opacity-60" : ""
+                    }`}
+                  >
+                    {/* App Title - Responsive scaling */}
+                    <div className="flex items-center justify-center gap-2 sm:gap-3">
+                      <span
+                        className="text-xs sm:text-sm md:text-base font-bold align-middle transition-colors"
+                        style={{ color: item.accentHex }}
+                      >
+                        {item.number}
+                      </span>
+                      <span
+                        className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-black uppercase tracking-tight transition-colors group-hover:text-[var(--hover-accent)]"
+                        style={
+                          {
+                            "--hover-accent": item.accentHex,
+                            color: idx === activeIndex ? "#FFFFFF" : undefined,
+                          } as React.CSSProperties
+                        }
+                      >
+                        {item.title}
+                      </span>
+                      {!isLive && (
+                        <span className="text-[10px] sm:text-xs font-mono uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/60 border border-white/10 align-middle">
+                          Soon
+                        </span>
+                      )}
+                    </div>
 
-                  {/* Letters below title with Typewriter animation */}
-                  <TypewriterTagline
-                    text={item.tagline}
-                    active={idx === activeIndex}
-                    accentColor={item.accentHex}
-                  />
-                </Link>
-              ))}
+                    {/* Letters below title with Typewriter animation */}
+                    <TypewriterTagline
+                      text={item.tagline}
+                      active={idx === activeIndex}
+                      accentColor={item.accentHex}
+                    />
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
           {/* Bottom/Right Column: Cards with Logo Image */}
           <div className="relative flex h-[185px] sm:h-full w-full sm:w-[48%] items-center justify-center">
             <div className="relative h-full sm:h-[65vh] w-full flex items-center justify-center">
-              {safeItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/apps/${item.slug}`}
-                  className="circular-scroll-showcase__right-item absolute left-1/2 top-1/2 h-[175px] w-[160px] sm:h-(--css-card-height,230px) sm:w-(--css-card-width,210px) origin-center will-change-[transform,opacity] cursor-pointer group"
-                >
-                  {/* Clean Container */}
-                  <div
-                    className="card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-white/[0.025] border border-white/15 sm:shadow-[0_16px_36px_rgba(0,0,0,0.4)] backdrop-blur-[8px] group-hover:scale-105 transition-all duration-300 flex items-center justify-center p-4 sm:p-6"
+              {safeItems.map((item) => {
+                const isLive = item.slug === "productivity";
+                const href = isLive ? "/dive" : `/apps/${item.slug}`;
+                return (
+                  <Link
+                    key={item.id}
+                    href={href}
+                    className="circular-scroll-showcase__right-item absolute left-1/2 top-1/2 h-[175px] w-[160px] sm:h-(--css-card-height,230px) sm:w-(--css-card-width,210px) origin-center will-change-[transform,opacity] cursor-pointer group"
                   >
-                    <img
-                      src={item.logoUrl}
-                      alt={item.alt}
-                      className="pointer-events-none block max-h-[75%] max-w-[75%] select-none object-contain transition-transform duration-300 group-hover:scale-110 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] mix-blend-screen"
-                      draggable="false"
-                    />
-                  </div>
-                </Link>
-              ))}
+                    {/* Clean Container with inactive opacity overlay for non-live apps */}
+                    <div
+                      className={`card-inner-box relative h-full w-full overflow-hidden rounded-[20px] sm:rounded-[24px] bg-white/[0.025] border border-white/15 sm:shadow-[0_16px_36px_rgba(0,0,0,0.4)] backdrop-blur-[8px] transition-all duration-300 flex items-center justify-center p-4 sm:p-6 ${
+                        isLive ? "group-hover:scale-105" : "opacity-40 grayscale hover:opacity-60"
+                      }`}
+                    >
+                      <img
+                        src={item.logoUrl}
+                        alt={item.alt}
+                        className={`pointer-events-none block max-h-[75%] max-w-[75%] select-none object-contain transition-transform duration-300 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] mix-blend-screen ${
+                          isLive ? "group-hover:scale-110" : ""
+                        }`}
+                        draggable="false"
+                      />
+
+                      {/* Inactive opacity overlay on top of non-live apps */}
+                      {!isLive && (
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex flex-col items-center justify-center z-10">
+                          <span className="text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded-full bg-white/10 text-white/80 border border-white/15 shadow-sm">
+                            Coming Soon
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

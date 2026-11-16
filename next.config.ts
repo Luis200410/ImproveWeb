@@ -41,7 +41,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/apps/execution-productivity',
-        destination: '/apps/productivity',
+        destination: '/dive',
+        permanent: true,
+      },
+      {
+        source: '/apps/productivity',
+        destination: '/dive',
         permanent: true,
       },
     ];

@@ -105,6 +105,12 @@ export function TypewriterDescription({
   const parsedSegments: TextSegment[] = React.useMemo(() => {
     if (!text) return [];
     const keyPhrases = [
+      "The Problems",
+      "Problems",
+      "laptop",
+      "phone",
+      "friction",
+      "clarity",
       "4 Yearly Targets",
       "Second Brain",
       "IMPROVE",
@@ -381,64 +387,60 @@ function Card({
   return (
     <motion.div
       ref={ref}
-      className="absolute w-[320px] sm:w-[360px] md:w-[400px] h-[440px] sm:h-[480px] bg-neutral-950/95 rounded-2xl border border-zinc-800/90 overflow-hidden shadow-2xl transition-colors duration-500 ease-out group hover:border-[#FF02E8]/60"
+      className="absolute w-[320px] sm:w-[360px] md:w-[400px] h-[440px] sm:h-[480px] bg-neutral-950/95 rounded-2xl border border-zinc-800/90 overflow-hidden shadow-2xl transition-colors duration-500 ease-out group hover:border-[#FF02E8]/60 flex flex-col justify-between"
       style={{
         transform,
         transformStyle: "preserve-3d",
       }}
     >
-      {/* Top Badges Header */}
-      <div className="absolute top-4 inset-x-4 z-20 flex items-center justify-between">
-        <div className="flex items-center space-x-2 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-zinc-700/80 shadow-md">
-          <span className="w-2 h-2 rounded-full bg-[#FF02E8] shadow-[0_0_8px_#FF02E8]" />
-          <span className="text-white font-mono text-xs font-bold tracking-wider uppercase">
-            {layerNum}
-          </span>
+      {/* Top Header & Text Area (Text on TOP, right below problem title) */}
+      <div className="relative z-20 p-5 sm:p-6 pb-3 bg-neutral-950 flex flex-col space-y-3.5 border-b border-zinc-800/80">
+        {/* Top Badges / Problem Title */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 bg-black/80 backdrop-blur-md px-3 py-1 rounded-full border border-zinc-700/80 shadow-md">
+            <span className="w-2 h-2 rounded-full bg-[#FF02E8] shadow-[0_0_8px_#FF02E8]" />
+            <span className="text-white font-mono text-xs font-bold tracking-wider uppercase">
+              {layerNum}
+            </span>
+          </div>
+          {item.badge && (
+            <span className="bg-[#FF02E8]/15 backdrop-blur-md px-3 py-1 rounded-full border border-[#FF02E8]/40 text-[#FF02E8] font-rounded text-[11px] font-bold tracking-wide uppercase">
+              {item.badge}
+            </span>
+          )}
         </div>
-        {item.badge && (
-          <span className="bg-[#FF02E8]/15 backdrop-blur-md px-3 py-1 rounded-full border border-[#FF02E8]/40 text-[#FF02E8] font-rounded text-[11px] font-bold tracking-wide uppercase">
-            {item.badge}
-          </span>
-        )}
+
+        {/* Text for each card on top below the problem title */}
+        <div className="space-y-1 pt-1">
+          <p className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug group-hover:text-[#FF02E8] transition-colors">
+            {item.subtitle || item.title}
+          </p>
+        </div>
       </div>
 
-      {/* Image with Dark Gradient Tint */}
-      <div className="relative w-full h-[58%] brightness-90 group-hover:brightness-100 transition-all duration-300">
+      {/* Image in the middle with Dark Gradient Tint */}
+      <div className="relative w-full flex-1 min-h-[160px] brightness-90 group-hover:brightness-100 transition-all duration-300 overflow-hidden">
         <img
           src={item.image}
           alt={item.title}
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/40" />
       </div>
 
-      {/* Bottom Content Area */}
-      <div className="absolute bottom-0 inset-x-0 h-[46%] bg-neutral-950 p-5 sm:p-6 flex flex-col justify-between z-20 border-t border-zinc-800/60">
-        <div className="space-y-1.5">
-          <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-none group-hover:text-[#FF02E8] transition-colors uppercase">
-            {item.title}
-          </h3>
-          {item.subtitle && (
-            <p className="text-xs sm:text-sm text-zinc-300 font-medium leading-snug">
-              {item.subtitle}
-            </p>
-          )}
+      {/* Bottom Feature Pills */}
+      {item.features && item.features.length > 0 && (
+        <div className="p-4 sm:p-5 bg-neutral-950 z-20 border-t border-zinc-800/60 flex flex-wrap gap-1.5">
+          {item.features.map((feat, fIdx) => (
+            <span
+              key={fIdx}
+              className="text-[10px] sm:text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800"
+            >
+              {feat}
+            </span>
+          ))}
         </div>
-
-        {/* Feature Pills */}
-        {item.features && item.features.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-2">
-            {item.features.map((feat, fIdx) => (
-              <span
-                key={fIdx}
-                className="text-[10px] sm:text-[11px] font-mono font-medium px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800"
-              >
-                {feat}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Subtle Ambient Hover Glow */}
       <div className="absolute inset-0 bg-gradient-to-tr from-[#FF02E8]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />

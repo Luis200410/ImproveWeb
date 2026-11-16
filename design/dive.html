@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dive by Improve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<!--
+  Mock of improve-club.com/dive (the page that replaces /apps/productivity).
+  Brief: "Dive by Improve — Flow-first Pivot & Brand Brief", section "Website: Dive page".
+  Rules: Inter; one magenta spark per section, black text on it; no red, streaks or scoreboards;
+  never name a competitor; never write "deep dive"; only cite what the brief marks established AND verified.
+  The mock bar at the bottom (width preview) is not part of the page.
+
+  BUILD NOTES (for whoever builds this into ImproveWeb, Next.js + Tailwind):
+  - DARK ONLY (decided 2026-11-16). Background #0A0A0D; no light theme.
+  - Font: Inter 300/400/500, never bold. Light (300) only at 28px+. Tabular digits on every count-up.
+  - Corners: cards 15px, buttons/badges/chips 10px. No capsules. Glass = rgba(255,255,255,.055) + .75px border + backdrop blur.
+  - One magenta (#FF02E8) action per section, with black text. Secondary = outlined. Never red.
+  - Waves = the Dive logo's three bands (#FF02E8 at 85% / #A0068F / #3A0636), animated slowly; still under prefers-reduced-motion.
+  - Phones, Mac, widget and Lock Screen are drawn in HTML/CSS (live count-up), not images. Keep that, or swap in renders later.
+  - Hero = full-bleed video media/dive-hero.mp4 (Google Flow from a licensed stock photo; keep the source link + licence),
+    muted/loop/playsinline, poster media/dive-hero-poster.jpg, darkened + vignette to #0A0A0D. Water stays natural navy:
+    NO magenta in footage; magenta only in UI (badge, the count-up's thread). Scroll "sinks" it (zoom + drift);
+    still poster under reduced motion; paused off-screen. Ship MP4 + WebM, under ~3 MB.
+  - The problem statement's words light up with scroll (all lit under reduced motion).
+  - Every CTA/badge goes to Dive's App Store page (URL TBD); use Apple's official App Store badge artwork.
+  - Footer links: /privacy, /terms, /refund, /, /apps, /apps/second-brain. Route: /dive (redirect /apps/productivity).
+  - Never name a competitor, never write "deep dive", no streaks/scores/counters, no unsourced stats.
+-->
+<style>
+  :root {
+    --spark: #FF02E8; --band2: #A0068F; --band3: #3A0636;
+    --writing: #6F1BD3; --study: #2254F5; --sb: #FF6900;
+    --bg: #0A0A0D; --bg2: #111114; --text: #fff; --text2: rgba(255,255,255,.66); --text3: rgba(255,255,255,.42);
+    --line: rgba(255,255,255,.12); --glass: rgba(255,255,255,.055); --glass2: rgba(255,255,255,.09);
+    --shadow: none;
+  }
+  .deep {
+    --bg: #0A0A0D; --bg2: #111114; --text: #fff; --text2: rgba(255,255,255,.66); --text3: rgba(255,255,255,.42);
+    --line: rgba(255,255,255,.12); --glass: rgba(255,255,255,.055); --glass2: rgba(255,255,255,.09); --shadow: none;
+    background: #0A0A0D; color: #fff;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, -apple-system, Helvetica, sans-serif; font-weight: 400; -webkit-font-smoothing: antialiased; }
+  .num { font-variant-numeric: tabular-nums; }
+  a { color: inherit; }
+
+  /* The page lives in a container so the mock bar can preview phone width inside a desktop window. */
+  .frame { margin: 0 auto; }
+  .frame.narrow { max-width: 390px; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .site { container-type: inline-size; background: var(--bg); overflow: hidden; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
+  @container (max-width: 700px) { .wrap { padding: 0 16px; } }
+
+  /* type: light only at 28px+, medium for titles, never bold */
+  h1, h2 { font-weight: 300; letter-spacing: -.02em; margin: 0; }
+  h1 { font-size: clamp(38px, 5.4cqi, 60px); line-height: 1.06; }
+  h2 { font-size: 40px; line-height: 1.12; }
+  h3 { font-size: 17px; font-weight: 500; margin: 0 0 6px; }
+  p { margin: 0; }
+  .lede { font-size: 19px; line-height: 1.55; color: var(--text2); }
+  .body { font-size: 16px; line-height: 1.6; color: var(--text2); }
+  .small { font-size: 13px; line-height: 1.5; color: var(--text3); }
+  .kicker { font-size: 12px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+  @container (max-width: 700px) {
+    h1 { font-size: 38px; } h2 { font-size: 30px; } .lede { font-size: 17px; }
+  }
+
+  /* buttons: one spark per section; outlined secondary; text tertiary; 10px corners; press sinks */
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 10px; font: 500 16px Inter, sans-serif; text-decoration: none; cursor: pointer; border: 0; transition: transform .12s, filter .12s; }
+  .btn:active { transform: scale(.97); filter: brightness(.9); }
+  .btn.spark { background: var(--spark); color: #000; }
+  .btn.line { background: transparent; color: var(--text); border: .75px solid var(--line); box-shadow: inset 0 0 0 .75px var(--line); }
+  .btn.textonly { background: none; color: var(--text2); padding: 14px 6px; }
+  .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+  .glass { background: var(--glass); border: .75px solid var(--line); border-radius: 15px; backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%); box-shadow: var(--shadow); }
+
+  section { padding: 110px 0; }
+  @container (max-width: 700px) { section { padding: 72px 0; } }
+
+  /* nav */
+  nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, #0A0A0D 72%, transparent); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom: .75px solid rgba(255,255,255,.08); color: #fff; }
+  nav .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand svg.logo { width: 28px; height: 28px; border-radius: 7px; }
+  .brand b { font-weight: 500; font-size: 17px; }
+  .brand span { font-size: 13px; color: rgba(255,255,255,.5); }
+  nav .links { display: flex; gap: 24px; margin-left: auto; font-size: 14px; }
+  nav .links a { text-decoration: none; color: rgba(255,255,255,.7); }
+  nav .btn { padding: 9px 16px; font-size: 14px; }
+  @container (max-width: 700px) { nav .links { display: none; } nav .btn { margin-left: auto; } nav .wrap { gap: 12px; } }
+
+  /* hero */
+  .hero { position: relative; padding: 88px 0 230px; }
+  .hero > .waves { height: 190px; }
+  .hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; }
+  .hero h1 { margin-bottom: 22px; }
+  .hero .lede { max-width: 520px; color: rgba(255,255,255,.72); }
+  .hero .cta { display: flex; gap: 12px; align-items: center; margin-top: 34px; flex-wrap: wrap; }
+  .hero .meta { margin-top: 16px; }
+  .waves { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 36%; display: block; z-index: 1; }
+  @container (max-width: 860px) {
+    .hero .wrap { grid-template-columns: 1fr; }
+    .hero { padding-top: 56px; padding-bottom: 170px; }
+    .hero > .waves { height: 140px; }
+    .hero .phonecol { justify-self: center; }
+  }
+
+  /* phone frames */
+  .phone { width: 280px; height: 580px; border-radius: 44px; border: 9px solid #1d1d21; background: #000; position: relative; overflow: hidden; color: #fff; flex: none; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+  .phone::before { content: ""; position: absolute; top: 10px; left: 50%; margin-left: -45px; width: 90px; height: 26px; border-radius: 14px; background: #000; z-index: 9; }
+  .phone .scr { position: absolute; inset: 0; padding: 54px 18px 20px; display: flex; flex-direction: column; }
+  .phone .waves { height: 30%; }
+  .phone .k { font-size: 10.5px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+  .phone .pk { font-size: 12.5px; color: rgba(255,255,255,.62); line-height: 1.4; }
+  .count { font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .thread { height: 2px; border-radius: 1px; background: rgba(255,255,255,.1); position: relative; overflow: hidden; }
+  .thread i { position: absolute; left: 0; top: 0; bottom: 0; width: 62%; background: var(--spark); }
+  .pbtn { border-radius: 10px; padding: 11px 0; text-align: center; font-size: 14px; font-weight: 500; }
+  .pbtn.spark { background: var(--spark); color: #000; }
+  .pbtn.line { box-shadow: inset 0 0 0 .75px rgba(255,255,255,.3); color: #fff; }
+  .pglass { background: rgba(255,255,255,.07); border: .75px solid rgba(255,255,255,.12); border-radius: 15px; padding: 12px; }
+
+  /* dive card (Dive tab) */
+  .dcard { display: flex; align-items: center; gap: 10px; border-radius: 15px; padding: 12px; background: rgba(255,255,255,.07); border: .75px solid rgba(255,255,255,.1); position: relative; overflow: hidden; }
+  .dcard::after { content: ""; position: absolute; right: -30px; top: -40px; width: 120px; height: 120px; border-radius: 50%; background: var(--c); opacity: .18; filter: blur(30px); }
+  .tile { width: 32px; height: 32px; border-radius: 9px; background: var(--c); display: grid; place-items: center; flex: none; }
+  .tile svg { width: 17px; height: 17px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .dcard .t { font-size: 14px; font-weight: 500; }
+  .go { margin-left: auto; width: 40px; height: 40px; border-radius: 10px; background: var(--spark); display: grid; place-items: center; flex: none; z-index: 1; }
+  .go svg { width: 20px; height: 20px; fill: none; stroke: #000; stroke-width: 1.8; stroke-linecap: round; }
+  .go.dim { background: transparent; box-shadow: inset 0 0 0 .75px rgba(255,255,255,.28); width: auto; padding: 0 9px; font-size: 11px; color: rgba(255,255,255,.75); }
+
+
+  .center { text-align: center; max-width: 680px; margin: 0 auto; }
+
+  /* shield */
+  .shield { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(40,40,46,.92), rgba(16,16,20,.96)); display: flex; flex-direction: column; align-items: center; text-align: center; padding: 120px 22px 30px; }
+  .shield .logo { width: 56px; height: 56px; border-radius: 13px; }
+  .shield .st { font-size: 19px; font-weight: 500; margin-top: 22px; line-height: 1.25; }
+  .shield .ss { font-size: 13.5px; color: rgba(255,255,255,.62); margin-top: 8px; line-height: 1.45; }
+  .ghost-app { position: absolute; inset: 40px 14px auto; height: 300px; border-radius: 16px; background: repeating-linear-gradient(180deg, rgba(255,255,255,.06) 0 70px, transparent 70px 84px); filter: blur(5px); }
+
+  /* rating */
+  .rate { display: flex; gap: 6px; margin-top: 8px; }
+  .rate div { flex: 1; padding: 9px 0; text-align: center; border-radius: 10px; font-size: 12px; box-shadow: inset 0 0 0 .75px rgba(255,255,255,.2); color: rgba(255,255,255,.75); }
+  .rate div.on { box-shadow: inset 0 0 0 1px var(--spark), 0 0 18px rgba(255,2,232,.45); color: #fff; }
+  .field { margin-top: 8px; padding: 10px 11px; border-radius: 10px; background: rgba(255,255,255,.06); font-size: 13px; display: flex; }
+
+  /* two-up */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  @container (max-width: 860px) { .two { grid-template-columns: 1fr; gap: 40px; } }
+  .ticks { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .ticks li { display: flex; gap: 12px; font-size: 16px; line-height: 1.5; color: var(--text2); }
+  .ticks li::before { content: ""; flex: none; width: 18px; height: 10px; margin-top: 7px; background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 12'%3E%3Cpath d='M1 6q5.5-5 11 0t11 0' fill='none' stroke='%23FF02E8' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); }
+  .ticks b { font-weight: 500; color: var(--text); }
+
+  /* goal + progress cards */
+  .gcard { padding: 22px; }
+  .gcard .big { font-size: 44px; font-weight: 300; letter-spacing: -.02em; }
+  .bars { display: flex; align-items: flex-end; gap: 5px; height: 64px; margin: 18px 0 6px; }
+  .bars i { flex: 1; border-radius: 3px; background: var(--spark); opacity: .85; }
+  .bars i.f { background: none; border-bottom: .75px solid var(--line); opacity: 1; border-radius: 0; }
+  .wk { display: flex; align-items: flex-end; gap: 10px; height: 110px; margin-top: 16px; }
+  .wk div { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; height: 100%; }
+  .wk div i { display: block; border-radius: 3px; }
+  .wk div i.none { height: 0; border-bottom: .75px solid var(--line); border-radius: 0; }
+  .wkl { display: flex; gap: 10px; margin-top: 8px; } .wkl span { flex: 1; text-align: center; font-size: 11px; color: var(--text3); }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-top: .75px solid var(--line); font-size: 14px; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 3px; margin-right: 8px; background: var(--c); }
+  .sbbox { border-radius: 12px; box-shadow: inset 0 0 0 .75px color-mix(in srgb, var(--sb) 55%, transparent); padding: 4px 12px; margin-top: 10px; }
+  .sbbox .row:first-child { border-top: 0; }
+  .stack { display: grid; gap: 16px; }
+
+  /* everywhere */
+  .mac { width: 620px; max-width: 100%; aspect-ratio: 16/10; border-radius: 12px; background: #0A0A0D; border: 1px solid #2a2a30; position: relative; overflow: hidden; color: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+  .mac .bar { height: 30px; display: flex; gap: 7px; align-items: center; padding: 0 12px; border-bottom: .75px solid rgba(255,255,255,.08); }
+  .mac .bar i { width: 10px; height: 10px; border-radius: 50%; background: #3a3a3e; }
+  .mac .in { position: absolute; top: 30px; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: 150px 1fr 1fr; }
+  .mac .side { border-right: .75px solid rgba(255,255,255,.08); padding: 14px 10px; font-size: 12px; color: rgba(255,255,255,.6); display: grid; align-content: start; gap: 4px; background: rgba(255,255,255,.02); }
+  .mac .side div { padding: 6px 8px; border-radius: 7px; } .mac .side .on { background: rgba(255,255,255,.08); color: #fff; }
+  .mac .col { padding: 22px 18px; position: relative; z-index: 2; }
+  .mac .waves { height: 34%; }
+  @container (max-width: 700px) { .mac .in { grid-template-columns: 1fr 1fr; } .mac .side { display: none; } }
+  .widget { width: 170px; height: 170px; border-radius: 26px; padding: 14px; background: #16161a; color: #fff; display: flex; flex-direction: column; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,.35); }
+  .widget::after { content: ""; position: absolute; right: -30px; top: -40px; width: 110px; height: 110px; border-radius: 50%; background: var(--c); opacity: .22; filter: blur(28px); }
+  .widget .pbtn { margin-top: auto; padding: 8px 0; font-size: 13px; }
+  .caps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 56px; }
+  .caps div { font-size: 14px; line-height: 1.5; color: var(--text2); }
+  .caps b { display: block; font-weight: 500; color: var(--text); margin-bottom: 4px; font-size: 15px; }
+  @container (max-width: 860px) { .caps { grid-template-columns: 1fr 1fr; } }
+
+  /* privacy */
+  .label { padding: 28px; display: flex; gap: 20px; align-items: flex-start; }
+  .label .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--glass2); display: grid; place-items: center; flex: none; }
+  .label .ic svg { width: 22px; height: 22px; fill: none; stroke: var(--text); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .label .t { font-size: 22px; font-weight: 400; }
+  .cite { border-left: 2px solid var(--line); padding-left: 16px; }
+  .cite .small { margin-top: 6px; }
+
+  /* founder */
+  .note { max-width: 640px; margin: 0 auto; }
+  .note p.q { font-size: 28px; font-weight: 300; line-height: 1.35; letter-spacing: -.01em; }
+  .sig { display: flex; align-items: center; gap: 12px; margin-top: 28px; }
+  .mono { width: 40px; height: 40px; border-radius: 50%; background: var(--glass2); display: grid; place-items: center; font-size: 14px; font-weight: 500; }
+
+  /* pricing */
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 56px; align-items: stretch; }
+  .plan { padding: 26px; display: flex; flex-direction: column; }
+  .plan .ph { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 500; }
+  .plan .ph svg { width: 26px; height: 26px; border-radius: 7px; }
+  .plan .price { font-size: 40px; font-weight: 300; margin: 18px 0 2px; letter-spacing: -.02em; }
+  .plan .per { font-size: 13px; color: var(--text3); }
+  .plan ul { list-style: none; padding: 0; margin: 22px 0 26px; display: grid; gap: 10px; font-size: 14.5px; color: var(--text2); line-height: 1.45; }
+  .plan ul li { padding-left: 18px; position: relative; }
+  .plan ul li::before { content: ""; position: absolute; left: 0; top: 9px; width: 8px; height: 1.5px; background: var(--text3); }
+  .plan .btn { margin-top: auto; justify-content: center; }
+  .plan.main { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--spark) 60%, transparent), var(--shadow); }
+  .plan.main ul li::before { background: var(--spark); }
+  @container (max-width: 860px) { .plans { grid-template-columns: 1fr; } }
+
+  /* faq */
+  .faq { max-width: 760px; margin: 48px auto 0; }
+  details { border-top: .75px solid var(--line); padding: 4px 0; }
+  details:last-child { border-bottom: .75px solid var(--line); }
+  summary { list-style: none; cursor: pointer; padding: 20px 0; font-size: 17px; font-weight: 500; display: flex; justify-content: space-between; gap: 16px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font-weight: 300; font-size: 22px; line-height: 1; color: var(--text3); transition: transform .2s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details .body { padding: 0 0 22px; max-width: 640px; }
+
+  /* close + footer */
+  .close { position: relative; padding: 120px 0 240px; text-align: center; }
+  .close > .waves { height: 180px; }
+  footer { padding: 40px 0 56px; border-top: .75px solid var(--line); }
+  footer a { text-decoration: none; color: var(--text2); }
+  .imp { display: inline-flex; align-items: center; gap: 8px; }
+  .imp svg { width: 16px; height: 22px; }
+
+
+  /* ---- structure borrowed from the category's best landing pages (2026-11-16) ---- */
+  .kicker { display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 10px; background: var(--glass2); border: .75px solid var(--line); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text2); margin-bottom: 18px; }
+  .navdock { position: sticky; top: 0; height: 0; z-index: 20; }
+  nav { position: relative; top: 12px; margin: 0 16px; max-width: 1120px; border-radius: 15px; border: .75px solid rgba(255,255,255,.1); }
+  @media (min-width: 0) { .site nav { margin-left: auto; margin-right: auto; width: calc(100% - 32px); } }
+  nav .wrap { height: 58px; padding: 0 12px 0 16px; }
+
+  .hero { padding: 150px 0 0; text-align: center; }
+  .hero .wrap.herotext { display: block; max-width: 920px; }
+  .hero h1 { margin: 0 auto 22px; }
+  .hero .lede { margin: 0 auto; max-width: 560px; }
+  .badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 32px; }
+  .store { display: inline-flex; align-items: center; gap: 10px; padding: 9px 18px 9px 14px; border-radius: 10px; background: #000; color: #fff; text-decoration: none; box-shadow: inset 0 0 0 .75px rgba(255,255,255,.35); text-align: left; transition: transform .12s; }
+  .store:active { transform: scale(.97); }
+  .store svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .store span { font-size: 17px; font-weight: 500; line-height: 1.1; } .store small { display: block; font-size: 10.5px; font-weight: 400; color: rgba(255,255,255,.7); }
+  .store:first-child { background: var(--spark); color: #000; box-shadow: none; } .store:first-child svg { stroke: #000; } .store:first-child small { color: rgba(0,0,0,.65); }
+  .proof { display: flex; gap: 8px 22px; justify-content: center; flex-wrap: wrap; margin-top: 22px; font-size: 13px; color: rgba(255,255,255,.5); }
+  .proof span::before { content: "·"; margin-right: 22px; color: rgba(255,255,255,.25); } .proof span:first-child::before { content: none; }
+  .heroshot { position: relative; z-index: 2; display: flex; justify-content: center; margin-top: 64px; margin-bottom: -120px; }
+  .hero > .waves { height: 300px; z-index: 3; opacity: .92; }
+  .hero { padding-bottom: 0; overflow: hidden; } .hero::after { content: ""; display: block; height: 180px; }
+  @container (max-width: 700px) { .hero { padding-top: 110px; } .proof span::before { content: none; } .proof { gap: 6px 14px; } .hero > .waves { height: 220px; } .heroshot { margin-bottom: -150px; } }
+
+  /* hero film: the Flow video (natural navy, no magenta in the water) under centred words */
+  .hero.film { min-height: min(100vh, 880px); padding: 150px 0 120px; background: #0A0A0D; isolation: isolate; }
+  .hero.film::after { content: none; }
+  .film-bg { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+  .film-bg video { position: absolute; left: 0; top: 18%; height: 82% !important; }
+  .film-bg { -webkit-mask-image: linear-gradient(to bottom, transparent 8%, #000 30%); mask-image: linear-gradient(to bottom, transparent 8%, #000 30%); }
+  .film-bg video { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; filter: brightness(.8) saturate(.85); transform-origin: 50% 65%; will-change: transform; }
+  .film-bg::after { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 75% 70% at 50% 55%, transparent 40%, rgba(10,10,13,.75) 100%),
+                linear-gradient(to bottom, rgba(10,10,13,.55) 0%, transparent 30%, transparent 62%, #0A0A0D 100%); }
+  .still { position: absolute; z-index: 2; left: 50%; bottom: 44px; transform: translateX(-50%); display: flex; align-items: baseline; gap: 12px; font-size: 13px; color: rgba(255,255,255,.55); white-space: nowrap; }
+  .still b { position: relative; font-weight: 300; font-size: 30px; color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .still b::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1.5px; border-radius: 1px; background: var(--spark); opacity: .9; }
+  @container (max-width: 700px) { .hero.film { min-height: 760px; padding-top: 112px; } .film-bg video { object-position: 46% 60%; } }
+
+  .statement { padding: 160px 0; }
+  .reveal { font-size: clamp(28px, 4.4cqi, 50px); font-weight: 300; line-height: 1.22; letter-spacing: -.02em; text-align: center; max-width: 960px; margin: 0 auto; }
+  .reveal span { opacity: .2; transition: opacity .25s; } .reveal span.lit { opacity: 1; }
+  @container (max-width: 700px) { .statement { padding: 96px 0; } }
+
+  .scenes { display: grid; gap: 140px; margin-top: 96px; }
+  .scene { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .scene .phone { width: 300px; height: 620px; text-align: left; margin-bottom: 44px; }
+  .scene .kicker { margin-bottom: 14px; }
+  .st3 { font-size: 34px; font-weight: 300; letter-spacing: -.02em; margin: 0 0 12px; }
+  .scene .body { max-width: 440px; font-size: 17px; }
+  @container (max-width: 700px) { .scenes { gap: 96px; margin-top: 64px; } .scene .phone { width: 270px; height: 560px; } .st3 { font-size: 28px; } }
+
+  .collage { position: relative; max-width: 720px; margin: 64px auto 0; padding-bottom: 30px; }
+  .collage .mac { width: 100%; }
+  .collage .mini { position: absolute; left: -70px; bottom: -10px; width: 180px; height: 370px; border-width: 7px; border-radius: 32px; }
+  .collage .mini::before { width: 60px; margin-left: -30px; height: 18px; top: 8px; }
+  .collage .widget { position: absolute; right: -60px; bottom: 30px; }
+  .la { margin-top: auto; width: 100%; border-radius: 16px; padding: 9px 10px; background: rgba(40,40,46,.9); display: flex; align-items: center; gap: 7px; }
+  .la .count { font-size: 18px; margin-left: auto; }
+  @container (max-width: 900px) { .collage .mini { left: -10px; } .collage .widget { right: -10px; } }
+  @container (max-width: 700px) {
+    .collage { padding-bottom: 0; }
+    .collage .mini, .collage .widget { position: relative; left: auto; right: auto; bottom: auto; }
+    .mac .in { grid-template-columns: 1fr; } .mac .in .col:nth-child(2) { display: none; } .mac .count { font-size: 44px !important; }
+    .collage .mini { width: 160px; height: 330px; }
+    .collage .widget { width: 160px; height: 160px; }
+    .collage .duo { display: flex; gap: 14px; justify-content: center; margin-top: 18px; align-items: flex-end; }
+  }
+
+  .fcols { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; }
+  .fcols h4 { margin: 0 0 14px; font-size: 13px; font-weight: 500; color: var(--text); }
+  .fcols > div:not(.fbrand) a { display: block; font-size: 14px; color: var(--text2); text-decoration: none; margin-bottom: 10px; }
+  .fbrand { display: flex; flex-direction: column; align-items: flex-start; font-size: 13px; color: var(--text3); }
+  footer { padding: 64px 0; }
+  @container (max-width: 700px) { .fcols { grid-template-columns: 1fr 1fr; } .fbrand { grid-column: 1 / -1; } }
+
+  /* mock-only bar */
+  .mockbar { flex-wrap: wrap; justify-content: center; max-width: calc(100% - 16px); position: fixed; z-index: 100; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; align-items: center; padding: 6px; border-radius: 12px; background: rgba(30,30,34,.92); backdrop-filter: blur(16px); color: #fff; font: 500 12px Inter, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+  .mockbar span { color: rgba(255,255,255,.45); padding: 0 6px 0 8px; letter-spacing: .06em; text-transform: uppercase; font-size: 10.5px; }
+  .mockbar button { border: 0; background: transparent; color: rgba(255,255,255,.75); font: inherit; padding: 7px 10px; border-radius: 8px; cursor: pointer; }
+  .mockbar button.on { background: rgba(255,255,255,.18); color: #fff; }
+  .mockbar i { width: 1px; height: 18px; background: rgba(255,255,255,.15); margin: 0 4px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+<div class="site">
+
+<div class="navdock"><nav>
+  <div class="wrap">
+    <a class="brand" href="#top"><svg class="logo" data-logo></svg><b>Dive</b><span>by Improve</span></a>
+    <div class="links"><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+    <a class="btn spark" href="#app-store" data-cta>Get Dive</a>
+  </div>
+</nav></div>
+
+<!-- 1 · Hook: always deep. Centered words, badges, proof row, then the visual. -->
+<header class="hero film" id="top">
+  <div class="film-bg" aria-hidden="true">
+    <video id="heroVideo" autoplay muted loop playsinline poster="media/dive-hero-poster.jpg">
+      <source src="media/dive-hero.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="wrap herotext">
+    <h1>Depth, without upkeep.</h1>
+    <p class="lede">Dive takes you below the noise to the real work, with no system to manage.</p>
+    <div class="badges">
+        <a class="store" href="#app-store" data-cta><svg viewBox="0 0 24 24"><path d="M3 9q4.5-3 9 0t9 0M3 15q4.5-3 9 0t9 0"/></svg><span><small>Download on the</small>App Store</span></a>
+        <a class="store" href="#app-store" data-cta><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><span><small>Also on</small>iPad and Mac</span></a>
+      </div>
+    <div class="proof"><span>Free to start</span><span>No account</span><span>Data Not Collected</span><span>Coach runs on your device</span></div>
+  </div>
+  <div class="still"><b data-live>47:12</b><span>Writing · still in</span></div>
+</header>
+
+<!-- 2 · The problem: one statement, words fill in as you scroll -->
+<section class="statement">
+  <div class="wrap">
+    <p class="reveal" id="reveal">You sit down to do what matters. You check your phone, and an hour is gone. Dive keeps you under.</p>
+  </div>
+</section>
+
+<!-- 3 · How a dive works -->
+<section class="deep" id="how" style="padding-bottom:120px">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker" style="color:rgba(255,255,255,.5)">How a dive works</div>
+      <h2>Dive. Stay in. Surface.</h2>
+      <p class="lede" style="margin-top:18px;color:rgba(255,255,255,.7)">No timer to set, no countdown, no breaks inside a dive. You go in, and you come up when you're done.</p>
+    </div>
+    <div class="scenes">
+      <div class="scene">
+        <div class="phone">
+          <div class="scr">
+            <div class="k">Sunday · ready when you are</div>
+            <div style="font-size:22px;font-weight:300;margin:6px 0 18px">Good evening, Luis</div>
+            <div class="dcard" style="--c:var(--writing)"><div class="tile" data-icon="pen"></div><div><div class="t">Writing</div><div class="pk">↳ Finish the paragraph on tides</div></div><div class="go" data-wave></div></div>
+            <div class="dcard" style="--c:var(--study);margin-top:10px;opacity:.8"><div class="tile" data-icon="book"></div><div><div class="t">Study</div><div class="pk">↳ Problem set 4, question 3</div></div><div class="go dim num">32 min</div></div>
+            <div style="flex:1"></div>
+            <div class="small" style="color:rgba(255,255,255,.4);text-align:center">One tap and you're in.</div>
+          </div>
+        </div>
+        <div class="kicker">Dive</div>
+        <h3 class="st3">Your next step is already there.</h3>
+        <p class="body">Each dive is a card for one area of your life. It shows where you said you'd pick up, so starting is one tap, not a decision.</p>
+      </div>
+      <div class="scene">
+        <div class="phone">
+          <div class="ghost-app"></div>
+          <div class="shield">
+            <svg class="logo" data-logo></svg>
+            <div class="st">You're 23 min into Writing</div>
+            <div class="ss">Instagram will still be here when you surface.</div>
+            <div style="flex:1"></div>
+            <div class="pbtn spark" style="width:100%">Dive back</div>
+          </div>
+        </div>
+        <div class="kicker">Stay in</div>
+        <h3 class="st3">Everything else goes quiet.</h3>
+        <p class="body">The apps that pull you out stay closed until you surface. Reach for one and it tells you where you are, kindly, with one way back in.</p>
+      </div>
+      <div class="scene">
+        <div class="phone">
+          <svg class="waves" data-w data-tint="#FF02E8" data-soft style="height:16%"></svg>
+          <div class="scr" style="z-index:2">
+            <div class="k" style="text-align:center">You surfaced</div>
+            <div class="count" style="font-size:56px;text-align:center;margin:6px 0 2px">52<span style="font-size:18px;opacity:.75"> min</span></div>
+            <div class="pk" style="text-align:center">Writing · your apps are back</div>
+            <div class="pglass" style="margin-top:16px"><div style="font-size:13px;font-weight:500">How deep did it go?</div>
+              <div class="rate"><div>Not really</div><div>Briefly</div><div class="on">Deep</div></div></div>
+            <div class="pglass" style="margin-top:10px"><div class="pk">Pick up next time</div><div class="field">Start the section on currents</div></div>
+            <div style="flex:1"></div>
+            <div class="pbtn spark">Save</div>
+            <div class="pk" style="text-align:center;margin-top:8px">Skip</div>
+          </div>
+        </div>
+        <div class="kicker">Surface</div>
+        <h3 class="st3">Two taps, and your mind can let go.</h3>
+        <p class="body">Say how deep it went (only you see it, and it's never a score) and where you'll pick up. Next time, the card is waiting with that line.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · Nothing to keep up: Progress + Goals -->
+<section>
+  <div class="wrap two">
+    <div>
+      <div class="kicker">Nothing to keep up</div>
+      <h2>Proud, not pressured.</h2>
+      <p class="lede" style="margin-top:18px">Dive counts the minutes you actually spent in the work. That's the whole record. Nothing to fill in, nothing to fall behind on.</p>
+      <ul class="ticks">
+        <li><span><b>No streaks, no missed days.</b> A day without a dive stays blank. Any dive can start any day.</span></li>
+        <li><span><b>A calm way back.</b> Away for a while? One card: "Welcome back. One small dive?" No backlog.</span></li>
+        <li><span><b>One goal a quarter, if you want one.</b> Pick the dives that move it. It shows deep minutes and what moved, never a percentage.</span></li>
+      </ul>
+    </div>
+    <div class="stack">
+      <div class="glass gcard">
+        <div class="small">Deep this week</div>
+        <div class="big num">6 h 40 min</div>
+        <div class="wk" id="week"></div>
+        <div class="wkl"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      </div>
+      <div class="glass gcard">
+        <div class="small">Q4 goal</div>
+        <div style="font-size:18px;font-weight:500;margin-top:4px">Finish the thesis draft</div>
+        <div class="big num" style="margin-top:6px">1,240<span style="font-size:15px;color:var(--text3)"> deep min</span></div>
+        <div class="bars" id="q"></div>
+        <div class="row"><span><span class="dot" style="--c:var(--writing)"></span>Writing</span><span class="num" style="color:var(--text2)">820 min</span></div>
+        <div class="row"><span><span class="dot" style="--c:var(--study)"></span>Study</span><span class="num" style="color:var(--text2)">420 min</span></div>
+        <div class="small" style="margin-top:12px">What moved</div>
+        <div class="sbbox">
+          <div class="row"><span>Lit review done</span><span class="small">Nov 12</span></div>
+          <div class="row"><span>Chapter 2 outline</span><span class="small">Nov 3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 · Everywhere -->
+<section style="background:var(--bg2);border-top:.75px solid var(--line);border-bottom:.75px solid var(--line)">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker">Wherever you work</div>
+      <h2>One dive, on every screen.</h2>
+      <p class="lede" style="margin-top:18px">Start on your Mac, glance at your iPhone: it's the same dive, counting up in both places. Surface on one, and you surface on all.</p>
+    </div>
+    <div class="badges" style="justify-content:center;margin-top:28px">
+        <a class="store" href="#app-store" data-cta><svg viewBox="0 0 24 24"><path d="M3 9q4.5-3 9 0t9 0M3 15q4.5-3 9 0t9 0"/></svg><span><small>Download on the</small>App Store</span></a>
+        <a class="store" href="#app-store" data-cta><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></svg><span><small>Also on</small>iPad and Mac</span></a>
+      </div>
+    <div class="collage">
+      <div class="mac">
+        <div class="bar"><i></i><i></i><i></i></div>
+        <div class="in">
+          <div class="side"><div class="on">Dive</div><div>Progress</div><div>Goals</div><div>Coach</div></div>
+          <div class="col">
+            <div class="dcard" style="--c:var(--writing)"><div class="tile" data-icon="pen"></div><div><div class="t">Writing</div><div class="pk">↳ Finish the paragraph on tides</div></div></div>
+            <div class="dcard" style="--c:var(--study);margin-top:10px;opacity:.55"><div class="tile" data-icon="book"></div><div><div class="t">Study</div><div class="pk">32 min today</div></div></div>
+          </div>
+          <div class="col" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:70px">
+            <div class="k" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5)">Diving</div>
+            <div class="count" data-live style="font-size:54px">47:12</div>
+            <div class="pbtn line" style="padding:8px 22px;margin-top:10px;font-size:13px">Surface</div>
+          </div>
+        </div>
+        <svg class="waves" data-w data-tint="#6F1BD3" data-soft></svg>
+      </div>
+      <div class="duo"><div class="phone mini">
+        <div class="scr" style="padding:40px 10px 14px;align-items:center">
+          <div style="font-size:11px;color:rgba(255,255,255,.6)">Sunday 16</div>
+          <div class="count" style="font-size:52px;line-height:1">9:41</div>
+          <div class="la">
+            <svg class="logo" data-logo style="width:22px;height:22px;border-radius:6px"></svg>
+            <div style="font-size:11px;font-weight:500">Writing</div>
+            <div class="count" data-live>47:12</div>
+          </div>
+        </div>
+      </div>
+      <div class="widget" style="--c:var(--writing)">
+          <div class="tile" data-icon="pen" style="width:28px;height:28px"></div>
+          <div style="font-size:14px;font-weight:500;margin-top:10px">Writing</div>
+          <div class="pk" style="font-size:12px">↳ Finish the paragraph on tides</div>
+          <div class="pbtn spark">Dive</div>
+        </div></div>
+    </div>
+    <div class="caps">
+      <div><b>iPhone</b>Dive from the app, a widget, Control Center or Siri: "Dive into Writing."</div>
+      <div><b>iPad</b>Your dives on the left, the dive itself on the right.</div>
+      <div><b>Mac</b>The same dives in a Mac window. Distracting apps go quiet on Mac too, in a lighter way.</div>
+      <div><b>Widgets</b>Start a dive from the Home Screen, or see today's deep minutes at a glance.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Privacy + what it's built on -->
+<section id="privacy">
+  <div class="wrap two" style="align-items:start">
+    <div>
+      <div class="kicker">Private by design</div>
+      <h2>Quiet about you, too.</h2>
+      <p class="lede" style="margin-top:18px">No account, no servers, no tracking. Your dives stay on your devices and in your own iCloud.</p>
+      <div class="stack" style="margin-top:32px">
+        <div class="glass label"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <div><div class="t">Data Not Collected</div><p class="body" style="margin-top:6px">That's Dive's privacy label on the App Store. We don't receive your dives, your quiet list or what you write.</p></div></div>
+        <div class="glass label"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M18 15l.8 2.2L21 18l-2.2.8L18 21l-.8-2.2L15 18l2.2-.8z"/></svg></div>
+          <div><div class="t">The Coach runs on your device</div><p class="body" style="margin-top:6px">Ask it to size your next step when you're stuck. It uses Apple Intelligence on your iPhone, iPad or Mac, so nothing leaves it.</p></div></div>
+      </div>
+    </div>
+    <div>
+      <div class="kicker" style="margin-top:6px">What it's built on</div>
+      <div class="stack" style="gap:26px">
+        <div class="cite"><p class="body">Flow tends to come with a clear goal, quick feedback, a challenge that fits your skill, and no interruptions. A dive is built to set up exactly those.</p><p class="small">Mihaly Csikszentmihalyi, <i>Flow</i> (1990)</p></div>
+        <div class="cite"><p class="body">Making a specific plan for an unfinished goal stopped it from intruding on people's thoughts. That's the pick-up line: park the work, and let it go.</p><p class="small">Masicampo &amp; Baumeister, Journal of Personality and Social Psychology (2011)</p></div>
+        <div class="cite"><p class="body" style="color:var(--text3)">No app can make flow happen. Dive sets up the conditions and stays out of the way. The rest is you.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · Founder note -->
+<section style="padding-top:20px">
+  <div class="wrap note">
+    <p class="q">"I kept building systems to get ahead. Each one worked for a few weeks, then running it became a second job. Dive is what was left when I took the system away."</p>
+    <div class="sig"><div class="mono">LC</div><div><div style="font-size:15px;font-weight:500">Luis</div><div class="small">Made Dive, and the rest of Improve</div></div></div>
+  </div>
+</section>
+
+<!-- 8 · Pricing -->
+<section id="pricing" style="background:var(--bg2);border-top:.75px solid var(--line);border-bottom:.75px solid var(--line)">
+  <div class="wrap">
+    <div class="center">
+      <div class="kicker">Pricing</div>
+      <h2>Start free, or go deeper.</h2>
+    </div>
+    <div class="plans">
+      <div class="glass plan">
+        <div class="ph">Free</div>
+        <div class="price">$0</div><div class="per">Free to start</div>
+        <ul><li>A few dives with your quiet list</li><li>Surface, depth and pick-up lines</li><li>Progress</li></ul>
+        <a class="btn line" href="#app-store" data-cta>Start free</a>
+      </div>
+      <div class="glass plan main">
+        <div class="ph"><svg data-logo></svg>Dive</div>
+        <div class="price num">$6.99</div><div class="per">per month</div>
+        <ul><li>Unlimited dives and routines</li><li>Goals, and pick-ups from Second Brain</li><li>iPhone, iPad and Mac in sync</li><li>Widgets and the on-device Coach</li></ul>
+        <a class="btn spark" href="#app-store" data-cta>Get Dive</a>
+      </div>
+      <div class="glass plan">
+        <div class="ph"><span style="width:26px;height:26px;display:grid;place-items:center"><svg data-improve style="width:16px;height:22px"></svg></span>Improve</div>
+        <div class="price num">$29.99</div><div class="per">per month</div>
+        <ul><li>Every Improve app, all unlocked</li><li>Dive, Second Brain, Mind, Body, Money, Relationships and Work</li><li>One subscription across all of them</li></ul>
+        <a class="btn line" href="#app-store" data-cta>Get Improve</a>
+      </div>
+    </div>
+    <p class="small" style="text-align:center;margin-top:24px">Prices in US dollars. Subscriptions renew monthly through the App Store until you cancel in your Apple account settings.</p>
+  </div>
+</section>
+
+<!-- 9 · FAQ (the brief's objections) -->
+<section id="faq">
+  <div class="wrap">
+    <div class="center"><div class="kicker">Questions</div><h2>Before you dive</h2></div>
+    <div class="faq">
+      <details open><summary>What if someone needs me during a dive?</summary>
+        <p class="body">People get through. Feeds don't. Dive only quiets the apps on your quiet list, so leave out the apps people reach you on, like Messages or WhatsApp, and they stay open. And surfacing is always one tap.</p></details>
+      <details><summary>Is this a Pomodoro timer?</summary>
+        <p class="body">No. A dive has no countdown and no breaks inside it, because being interrupted is what pulls you out of the work. The clock counts up. You rest between dives, when you choose.</p></details>
+      <details><summary>What if I forget to surface?</summary>
+        <p class="body">After a long dive, a quiet "Still diving?" appears on your Lock Screen. Your apps don't stay quiet all night because you forgot.</p></details>
+      <details><summary>I've quit every system I've tried. Why is this different?</summary>
+        <p class="body">There's nothing to maintain. No streaks to protect, no list to groom, no days to catch up on. Miss a week and Dive just offers one small dive when you're back.</p></details>
+      <details><summary>Do I need the other Improve apps?</summary>
+        <p class="body">No. Dive works on its own. If you use Second Brain, your next steps can come from your projects there, so the pick-up line fills itself.</p></details>
+      <details><summary>What does Dive know about me?</summary>
+        <p class="body">Only what's on your devices. Dive has no account and sends us nothing; its App Store label is Data Not Collected. Sync runs through your own iCloud.</p></details>
+      <details><summary>Can I cancel any time?</summary>
+        <p class="body">Yes. Subscriptions are handled by Apple, and you can cancel in your Apple account settings. See the <a href="https://improve-club.com/refund">refund policy</a>.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · Close -->
+<section class="close deep">
+  <div class="wrap" style="position:relative;z-index:2">
+    <svg data-logo style="width:64px;height:64px;border-radius:15px"></svg>
+    <h2 style="margin-top:26px">Everything else waits at the surface.</h2>
+    <p class="lede" style="margin:16px auto 0;max-width:460px;color:rgba(255,255,255,.7)">Your first dive takes under two minutes to set up.</p>
+    <div style="margin-top:30px"><a class="btn spark" href="#app-store" data-cta>Get Dive on the App Store</a></div>
+  </div>
+  <svg class="waves" data-w data-tint="#FF02E8"></svg>
+</section>
+
+<footer>
+  <div class="wrap fcols">
+    <div class="fbrand">
+      <a class="brand" href="#top" style="color:var(--text)"><svg class="logo" data-logo style="width:26px;height:26px;border-radius:7px"></svg><b style="font-weight:500">Dive</b></a>
+      <span class="imp" style="margin-top:12px"><svg data-improve></svg>by Improve</span>
+      <p class="small" style="margin-top:16px">© 2026 Improve.</p>
+    </div>
+    <div><h4>Dive</h4><a href="#how">How it works</a><a href="#privacy">Privacy</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a><a href="#app-store" data-cta>Download</a></div>
+    <div><h4>Improve</h4><a href="https://improve-club.com/">Our why</a><a href="https://improve-club.com/apps">All apps</a><a href="https://improve-club.com/apps/second-brain">Second Brain</a></div>
+    <div><h4>Legal</h4><a href="https://improve-club.com/privacy">Privacy policy</a><a href="https://improve-club.com/terms">Terms</a><a href="https://improve-club.com/refund">Refund</a></div>
+  </div>
+</footer>
+
+</div>
+</div>
+
+<div class="mockbar" aria-label="Mock controls">
+<span>Width</span><button data-w-set="desk" class="on">Desktop</button><button data-w-set="phone">Phone</button>
+</div>
+
+<script>
+/* assets from the app mocks (Design/DiveCard/onboarding.html) */
+const DIVE_LOGO = '<rect width="1024" height="1024" fill="#0A0A0D"/><path d="M0 450 C 170 410 340 490 512 450 S 854 490 1024 450 L 1024 1024 L 0 1024 Z" fill="#FF02E8" fill-opacity="0.85"/><path d="M0 560 C 170 520 340 600 512 560 S 854 600 1024 560 L 1024 1024 L 0 1024 Z" fill="#A0068F"/><path d="M0 720 C 170 680 340 760 512 720 S 854 760 1024 720 L 1024 1024 L 0 1024 Z" fill="#3A0636"/>';
+document.querySelectorAll('[data-logo]').forEach(s => { s.setAttribute('viewBox', '0 0 1024 1024'); s.innerHTML = DIVE_LOGO; });
+const BARS = [[314,218,707,'#CC0000'],[378,395,570,'#6F1BD3'],[442,395,847,'#FF02E8'],[505,315,491,'#2254F5'],[569,349,524,'#43B752'],[633,395,648,'#FF6900'],[697,283,491,'#EFB219']];
+document.querySelectorAll('[data-improve]').forEach(s => { s.setAttribute('viewBox', '300 200 470 670'); s.innerHTML = BARS.map(([x,y,b,c]) => `<rect x="${x}" y="${y}" width="54" height="${b-y}" fill="${c}"/>`).join(''); });
+const WAVE = '<svg viewBox="0 0 24 24"><path d="M3 8q4.5-3 9 0t9 0M3 13q4.5-3 9 0t9 0M3 18q4.5-3 9 0t9 0"/></svg>';
+document.querySelectorAll('[data-wave]').forEach(e => e.innerHTML = WAVE);
+const ICONS = { pen: '<path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 7l3 3"/>', book: '<path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z"/><path d="M12 6v14"/>' };
+document.querySelectorAll('[data-icon]').forEach(e => e.innerHTML = `<svg viewBox="0 0 24 24">${ICONS[e.dataset.icon]}</svg>`);
+
+/* deep this week: stacked by dive colour; empty days a hairline; future days empty */
+const week = [[60, 40], [0, 0], [90, 30], [45, 50], [0, 0], [85, 0], null];
+document.getElementById('week').innerHTML = week.map(d => {
+  if (!d) return '<div></div>';
+  if (!d[0] && !d[1]) return '<div><i class="none"></i></div>';
+  return `<div><i style="height:${d[1] * .7}px;background:var(--study)"></i><i style="height:${d[0] * .7}px;background:var(--writing)"></i></div>`;
+}).join('');
+/* the quarter's 13 weeks; future weeks blank */
+const q = [40, 55, 30, 70, 62, 48, 80, 66, 0, 0, 0, 0, 0];
+document.getElementById('q').innerHTML = q.map((v, i) => i < 8 ? `<i style="height:${v}%"></i>` : '<i class="f"></i>').join('');
+
+/* the count-up */
+let secs = 47 * 60 + 12;
+const fmt = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+setInterval(() => { secs++; document.querySelectorAll('[data-live]').forEach(e => e.textContent = fmt(secs)); }, 1000);
+
+/* waves: the logo's three bands, one hue sinking darker */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mix(hex, k) { const n = parseInt(hex.slice(1), 16); return `rgb(${((n >> 16) * k) | 0},${((n >> 8 & 255) * k) | 0},${((n & 255) * k) | 0})`; }
+const svgs = [...document.querySelectorAll('svg[data-w]')];
+const t0 = performance.now();
+function draw(now) {
+  const t = reduce ? 0 : (now - t0) / 1000;
+  svgs.forEach(svg => {
+    const W = svg.clientWidth, H = svg.clientHeight; if (!W) return;
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    const tint = svg.dataset.tint || '#FF02E8', soft = 'soft' in svg.dataset;
+    const cols = [[tint, soft ? .35 : .85], [mix(tint, .63), soft ? .5 : 1], [mix(tint, .23), 1]];
+    const tops = [0.10, 0.36, 0.64], amp = Math.min(12, H * .05);
+    svg.innerHTML = cols.map(([c, o], b) => {
+      const y = H * tops[b], sp = [0.08, 0.06, 0.045][b], ph = b * 1.7; let d = `M0 ${H} L0 ${y}`;
+      for (let x = 0; x <= W; x += 8) d += ` L${x} ${(y + amp * Math.sin((x / W) * Math.PI * 2 + t * sp * Math.PI * 2 + ph)).toFixed(1)}`;
+      return `<path d="${d} L${W} ${H} Z" fill="${c}" fill-opacity="${o}"/>`;
+    }).join('');
+  });
+  if (!reduce) requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+
+/* the statement: words light up with scroll (all lit with reduced motion) */
+const rv = document.getElementById('reveal');
+rv.innerHTML = rv.textContent.split(' ').map(w => `<span>${w}</span>`).join(' ');
+const words = [...rv.children];
+function lightWords() {
+  const r = rv.getBoundingClientRect(), vh = innerHeight;
+  const p = reduce ? 1 : Math.max(0, Math.min(1, (vh * .8 - r.top) / (r.height + vh * .3)));
+  const n = Math.round(p * words.length);
+  words.forEach((w, i) => w.classList.toggle('lit', i < n));
+}
+addEventListener('scroll', lightWords, { passive: true }); addEventListener('resize', lightWords); lightWords();
+
+/* hero film: scrolling sinks you (slow zoom + drift toward the deep); still poster under reduced motion; paused off-screen */
+const hv = document.getElementById('heroVideo');
+if (reduce) { hv.removeAttribute('autoplay'); hv.pause(); }
+else {
+  const sink = () => { const p = Math.min(scrollY / innerHeight, 1); hv.style.transform = `translateY(${-p * 6}%) scale(${1 + p * .12})`; };
+  addEventListener('scroll', sink, { passive: true }); sink();
+  new IntersectionObserver(([e]) => e.isIntersecting ? hv.play().catch(() => {}) : hv.pause()).observe(hv);
+}
+
+/* mock bar */
+document.querySelectorAll('[data-w-set]').forEach(b => b.onclick = () => {
+  document.getElementById('frame').classList.toggle('narrow', b.dataset.wSet === 'phone');
+  document.querySelectorAll('[data-w-set]').forEach(x => x.classList.toggle('on', x === b));
+  window.scrollTo(0, 0);
+});
+/* every CTA goes to Dive's App Store page (URL lands when the listing exists) */
+document.querySelectorAll('[data-cta]').forEach(a => a.title = "Dive's App Store page");
+</script>
+</body>
+</html>

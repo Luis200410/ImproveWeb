@@ -5,6 +5,7 @@ import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/utils/supabase/client";
 import { isUserAdmin } from "@/lib/auth-admin";
+import { DiveVoicesManager } from "@/components/admin/dive-voices-manager";
 import { 
   Sparkles, 
   Plus, 
@@ -26,7 +27,8 @@ import {
   ShieldAlert,
   KeyRound,
   LogOut,
-  Lock
+  Lock,
+  MessageSquareQuote
 } from "lucide-react";
 import { toast } from "sonner";
 import { BlogPost, BlogGalleryCard, BLOG_POSTS, saveStoredCustomPost, deleteStoredCustomPost } from "@/lib/blog";
@@ -61,7 +63,7 @@ export default function BlogAdminPage() {
 
   const [posts, setPosts] = useState<BlogPost[]>(BLOG_POSTS);
   const [selectedSlug, setSelectedSlug] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
+  const [activeTab, setActiveTab] = useState<"edit" | "preview" | "voices">("edit");
   const [isSaving, setIsSaving] = useState(false);
 
   // Form State
@@ -560,27 +562,44 @@ export default function BlogAdminPage() {
                 <Eye className="w-3.5 h-3.5" />
                 <span>Live 3D Preview</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("voices")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeTab === "voices"
+                    ? "bg-white text-black shadow-md font-bold"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <MessageSquareQuote className="w-3.5 h-3.5" />
+                <span>Dive voices</span>
+              </button>
             </div>
 
-            <button
-              type="button"
-              onClick={handleSavePost}
-              disabled={isSaving}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
-            >
-              {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              <span>{isSaving ? "Saving..." : "Publish Post"}</span>
-            </button>
+            {activeTab !== "voices" && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSavePost}
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+                >
+                  {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  <span>{isSaving ? "Saving..." : "Publish Post"}</span>
+                </button>
 
-            {slug && (
-              <Link
-                href={`/blog/${slug}`}
-                target="_blank"
-                className="px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-xs font-semibold text-white flex items-center gap-1.5 transition-colors"
-              >
-                <span>View Live</span>
-                <ExternalLink className="w-3 h-3" />
-              </Link>
+                {slug && (
+                  <Link
+                    href={`/blog/${slug}`}
+                    target="_blank"
+                    className="px-3 py-2 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-xs font-semibold text-white flex items-center gap-1.5 transition-colors"
+                  >
+                    <span>View Live</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                )}
+              </>
             )}
 
             {/* Admin identity & Sign Out */}
@@ -602,35 +621,40 @@ export default function BlogAdminPage() {
           </div>
         </div>
 
-        {/* Existing Post Selector Bar */}
-        <div className="access-glass p-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-xs uppercase tracking-wider text-zinc-400 font-medium">Load Post:</span>
-            <select
-              value={selectedSlug}
-              onChange={(e) => handleSelectPostToEdit(e.target.value)}
-              className="px-3 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-white focus:outline-none focus:border-white/30 cursor-pointer"
-            >
-              <option value="">+ Create Brand New Post</option>
-              {posts.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.title} ({p.cards?.length || 0} cards)
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* DIVE VOICES TAB */}
+        {activeTab === "voices" && <DiveVoicesManager />}
 
-          {selectedSlug && (
-            <button
-              type="button"
-              onClick={handleDeletePost}
-              className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors cursor-pointer"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete This Post</span>
-            </button>
-          )}
-        </div>
+        {/* Existing Post Selector Bar */}
+        {activeTab !== "voices" && (
+          <div className="access-glass p-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase tracking-wider text-zinc-400 font-medium">Load Post:</span>
+              <select
+                value={selectedSlug}
+                onChange={(e) => handleSelectPostToEdit(e.target.value)}
+                className="px-3 py-1.5 rounded-lg bg-black/60 border border-white/10 text-xs text-white focus:outline-none focus:border-white/30 cursor-pointer"
+              >
+                <option value="">+ Create Brand New Post</option>
+                {posts.map((p) => (
+                  <option key={p.slug} value={p.slug}>
+                    {p.title} ({p.cards?.length || 0} cards)
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {selectedSlug && (
+              <button
+                type="button"
+                onClick={handleDeletePost}
+                className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete This Post</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* TAB 1: EDITOR MODE */}
         {activeTab === "edit" && (
