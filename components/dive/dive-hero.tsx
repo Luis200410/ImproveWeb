@@ -17,16 +17,37 @@ export function DiveHero({ liveTime = '47:12' }: { liveTime?: string }) {
     return () => mq.removeEventListener('change', updateMotion);
   }, []);
 
-  // Pause video when hero scrolls off-screen, play when visible
+  // Safari-safe muted inline autoplay + pause off-screen
   useEffect(() => {
     const hero = heroRef.current;
     const video = videoRef.current;
     if (!hero || !video || reducedMotion) return;
 
+    video.defaultMuted = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('webkit-playsinline', '');
+
+    const tryPlay = () => {
+      video.muted = true;
+      video.play().catch(() => {});
+    };
+
+    tryPlay();
+
+    // Fallback for iOS Low Power Mode until first user interaction
+    const onFirstInteract = () => {
+      tryPlay();
+    };
+    window.addEventListener('touchstart', onFirstInteract, { once: true, passive: true });
+    window.addEventListener('pointerdown', onFirstInteract, { once: true, passive: true });
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          video.play().catch(() => {});
+          tryPlay();
         } else {
           video.pause();
         }
@@ -35,7 +56,11 @@ export function DiveHero({ liveTime = '47:12' }: { liveTime?: string }) {
     );
 
     observer.observe(hero);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('touchstart', onFirstInteract);
+      window.removeEventListener('pointerdown', onFirstInteract);
+    };
   }, [reducedMotion]);
 
   // Subtle scroll zoom on the hero video
@@ -65,6 +90,18 @@ export function DiveHero({ liveTime = '47:12' }: { liveTime?: string }) {
       id="top"
       className="relative h-[760px] md:h-[min(100vh,880px)] w-full bg-[#0A0A0D] text-white text-center overflow-hidden"
     >
+      <style>{`
+        .dive-hero-video::-webkit-media-controls,
+        .dive-hero-video::-webkit-media-controls-panel,
+        .dive-hero-video::-webkit-media-controls-play-button,
+        .dive-hero-video::-webkit-media-controls-start-playback-button,
+        .dive-hero-video::-webkit-media-controls-overlay-play-button {
+          display: none !important;
+          opacity: 0 !important;
+          -webkit-appearance: none !important;
+          pointer-events: none !important;
+        }
+      `}</style>
       {/* 1. Text block pinned to the TOP of the hero, compact */}
       <div className="relative z-[3] pt-[100px] md:pt-[120px] px-4 md:px-8 max-w-[920px] mx-auto">
         <h1 className="font-light tracking-[-0.02em] text-[36px] md:text-[clamp(38px,5vw,56px)] leading-[1.06] m-0 mx-auto mb-3">
@@ -107,8 +144,11 @@ export function DiveHero({ liveTime = '47:12' }: { liveTime?: string }) {
               loop
               muted
               playsInline
+              controls={false}
+              disablePictureInPicture
+              disableRemotePlayback
               preload="auto"
-              className="w-full h-full object-cover object-[50%_60%] block"
+              className="dive-hero-video w-full h-full object-cover object-[50%_60%] block"
             />
           )}
         </div>
