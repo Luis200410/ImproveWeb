@@ -19,6 +19,9 @@ const siteUrl = "https://improve-club.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "./",
+  },
   title: {
     default: "IMPROVE | Focus & App-Blocking Software for iPhone, iPad & Mac",
     template: "%s | IMPROVE",

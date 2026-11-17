@@ -12,7 +12,7 @@ export function DiveClose() {
           Everything else waits at the surface.
         </h2>
         <p className="text-[17px] md:text-[19px] leading-[1.55] text-white/70 mt-4 mx-auto max-w-[460px] mb-0">
-          Your first dive takes under two minutes to set up.
+          Your first dive is a few taps away.
         </p>
         <div className="mt-[30px]">
           <AppStoreBadges />

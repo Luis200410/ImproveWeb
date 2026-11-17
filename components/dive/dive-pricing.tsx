@@ -34,7 +34,6 @@ export function DivePricing() {
           <div className="bg-white/[0.055] border-[0.75px] border-white/12 rounded-[15px] backdrop-blur-[20px] p-[26px] flex flex-col">
             <div className="flex items-center gap-[10px] text-[17px] font-medium">Free</div>
             <div className="text-[40px] font-light mt-[18px] mb-[2px] tracking-[-0.02em]">$0</div>
-            <div className="text-[13px] text-white/42">Free to start</div>
             <ul className="list-none p-0 my-[22px] mb-[26px] grid gap-[10px] text-[14.5px] text-white/66 leading-[1.45]">
               <li className="pl-[18px] relative">
                 <PlanBullet />A few dives with your quiet list
@@ -43,7 +42,7 @@ export function DivePricing() {
                 <PlanBullet />Surface, depth and pick-up lines
               </li>
               <li className="pl-[18px] relative">
-                <PlanBullet />Progress
+                <PlanBullet />Your week in deep minutes
               </li>
             </ul>
             <a

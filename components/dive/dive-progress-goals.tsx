@@ -1,18 +1,7 @@
 'use client';
 
 import React from 'react';
-
-const WEEK_DATA: ([number, number] | null)[] = [
-  [60, 40],
-  [0, 0],
-  [90, 30],
-  [45, 50],
-  [0, 0],
-  [85, 0],
-  null,
-];
-
-const QUARTER_BARS = [40, 55, 30, 70, 62, 48, 80, 66, 0, 0, 0, 0, 0];
+import Image from 'next/image';
 
 function WaveBullet() {
   return (
@@ -32,10 +21,10 @@ function WaveBullet() {
 
 export function DiveProgressGoals() {
   return (
-    <section className="py-[72px] md:py-[110px] bg-[#0A0A0D] text-white">
-      <div className="max-w-[1120px] mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-[40px] md:gap-[64px] items-center">
-        {/* Left Copy */}
-        <div>
+    <section className="py-[72px] md:py-[110px] bg-[#0A0A0D] text-white overflow-x-clip">
+      <div className="max-w-[1120px] mx-auto px-4 md:px-8 grid grid-cols-1 min-[700px]:grid-cols-2 gap-[40px] md:gap-[64px] items-center">
+        {/* Right Copy on desktop */}
+        <div className="min-[700px]:order-2">
           <div className="inline-flex items-center py-[6px] px-[12px] rounded-[10px] bg-white/[0.09] border-[0.75px] border-white/12 text-[13px] font-medium text-white/66 mb-[18px]">
             Nothing to keep up
           </div>
@@ -68,97 +57,36 @@ export function DiveProgressGoals() {
           </ul>
         </div>
 
-        {/* Right Glass Cards */}
-        <div className="grid gap-4">
-          {/* Card 1: Weekly */}
-          <div className="bg-white/[0.055] border-[0.75px] border-white/12 rounded-[15px] backdrop-blur-[20px] p-[22px]">
-            <div className="text-[13px] leading-[1.5] text-white/42">Deep this week</div>
-            <div className="text-[44px] font-light tabular-nums tracking-[-0.02em]">
-              6 h 40 min
-            </div>
-            <div className="flex items-end gap-[10px] h-[110px] mt-4">
-              {WEEK_DATA.map((d, i) => {
-                if (!d) return <div key={i} className="flex-1 h-full" />;
-                if (!d[0] && !d[1]) {
-                  return (
-                    <div key={i} className="flex-1 flex flex-col justify-end h-full">
-                      <i className="block h-0 border-b-[0.75px] border-white/12" />
-                    </div>
-                  );
-                }
-                return (
-                  <div key={i} className="flex-1 flex flex-col justify-end gap-[2px] h-full">
-                    <i
-                      className="block rounded-[3px] bg-[#2254F5]"
-                      style={{ height: `${d[1] * 0.7}px` }}
-                    />
-                    <i
-                      className="block rounded-[3px] bg-[#6F1BD3]"
-                      style={{ height: `${d[0] * 0.7}px` }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-            <div className="flex gap-[10px] mt-2">
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
-                <span key={idx} className="flex-1 text-center text-[11px] text-white/42">
-                  {day}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Card 2: Q4 Goal */}
-          <div className="bg-white/[0.055] border-[0.75px] border-white/12 rounded-[15px] backdrop-blur-[20px] p-[22px]">
-            <div className="text-[13px] leading-[1.5] text-white/42">Q4 goal</div>
-            <div className="text-[18px] font-medium mt-1">Finish the thesis draft</div>
-            <div className="text-[44px] font-light tabular-nums tracking-[-0.02em] mt-[6px]">
-              1,240<span className="text-[15px] text-white/42"> deep min</span>
-            </div>
-
-            <div className="flex items-end gap-[5px] h-[64px] mt-[18px] mb-[6px]">
-              {QUARTER_BARS.map((v, i) =>
-                i < 8 ? (
-                  <i
-                    key={i}
-                    className="flex-1 rounded-[3px] bg-[#FF02E8] opacity-85 block"
-                    style={{ height: `${v}%` }}
-                  />
-                ) : (
-                  <i
-                    key={i}
-                    className="flex-1 border-b-[0.75px] border-white/12 block"
-                  />
-                )
-              )}
-            </div>
-
-            <div className="flex justify-between items-center py-[10px] border-t-[0.75px] border-white/12 text-[14px]">
-              <span>
-                <span className="inline-block w-2 h-2 rounded-[3px] mr-2 bg-[#6F1BD3]" />
-                Writing
-              </span>
-              <span className="tabular-nums text-white/66">820 min</span>
-            </div>
-            <div className="flex justify-between items-center py-[10px] border-t-[0.75px] border-white/12 text-[14px]">
-              <span>
-                <span className="inline-block w-2 h-2 rounded-[3px] mr-2 bg-[#2254F5]" />
-                Study
-              </span>
-              <span className="tabular-nums text-white/66">420 min</span>
-            </div>
-
-            <div className="text-[13px] leading-[1.5] text-white/42 mt-3">What moved</div>
-            <div className="rounded-[12px] shadow-[inset_0_0_0_0.75px_rgba(255,105,0,0.55)] py-1 px-3 mt-[10px]">
-              <div className="flex justify-between items-center py-[10px] text-[14px]">
-                <span>Lit review done</span>
-                <span className="text-[13px] text-white/42">Nov 12</span>
-              </div>
-              <div className="flex justify-between items-center py-[10px] border-t-[0.75px] border-white/12 text-[14px]">
-                <span>Chapter 2 outline</span>
-                <span className="text-[13px] text-white/42">Nov 3</span>
-              </div>
+        {/* Left Phone Mockup on desktop */}
+        <div className="min-[700px]:order-1 flex items-center justify-center isolate">
+          <div className="relative flex items-center justify-center w-[80vw] min-[700px]:w-full max-w-[380px] min-[700px]:max-w-[480px]">
+            {/* Subtle magenta ambient glow behind phone */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-6 rounded-full opacity-20 blur-[90px] -z-10"
+              style={{ backgroundColor: '#FF02E8' }}
+            />
+            <div className="w-full">
+              {/* Mobile (<700px): upright iPhone mockup */}
+              <Image
+                src="/dive/goals-iphone-mobile.png"
+                width={699}
+                height={1443}
+                priority={false}
+                sizes="80vw"
+                alt="Dive's Goals screen on iPhone: a quarterly goal with its deep minutes and what moved."
+                className="block min-[700px]:hidden w-full h-auto"
+              />
+              {/* Desktop (>=700px): diagonal 3D iPhone mockup */}
+              <Image
+                src="/dive/goals-iphone-desk.png"
+                width={1528}
+                height={1519}
+                priority={false}
+                sizes="(max-width: 700px) 80vw, 480px"
+                alt="Dive's Goals screen on iPhone: a quarterly goal with its deep minutes and what moved."
+                className="hidden min-[700px]:block w-full h-auto"
+              />
             </div>
           </div>
         </div>

@@ -18,8 +18,8 @@ export function DiveScenes() {
               />
             </div>
 
-            {/* Text Column (Center on mobile & tablet, left on desktop) */}
-            <div className="flex flex-col items-center lg:items-start">
+            {/* Text Column (Center on mobile & tablet, left on desktop >=900px) */}
+            <div className="flex flex-col items-center text-center min-[900px]:items-start min-[900px]:text-left max-w-[440px] mx-auto min-[900px]:mx-0">
               <div className="inline-flex items-center py-[6px] px-[12px] rounded-[10px] bg-white/[0.09] border-[0.75px] border-white/12 text-[13px] font-medium text-white/66 mb-[14px]">
                 Dive
               </div>
@@ -89,7 +89,7 @@ export function DiveScenes() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center lg:items-start">
+            <div className="flex flex-col items-center text-center min-[900px]:items-start min-[900px]:text-left max-w-[440px] mx-auto min-[900px]:mx-0">
               <div className="inline-flex items-center py-[6px] px-[12px] rounded-[10px] bg-white/[0.09] border-[0.75px] border-white/12 text-[13px] font-medium text-white/66 mb-[14px]">
                 Stay in
               </div>
@@ -113,8 +113,8 @@ export function DiveScenes() {
               />
             </div>
 
-            {/* Text Column (Center on mobile & tablet, left on desktop) */}
-            <div className="flex flex-col items-center lg:items-start">
+            {/* Text Column (Center on mobile & tablet, left on desktop >=900px) */}
+            <div className="flex flex-col items-center text-center min-[900px]:items-start min-[900px]:text-left max-w-[440px] mx-auto min-[900px]:mx-0">
               <div className="inline-flex items-center py-[6px] px-[12px] rounded-[10px] bg-white/[0.09] border-[0.75px] border-white/12 text-[13px] font-medium text-white/66 mb-[14px]">
                 Surface
               </div>
