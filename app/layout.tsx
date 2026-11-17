@@ -20,22 +20,22 @@ const siteUrl = "https://improve-club.com";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "IMPROVE | Your Intentional Digital Companion",
+    default: "IMPROVE | Focus & App-Blocking Software for iPhone, iPad & Mac",
     template: "%s | IMPROVE",
   },
   description:
-    "Technology was meant to serve you, not distract you. IMPROVE is a digital companion that blocks the noise, builds your habits, and protects your time.",
+    "Focus and app-blocking software for iPhone, iPad, and Mac. Quiet distracting apps, count up your real work, and never lose a streak. Private by design.",
   keywords: [
-    "Intentional digital companion",
-    "Habit execution engine",
-    "Apple Intelligence productivity",
-    "On-device AI companion",
-    "Deep work system",
-    "App blocking focus timer",
-    "Anti-hustle productivity",
-    "Goal alignment software",
-    "Personal knowledge management",
-    "Private productivity ecosystem",
+    "Dive by Improve",
+    "Improve Club",
+    "app blocker for iPhone",
+    "focus app for iPhone and Mac",
+    "Screen Time app blocker",
+    "focus timer without streaks",
+    "deep work timer",
+    "private focus app",
+    "on-device Apple Intelligence",
+    "iOS productivity app",
   ],
   authors: [{ name: "IMPROVE", url: siteUrl }],
   creator: "IMPROVE",
@@ -60,29 +60,26 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "IMPROVE",
-    title: "IMPROVE — Your Intentional Digital Companion.",
+    title: "IMPROVE — Focus & App-Blocking Software for iPhone, iPad & Mac",
     description:
-      "Technology doing exactly what it was always meant to do: serve your intent. Block digital noise, build your habits, and execute your daily targets.",
+      "Quiet distracting apps, count up your real work, and never lose a streak. Makers of Dive for iPhone, iPad, and Mac.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "IMPROVE — Your Intentional Digital Companion",
+        alt: "IMPROVE — Focus & App-Blocking Software",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "IMPROVE — A Digital Companion.",
+    title: "IMPROVE — Focus & App-Blocking Software for iPhone, iPad & Mac",
     description:
-      "Define the goal. Block the noise. Execute the habit. Technology built to protect your time, not steal it.",
+      "Quiet distracting apps, count up your real work, and never lose a streak. Private by design.",
     images: ["/og-image.png"],
     creator: "@improveclub",
     site: "@improveclub",
-  },
-  alternates: {
-    canonical: siteUrl,
   },
   icons: {
     icon: [
@@ -93,21 +90,20 @@ export const metadata: Metadata = {
     shortcut: "/icon.png?v=2",
     apple: "/apple-icon.png?v=2",
   },
-  verification: {
-    // Add your Google Search Console verification token here when available
-    // google: "YOUR_GOOGLE_VERIFICATION_TOKEN",
-  },
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "IMPROVE",
-  alternateName: "IMPROVE — Your Intentional Digital Companion",
+  alternateName: "Improve Club",
   url: siteUrl,
   logo: `${siteUrl}/og-image.png`,
   description:
-    "IMPROVE is a premium digital companion designed for intent. We replace digital chaos with a quiet, private space for managing habits, work, health, and mind using completely local, on-device AI.",
+    "Focus and app-blocking software for iPhone, iPad, and Mac. Makers of Dive — quiet distracting apps, count up your real work, and keep your data on your device.",
   sameAs: [],
 };
 
@@ -115,42 +111,41 @@ const jsonLdWebSite = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "IMPROVE",
+  alternateName: "Improve Club",
   url: siteUrl,
   description:
-    "An intentional digital companion for your habits, work, health, and mind. Define the goal, block the noise, execute the habit.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
+    "Focus and app-blocking software for iPhone, iPad, and Mac. Quiet distracting apps, count up your real work, and never lose a streak.",
 };
 
 const jsonLdSoftwareApp = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
-  name: "IMPROVE",
-  operatingSystem: "Web",
-  applicationCategory: "BusinessApplication",
+  name: "Dive by Improve",
+  operatingSystem: "iOS, iPadOS, macOS",
+  applicationCategory: "ProductivityApplication",
   offers: [
     {
       "@type": "Offer",
       price: "0.00",
       priceCurrency: "USD",
-      name: "Free Tier",
+      name: "Free",
     },
     {
       "@type": "Offer",
-      price: "40.00",
+      price: "6.99",
       priceCurrency: "USD",
-      name: "Premium",
+      name: "Dive",
+    },
+    {
+      "@type": "Offer",
+      price: "29.99",
+      priceCurrency: "USD",
+      name: "Improve",
     },
   ],
   description:
-    "A privacy-first digital companion that utilizes local AI to block distractions, build core habits, and drive purposeful execution. Technology meant to serve the user.",
-  url: siteUrl,
+    "Focus and Screen Time app blocker for iPhone, iPad, and Mac. Sit down, dive in, do the real work — no streaks, no accounts, Data Not Collected.",
+  url: `${siteUrl}/dive`,
 };
 
 export default function RootLayout({
