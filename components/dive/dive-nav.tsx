@@ -8,7 +8,7 @@ import { DiveLogo, ImproveMark } from './dive-assets';
 
 export function DiveNav() {
   const pathname = usePathname();
-  const isDive = pathname === '/dive' || pathname?.startsWith('/dive/');
+  const isDive = pathname === '/' || pathname === '/dive' || pathname?.startsWith('/dive/');
 
   return (
     <div className="sticky top-0 h-0 z-50">

@@ -1,73 +1,59 @@
-'use client';
+import type { Metadata } from 'next';
+import { DivePageClient } from '@/components/dive/dive-page-client';
 
-import * as React from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { HeroSection } from '@/components/ui/hero-section';
-import CircularSplitRoll from '@/components/landing/circular-split-roll';
-import { StorySection } from '@/components/landing/story-section';
+const siteUrl = 'https://improve-club.com';
 
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
+export const metadata: Metadata = {
+  title: 'Dive by Improve — Focus & App Blocker for iPhone, iPad & Mac',
+  description:
+    'Below the noise. Quiet distracting apps with Screen Time, count up your real work, and never lose a streak. Free to start, no account, Data Not Collected.',
+  keywords: [
+    'Dive by Improve',
+    'Dive app',
+    'app blocker for iPhone',
+    'focus app for Mac',
+    'Screen Time app blocker',
+    'focus timer without streaks',
+    'deep work timer',
+    'private focus app',
+  ],
+  alternates: {
+    canonical: siteUrl,
+  },
+  openGraph: {
+    type: 'website',
+    url: siteUrl,
+    title: 'Dive by Improve — Focus & App Blocker for iPhone, iPad & Mac',
+    description:
+      'Quiet distracting apps, count up your real work, and never lose a streak. Free to start, no account, Data Not Collected.',
+    images: [
+      {
+        url: '/images/dive/dive-hero-poster.png',
+        width: 1280,
+        height: 720,
+        alt: 'Dive by Improve — Below the noise.',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dive by Improve — Focus & App Blocker for iPhone, iPad & Mac',
+    description:
+      'Below the noise. Your phone lives at the surface. Your real work happens underneath.',
+    images: ['/images/dive/dive-hero-poster.png'],
+  },
+};
 
-export default function Home() {
-  const [introComplete, setIntroComplete] = React.useState(false);
-
-  // Block page scrolling completely until the hero intro is finished
-  React.useEffect(() => {
-    if (!introComplete) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-      window.scrollTo(0, 0);
-    } else {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-
-      const timer = setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          ScrollTrigger.refresh();
-        }
-      }, 350);
-      return () => clearTimeout(timer);
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [introComplete]);
-
-  const handleHeroIntroComplete = React.useCallback(() => {
-    setIntroComplete(true);
-  }, []);
-
+export default function HomePage() {
   return (
-    <div className="min-h-screen bg-transparent text-white selection:bg-white selection:text-black relative">
-      {/* First Frame: Manifesto Typewriter into Final Hero Frame with IMPROVE title staying at the top */}
-      <div className="relative w-full">
-        <HeroSection onIntroComplete={handleHeroIntroComplete} />
-      </div>
-
-      {/* Frame 2: 3D App Ecosystem Roll (clean and unobstructed, no title in Frame 2) */}
-      <section
-        id="ecosystem"
-        className={`w-full relative transition-opacity duration-700 ${
-          introComplete ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        <CircularSplitRoll />
-      </section>
-
-      {/* Frame 3: The Architecture / Blueprint (The Problem, The Ecosystem, The Sanctuary, The Investment) */}
-      <section
-        id="story"
-        className={`w-full relative bg-transparent transition-opacity duration-700 ${
-          introComplete ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-      >
-        <StorySection />
-      </section>
-    </div>
+    <>
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet"
+      />
+      <DivePageClient />
+    </>
   );
 }

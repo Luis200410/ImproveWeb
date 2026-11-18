@@ -7,7 +7,7 @@ import { DiveFooter } from '@/components/dive/dive-footer';
 
 export function PublicShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isDive = pathname === '/dive' || pathname?.startsWith('/dive/');
+  const isDive = pathname === '/' || pathname === '/dive' || pathname?.startsWith('/dive/');
 
   return (
     <div

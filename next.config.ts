@@ -40,13 +40,18 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: '/dive',
+        destination: '/',
+        permanent: true,
+      },
+      {
         source: '/apps/execution-productivity',
-        destination: '/dive',
+        destination: '/',
         permanent: true,
       },
       {
         source: '/apps/productivity',
-        destination: '/dive',
+        destination: '/',
         permanent: true,
       },
     ];
