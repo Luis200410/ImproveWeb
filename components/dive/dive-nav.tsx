@@ -48,7 +48,7 @@ export function DiveNav() {
               </>
             ) : (
               <>
-                <Link href="/dive" className="no-underline text-white/70 hover:text-white transition-colors">
+                <Link href="/" className="no-underline text-white/70 hover:text-white transition-colors">
                   Dive
                 </Link>
                 <Link href="/apps" className="no-underline text-white/70 hover:text-white transition-colors">

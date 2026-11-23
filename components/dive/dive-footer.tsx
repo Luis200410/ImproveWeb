@@ -11,7 +11,7 @@ export function DiveFooter() {
       <div className="max-w-[1120px] mx-auto px-4 md:px-8">
         <div className="bg-white/[0.055] border-[0.75px] border-white/12 rounded-[15px] backdrop-blur-[20px] p-7 sm:p-10 grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-8">
           <div className="col-span-2 md:col-span-1 flex flex-col items-start text-[13px] text-white/42">
-            <Link href="/dive" className="flex items-center gap-[10px] no-underline text-white">
+            <Link href="/" className="flex items-center gap-[10px] no-underline text-white">
               <DiveLogo className="w-[26px] h-[26px] rounded-[7px]" />
               <span className="font-medium text-[17px]">Dive</span>
             </Link>
@@ -26,16 +26,16 @@ export function DiveFooter() {
 
           <div>
             <h4 className="m-0 mb-[14px] text-[13px] font-medium text-white">Dive</h4>
-            <Link href="/dive#how" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
+            <Link href="/#how" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
               How it works
             </Link>
-            <Link href="/dive#privacy" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
+            <Link href="/#privacy" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
               Privacy
             </Link>
-            <Link href="/dive#pricing" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
+            <Link href="/#pricing" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
               Pricing
             </Link>
-            <Link href="/dive#faq" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
+            <Link href="/#faq" className="block text-[14px] text-white/66 no-underline mb-[10px] hover:text-white transition-colors">
               FAQ
             </Link>
             <a

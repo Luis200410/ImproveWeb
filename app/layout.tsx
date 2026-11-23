@@ -148,7 +148,7 @@ const jsonLdSoftwareApp = {
   ],
   description:
     "Focus and Screen Time app blocker for iPhone, iPad, and Mac. Sit down, dive in, do the real work — no streaks, no accounts, Data Not Collected.",
-  url: `${siteUrl}/dive`,
+  url: siteUrl,
 };
 
 export default function RootLayout({

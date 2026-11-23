@@ -104,6 +104,9 @@ export function DiveHero({ liveTime = '47:12' }: { liveTime?: string }) {
       `}</style>
       {/* 1. Text block pinned to the TOP of the hero, compact */}
       <div className="relative z-[3] pt-[100px] md:pt-[120px] px-4 md:px-8 max-w-[920px] mx-auto">
+        <p className="text-[11px] md:text-[12px] uppercase tracking-[0.14em] text-white/50 mb-2.5 m-0">
+          Focus &amp; App Blocker for iPhone, iPad &amp; Mac
+        </p>
         <h1 className="font-light tracking-[-0.02em] text-[36px] md:text-[clamp(38px,5vw,56px)] leading-[1.06] m-0 mx-auto mb-3">
           Below the noise.
         </h1>

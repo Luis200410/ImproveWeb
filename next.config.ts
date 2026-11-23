@@ -103,8 +103,8 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Apply security + SEO headers to all public routes
-        source: "/(blog|pricing|sales|register|login)?",
+        // Apply security + SEO headers to public routes
+        source: "/(|blog.*|apps.*|privacy.*|terms|refund|pricing|sales|register|login)",
         headers: [
           {
             key: "X-Robots-Tag",
