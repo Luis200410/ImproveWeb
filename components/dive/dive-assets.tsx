@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { DIVE_APP_STORE_URL } from './constants';
+import { DIVE_APP_STORE_URL, DIVE_IS_TESTFLIGHT } from './constants';
 
 export function DiveLogo({ className = '', style }: { className?: string; style?: React.CSSProperties }) {
   return (
@@ -174,6 +174,39 @@ export function useDiveLiveTimer(initialSeconds = 47 * 60 + 12): string {
 }
 
 export function AppStoreBadges({ className = '' }: { className?: string }) {
+  if (DIVE_IS_TESTFLIGHT) {
+    return (
+      <div className={`flex flex-wrap justify-center items-center gap-3 ${className}`}>
+        <a
+          href={DIVE_APP_STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Join Dive on TestFlight"
+          className="inline-flex items-center gap-2.5 py-[12px] px-[22px] rounded-[12px] bg-[#FF02E8] text-black font-medium text-[15px] no-underline shadow-[0_8px_28px_rgba(255,2,232,0.28)] transition-transform hover:brightness-105 active:scale-[0.97]"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="w-[18px] h-[18px]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+          <span>Join TestFlight Beta</span>
+          <span className="text-[12px] font-normal text-black/70 border-l border-black/20 pl-2.5">
+            iPhone · iPad · Mac
+          </span>
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex flex-wrap justify-center items-center gap-3 ${className}`}>
       <a

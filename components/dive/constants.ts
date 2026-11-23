@@ -1,4 +1,5 @@
-export const DIVE_APP_STORE_URL = '#app-store';
+export const DIVE_IS_TESTFLIGHT = true;
+export const DIVE_APP_STORE_URL = 'https://testflight.apple.com/join/MVsF7Qzn';
 
 export const DIVE_COLORS = {
   bg: '#0A0A0D',

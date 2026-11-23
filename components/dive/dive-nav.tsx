@@ -67,14 +67,16 @@ export function DiveNav() {
           {isDive ? (
             <a
               href={DIVE_APP_STORE_URL}
-              title="Dive's App Store page"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Join Dive on TestFlight"
               className="ml-auto md:ml-0 inline-flex items-center gap-[10px] py-[9px] px-4 rounded-[10px] bg-[#FF02E8] text-black font-medium text-[14px] no-underline transition-transform active:scale-[0.97]"
             >
               Get Dive
             </a>
           ) : (
             <Link
-              href="/dive"
+              href="/"
               className="ml-auto md:ml-0 inline-flex items-center gap-[10px] py-[9px] px-4 rounded-[10px] bg-[#FF02E8] text-black font-medium text-[14px] no-underline transition-transform active:scale-[0.97]"
             >
               Get Dive
