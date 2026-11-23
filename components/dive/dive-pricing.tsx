@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DIVE_APP_STORE_URL } from './constants';
+import { DIVE_APP_STORE_URL, DIVE_IS_TESTFLIGHT } from './constants';
 import { DiveLogo, ImproveMark } from './dive-assets';
 
 function PlanBullet({ spark = false }: { spark?: boolean }) {
@@ -47,7 +47,9 @@ export function DivePricing() {
             </ul>
             <a
               href={DIVE_APP_STORE_URL}
-              title="Dive's App Store page"
+              target={DIVE_IS_TESTFLIGHT ? '_blank' : undefined}
+              rel={DIVE_IS_TESTFLIGHT ? 'noopener noreferrer' : undefined}
+              title={DIVE_IS_TESTFLIGHT ? 'Join Dive on TestFlight' : "Dive's App Store page"}
               className="mt-auto inline-flex items-center justify-center gap-[10px] py-[14px] px-[22px] rounded-[10px] font-medium text-[16px] text-white border-[0.75px] border-white/12 shadow-[inset_0_0_0_0.75px_rgba(255,255,255,0.12)] no-underline transition-transform active:scale-[0.97]"
             >
               Start free
@@ -67,10 +69,23 @@ export function DivePricing() {
               <DiveLogo className="w-[26px] h-[26px] rounded-[7px]" />
               Dive
             </div>
-            <div className="text-[40px] font-light tabular-nums mt-[18px] mb-[2px] tracking-[-0.02em]">
-              $6.99
-            </div>
-            <div className="text-[13px] text-white/42">per month</div>
+            {DIVE_IS_TESTFLIGHT ? (
+              <>
+                <div className="text-[32px] sm:text-[36px] font-light mt-[18px] mb-[2px] tracking-[-0.02em] leading-[1.12]">
+                  Free while testing
+                </div>
+                <div className="text-[13px] text-white/42">
+                  <span className="line-through">$6.99</span> per month after beta
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-[40px] font-light tabular-nums mt-[18px] mb-[2px] tracking-[-0.02em]">
+                  $6.99
+                </div>
+                <div className="text-[13px] text-white/42">per month</div>
+              </>
+            )}
             <ul className="list-none p-0 my-[22px] mb-[26px] grid gap-[10px] text-[14.5px] text-white/66 leading-[1.45]">
               <li className="pl-[18px] relative">
                 <PlanBullet spark />Unlimited dives and routines
@@ -87,10 +102,12 @@ export function DivePricing() {
             </ul>
             <a
               href={DIVE_APP_STORE_URL}
-              title="Dive's App Store page"
+              target={DIVE_IS_TESTFLIGHT ? '_blank' : undefined}
+              rel={DIVE_IS_TESTFLIGHT ? 'noopener noreferrer' : undefined}
+              title={DIVE_IS_TESTFLIGHT ? 'Join Dive on TestFlight' : "Dive's App Store page"}
               className="mt-auto inline-flex items-center justify-center gap-[10px] py-[14px] px-[22px] rounded-[10px] font-medium text-[16px] bg-[#FF02E8] text-black no-underline transition-transform active:scale-[0.97]"
             >
-              Get Dive
+              {DIVE_IS_TESTFLIGHT ? 'Join TestFlight' : 'Get Dive'}
             </a>
           </div>
 
